@@ -1,0 +1,290 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="el"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ColumnDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SQLDomainGen</a> &gt; <a href="index.source.html" class="el_package">com.sqldomaingen.parser</a> &gt; <span class="el_source">ColumnDefinition.java</span></div><h1>ColumnDefinition.java</h1><pre class="source lang-java linenums">package com.sqldomaingen.parser;
+
+import com.sqldomaingen.util.TypeMapper;
+import com.sqldomaingen.model.Column;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.antlr.v4.runtime.Token;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Getter
+<span class="pc" id="L13">@Setter</span>
+<span class="fc" id="L14">@NoArgsConstructor</span>
+public class ColumnDefinition {
+
+<span class="fc" id="L17">    private static final Logger logger = LoggerFactory.getLogger(ColumnDefinition.class);</span>
+
+<span class="fc" id="L19">    private String columnName;</span>
+<span class="fc" id="L20">    private String sqlType;</span>
+<span class="fc" id="L21">    private String javaType;</span>
+<span class="fc" id="L22">    private int length;</span>
+<span class="fc" id="L23">    private boolean primaryKey;</span>
+<span class="fc" id="L24">    private boolean nullable = true;</span>
+<span class="fc" id="L25">    private boolean unique;</span>
+<span class="fc" id="L26">    private String defaultValue;</span>
+<span class="fc" id="L27">    private String checkConstraint;</span>
+<span class="fc" id="L28">    private String referencedTable;</span>
+<span class="fc" id="L29">    private String referencedColumn;</span>
+<span class="fc" id="L30">    private boolean foreignKey;</span>
+
+    /**
+     * Sets the column name based on the provided token.
+     *
+     * @param token the token containing column definition
+     */
+    public void setColumnNameFromToken(Token token) {
+<span class="pc bpc" id="L38" title="2 of 4 branches missed.">        if (token != null &amp;&amp; token.getText() != null) {</span>
+<span class="fc" id="L39">            String[] parts = token.getText().trim().split(&quot;\\s+&quot;);</span>
+<span class="pc bpc" id="L40" title="1 of 2 branches missed.">            this.columnName = parts.length &gt; 0 ? parts[0] : null;</span>
+<span class="fc" id="L41">            logger.debug(&quot;Set columnName: {}&quot;, this.columnName);</span>
+<span class="fc" id="L42">        } else {</span>
+<span class="nc" id="L43">            logger.warn(&quot;Token is null or does not contain text.&quot;);</span>
+        }
+<span class="fc" id="L45">    }</span>
+
+    /**
+     * Sets the SQL type, derives the Java type, and extracts the length from the provided token.
+     *
+     * @param token the token containing SQL type information
+     */
+    public void setSqlTypeFromToken(Token token) {
+<span class="pc bpc" id="L53" title="3 of 6 branches missed.">        if (token == null || token.getText() == null || token.getText().trim().isEmpty()) {</span>
+<span class="nc" id="L54">            logger.warn(&quot;Token is null or does not contain valid text for SQL type. Defaulting sqlType to 'String'.&quot;);</span>
+<span class="nc" id="L55">            this.sqlType = &quot;String&quot;;</span>
+<span class="nc" id="L56">            this.javaType = TypeMapper.mapToJavaType(this.sqlType); // Optional if mapping is needed</span>
+<span class="nc" id="L57">            return;</span>
+        }
+
+        try {
+<span class="fc" id="L61">            String text = token.getText().trim();</span>
+<span class="fc" id="L62">            int startIndex = text.indexOf(&quot; &quot;);</span>
+<span class="pc bpc" id="L63" title="1 of 2 branches missed.">            if (startIndex != -1) {</span>
+<span class="fc" id="L64">                String typeAndConstraints = text.substring(startIndex + 1).trim();</span>
+<span class="fc" id="L65">                int endIndex = typeAndConstraints.indexOf(&quot;)&quot;) + 1;</span>
+<span class="pc bpc" id="L66" title="1 of 2 branches missed.">                this.sqlType = endIndex &gt; 0 ? typeAndConstraints.substring(0, endIndex).trim()</span>
+<span class="pc" id="L67">                        : typeAndConstraints.split(&quot;\\s+&quot;)[0];</span>
+<span class="fc" id="L68">                this.javaType = TypeMapper.mapToJavaType(this.sqlType);</span>
+
+<span class="fc" id="L70">                logger.debug(&quot;Set sqlType: {}, javaType: {}&quot;, this.sqlType, this.javaType);</span>
+            }
+<span class="nc" id="L72">        } catch (Exception e) {</span>
+<span class="nc" id="L73">            logger.error(&quot;Error while extracting SQL type from token: {}&quot;, token.getText(), e);</span>
+            // Fallback to default sqlType
+<span class="nc" id="L75">            this.sqlType = &quot;String&quot;;</span>
+<span class="nc" id="L76">            this.javaType = TypeMapper.mapToJavaType(this.sqlType); // Optional if mapping is needed</span>
+<span class="fc" id="L77">        }</span>
+<span class="fc" id="L78">    }</span>
+
+
+
+    /**
+     * Determines if the column is a primary key based on the provided token.
+     *
+     * @param token the token containing column constraints
+     */
+    public void isPrimaryKey(Token token) {
+<span class="pc bpc" id="L88" title="2 of 4 branches missed.">        if (token != null &amp;&amp; token.getText() != null) {</span>
+<span class="fc" id="L89">            this.primaryKey = token.getText().toUpperCase().contains(&quot;PRIMARY KEY&quot;);</span>
+<span class="fc" id="L90">            logger.debug(&quot;Set primaryKey: {}&quot;, this.primaryKey);</span>
+        }
+<span class="fc" id="L92">    }</span>
+
+    /**
+     * Determines if the column is nullable based on the provided token.
+     *
+     * @param token the token containing column constraints
+     */
+    public void isNullable(Token token) {
+<span class="pc bpc" id="L100" title="2 of 4 branches missed.">        if (token != null &amp;&amp; token.getText() != null) {</span>
+<span class="pc bpc" id="L101" title="1 of 2 branches missed.">            this.nullable = !token.getText().toUpperCase().contains(&quot;NOT NULL&quot;);</span>
+<span class="fc" id="L102">            logger.debug(&quot;Set nullable: {}&quot;, this.nullable);</span>
+        }
+<span class="fc" id="L104">    }</span>
+
+    /**
+     * Determines if the column is unique based on the provided token.
+     *
+     * @param token the token containing column constraints
+     */
+    public void isUnique(Token token) {
+<span class="pc bpc" id="L112" title="2 of 4 branches missed.">        if (token != null &amp;&amp; token.getText() != null) {</span>
+<span class="fc" id="L113">            this.unique = token.getText().toUpperCase().contains(&quot;UNIQUE&quot;);</span>
+<span class="fc" id="L114">            logger.debug(&quot;Set unique: {}&quot;, this.unique);</span>
+        }
+<span class="fc" id="L116">    }</span>
+
+    /**
+     * Extracts and sets the default value from the provided token.
+     *
+     * @param token the token containing column constraints
+     */
+    public void isDefaultValue(Token token) {
+<span class="pc bpc" id="L124" title="3 of 6 branches missed.">        if (token != null &amp;&amp; token.getText() != null &amp;&amp; token.getText().contains(&quot;DEFAULT&quot;)) {</span>
+            try {
+<span class="fc" id="L126">                String[] parts = token.getText().split(&quot;DEFAULT&quot;);</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">                if (parts.length &gt; 1) {</span>
+<span class="fc" id="L128">                    this.defaultValue = parts[1].trim().split(&quot;\\s+&quot;)[0].replaceAll(&quot;[\&quot;']&quot;, &quot;&quot;);</span>
+<span class="fc" id="L129">                    logger.debug(&quot;Set defaultValue: {}&quot;, this.defaultValue);</span>
+                }
+<span class="nc" id="L131">            } catch (Exception e) {</span>
+<span class="nc" id="L132">                logger.warn(&quot;Error extracting default value from token: {}&quot;, token.getText(), e);</span>
+<span class="fc" id="L133">            }</span>
+        }
+<span class="fc" id="L135">    }</span>
+
+    /**
+     * Sets the check constraint from the provided token.
+     *
+     * @param token the token containing column constraints
+     */
+    public void setCheckConstraint(Token token) {
+<span class="pc bpc" id="L143" title="3 of 6 branches missed.">        if (token != null &amp;&amp; token.getText() != null &amp;&amp; token.getText().contains(&quot;CHECK&quot;)) {</span>
+<span class="fc" id="L144">            int start = token.getText().indexOf(&quot;CHECK&quot;) + 5;</span>
+<span class="fc" id="L145">            int openParen = token.getText().indexOf(&quot;(&quot;, start);</span>
+<span class="fc" id="L146">            int closeParen = token.getText().lastIndexOf(&quot;)&quot;);</span>
+<span class="pc bpc" id="L147" title="3 of 6 branches missed.">            if (openParen != -1 &amp;&amp; closeParen != -1 &amp;&amp; closeParen &gt; openParen) {</span>
+<span class="fc" id="L148">                this.checkConstraint = token.getText().substring(openParen, closeParen + 1).trim();</span>
+<span class="fc" id="L149">                logger.debug(&quot;Set checkConstraint: {}&quot;, this.checkConstraint);</span>
+            }
+        }
+<span class="fc" id="L152">    }</span>
+
+    /**
+     * Determines if the column is a foreign key and sets the referenced table and column.
+     *
+     * @param token the token containing foreign key details
+     */
+    public void isForeignKey(Token token) {
+<span class="pc bpc" id="L160" title="3 of 6 branches missed.">        if (token != null &amp;&amp; token.getText() != null &amp;&amp; token.getText().toUpperCase().contains(&quot;REFERENCES&quot;)) {</span>
+            try {
+<span class="fc" id="L162">                this.foreignKey = true;</span>
+<span class="fc" id="L163">                String text = token.getText();</span>
+<span class="fc" id="L164">                int refIndex = text.toUpperCase().indexOf(&quot;REFERENCES&quot;) + 10;</span>
+<span class="fc" id="L165">                String[] parts = text.substring(refIndex).trim().split(&quot;\\s+|\\(&quot;);</span>
+<span class="pc bpc" id="L166" title="1 of 2 branches missed.">                this.referencedTable = parts.length &gt; 0 ? parts[0] : null;</span>
+
+<span class="fc" id="L168">                int openParen = text.indexOf(&quot;(&quot;);</span>
+<span class="fc" id="L169">                int closeParen = text.indexOf(&quot;)&quot;);</span>
+<span class="pc bpc" id="L170" title="3 of 6 branches missed.">                if (openParen != -1 &amp;&amp; closeParen != -1 &amp;&amp; closeParen &gt; openParen) {</span>
+<span class="fc" id="L171">                    this.referencedColumn = text.substring(openParen + 1, closeParen).trim();</span>
+                }
+
+<span class="fc" id="L174">                logger.debug(&quot;Set foreignKey: {}, referencedTable: {}, referencedColumn: {}&quot;,</span>
+<span class="fc" id="L175">                        this.foreignKey, this.referencedTable, this.referencedColumn);</span>
+<span class="nc" id="L176">            } catch (Exception e) {</span>
+<span class="nc" id="L177">                logger.warn(&quot;Error extracting foreign key details from token: {}&quot;, token.getText(), e);</span>
+<span class="fc" id="L178">            }</span>
+        }
+<span class="fc" id="L180">    }</span>
+
+    /**
+     * Extracts the length of the column from the SQL type.
+     *
+     * @param sqlType the SQL type string
+     * @return the length of the column
+     */
+    public static int extractLength(String sqlType) {
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        if (sqlType == null) {</span>
+<span class="fc" id="L190">            return 255; // Default length</span>
+        }
+
+        try {
+<span class="pc bpc" id="L194" title="1 of 4 branches missed.">            if (sqlType.contains(&quot;(&quot;) &amp;&amp; sqlType.contains(&quot;)&quot;)) {</span>
+<span class="fc" id="L195">                String insideParentheses = sqlType.substring(sqlType.indexOf(&quot;(&quot;) + 1, sqlType.indexOf(&quot;)&quot;));</span>
+<span class="fc" id="L196">                String[] parts = insideParentheses.split(&quot;,&quot;);</span>
+<span class="fc" id="L197">                return Integer.parseInt(parts[0].trim());</span>
+            }
+<span class="fc" id="L199">        } catch (NumberFormatException e) {</span>
+<span class="fc" id="L200">            logger.warn(&quot;Invalid length format in SQL type '{}'. Defaulting to 255.&quot;, sqlType);</span>
+<span class="fc" id="L201">        }</span>
+<span class="fc" id="L202">        return 255; // Default length for all other cases</span>
+    }
+
+    /**
+     * Sets the referenced table from the provided token.
+     *
+     * @param token the token containing foreign key details
+     */
+    public void setReferencedTableFromToken(Token token) {
+<span class="pc bpc" id="L211" title="3 of 6 branches missed.">        if (token != null &amp;&amp; token.getText() != null &amp;&amp; token.getText().toUpperCase().contains(&quot;REFERENCES&quot;)) {</span>
+            try {
+<span class="fc" id="L213">                String text = token.getText();</span>
+<span class="fc" id="L214">                int refIndex = text.toUpperCase().indexOf(&quot;REFERENCES&quot;) + 10;</span>
+<span class="fc" id="L215">                String[] parts = text.substring(refIndex).trim().split(&quot;\\s+|\\(&quot;);</span>
+<span class="pc bpc" id="L216" title="1 of 2 branches missed.">                this.referencedTable = parts.length &gt; 0 ? parts[0] : null;</span>
+<span class="fc" id="L217">                logger.debug(&quot;Set referencedTable: {}&quot;, this.referencedTable);</span>
+<span class="nc" id="L218">            } catch (Exception e) {</span>
+<span class="nc" id="L219">                logger.warn(&quot;Error extracting referenced table from token: {}&quot;, token.getText(), e);</span>
+<span class="fc" id="L220">            }</span>
+        }
+<span class="fc" id="L222">    }</span>
+
+    /**
+     * Sets the referenced column from the provided token.
+     *
+     * @param token the token containing foreign key details
+     */
+    public void setReferencedColumnFromToken(Token token) {
+<span class="pc bpc" id="L230" title="3 of 6 branches missed.">        if (token != null &amp;&amp; token.getText() != null &amp;&amp; token.getText().toUpperCase().contains(&quot;REFERENCES&quot;)) {</span>
+            try {
+<span class="fc" id="L232">                String text = token.getText();</span>
+<span class="fc" id="L233">                int refIndex = text.toUpperCase().indexOf(&quot;REFERENCES&quot;) + 10;</span>
+<span class="fc" id="L234">                int openParen = text.indexOf(&quot;(&quot;, refIndex);</span>
+<span class="fc" id="L235">                int closeParen = text.indexOf(&quot;)&quot;, openParen);</span>
+<span class="pc bpc" id="L236" title="3 of 6 branches missed.">                if (openParen != -1 &amp;&amp; closeParen != -1 &amp;&amp; closeParen &gt; openParen) {</span>
+<span class="fc" id="L237">                    this.referencedColumn = text.substring(openParen + 1, closeParen).trim();</span>
+<span class="fc" id="L238">                    logger.debug(&quot;Set referencedColumn: {}&quot;, this.referencedColumn);</span>
+                }
+<span class="nc" id="L240">            } catch (Exception e) {</span>
+<span class="nc" id="L241">                logger.warn(&quot;Error extracting referenced column from token: {}&quot;, token.getText(), e);</span>
+<span class="fc" id="L242">            }</span>
+        }
+<span class="fc" id="L244">    }</span>
+
+    /**
+     * Converts the ColumnDefinition to a Column object.
+     *
+     * @return the converted Column object
+     */
+    /**
+     * Converts the ColumnDefinition to a Column object.
+     *
+     * @return the converted Column object
+     */
+    public Column toColumn() {
+<span class="fc" id="L257">        logger.info(&quot;Converting ColumnDefinition to Column object...&quot;);</span>
+<span class="fc" id="L258">        logger.debug(&quot;ColumnDefinition values: name={}, sqlType={}, length={}, primaryKey={}, nullable={}, defaultValue={}, unique={}, checkConstraint={}, referencedTable={}, referencedColumn={}&quot;,</span>
+<span class="fc" id="L259">                this.columnName, this.sqlType, this.length, this.primaryKey, this.nullable, this.defaultValue, this.unique, this.checkConstraint, this.referencedTable, this.referencedColumn);</span>
+
+<span class="pc bpc" id="L261" title="1 of 4 branches missed.">        if (sqlType == null || sqlType.isEmpty()) {</span>
+<span class="fc" id="L262">            throw new IllegalStateException(&quot;SQL type is not set in ColumnDefinition.&quot;);</span>
+        }
+
+        // Map SQL type to Java type
+<span class="fc" id="L266">        String mappedJavaType = TypeMapper.mapToJavaType(this.sqlType);</span>
+<span class="fc" id="L267">        logger.debug(&quot;Mapped SQL type '{}' to Java type '{}'&quot;, this.sqlType, mappedJavaType);</span>
+
+<span class="fc" id="L269">        Column column = new Column();</span>
+<span class="fc" id="L270">        column.setName(this.columnName);</span>
+<span class="fc" id="L271">        column.setType(mappedJavaType); // Χρήση του mapped Java type</span>
+<span class="fc" id="L272">        column.setLength(this.length); // Default length σε 0 αν είναι null</span>
+<span class="fc" id="L273">        column.setPrimaryKey(this.primaryKey); // Default σε false</span>
+<span class="fc" id="L274">        column.setNullable(this.nullable); // Default σε true</span>
+<span class="fc" id="L275">        column.setDefaultValue(this.defaultValue);</span>
+<span class="fc" id="L276">        column.setUnique(this.unique); // Default σε false</span>
+<span class="fc" id="L277">        column.setCheckConstraint(this.checkConstraint);</span>
+<span class="fc" id="L278">        column.setReferencedTable(this.referencedTable);</span>
+<span class="fc" id="L279">        column.setReferencedColumn(this.referencedColumn);</span>
+
+        // Log the final Column object
+<span class="fc" id="L282">        logger.debug(&quot;Converted Column: name={}, type={}, length={}, primaryKey={}, nullable={}, defaultValue={}, unique={}, checkConstraint={}, referencedTable={}, referencedColumn={}&quot;,</span>
+<span class="fc" id="L283">                column.getName(), column.getType(), column.getLength(), column.isPrimaryKey(), column.isNullable(), column.getDefaultValue(), column.isUnique(), column.getCheckConstraint(), column.getReferencedTable(), column.getReferencedColumn());</span>
+
+<span class="fc" id="L285">        return column;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

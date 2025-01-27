@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="el"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Table.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SQLDomainGen</a> &gt; <a href="index.source.html" class="el_package">com.sqldomaingen.model</a> &gt; <span class="el_source">Table.java</span></div><h1>Table.java</h1><pre class="source lang-java linenums">package com.sqldomaingen.model;
+
+import lombok.Getter;
+import lombok.Setter;
+import lombok.NoArgsConstructor;
+import lombok.AllArgsConstructor;
+import lombok.ToString;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+<span class="fc" id="L13">@Setter</span>
+<span class="fc" id="L14">@NoArgsConstructor</span>
+<span class="nc" id="L15">@AllArgsConstructor</span>
+@ToString
+public class Table {
+<span class="fc" id="L18">    private String name;</span>
+<span class="pc" id="L19">    private List&lt;Column&gt; columns = new ArrayList&lt;&gt;();</span>
+<span class="pc" id="L20">    private List&lt;String&gt; constraints = new ArrayList&lt;&gt;();</span>
+
+    /**
+     * Προσθέτει constraints στον πίνακα.
+     *
+     * @param constraints η λίστα των constraints που θα προστεθούν.
+     */
+    public void addConstraints(List&lt;String&gt; constraints) {
+<span class="pc bpc" id="L28" title="1 of 2 branches missed.">        if (constraints != null) {</span>
+<span class="fc" id="L29">            this.constraints.addAll(constraints);</span>
+        }
+<span class="fc" id="L31">    }</span>
+
+    /**
+     * Προσθέτει μία στήλη στον πίνακα.
+     *
+     * @param column το αντικείμενο Column που θα προστεθεί.
+     */
+    public void addColumn(Column column) {
+<span class="pc bpc" id="L39" title="1 of 2 branches missed.">        if (column != null) {</span>
+<span class="fc" id="L40">            this.columns.add(column);</span>
+        }
+<span class="fc" id="L42">    }</span>
+
+    /**
+     * Επιστρέφει μια περιγραφή του πίνακα με τις στήλες και τα constraints.
+     */
+    @Override
+    public String toString() {
+<span class="nc" id="L49">        return &quot;Table{name='&quot; + name + '\'' +</span>
+                &quot;, columns=&quot; + columns +
+                &quot;, constraints=&quot; + constraints +
+                '}';
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="el"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>SQLParser.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SQLDomainGen</a> &gt; <a href="index.source.html" class="el_package">com.sqldomaingen.parser</a> &gt; <span class="el_source">SQLParser.java</span></div><h1>SQLParser.java</h1><pre class="source lang-java linenums">package com.sqldomaingen.parser;
+
+import lombok.Getter;
+import lombok.Setter;
+import org.antlr.v4.runtime.*;
+import org.antlr.v4.runtime.tree.ParseTree;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+import lombok.AllArgsConstructor;
+import lombok.NoArgsConstructor;
+
+/**
+ * Κλάση για την ανάλυση SQL scripts.
+ */
+@Getter
+<span class="nc" id="L17">@Setter</span>
+@Component
+<span class="fc" id="L19">@AllArgsConstructor</span>
+<span class="fc" id="L20">@NoArgsConstructor</span>
+public class SQLParser {
+
+<span class="nc" id="L23">    private String sqlContent;</span>
+
+<span class="fc" id="L25">    private static final Logger logger = LoggerFactory.getLogger(SQLParser.class);</span>
+
+    // Σταθερό μήνυμα για την επικύρωση του περιεχομένου SQL
+    private static final String EMPTY_SQL_ERROR_MESSAGE = &quot;Το περιεχόμενο του SQL είναι κενό ή δεν έχει οριστεί.&quot;;
+
+    /**
+     * Δημιουργεί έναν SQLParser.
+     *
+     * @return Ένας έτοιμος parser για το SQL περιεχόμενο.
+     * @throws IllegalArgumentException Αν το SQL περιεχόμενο είναι κενό ή null.
+     */
+    public PostgreSQLParser createParser() {
+<span class="nc bnc" id="L37" title="All 2 branches missed.">        if (!isSQLContentValid()) {</span>
+<span class="nc" id="L38">            logger.error(EMPTY_SQL_ERROR_MESSAGE);</span>
+<span class="nc" id="L39">            throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);</span>
+        }
+
+<span class="nc" id="L42">        PostgreSQLLexer lexer = new PostgreSQLLexer(CharStreams.fromString(sqlContent));</span>
+<span class="nc" id="L43">        CommonTokenStream tokens = new CommonTokenStream(lexer);</span>
+
+<span class="nc" id="L45">        tokens.fill();</span>
+<span class="nc bnc" id="L46" title="All 2 branches missed.">        for (Token token : tokens.getTokens()) {</span>
+<span class="nc" id="L47">            logger.debug(&quot;Token: '{}' -&gt; Type: {}&quot;, token.getText(), lexer.getVocabulary().getSymbolicName(token.getType()));</span>
+<span class="nc" id="L48">        }</span>
+
+<span class="nc" id="L50">        return new PostgreSQLParser(tokens);</span>
+    }
+
+    /**
+     * Δημιουργεί ένα ParseTree από το SQL script.
+     *
+     * @return Το ParseTree που παράγεται από τον ANTLR parser.
+     */
+    public ParseTree parseTreeFromSQL() {
+<span class="nc bnc" id="L59" title="All 2 branches missed.">        if (!isSQLContentValid()) {</span>
+<span class="nc" id="L60">            logger.error(&quot;Cannot generate ParseTree: SQL content is invalid.&quot;);</span>
+<span class="nc" id="L61">            throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);</span>
+        }
+
+<span class="nc" id="L64">        PostgreSQLParser parser = createParser();</span>
+<span class="nc" id="L65">        ParseTree tree = parser.sqlScript();</span>
+
+        // Logging για το ParseTree
+<span class="nc" id="L68">        logger.info(&quot;ParseTree generated: {}&quot;, tree.toStringTree(parser));</span>
+
+<span class="nc" id="L70">        return tree;</span>
+    }
+
+    /**
+     * Αναλύει το SQL script και επιστρέφει ένα ConstraintContext.
+     * Ελέγχει αν υπάρχει λάθος σύνταξης στο δέντρο και διακόπτει αν εντοπιστεί.
+     *
+     * @return Το ConstraintContext από τον ANTLR parser.
+     * @throws IllegalArgumentException Αν το SQL περιέχει σφάλματα σύνταξης.
+     */
+    public PostgreSQLParser.ConstraintContext parseConstraint() {
+<span class="nc bnc" id="L81" title="All 2 branches missed.">        if (!isSQLContentValid()) {</span>
+<span class="nc" id="L82">            logger.error(&quot;Cannot parse constraint: SQL content is invalid.&quot;);</span>
+<span class="nc" id="L83">            throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);</span>
+        }
+
+<span class="nc" id="L86">        PostgreSQLParser parser = createParser();</span>
+
+        // Προσθήκη Custom Error Listener
+<span class="nc" id="L89">        parser.removeErrorListeners();</span>
+<span class="nc" id="L90">        parser.addErrorListener(new BaseErrorListener() {</span>
+            @Override
+            public void syntaxError(Recognizer&lt;?, ?&gt; recognizer, Object offendingSymbol,
+                                    int line, int charPositionInLine, String msg,
+                                    RecognitionException e) {
+<span class="nc" id="L95">                throw new IllegalArgumentException(&quot;Σφάλμα σύνταξης στη γραμμή &quot; + line + &quot;, θέση &quot; + charPositionInLine + &quot;: &quot; + msg);</span>
+            }
+        });
+
+<span class="nc" id="L99">        PostgreSQLParser.ConstraintContext context = parser.constraint();</span>
+
+        // Έλεγχος για σφάλματα σύνταξης στο ParseTree
+<span class="nc bnc" id="L102" title="All 2 branches missed.">        if (context.exception != null) {</span>
+<span class="nc" id="L103">            logger.error(&quot;Σφάλμα: Το ConstraintContext περιέχει σφάλματα.&quot;);</span>
+<span class="nc" id="L104">            throw new IllegalArgumentException(&quot;Το SQL περιέχει σφάλματα και δεν μπορεί να αναλυθεί.&quot;);</span>
+        }
+
+<span class="nc" id="L107">        logger.info(&quot;Το ConstraintContext δημιουργήθηκε επιτυχώς: {}&quot;, context.getText());</span>
+<span class="nc" id="L108">        return context;</span>
+    }
+
+    /**
+     * Αναλύει το περιεχόμενο του SQL script και επιστρέφει το TokenStream.
+     *
+     * @return Το TokenStream που παράγεται από τον ANTLR parser.
+     * @throws IllegalArgumentException Αν το SQL περιεχόμενο είναι κενό ή null.
+     */
+    public TokenStream parseSQL() {
+<span class="pc bpc" id="L118" title="1 of 2 branches missed.">        if (!isSQLContentValid()) {</span>
+<span class="nc" id="L119">            logger.error(&quot;Cannot generate TokenStream: SQL content is invalid.&quot;);</span>
+<span class="nc" id="L120">            throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);</span>
+        }
+
+        // Δημιουργία lexer και token stream
+<span class="fc" id="L124">        PostgreSQLLexer lexer = new PostgreSQLLexer(CharStreams.fromString(sqlContent));</span>
+<span class="fc" id="L125">        CommonTokenStream tokens = new CommonTokenStream(lexer);</span>
+
+        // Logging για τα tokens
+<span class="fc" id="L128">        tokens.fill();</span>
+<span class="fc bfc" id="L129" title="All 2 branches covered.">        for (Token token : tokens.getTokens()) {</span>
+<span class="fc" id="L130">            logger.debug(&quot;Token: '{}' -&gt; Type: {}&quot;, token.getText(), lexer.getVocabulary().getSymbolicName(token.getType()));</span>
+<span class="fc" id="L131">        }</span>
+
+<span class="fc" id="L133">        logger.info(&quot;TokenStream generated successfully for SQL content.&quot;);</span>
+<span class="fc" id="L134">        return tokens;</span>
+    }
+    public boolean isSQLContentValid() {
+<span class="pc bpc" id="L137" title="2 of 4 branches missed.">        return sqlContent != null &amp;&amp; !sqlContent.isEmpty();</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

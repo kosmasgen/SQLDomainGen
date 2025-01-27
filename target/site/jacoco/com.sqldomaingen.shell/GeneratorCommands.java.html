@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="el"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>GeneratorCommands.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SQLDomainGen</a> &gt; <a href="index.source.html" class="el_package">com.sqldomaingen.shell</a> &gt; <span class="el_source">GeneratorCommands.java</span></div><h1>GeneratorCommands.java</h1><pre class="source lang-java linenums">package com.sqldomaingen.shell;
+
+import com.sqldomaingen.parser.SQLParser;
+import com.sqldomaingen.generator.EntityGenerator;
+import com.sqldomaingen.parser.CreateTableDefinition;
+import com.sqldomaingen.model.Table;
+import lombok.NoArgsConstructor;
+import org.antlr.v4.runtime.TokenStream;
+import org.springframework.shell.standard.ShellComponent;
+import org.springframework.shell.standard.ShellMethod;
+import org.springframework.shell.standard.ShellOption;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import com.sqldomaingen.parser.ColumnDefinition;
+import com.sqldomaingen.parser.PostgreSQLParser;
+import java.util.ArrayList;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.List;
+
+/**
+ * Κλάση για τη διαχείριση εντολών CLI.
+ */
+<span class="fc" id="L27">@NoArgsConstructor</span>
+@ShellComponent
+public class GeneratorCommands {
+
+<span class="fc" id="L31">    public static final Logger logger = LoggerFactory.getLogger(GeneratorCommands.class);</span>
+<span class="fc" id="L32">    public final EntityGenerator entityGenerator = new EntityGenerator();</span>
+
+    /**
+     * Δημιουργεί Java domain entities από SQL αρχεία.
+     *
+     * @param inputFile  Το μονοπάτι του SQL αρχείου.
+     * @param outputDir   Ο κατάλογος όπου θα αποθηκευτούν οι παραγόμενες entities.
+     * @param packageName Το όνομα του package για τις παραγόμενες entities.
+     * @param overwrite   Αντικατάσταση υπαρχόντων αρχείων.
+     * @param useBuilder  Χρήση builder pattern.
+     * @return Μήνυμα επιτυχίας ή αποτυχίας.
+     */
+    @ShellMethod(&quot;Generate Java domain entities from a SQL file.&quot;)
+    public String generateEntity(
+            @ShellOption(value = {&quot;--input-file&quot;, &quot;-i&quot;}, help = &quot;Path to the SQL file&quot;) String inputFile,
+            @ShellOption(value = {&quot;--output-dir&quot;, &quot;-o&quot;}, help = &quot;Output directory for the generated entities&quot;) String outputDir,
+            @ShellOption(value = {&quot;--package-name&quot;, &quot;-p&quot;}, help = &quot;Package name for the generated entities&quot;) String packageName,
+            @ShellOption(value = {&quot;--overwrite&quot;, &quot;-w&quot;}, defaultValue = &quot;false&quot;, help = &quot;Overwrite existing files&quot;) boolean overwrite,
+            @ShellOption(value = {&quot;--use-builder&quot;, &quot;-b&quot;}, defaultValue = &quot;false&quot;, help = &quot;Enable builder pattern&quot;) boolean useBuilder
+    ) {
+        try {
+<span class="fc" id="L53">            validateOutputDirectory(outputDir);</span>
+
+<span class="fc" id="L55">            List&lt;Table&gt; tables = processSQLFile(inputFile);</span>
+
+<span class="fc bfc" id="L57" title="All 2 branches covered.">            if (tables.isEmpty()) {</span>
+<span class="fc" id="L58">                logger.warn(&quot;No tables were generated from the SQL file.&quot;);</span>
+<span class="fc" id="L59">                return &quot;No tables were generated from the SQL file.&quot;;</span>
+            }
+
+<span class="fc" id="L62">            logger.info(&quot;Starting entity generation...&quot;);</span>
+<span class="fc" id="L63">            entityGenerator.generate(tables, outputDir, packageName, overwrite, useBuilder);</span>
+<span class="fc" id="L64">            logger.info(&quot;Entity generation completed successfully. Output directory: {}&quot;, outputDir);</span>
+
+<span class="fc" id="L66">            return &quot;Entity generation completed successfully.&quot;;</span>
+<span class="fc" id="L67">        } catch (IOException e) {</span>
+<span class="fc" id="L68">            logger.error(&quot;Error during entity generation&quot;, e);</span>
+<span class="fc" id="L69">            return &quot;Error during entity generation: &quot; + e.getMessage();</span>
+        }
+    }
+
+
+    public void validateOutputDirectory(String outputDirectory)throws IOException {
+<span class="pc bpc" id="L75" title="1 of 4 branches missed.">        if (outputDirectory == null || outputDirectory.trim().isEmpty()) {</span>
+<span class="fc" id="L76">            throw new IllegalArgumentException(&quot;Output directory cannot be null or empty.&quot;);</span>
+        }
+
+<span class="fc" id="L79">        Path path = Paths.get(outputDirectory); // Εδώ μπορεί να προκληθεί NullPointerException αν το `outputDirectory` είναι null.</span>
+<span class="pc bpc" id="L80" title="1 of 2 branches missed.">        if (!Files.exists(path)) {</span>
+            try {
+<span class="nc" id="L82">                Files.createDirectories(path);</span>
+<span class="nc" id="L83">            } catch (IOException e) {</span>
+<span class="nc" id="L84">                throw new RuntimeException(&quot;Failed to create output directory: &quot; + outputDirectory, e);</span>
+<span class="nc" id="L85">            }</span>
+        }
+<span class="fc" id="L87">    }</span>
+
+
+    /**
+     * Επεξεργάζεται το SQL αρχείο.
+     *
+     * @param inputFile Το μονοπάτι του SQL αρχείου.
+     * @return Λίστα με αντικείμενα Table.
+     * @throws IOException Αν αποτύχει η επεξεργασία.
+     */
+    public List&lt;Table&gt; processSQLFile(String inputFile) throws IOException {
+<span class="pc bpc" id="L98" title="1 of 4 branches missed.">        if (inputFile == null || inputFile.isEmpty()) {</span>
+<span class="fc" id="L99">            logger.error(&quot;Input SQL file is null or empty.&quot;);</span>
+<span class="fc" id="L100">            throw new IllegalArgumentException(&quot;Input SQL file cannot be null or empty.&quot;);</span>
+        }
+
+<span class="fc" id="L103">        logger.info(&quot;Processing SQL file: {}&quot;, inputFile);</span>
+<span class="fc" id="L104">        Path filePath = Paths.get(inputFile);</span>
+<span class="fc bfc" id="L105" title="All 2 branches covered.">        if (!Files.exists(filePath)) {</span>
+<span class="fc" id="L106">            logger.warn(&quot;SQL file does not exist: {}&quot;, inputFile);</span>
+<span class="fc" id="L107">            return List.of();</span>
+        }
+
+<span class="fc" id="L110">        String sqlContent = Files.readString(filePath);</span>
+<span class="fc" id="L111">        logger.debug(&quot;SQL content from file '{}': {}&quot;, inputFile, sqlContent);</span>
+
+<span class="fc" id="L113">        return parseSQLToTables(sqlContent);</span>
+    }
+
+
+    /**
+     * Αναλύει το SQL περιεχόμενο και δημιουργεί αντικείμενο Table.
+     *
+     * @param sqlContent Το περιεχόμενο του SQL αρχείου.
+     * @return Το αντικείμενο Table ή null αν δεν μπορεί να αναλυθεί.
+     */
+    public List&lt;Table&gt; parseSQLToTables(String sqlContent) {
+        try {
+<span class="fc" id="L125">            SQLParser sqlParserInstance = new SQLParser(sqlContent);</span>
+
+            // Παράγουμε το TokenStream από τον SQLParser
+<span class="fc" id="L128">            TokenStream tokenStream = sqlParserInstance.parseSQL();</span>
+
+            // Δημιουργούμε έναν PostgreSQLParser από το TokenStream
+<span class="fc" id="L131">            PostgreSQLParser parser = new PostgreSQLParser(tokenStream);</span>
+
+            // Παίρνουμε το SqlScriptContext
+<span class="fc" id="L134">            PostgreSQLParser.SqlScriptContext context = parser.sqlScript();</span>
+
+<span class="fc" id="L136">            List&lt;Table&gt; tables = new ArrayList&lt;&gt;();</span>
+<span class="fc bfc" id="L137" title="All 2 branches covered.">            for (PostgreSQLParser.CreateTableStatementContext createContext : context.createTableStatement()) {</span>
+<span class="fc" id="L138">                CreateTableDefinition createTableDefinition = new CreateTableDefinition();</span>
+<span class="fc" id="L139">                createTableDefinition.processCreateTable(createContext);</span>
+
+<span class="fc" id="L141">                Table table = new Table();</span>
+<span class="fc" id="L142">                table.setName(createTableDefinition.getTableName());</span>
+<span class="fc" id="L143">                table.setColumns(</span>
+<span class="fc" id="L144">                        createTableDefinition.getColumnDefinitions()</span>
+<span class="fc" id="L145">                                .stream()</span>
+<span class="fc" id="L146">                                .map(ColumnDefinition::toColumn)</span>
+<span class="fc" id="L147">                                .toList()</span>
+                );
+<span class="fc" id="L149">                table.setConstraints(createTableDefinition.getConstraints());</span>
+<span class="fc" id="L150">                tables.add(table);</span>
+<span class="fc" id="L151">            }</span>
+
+<span class="fc" id="L153">            return tables;</span>
+<span class="nc" id="L154">        } catch (Exception e) {</span>
+<span class="nc" id="L155">            logger.error(&quot;Error parsing SQL content&quot;, e);</span>
+<span class="nc" id="L156">            return List.of();</span>
+        }
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

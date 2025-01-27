@@ -1,0 +1,16 @@
+com\sqldomaingen\ColumnDefinitionTest.class
+com\sqldomaingen\RelationshipTest.class
+com\sqldomaingen\TableTest.class
+com\sqldomaingen\GrammarTest$1.class
+com\sqldomaingen\ColumnTest.class
+com\sqldomaingen\TypeMapperTest.class
+com\sqldomaingen\CreateTableDefinitionTest.class
+com\sqldomaingen\NamingConverterTest.class
+com\sqldomaingen\SQLDomainGenIntegrationTest.class
+com\sqldomaingen\GrammarTest.class
+com\sqldomaingen\SQLParserTest.class
+com\sqldomaingen\EntityGeneratorTest.class
+com\sqldomaingen\RelationshipResolverTest.class
+com\sqldomaingen\GrammarRelationshipTest.class
+com\sqldomaingen\SQLDomainGenApplicationTest.class
+com\sqldomaingen\GeneratorCommandsTest.class

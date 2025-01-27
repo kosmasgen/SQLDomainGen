@@ -1,0 +1,27 @@
+1736370721537:generate-entity --input-file=path/to/schema.sql --output-dir=path/to/output --package=com.example.entitiesgenerate-entity --input-file=src/main/resources/schema.sql --output-dir=output --package=com.example.entities
+1736370851002:generate-entity --inputFile=src/main/resources/schema.sql --outputDir=output --basePackage=com.example.entities
+1737211607375:exit
+1737228726652:help
+1737283919053:generate-entity --input-files=input/test_script.sql --output-dir=output/entities --package=com.example.domain --overwrite=true --useBuilder=false
+1737284012854:generate-entity --inputFiles=input/test_script.sql --outputDir=output/entities --packageName=com.example.domain --overwrite=true --useBuilder=false
+1737284262024:generate-entity --inputFiles input/test_script.sql --outputDir output/entities --packageName com.example.domain --overwrite true --useBuilder false
+1737293409667:generate-entity --input-files /path/to/file.sql --output-dir /path/to/output --package-name com.example.entities --overwrite true --use-builder false
+1737293436128:generate-entity --input-files C:/projects/sql/schema.sql --output-dir C:/projects/entities --package-name com.sqldomain.entities --overwrite true --use-builder false
+1737293522722:generate-entity --input-files input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1737293584370:shell:>generate-entity input/test_script.sql output/entities com.example.entities true false
+1737293670725:generate-entity input/test_script.sql output/entities com.example.entities
+1737296367867:shell:>generate-entity --input-files input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1737296392968:shell:>generate-entity --input-files input/test_script.sql --output-dir output/entities --package-name com.example.entitie
+1737296494957:generate-entity --input-files input/test_script.sql --output-dir output/entities --package-name com.example.entities
+1737296532475:generate-entity --input-files input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1737310785696:shell:>generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1737310807462:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1737311604982:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities
+1737311632664:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1737314167984:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true
+1737576561238:generateEntities --input ./input/test_script.sql --output ./output/entities --package com.example.entities
+1737576818475:generate-entity --input-file=input/test_script.sql --output-dir=output/entities --package-name=com.example.entities --overwrite=false --use-builder=false
+1737576864507:generate-entity --input-file=input/test_script.sql --output-dir=output/entities --package-name=com.example.entities
+1737577091131:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite false --use-builder false
+1737874667357:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities
+1737885336049:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite false --use-builder false

@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="el"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>Column.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SQLDomainGen</a> &gt; <a href="index.source.html" class="el_package">com.sqldomaingen.model</a> &gt; <span class="el_source">Column.java</span></div><h1>Column.java</h1><pre class="source lang-java linenums">package com.sqldomaingen.model;
+
+import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+<span class="pc" id="L9">@Setter</span>
+<span class="fc" id="L10">@NoArgsConstructor</span>
+
+@ToString
+public class Column {
+
+<span class="fc" id="L15">    private String name;</span>
+<span class="fc" id="L16">    private String type;</span>
+<span class="fc" id="L17">    private int length;</span>
+<span class="nc" id="L18">    private boolean isIdentity;</span>
+<span class="nc" id="L19">    private String identityGeneration;</span>
+<span class="nc" id="L20">    private String sequenceName;</span>
+<span class="pc" id="L21">    private List&lt;String&gt; constraints = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L22">    private String defaultValue;</span>
+<span class="fc" id="L23">    private boolean primaryKey;</span>
+<span class="fc" id="L24">    private boolean unique;</span>
+<span class="fc" id="L25">    private boolean nullable;</span>
+<span class="nc" id="L26">    private boolean isDefaultExpression;</span>
+<span class="nc" id="L27">    private String defaultExpression;</span>
+<span class="fc" id="L28">    private String checkConstraint;</span>
+<span class="fc" id="L29">    private String relationshipType;</span>
+<span class="nc" id="L30">    private String targetTable;</span>
+<span class="fc" id="L31">    private String joinTableName;</span>
+<span class="fc" id="L32">    private String inverseJoinColumn;</span>
+<span class="nc" id="L33">    private boolean isRelationship;</span>
+<span class="nc" id="L34">    private String onUpdate;</span>
+<span class="nc" id="L35">    private String onDelete;</span>
+<span class="nc" id="L36">    private String generatedAs;</span>
+<span class="fc" id="L37">    private String javaType;</span>
+<span class="fc" id="L38">    private boolean foreignKey;</span>
+<span class="nc" id="L39">    private String formattedName;</span>
+
+    // Νέα πεδία για foreign key
+<span class="fc" id="L42">    private String referencedTable; // Όνομα πίνακα αναφοράς</span>
+<span class="fc" id="L43">    private String referencedColumn; // Όνομα στήλης αναφοράς</span>
+
+
+    @Override
+    public String toString() {
+<span class="fc" id="L48">        return &quot;Column{&quot; +</span>
+                &quot;name='&quot; + name + '\'' +
+                &quot;, type='&quot; + javaType + '\'' +
+                &quot;, length=&quot; + length +
+                &quot;, primaryKey=&quot; + primaryKey +
+                &quot;, nullable=&quot; + nullable +
+                &quot;, defaultValue='&quot; + defaultValue + '\'' +
+                &quot;, unique=&quot; + unique +
+                '}';
+    }
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>
