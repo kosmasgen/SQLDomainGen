@@ -8,44 +8,41 @@ import java.util.List;
 @Getter
 <span class="pc" id="L9">@Setter</span>
 <span class="fc" id="L10">@NoArgsConstructor</span>
-
 @ToString
 public class Column {
 
-<span class="fc" id="L15">    private String name;</span>
-<span class="fc" id="L16">    private String type;</span>
-<span class="fc" id="L17">    private int length;</span>
-<span class="nc" id="L18">    private boolean isIdentity;</span>
-<span class="nc" id="L19">    private String identityGeneration;</span>
-<span class="nc" id="L20">    private String sequenceName;</span>
-<span class="pc" id="L21">    private List&lt;String&gt; constraints = new ArrayList&lt;&gt;();</span>
-<span class="fc" id="L22">    private String defaultValue;</span>
-<span class="fc" id="L23">    private boolean primaryKey;</span>
-<span class="fc" id="L24">    private boolean unique;</span>
-<span class="fc" id="L25">    private boolean nullable;</span>
-<span class="nc" id="L26">    private boolean isDefaultExpression;</span>
-<span class="nc" id="L27">    private String defaultExpression;</span>
-<span class="fc" id="L28">    private String checkConstraint;</span>
-<span class="fc" id="L29">    private String relationshipType;</span>
-<span class="nc" id="L30">    private String targetTable;</span>
-<span class="fc" id="L31">    private String joinTableName;</span>
-<span class="fc" id="L32">    private String inverseJoinColumn;</span>
-<span class="nc" id="L33">    private boolean isRelationship;</span>
-<span class="nc" id="L34">    private String onUpdate;</span>
-<span class="nc" id="L35">    private String onDelete;</span>
-<span class="nc" id="L36">    private String generatedAs;</span>
-<span class="fc" id="L37">    private String javaType;</span>
-<span class="fc" id="L38">    private boolean foreignKey;</span>
-<span class="nc" id="L39">    private String formattedName;</span>
-
-    // Νέα πεδία για foreign key
-<span class="fc" id="L42">    private String referencedTable; // Όνομα πίνακα αναφοράς</span>
-<span class="fc" id="L43">    private String referencedColumn; // Όνομα στήλης αναφοράς</span>
+<span class="fc" id="L14">    private String name;</span>
+<span class="nc" id="L15">    private String sqlType; // SQL Type (TEST)</span>
+<span class="fc" id="L16">    private int length;</span>
+<span class="nc" id="L17">    private boolean isIdentity;</span>
+<span class="nc" id="L18">    private String identityGeneration;</span>
+<span class="nc" id="L19">    private String sequenceName;</span>
+<span class="pc" id="L20">    private List&lt;String&gt; constraints = new ArrayList&lt;&gt;();</span>
+<span class="fc" id="L21">    private String defaultValue;</span>
+<span class="fc" id="L22">    private boolean primaryKey;</span>
+<span class="fc" id="L23">    private boolean unique;</span>
+<span class="fc" id="L24">    private boolean nullable;</span>
+<span class="nc" id="L25">    private boolean isDefaultExpression;</span>
+<span class="nc" id="L26">    private String defaultExpression;</span>
+<span class="fc" id="L27">    private String checkConstraint;</span>
+<span class="fc" id="L28">    private String relationshipType;</span>
+<span class="nc" id="L29">    private String targetTable;</span>
+<span class="fc" id="L30">    private String joinTableName;</span>
+<span class="fc" id="L31">    private String inverseJoinColumn;</span>
+<span class="nc" id="L32">    private boolean isRelationship;</span>
+<span class="nc" id="L33">    private String onUpdate;</span>
+<span class="nc" id="L34">    private String onDelete;</span>
+<span class="nc" id="L35">    private String generatedAs;</span>
+<span class="fc" id="L36">    private String javaType;</span>
+<span class="fc" id="L37">    private boolean foreignKey;</span>
+<span class="nc" id="L38">    private String formattedName;</span>
+<span class="fc" id="L39">    private String referencedTable;</span>
+<span class="fc" id="L40">    private String referencedColumn;</span>
 
 
     @Override
     public String toString() {
-<span class="fc" id="L48">        return &quot;Column{&quot; +</span>
+<span class="fc" id="L45">        return &quot;Column{&quot; +</span>
                 &quot;name='&quot; + name + '\'' +
                 &quot;, type='&quot; + javaType + '\'' +
                 &quot;, length=&quot; + length +

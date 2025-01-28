@@ -1,23 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="el"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EntityGenerator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SQLDomainGen</a> &gt; <a href="index.source.html" class="el_package">com.sqldomaingen.generator</a> &gt; <span class="el_source">EntityGenerator.java</span></div><h1>EntityGenerator.java</h1><pre class="source lang-java linenums">package com.sqldomaingen.generator;
-
+import com.sqldomaingen.model.Relationship;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.NamingConverter;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
+import com.sqldomaingen.model.Column;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
+import java.util.Map;
 
-<span class="fc" id="L16">@NoArgsConstructor</span>
+<span class="fc" id="L17">@NoArgsConstructor</span>
 @Component
 public class EntityGenerator {
 
-<span class="fc" id="L20">    private static final Logger logger = LoggerFactory.getLogger(EntityGenerator.class);</span>
+<span class="fc" id="L21">    private static final Logger logger = LoggerFactory.getLogger(EntityGenerator.class);</span>
 
     /**
      * Δημιουργεί Java entities από πίνακες.
@@ -29,39 +30,39 @@ public class EntityGenerator {
      * @param useBuilder  Αν θα προστεθεί builder pattern.
      */
     public void generate(List&lt;Table&gt; tables, String outputDir, String packageName, boolean overwrite, boolean useBuilder) {
-<span class="fc" id="L32">        logger.info(&quot;Starting entity generation...&quot;);</span>
+<span class="fc" id="L33">        logger.info(&quot;Starting entity generation...&quot;);</span>
 
-<span class="fc" id="L34">        logger.debug(&quot;Parameters - outputDir: {}, packageName: {}, overwrite: {}, useBuilder: {}&quot;,</span>
-<span class="fc" id="L35">                outputDir, packageName, overwrite, useBuilder);</span>
+<span class="fc" id="L35">        logger.debug(&quot;Parameters - outputDir: {}, packageName: {}, overwrite: {}, useBuilder: {}&quot;,</span>
+<span class="fc" id="L36">                outputDir, packageName, overwrite, useBuilder);</span>
 
-<span class="fc bfc" id="L37" title="All 2 branches covered.">        for (Table table : tables) {</span>
-<span class="fc" id="L38">            logger.debug(&quot;Processing table: {}&quot;, table.getName());</span>
+<span class="fc bfc" id="L38" title="All 2 branches covered.">        for (Table table : tables) {</span>
+<span class="fc" id="L39">            logger.debug(&quot;Processing table: {}&quot;, table.getName());</span>
 
             // Δημιουργία περιεχομένου entity
-<span class="fc" id="L41">            String entityContent = createEntityContent(table, packageName, useBuilder);</span>
-<span class="fc" id="L42">            logger.debug(&quot;Generated entity content for table '{}':\n{}&quot;, table.getName(), entityContent);</span>
+<span class="fc" id="L42">            String entityContent = createEntityContent(table, packageName, useBuilder);</span>
+<span class="fc" id="L43">            logger.debug(&quot;Generated entity content for table '{}':\n{}&quot;, table.getName(), entityContent);</span>
 
             // Ορισμός μονοπατιού εξόδου
-<span class="fc" id="L45">            Path outputPath = Paths.get(outputDir, NamingConverter.toPascalCase(table.getName()) + &quot;.java&quot;);</span>
-<span class="fc" id="L46">            String fileName = outputPath.toString();</span>
+<span class="fc" id="L46">            Path outputPath = Paths.get(outputDir, NamingConverter.toPascalCase(table.getName()) + &quot;.java&quot;);</span>
+<span class="fc" id="L47">            String fileName = outputPath.toString();</span>
 
             // Έλεγχος αν το αρχείο υπάρχει και δεν πρέπει να αντικατασταθεί
-<span class="pc bpc" id="L49" title="1 of 4 branches missed.">            if (!overwrite &amp;&amp; outputPath.toFile().exists()) {</span>
-<span class="fc" id="L50">                logger.warn(&quot;File already exists, skipping: {}&quot;, fileName);</span>
-<span class="fc" id="L51">                continue;</span>
+<span class="pc bpc" id="L50" title="1 of 4 branches missed.">            if (!overwrite &amp;&amp; outputPath.toFile().exists()) {</span>
+<span class="fc" id="L51">                logger.warn(&quot;File already exists, skipping: {}&quot;, fileName);</span>
+<span class="fc" id="L52">                continue;</span>
             }
 
             // Εγγραφή στο αρχείο με χειρισμό εξαίρεσης
             try {
-<span class="fc" id="L56">                writeToFile(fileName, entityContent);</span>
-<span class="fc" id="L57">                logger.info(&quot;Generated entity for table: {}&quot;, table.getName());</span>
-<span class="nc" id="L58">            } catch (IOException e) {</span>
-<span class="nc" id="L59">                logger.error(&quot;Failed to write entity file for table: {}&quot;, table.getName(), e);</span>
-<span class="fc" id="L60">            }</span>
-<span class="fc" id="L61">        }</span>
+<span class="fc" id="L57">                writeToFile(fileName, entityContent);</span>
+<span class="fc" id="L58">                logger.info(&quot;Generated entity for table: {}&quot;, table.getName());</span>
+<span class="nc" id="L59">            } catch (IOException e) {</span>
+<span class="nc" id="L60">                logger.error(&quot;Failed to write entity file for table: {}&quot;, table.getName(), e);</span>
+<span class="fc" id="L61">            }</span>
+<span class="fc" id="L62">        }</span>
 
-<span class="fc" id="L63">        logger.info(&quot;Entity generation complete. Output directory: {}&quot;, outputDir);</span>
-<span class="fc" id="L64">    }</span>
+<span class="fc" id="L64">        logger.info(&quot;Entity generation complete. Output directory: {}&quot;, outputDir);</span>
+<span class="fc" id="L65">    }</span>
 
     /**
      * Δημιουργεί το περιεχόμενο του Java entity για έναν πίνακα.
@@ -72,66 +73,113 @@ public class EntityGenerator {
      * @return Το περιεχόμενο του Java entity ως String.
      */
     public String createEntityContent(Table table, String packageName, boolean useBuilder) {
-<span class="fc" id="L75">        StringBuilder entityBuilder = new StringBuilder();</span>
+<span class="fc" id="L76">        StringBuilder entityBuilder = new StringBuilder();</span>
 
         // 1. Δημιουργία package και imports
-<span class="fc" id="L78">        generatePackageAndImports(entityBuilder, packageName);</span>
+<span class="fc" id="L79">        generatePackageAndImports(entityBuilder, packageName);</span>
 
         // 2. Προσθήκη annotations για την κλάση
-<span class="fc" id="L81">        generateClassAnnotations(entityBuilder, table, useBuilder);</span>
+<span class="fc" id="L82">        generateClassAnnotations(entityBuilder, table, useBuilder);</span>
 
         // 3. Προσθήκη πεδίων
-<span class="fc" id="L84">        generateFields(entityBuilder, table);</span>
+<span class="fc" id="L85">        generateFields(entityBuilder, table);</span>
 
         // 4. Κλείσιμο κλάσης
-<span class="fc" id="L87">        entityBuilder.append(&quot;}\n&quot;);</span>
+<span class="fc" id="L88">        entityBuilder.append(&quot;}\n&quot;);</span>
 
-<span class="fc" id="L89">        logger.debug(&quot;Generated entity content for table '{}':\n{}&quot;, table.getName(), entityBuilder);</span>
-<span class="fc" id="L90">        return entityBuilder.toString();</span>
+<span class="fc" id="L90">        logger.debug(&quot;Generated entity content for table '{}':\n{}&quot;, table.getName(), entityBuilder);</span>
+<span class="fc" id="L91">        return entityBuilder.toString();</span>
     }
 
     public void generatePackageAndImports(StringBuilder builder, String packageName) {
-<span class="fc" id="L94">        builder.append(&quot;package &quot;).append(packageName).append(&quot;;\n\n&quot;);</span>
-<span class="fc" id="L95">        builder.append(&quot;import jakarta.persistence.*;\n&quot;);</span>
-<span class="fc" id="L96">        builder.append(&quot;import lombok.*;\n\n&quot;);</span>
-<span class="fc" id="L97">    }</span>
+<span class="fc" id="L95">        builder.append(&quot;package &quot;).append(packageName).append(&quot;;\n\n&quot;);</span>
+<span class="fc" id="L96">        builder.append(&quot;import jakarta.persistence.*;\n&quot;);</span>
+<span class="fc" id="L97">        builder.append(&quot;import lombok.*;\n\n&quot;);</span>
+<span class="fc" id="L98">    }</span>
 
     public void generateClassAnnotations(StringBuilder builder, Table table, boolean useBuilder) {
-<span class="fc" id="L100">        builder.append(&quot;@Entity\n&quot;);</span>
-<span class="fc" id="L101">        builder.append(&quot;@Table(name = \&quot;&quot;).append(table.getName()).append(&quot;\&quot;)\n&quot;);</span>
-<span class="fc" id="L102">        builder.append(&quot;@Getter\n@Setter\n&quot;);</span>
-<span class="fc bfc" id="L103" title="All 2 branches covered.">        if (useBuilder) {</span>
-<span class="fc" id="L104">            builder.append(&quot;@Builder\n&quot;);</span>
+<span class="fc" id="L101">        builder.append(&quot;@Entity\n&quot;);</span>
+<span class="fc" id="L102">        builder.append(&quot;@Table(name = \&quot;&quot;).append(table.getName()).append(&quot;\&quot;)\n&quot;);</span>
+<span class="fc" id="L103">        builder.append(&quot;@Getter\n@Setter\n&quot;);</span>
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (useBuilder) {</span>
+<span class="fc" id="L105">            builder.append(&quot;@Builder\n&quot;);</span>
         }
-<span class="fc" id="L106">        builder.append(&quot;@NoArgsConstructor\n@AllArgsConstructor\n&quot;);</span>
-<span class="fc" id="L107">        builder.append(&quot;public class &quot;).append(NamingConverter.toPascalCase(table.getName())).append(&quot; {\n\n&quot;);</span>
-<span class="fc" id="L108">    }</span>
+<span class="fc" id="L107">        builder.append(&quot;@NoArgsConstructor\n@AllArgsConstructor\n&quot;);</span>
+<span class="fc" id="L108">        builder.append(&quot;public class &quot;).append(NamingConverter.toPascalCase(table.getName())).append(&quot; {\n\n&quot;);</span>
+<span class="fc" id="L109">    }</span>
 
     public void generateFields(StringBuilder builder, Table table) {
-<span class="fc" id="L111">        table.getColumns().forEach(column -&gt; {</span>
-<span class="fc" id="L112">            logger.debug(&quot;Processing column: {}&quot;, column.getName());</span>
+<span class="fc" id="L112">        RelationshipResolver resolver = new RelationshipResolver(); // Instance για τη διαχείριση σχέσεων</span>
 
-<span class="fc bfc" id="L114" title="All 2 branches covered.">            if (column.isPrimaryKey()) {</span>
-<span class="fc" id="L115">                builder.append(&quot;    @Id\n&quot;);</span>
-<span class="fc" id="L116">                builder.append(&quot;    @GeneratedValue(strategy = GenerationType.IDENTITY)\n&quot;);</span>
+<span class="fc" id="L114">        table.getColumns().forEach(column -&gt; {</span>
+<span class="fc" id="L115">            logger.debug(&quot;Processing column: {}&quot;, column.getName());</span>
+
+            // Επεξεργασία Primary Key
+<span class="fc bfc" id="L118" title="All 2 branches covered.">            if (column.isPrimaryKey()) {</span>
+<span class="fc" id="L119">                addPrimaryKeyAnnotations(builder); // Προσθήκη Primary Key annotations</span>
             }
 
-<span class="fc" id="L119">            builder.append(&quot;    @Column(name = \&quot;&quot;).append(column.getName()).append(&quot;\&quot;&quot;);</span>
-<span class="fc bfc" id="L120" title="All 2 branches covered.">            if (column.isUnique()) {</span>
-<span class="fc" id="L121">                builder.append(&quot;, unique = true&quot;);</span>
-            }
-<span class="fc" id="L123">            builder.append(&quot;)\n&quot;);</span>
-
-<span class="pc bpc" id="L125" title="1 of 2 branches missed.">            if (column.isForeignKey()) {</span>
-<span class="nc" id="L126">                builder.append(&quot;    @ManyToOne\n&quot;);</span>
-<span class="nc" id="L127">                builder.append(&quot;    @JoinColumn(name = \&quot;&quot;).append(column.getName())</span>
-<span class="nc" id="L128">                        .append(&quot;\&quot;, referencedColumnName = \&quot;&quot;).append(column.getReferencedColumn()).append(&quot;\&quot;)\n&quot;);</span>
+            // Επεξεργασία Foreign Key
+<span class="fc bfc" id="L123" title="All 2 branches covered.">            if (column.isForeignKey()) {</span>
+<span class="fc" id="L124">                Relationship relationship = resolver.createRelationship(column, table, Map.of()); // Διασφάλιση συμβατότητας</span>
+<span class="pc bpc" id="L125" title="1 of 2 branches missed.">                if (relationship != null) {</span>
+<span class="nc" id="L126">                    addForeignKeyAnnotations(builder, relationship); // Προσθήκη Foreign Key annotations</span>
+                }
             }
 
-<span class="fc" id="L131">            builder.append(&quot;    private &quot;).append(column.getJavaType()).append(&quot; &quot;)</span>
-<span class="fc" id="L132">                    .append(NamingConverter.toCamelCase(column.getName())).append(&quot;;\n\n&quot;);</span>
-<span class="fc" id="L133">        });</span>
-<span class="fc" id="L134">    }</span>
+            // Επεξεργασία @Column και πεδίου
+<span class="fc" id="L131">            addColumnField(builder, column); // Δημιουργία πεδίου με βάση τη στήλη</span>
+<span class="fc" id="L132">        });</span>
+<span class="fc" id="L133">    }</span>
+
+
+
+    private void addPrimaryKeyAnnotations(StringBuilder builder) {
+<span class="fc" id="L138">        builder.append(&quot;    @Id\n&quot;);</span>
+<span class="fc" id="L139">        builder.append(&quot;    @GeneratedValue(strategy = GenerationType.IDENTITY)\n&quot;);</span>
+<span class="fc" id="L140">    }</span>
+
+    private void addForeignKeyAnnotations(StringBuilder builder, Relationship relationship) {
+<span class="nc bnc" id="L143" title="All 4 branches missed.">        switch (relationship.getRelationshipType()) {</span>
+            case MANYTOMANY:
+<span class="nc" id="L145">                builder.append(&quot;    @ManyToMany\n&quot;);</span>
+<span class="nc" id="L146">                builder.append(&quot;    @JoinTable(name = \&quot;&quot;).append(relationship.getJoinTableName())</span>
+<span class="nc" id="L147">                        .append(&quot;\&quot;, joinColumns = @JoinColumn(name = \&quot;&quot;).append(relationship.getSourceColumn())</span>
+<span class="nc" id="L148">                        .append(&quot;\&quot;), inverseJoinColumns = @JoinColumn(name = \&quot;&quot;)</span>
+<span class="nc" id="L149">                        .append(relationship.getInverseJoinColumn()).append(&quot;\&quot;))\n&quot;);</span>
+<span class="nc" id="L150">                break;</span>
+
+            case ONETOMANY:
+<span class="nc" id="L153">                builder.append(&quot;    @OneToMany(mappedBy = \&quot;&quot;).append(relationship.getSourceColumn()).append(&quot;\&quot;)\n&quot;);</span>
+<span class="nc" id="L154">                break;</span>
+
+            case ONETOONE:
+<span class="nc" id="L157">                builder.append(&quot;    @OneToOne\n&quot;);</span>
+<span class="nc" id="L158">                builder.append(&quot;    @JoinColumn(name = \&quot;&quot;).append(relationship.getSourceColumn())</span>
+<span class="nc" id="L159">                        .append(&quot;\&quot;, referencedColumnName = \&quot;&quot;).append(relationship.getTargetColumn()).append(&quot;\&quot;)\n&quot;);</span>
+<span class="nc" id="L160">                break;</span>
+
+            case MANYTOONE:
+            default:
+<span class="nc" id="L164">                builder.append(&quot;    @ManyToOne\n&quot;);</span>
+<span class="nc" id="L165">                builder.append(&quot;    @JoinColumn(name = \&quot;&quot;).append(relationship.getSourceColumn())</span>
+<span class="nc" id="L166">                        .append(&quot;\&quot;, referencedColumnName = \&quot;&quot;).append(relationship.getTargetColumn()).append(&quot;\&quot;)\n&quot;);</span>
+                break;
+        }
+<span class="nc" id="L169">    }</span>
+
+
+    private void addColumnField(StringBuilder builder, Column column) {
+<span class="fc" id="L173">        builder.append(&quot;    @Column(name = \&quot;&quot;).append(column.getName()).append(&quot;\&quot;&quot;);</span>
+<span class="pc bpc" id="L174" title="1 of 2 branches missed.">        if (column.isUnique()) {</span>
+<span class="nc" id="L175">            builder.append(&quot;, unique = true&quot;);</span>
+        }
+<span class="fc" id="L177">        builder.append(&quot;)\n&quot;);</span>
+
+<span class="fc" id="L179">        builder.append(&quot;    private &quot;).append(column.getJavaType()).append(&quot; &quot;)</span>
+<span class="fc" id="L180">                .append(NamingConverter.toCamelCase(column.getName())).append(&quot;;\n\n&quot;);</span>
+<span class="fc" id="L181">    }</span>
+
 
     /**
      * Γράφει το περιεχόμενο σε ένα αρχείο.
@@ -140,10 +188,10 @@ public class EntityGenerator {
      * @param content  Το περιεχόμενο προς αποθήκευση.
      */
     public void writeToFile(String filePath, String content) throws IOException {
-<span class="fc" id="L143">        Path path = Paths.get(filePath);</span>
-<span class="fc" id="L144">        Files.createDirectories(path.getParent());</span>
-<span class="fc" id="L145">        Files.write(path, content.getBytes());</span>
-<span class="fc" id="L146">        logger.debug(&quot;File written successfully: {}&quot;, filePath);</span>
-<span class="fc" id="L147">    }</span>
+<span class="fc" id="L191">        Path path = Paths.get(filePath);</span>
+<span class="fc" id="L192">        Files.createDirectories(path.getParent());</span>
+<span class="fc" id="L193">        Files.write(path, content.getBytes());</span>
+<span class="fc" id="L194">        logger.debug(&quot;File written successfully: {}&quot;, filePath);</span>
+<span class="fc" id="L195">    }</span>
 }
 </pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

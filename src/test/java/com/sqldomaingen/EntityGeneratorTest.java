@@ -34,7 +34,7 @@ class EntityGeneratorTest {
         Column idColumn = new Column();
         idColumn.setName("id");
         idColumn.setPrimaryKey(true);
-        idColumn.setType("BIGINT");
+        idColumn.setJavaType("BIGINT");
         idColumn.setJavaType("Long");
         exampleTable.addColumn(idColumn);
         logger.debug("Added primary key column: {}", idColumn);
@@ -44,7 +44,7 @@ class EntityGeneratorTest {
         fkColumn.setName("user_id");
         fkColumn.setForeignKey(true);
         fkColumn.setReferencedColumn("id");
-        fkColumn.setType("BIGINT");
+        fkColumn.setJavaType("BIGINT");
         fkColumn.setJavaType("Long");
         exampleTable.addColumn(fkColumn);
         logger.debug("Added foreign key column: {}", fkColumn);
@@ -55,7 +55,7 @@ class EntityGeneratorTest {
         Column userIdColumn = new Column();
         userIdColumn.setName("id");
         userIdColumn.setPrimaryKey(true);
-        userIdColumn.setType("BIGINT");
+        userIdColumn.setJavaType("BIGINT");
         userIdColumn.setJavaType("Long");
         userTable.addColumn(userIdColumn);
         logger.debug("Created related table: {}", userTable.getName());

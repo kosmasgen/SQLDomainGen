@@ -4,6 +4,7 @@ com\sqldomaingen\TableTest.class
 com\sqldomaingen\GrammarTest$1.class
 com\sqldomaingen\ColumnTest.class
 com\sqldomaingen\TypeMapperTest.class
+com\sqldomaingen\SqlTypeFromTokenTest.class
 com\sqldomaingen\CreateTableDefinitionTest.class
 com\sqldomaingen\NamingConverterTest.class
 com\sqldomaingen\SQLDomainGenIntegrationTest.class

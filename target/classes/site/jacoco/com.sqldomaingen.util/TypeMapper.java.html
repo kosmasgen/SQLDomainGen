@@ -91,9 +91,9 @@ public class TypeMapper {
 
 <span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (!sqlToJavaTypeMap.containsKey(baseType)) {</span>
             // Καταγραφή προειδοποίησης μόνο αν το baseType δεν υπάρχει στο mapping
-<span class="nc" id="L94">            logger.warn(&quot;No specific mapping found for SQL type '{}'. Defaulting to 'String'.&quot;, baseType);</span>
+<span class="fc" id="L94">            logger.warn(&quot;No specific mapping found for SQL type '{}'. Defaulting to 'String'.&quot;, baseType);</span>
         } else {
-<span class="fc" id="L96">            logger.info(&quot;Mapping SQL type '{}' to Java type '{}'&quot;, baseType, javaType);</span>
+<span class="nc" id="L96">            logger.info(&quot;Mapping SQL type '{}' to Java type '{}'&quot;, baseType, javaType);</span>
         }
 
 <span class="fc" id="L99">        return javaType;</span>

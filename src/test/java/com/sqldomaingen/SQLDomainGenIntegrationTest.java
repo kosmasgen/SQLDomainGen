@@ -127,7 +127,7 @@ public class SQLDomainGenIntegrationTest {
     private Column createColumn(String name, String type, int length, boolean primaryKey, boolean nullable, String defaultValue, boolean unique) {
         Column column = new Column();
         column.setName(name);
-        column.setType(type);
+        column.setSqlType(type);
         column.setLength(length);
         column.setPrimaryKey(primaryKey);
         column.setNullable(nullable);

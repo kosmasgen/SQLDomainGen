@@ -262,35 +262,29 @@ public class ColumnDefinition {
      */
     public Column toColumn() {
         logger.info("Converting ColumnDefinition to Column object...");
-        logger.debug("ColumnDefinition values: name={}, sqlType={}, length={}, primaryKey={}, nullable={}, defaultValue={}, unique={}, checkConstraint={}, referencedTable={}, referencedColumn={}",
-                this.columnName, this.sqlType, this.length, this.primaryKey, this.nullable, this.defaultValue, this.unique, this.checkConstraint, this.referencedTable, this.referencedColumn);
 
-        if (sqlType == null || sqlType.isEmpty()) {
-            throw new IllegalStateException("SQL type is not set in ColumnDefinition.");
-        }
-
-        // Map SQL type to Java type
-        String mappedJavaType = TypeMapper.mapToJavaType(this.sqlType);
-        logger.debug("Mapped SQL type '{}' to Java type '{}'", this.sqlType, mappedJavaType);
+        // Log all initial ColumnDefinition fields
+        logger.debug("ColumnDefinition values: name={}, javaType={}, sqlType={}, length={}, primaryKey={}, nullable={}, defaultValue={}, unique={}, checkConstraint={}, referencedTable={}, referencedColumn={}",
+                this.columnName, this.javaType, this.sqlType, this.length, this.primaryKey, this.nullable, this.defaultValue, this.unique, this.checkConstraint, this.referencedTable, this.referencedColumn);
 
         Column column = new Column();
         column.setName(this.columnName);
-        column.setType(mappedJavaType); // Χρήση του mapped Java type
-        column.setLength(this.length); // Default length σε 0 αν είναι null
-        column.setPrimaryKey(this.primaryKey); // Default σε false
-        column.setNullable(this.nullable); // Default σε true
+        column.setJavaType(this.javaType);
+        column.setLength(this.length);
+        column.setPrimaryKey(this.primaryKey);
+        column.setNullable(this.nullable);
         column.setDefaultValue(this.defaultValue);
-        column.setUnique(this.unique); // Default σε false
+        column.setUnique(this.unique);
         column.setCheckConstraint(this.checkConstraint);
         column.setReferencedTable(this.referencedTable);
         column.setReferencedColumn(this.referencedColumn);
+        column.setSqlType(this.sqlType);
 
         // Log the final Column object
-        logger.debug("Converted Column: name={}, type={}, length={}, primaryKey={}, nullable={}, defaultValue={}, unique={}, checkConstraint={}, referencedTable={}, referencedColumn={}",
-                column.getName(), column.getType(), column.getLength(), column.isPrimaryKey(), column.isNullable(), column.getDefaultValue(), column.isUnique(), column.getCheckConstraint(), column.getReferencedTable(), column.getReferencedColumn());
+        logger.debug("Converted Column: name={}, javaType={}, sqlType={}, length={}, primaryKey={}, nullable={}, defaultValue={}, unique={}, checkConstraint={}, referencedTable={}, referencedColumn={}",
+                column.getName(), column.getJavaType(), column.getSqlType(), column.getLength(), column.isPrimaryKey(), column.isNullable(), column.getDefaultValue(), column.isUnique(), column.getCheckConstraint(), column.getReferencedTable(), column.getReferencedColumn());
 
         return column;
     }
-
 
 }

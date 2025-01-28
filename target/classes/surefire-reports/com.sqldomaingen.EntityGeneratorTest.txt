@@ -1,15 +1,15 @@
 -------------------------------------------------------------------------------
 Test set: com.sqldomaingen.EntityGeneratorTest
 -------------------------------------------------------------------------------
-Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.022 s <<< FAILURE! - in com.sqldomaingen.EntityGeneratorTest
-com.sqldomaingen.EntityGeneratorTest.testGenerateWithComplexTable  Time elapsed: 0.017 s  <<< FAILURE!
-org.opentest4j.AssertionFailedError: Content should include id field. ==> expected: <true> but was: <false>
+Tests run: 1, Failures: 1, Errors: 0, Skipped: 0, Time elapsed: 0.1 s <<< FAILURE! - in com.sqldomaingen.EntityGeneratorTest
+com.sqldomaingen.EntityGeneratorTest.testGenerateEntityWithRelationships  Time elapsed: 0.097 s  <<< FAILURE!
+org.opentest4j.AssertionFailedError: Content should include @ManyToOne annotation ==> expected: <true> but was: <false>
 	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
 	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
 	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
 	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
 	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:211)
-	at com.sqldomaingen.EntityGeneratorTest.testGenerateWithComplexTable(EntityGeneratorTest.java:90)
+	at com.sqldomaingen.EntityGeneratorTest.testGenerateEntityWithRelationships(EntityGeneratorTest.java:107)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)

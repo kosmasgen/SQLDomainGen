@@ -1,10 +1,10 @@
 CREATE TABLE test_table (
     id INT PRIMARY KEY,
-    name VARCHAR(255)
+    name VARCHAR(55)
 );
 CREATE TABLE Employee (
     id INT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
+    name VARCHAR(155) NOT NULL,
     salary DECIMAL(10, 2)
 );
 

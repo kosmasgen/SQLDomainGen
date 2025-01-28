@@ -10,6 +10,7 @@ import org.springframework.stereotype.Component;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
 
+
 /**
  * Κλάση για την ανάλυση SQL scripts.
  */
@@ -42,13 +43,22 @@ public class SQLParser {
         PostgreSQLLexer lexer = new PostgreSQLLexer(CharStreams.fromString(sqlContent));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 
-        tokens.fill();
-        for (Token token : tokens.getTokens()) {
-            logger.debug("Token: '{}' -> Type: {}", token.getText(), lexer.getVocabulary().getSymbolicName(token.getType()));
-        }
+        PostgreSQLParser parser = new PostgreSQLParser(tokens);
 
-        return new PostgreSQLParser(tokens);
+        // Προσθήκη custom ErrorListener
+        parser.removeErrorListeners();
+        parser.addErrorListener(new BaseErrorListener() {
+            @Override
+            public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
+                                    int line, int charPositionInLine, String msg,
+                                    RecognitionException e) {
+                throw new IllegalArgumentException("Syntax error at line " + line + ", position " + charPositionInLine + ": " + msg);
+            }
+        });
+
+        return parser;
     }
+
 
     /**
      * Δημιουργεί ένα ParseTree από το SQL script.

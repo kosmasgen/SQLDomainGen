@@ -31,7 +31,7 @@ public class ColumnTest {
         // Logging για επαλήθευση των τιμών
         logger.info("Testing 'testToColumnMethod'");
         logger.info("Column name: {}", column.getName());
-        logger.info("Column type: {}", column.getType());
+        logger.info("Column type: {}", column.getJavaType());
         logger.info("Column length: {}", column.getLength());
         logger.info("Column is primary key: {}", column.isPrimaryKey());
         logger.info("Column is nullable: {}", column.isNullable());
@@ -40,7 +40,7 @@ public class ColumnTest {
 
         // Επαληθεύσεις μέσω Assertions
         Assertions.assertEquals("test_column", column.getName());
-        Assertions.assertEquals("String", column.getType());
+        Assertions.assertEquals("String", column.getJavaType());
         Assertions.assertEquals(255, column.getLength());
         Assertions.assertTrue(column.isPrimaryKey());
         Assertions.assertFalse(column.isNullable());
@@ -65,7 +65,7 @@ public class ColumnTest {
 
         logger.info("Scenario 1 - idColumn: {}", idColumn);
         Assertions.assertEquals("id", idColumn.getName());
-        Assertions.assertEquals("Long", idColumn.getType());
+        Assertions.assertEquals("Long", idColumn.getJavaType());
         Assertions.assertTrue(idColumn.isPrimaryKey());
         Assertions.assertFalse(idColumn.isNullable());
         Assertions.assertNull(idColumn.getDefaultValue());
@@ -85,7 +85,7 @@ public class ColumnTest {
 
         logger.info("Scenario 2 - nameColumn: {}", nameColumn);
         Assertions.assertEquals("name", nameColumn.getName());
-        Assertions.assertEquals("String", nameColumn.getType());
+        Assertions.assertEquals("String", nameColumn.getJavaType());
         Assertions.assertEquals(100, nameColumn.getLength());
         Assertions.assertFalse(nameColumn.isPrimaryKey());
         Assertions.assertFalse(nameColumn.isNullable());
@@ -105,7 +105,7 @@ public class ColumnTest {
 
         logger.info("Scenario 3 - priceColumn: {}", priceColumn);
         Assertions.assertEquals("price", priceColumn.getName());
-        Assertions.assertEquals("Double", priceColumn.getType());
+        Assertions.assertEquals("Double", priceColumn.getJavaType());
         Assertions.assertFalse(priceColumn.isPrimaryKey());
         Assertions.assertTrue(priceColumn.isNullable());
         Assertions.assertEquals("0.0", priceColumn.getDefaultValue());
@@ -124,7 +124,7 @@ public class ColumnTest {
 
         logger.info("Scenario 4 - createdAtColumn: {}", createdAtColumn);
         Assertions.assertEquals("created_at", createdAtColumn.getName());
-        Assertions.assertEquals("Timestamp", createdAtColumn.getType());
+        Assertions.assertEquals("Timestamp", createdAtColumn.getJavaType());
         Assertions.assertFalse(createdAtColumn.isPrimaryKey());
         Assertions.assertTrue(createdAtColumn.isNullable());
         Assertions.assertNull(createdAtColumn.getDefaultValue());
@@ -145,7 +145,6 @@ public class ColumnTest {
         // Εκτύπωση των τιμών του ColumnDefinition πριν τη μετατροπή
         System.out.println("ColumnDefinition πριν τη μετατροπή:");
         System.out.println("Column Name: " + columnDefinition.getColumnName());
-        System.out.println("SQL Type: " + columnDefinition.getSqlType());
         System.out.println("Length: " + columnDefinition.getLength());
         System.out.println("Primary Key: " + columnDefinition.isPrimaryKey());
         System.out.println("Nullable: " + columnDefinition.isNullable());
@@ -158,7 +157,7 @@ public class ColumnTest {
         // Εκτύπωση των τιμών του Column μετά τη μετατροπή
         System.out.println("Column μετά τη μετατροπή:");
         System.out.println("Column Name: " + column.getName());
-        System.out.println("Java Type: " + column.getType());
+        System.out.println("Java Type: " + column.getJavaType());
         System.out.println("Length: " + column.getLength());
         System.out.println("Primary Key: " + column.isPrimaryKey());
         System.out.println("Nullable: " + column.isNullable());
@@ -167,7 +166,7 @@ public class ColumnTest {
 
         // Έλεγχοι
         assertEquals("test_column", column.getName());
-        assertEquals("String", column.getType()); // Εδώ ελέγχεται το mapping από SQL σε Java type
+        assertEquals("String", column.getJavaType());
         assertEquals(255, column.getLength());
         assertTrue(column.isPrimaryKey());
         assertFalse(column.isNullable());

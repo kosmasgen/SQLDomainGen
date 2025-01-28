@@ -29,14 +29,14 @@ import java.util.List;
 
 <span class="fc bfc" id="L30" title="All 2 branches covered.">        for (Column column : sourceTable.getColumns()) {</span>
 <span class="fc" id="L31">            log.info(&quot;Processing column: {}&quot;, column);</span>
-<span class="pc bpc" id="L32" title="1 of 2 branches missed.">            if (validateColumnForRelationship(column)) {</span>
+<span class="fc bfc" id="L32" title="All 2 branches covered.">            if (validateColumnForRelationship(column)) {</span>
 <span class="fc" id="L33">                Relationship relationship = createRelationship(column, sourceTable, allTables);</span>
 <span class="pc bpc" id="L34" title="1 of 2 branches missed.">                if (relationship != null) {</span>
 <span class="fc" id="L35">                    resolvedRelationships.add(relationship);</span>
 <span class="fc" id="L36">                    log.info(&quot;Added relationship: {}&quot;, relationship);</span>
                 }
 <span class="fc" id="L38">            } else {</span>
-<span class="nc" id="L39">                log.warn(&quot;Column does not define a valid relationship: {}&quot;, column);</span>
+<span class="fc" id="L39">                log.warn(&quot;Column does not define a valid relationship: {}&quot;, column);</span>
             }
 <span class="fc" id="L41">        }</span>
 
@@ -44,12 +44,12 @@ import java.util.List;
 <span class="fc" id="L44">        return resolvedRelationships;</span>
     }
 
-    private boolean validateColumnForRelationship(Column column) {
-<span class="pc bpc" id="L48" title="2 of 4 branches missed.">        return Boolean.TRUE.equals(column.isForeignKey()) &amp;&amp; column.getRelationshipType() != null;</span>
+    public boolean validateColumnForRelationship(Column column) {
+<span class="fc bfc" id="L48" title="All 4 branches covered.">        return Boolean.TRUE.equals(column.isForeignKey()) &amp;&amp; column.getRelationshipType() != null;</span>
     }
 
 
-    private Relationship createRelationship(Column column, Table sourceTable, Map&lt;String, Table&gt; allTables) {
+    public Relationship createRelationship(Column column, Table sourceTable, Map&lt;String, Table&gt; allTables) {
 <span class="fc" id="L53">        Relationship relationship = new Relationship();</span>
 <span class="fc" id="L54">        relationship.setSourceTable(sourceTable.getName());</span>
 <span class="fc" id="L55">        relationship.setSourceColumn(column.getName());</span>
@@ -61,9 +61,9 @@ import java.util.List;
         }
 
 <span class="fc" id="L63">        Table targetTable = findTargetTable(column.getReferencedTable(), allTables);</span>
-<span class="pc bpc" id="L64" title="1 of 2 branches missed.">        if (targetTable == null) {</span>
-<span class="nc" id="L65">            log.warn(&quot;Target table '{}' not found for column '{}'&quot;, column.getReferencedTable(), column.getName());</span>
-<span class="nc" id="L66">            return null;</span>
+<span class="fc bfc" id="L64" title="All 2 branches covered.">        if (targetTable == null) {</span>
+<span class="fc" id="L65">            log.warn(&quot;Target table '{}' not found for column '{}'&quot;, column.getReferencedTable(), column.getName());</span>
+<span class="fc" id="L66">            return null;</span>
         }
 
 <span class="fc" id="L69">        relationship.setTargetTable(targetTable.getName());</span>
@@ -79,13 +79,29 @@ import java.util.List;
 
 
     private Table findTargetTable(String targetTableName, Map&lt;String, Table&gt; allTables) {
-<span class="fc" id="L82">        return allTables.get(targetTableName);</span>
+<span class="fc bfc" id="L82" title="All 2 branches covered.">        if (targetTableName == null) {</span>
+<span class="fc" id="L83">            log.error(&quot;Target table name is null.&quot;);</span>
+<span class="fc" id="L84">            return null;</span>
+        }
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        if (allTables == null) {</span>
+<span class="nc" id="L87">            log.error(&quot;All tables map is null.&quot;);</span>
+<span class="nc" id="L88">            return null;</span>
+        }
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (!allTables.containsKey(targetTableName)) {</span>
+<span class="nc" id="L91">            log.error(&quot;Target table '{}' not found in the provided tables map. Available tables: {}&quot;,</span>
+<span class="nc" id="L92">                    targetTableName, allTables.keySet());</span>
+<span class="nc" id="L93">            return null;</span>
+        }
+<span class="fc" id="L95">        log.debug(&quot;Target table '{}' found.&quot;, targetTableName);</span>
+<span class="fc" id="L96">        return allTables.get(targetTableName);</span>
     }
 
-    private void resolveManyToManyDetails(Column column, Relationship relationship) {
-<span class="fc" id="L86">        relationship.setJoinTableName(column.getJoinTableName());</span>
-<span class="fc" id="L87">        relationship.setInverseJoinColumn(column.getInverseJoinColumn());</span>
-<span class="fc" id="L88">    }</span>
+
+
+    public void resolveManyToManyDetails(Column column, Relationship relationship) {
+<span class="fc" id="L102">        relationship.setJoinTableName(column.getJoinTableName());</span>
+<span class="fc" id="L103">        relationship.setInverseJoinColumn(column.getInverseJoinColumn());</span>
+<span class="fc" id="L104">    }</span>
 
     /**
      * Maps a string to a RelationshipType.
@@ -94,11 +110,11 @@ import java.util.List;
      * @return the corresponding RelationshipType
      * @throws IllegalArgumentException if the type is invalid
      */
-    private Relationship.RelationshipType mapToRelationshipType(String type) {
+    public Relationship.RelationshipType mapToRelationshipType(String type) {
         try {
-<span class="fc" id="L99">            return Relationship.RelationshipType.valueOf(type.toUpperCase());</span>
-<span class="nc" id="L100">        } catch (IllegalArgumentException e) {</span>
-<span class="nc" id="L101">            throw new IllegalArgumentException(&quot;Invalid relationship type: &quot; + type, e);</span>
+<span class="fc" id="L115">            return Relationship.RelationshipType.valueOf(type.toUpperCase());</span>
+<span class="nc" id="L116">        } catch (IllegalArgumentException e) {</span>
+<span class="nc" id="L117">            throw new IllegalArgumentException(&quot;Invalid relationship type: &quot; + type, e);</span>
         }
     }
 

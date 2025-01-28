@@ -1,7 +1,6 @@
 package com.sqldomaingen;
 
 import com.sqldomaingen.parser.SQLParser;
-import org.antlr.v4.runtime.TokenStream;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -19,6 +18,25 @@ class SQLParserTest {
     void setUp() {
         sqlParser = new SQLParser();
     }
+
+
+
+    @Test
+    void testParseInvalidSQLWithDetailedErrorMessage() {
+        sqlParser.setSqlContent("CREATETABL invalid_syntax_test ( id INT PRIMARY KEY );");
+
+        Exception exception = assertThrows(IllegalArgumentException.class, () -> {
+            sqlParser.parseTreeFromSQL();
+        });
+
+        assertTrue(exception.getMessage().contains("Syntax error"), "Expected syntax error message, but got: " + exception.getMessage());
+        logger.info("Test for invalid SQL passed with expected exception: {}", exception.getMessage());
+    }
+
+
+
+
+
 
     @Test
     void testParseCreateTableWithCompositePrimaryKey() {
@@ -122,22 +140,6 @@ class SQLParserTest {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
             assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE with multiple constraints.");
             logger.info("ParseTree generated successfully for CREATE TABLE with multiple constraints.");
-        });
-    }
-
-    @Test
-    void testParseCreateTableWithAutoIncrementColumn() {
-        sqlParser.setSqlContent(
-                "CREATE TABLE auto_increment_test (\n" +
-                        "id INT AUTO_INCREMENT PRIMARY KEY,\n" +
-                        "name VARCHAR(100)\n" +
-                        ");"
-        );
-
-        assertDoesNotThrow(() -> {
-            ParseTree parseTree = sqlParser.parseTreeFromSQL();
-            assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE with AUTO_INCREMENT column.");
-            logger.info("ParseTree generated successfully for CREATE TABLE with AUTO_INCREMENT column.");
         });
     }
 

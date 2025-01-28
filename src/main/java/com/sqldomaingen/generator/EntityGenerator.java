@@ -13,6 +13,8 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 import java.util.Map;
+import java.nio.charset.StandardCharsets;
+import java.util.Objects;
 
 @NoArgsConstructor
 @Component
@@ -188,9 +190,19 @@ public class EntityGenerator {
      * @param content  Το περιεχόμενο προς αποθήκευση.
      */
     public void writeToFile(String filePath, String content) throws IOException {
+        Objects.requireNonNull(filePath, "File path cannot be null");
+        Objects.requireNonNull(content, "Content cannot be null");
+
+
         Path path = Paths.get(filePath);
+
+        // Δημιουργία των γονικών καταλόγων αν δεν υπάρχουν
         Files.createDirectories(path.getParent());
-        Files.write(path, content.getBytes());
+
+        // Γράψιμο του αρχείου με ρητό ορισμό του encoding (UTF-8)
+        Files.write(path, content.getBytes(StandardCharsets.UTF_8));
+
         logger.debug("File written successfully: {}", filePath);
     }
+
 }

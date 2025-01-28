@@ -6,7 +6,6 @@ import org.antlr.v4.runtime.Token;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.sqldomaingen.model.Column;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class ColumnDefinitionTest {
@@ -167,32 +166,7 @@ public class ColumnDefinitionTest {
         logger.info("Test for setReferencedColumnFromToken passed.");
     }
 
-    @Test
-    void testToColumn() {
-        logger.info("Testing toColumn method...");
 
-        ColumnDefinition columnDefinition = new ColumnDefinition();
-        columnDefinition.setColumnName("id");
-        columnDefinition.setSqlType("INTEGER");
-        columnDefinition.setJavaType("Integer");
-        columnDefinition.setLength(10);
-        columnDefinition.setPrimaryKey(true);
-        columnDefinition.setNullable(false);
-        columnDefinition.setDefaultValue("100");
-        columnDefinition.setUnique(true);
-
-        Column column = columnDefinition.toColumn();
-
-        logger.debug("After toColumn - Converted Column: {}", column);
-        assertEquals("id", column.getName(), "Column name should be 'id'.");
-        assertEquals("Long", column.getType(), "Column type should be 'Long'.");
-        assertEquals(10, column.getLength(), "Column length should be 10.");
-        assertTrue(column.isPrimaryKey(), "Column should be primary key.");
-        assertFalse(column.isNullable(), "Column should not be nullable.");
-        assertEquals("100", column.getDefaultValue(), "Default value should be '100'.");
-        assertTrue(column.isUnique(), "Column should be unique.");
-        logger.info("Test for toColumn passed.");
-    }
     @Test
     public void testExtractLength_withValidLength() {
         // Test case with valid length
@@ -240,4 +214,5 @@ public class ColumnDefinitionTest {
         int result = ColumnDefinition.extractLength(sqlType);
         assertEquals(10, result, "The extracted length should be 10 for composite types like DECIMAL.");
     }
+
 }

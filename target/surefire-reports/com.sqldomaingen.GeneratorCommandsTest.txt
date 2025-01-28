@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.sqldomaingen.GeneratorCommandsTest
 -------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.85 s - in com.sqldomaingen.GeneratorCommandsTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 1.24 s - in com.sqldomaingen.GeneratorCommandsTest

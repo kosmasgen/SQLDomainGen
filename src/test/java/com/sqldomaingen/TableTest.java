@@ -25,7 +25,7 @@ public class TableTest {
         // Δημιουργία αντικειμένου Column
         Column column = new Column();
         column.setName("id");
-        column.setType("INT");
+        column.setJavaType("Long");
         column.setPrimaryKey(true);
 
         // Προσθήκη στήλης
@@ -38,7 +38,7 @@ public class TableTest {
         // Επαλήθευση
         Assertions.assertEquals(1, table.getColumns().size());
         Assertions.assertEquals("id", table.getColumns().get(0).getName());
-        Assertions.assertEquals("INT", table.getColumns().get(0).getType());
+        Assertions.assertEquals("Long", table.getColumns().get(0).getJavaType());
         Assertions.assertTrue(table.getColumns().get(0).isPrimaryKey());
     }
 
@@ -72,7 +72,7 @@ public class TableTest {
         // Προσθήκη στηλών
         Column idColumn = new Column();
         idColumn.setName("id");
-        idColumn.setType("INT");
+        idColumn.setSqlType("INT");
         idColumn.setLength(11);
         idColumn.setPrimaryKey(true);
         idColumn.setNullable(false);
@@ -81,7 +81,7 @@ public class TableTest {
 
         Column nameColumn = new Column();
         nameColumn.setName("name");
-        nameColumn.setType("VARCHAR");
+        nameColumn.setSqlType("VARCHAR");
         nameColumn.setLength(255);
         nameColumn.setPrimaryKey(false);
         nameColumn.setNullable(true);

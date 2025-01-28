@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.sqldomaingen.CreateTableDefinitionTest" time="0.403" tests="8" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.sqldomaingen.CreateTableDefinitionTest" time="0.335" tests="8" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="GR"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-17\bin"/>
-    <property name="sun.java.command" value="C:\Users\kosma\AppData\Local\Temp\surefire17464466457876690311\surefirebooter-20250127010756135_3.jar C:\Users\kosma\AppData\Local\Temp\surefire17464466457876690311 2025-01-27T01-07-55_899-jvmRun1 surefire-20250127010756135_1tmp surefire_0-20250127010756135_2tmp"/>
+    <property name="sun.java.command" value="C:\Users\kosma\AppData\Local\Temp\surefire15572946670203893249\surefirebooter-20250128002804930_3.jar C:\Users\kosma\AppData\Local\Temp\surefire15572946670203893249 2025-01-28T00-28-04_675-jvmRun1 surefire-20250128002804930_1tmp surefire_0-20250128002804930_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="C:\Users\kosma\IdeaProjects\SQLDomainGen\target\test-classes;C:\Users\kosma\IdeaProjects\SQLDomainGen\target\classes;C:\Users\kosma\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-classic\1.4.11\logback-classic-1.4.11.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-core\1.4.11\logback-core-1.4.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter\3.1.3\spring-boot-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot\3.1.3\spring-boot-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-context\6.0.11\spring-context-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-aop\6.0.11\spring-aop-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-beans\6.0.11\spring-beans-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-expression\6.0.11\spring-expression-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\3.1.3\spring-boot-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-logging\3.1.3\spring-boot-starter-logging-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.20.0\log4j-to-slf4j-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-api\2.20.0\log4j-api-2.20.0.jar;C:\Users\kosma\.m2\repository\org\slf4j\jul-to-slf4j\2.0.7\jul-to-slf4j-2.0.7.jar;C:\Users\kosma\.m2\repository\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-core\6.0.11\spring-core-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-jcl\6.0.11\spring-jcl-6.0.11.jar;C:\Users\kosma\.m2\repository\org\yaml\snakeyaml\1.33\snakeyaml-1.33.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-test\3.1.3\spring-boot-starter-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test\3.1.3\spring-boot-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\3.1.3\spring-boot-test-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\com\jayway\jsonpath\json-path\2.8.0\json-path-2.8.0.jar;C:\Users\kosma\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.0\jakarta.xml.bind-api-4.0.0.jar;C:\Users\kosma\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar;C:\Users\kosma\.m2\repository\net\minidev\json-smart\2.4.11\json-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\net\minidev\accessors-smart\2.4.11\accessors-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\org\ow2\asm\asm\9.3\asm-9.3.jar;C:\Users\kosma\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\kosma\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-junit-jupiter\5.3.1\mockito-junit-jupiter-5.3.1.jar;C:\Users\kosma\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\kosma\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-test\6.0.11\spring-test-6.0.11.jar;C:\Users\kosma\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\kosma\.m2\repository\org\projectlombok\lombok\1.18.28\lombok-1.18.28.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr4-runtime\4.13.1\antlr4-runtime-4.13.1.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-starter\3.1.3\spring-shell-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-autoconfigure\3.1.3\spring-shell-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-core\3.1.3\spring-shell-core-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-validation\3.1.3\spring-boot-starter-validation-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\10.1.12\tomcat-embed-el-10.1.12.jar;C:\Users\kosma\.m2\repository\org\hibernate\validator\hibernate-validator\8.0.1.Final\hibernate-validator-8.0.1.Final.jar;C:\Users\kosma\.m2\repository\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\Users\kosma\.m2\repository\org\jboss\logging\jboss-logging\3.5.3.Final\jboss-logging-3.5.3.Final.jar;C:\Users\kosma\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-messaging\6.0.11\spring-messaging-6.0.11.jar;C:\Users\kosma\.m2\repository\org\jline\jline\3.23.0\jline-3.23.0.jar;C:\Users\kosma\.m2\repository\org\antlr\ST4\4.3.1\ST4-4.3.1.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr-runtime\3.5.2\antlr-runtime-3.5.2.jar;C:\Users\kosma\.m2\repository\commons-io\commons-io\2.11.0\commons-io-2.11.0.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard\3.1.3\spring-shell-standard-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard-commands\3.1.3\spring-shell-standard-commands-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-table\3.1.3\spring-shell-table-3.1.3.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy\1.14.6\byte-buddy-1.14.6.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.6\byte-buddy-agent-1.14.6.jar;C:\Users\kosma\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter\5.9.3\junit-jupiter-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.3\junit-jupiter-api-5.9.3.jar;C:\Users\kosma\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-commons\1.9.3\junit-platform-commons-1.9.3.jar;C:\Users\kosma\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.9.3\junit-jupiter-params-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.3\junit-jupiter-engine-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-engine\1.9.3\junit-platform-engine-1.9.3.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -30,7 +30,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\kosma\AppData\Local\Temp\surefire17464466457876690311\surefirebooter-20250127010756135_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\kosma\AppData\Local\Temp\surefire15572946670203893249\surefirebooter-20250128002804930_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.12+8-LTS-286"/>
@@ -56,8 +56,8 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="testInventoryTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.339">
-    <system-out><![CDATA[01:07:57.878 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Inventory table with SQL:
+  <testcase name="testInventoryTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.277">
+    <system-out><![CDATA[00:28:07.134 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Inventory table with SQL:
 CREATE TABLE Inventory (
     inventory_id INT PRIMARY KEY,
     product_id INT NOT NULL,
@@ -67,7 +67,7 @@ CREATE TABLE Inventory (
     FOREIGN KEY (product_id) REFERENCES Product(product_id)
 );
 
-01:07:58.013 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Inventory (
+00:28:07.245 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Inventory (
     inventory_id INT PRIMARY KEY,
     product_id INT NOT NULL,
     warehouse_location VARCHAR(10),
@@ -76,30 +76,25 @@ CREATE TABLE Inventory (
     FOREIGN KEY (product_id) REFERENCES Product(product_id)
 );
 
-01:07:58.200 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-01:07:58.209 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Inventory
-01:07:58.209 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: inventory_id with type INT
-01:07:58.209 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
-01:07:58.211 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: warehouse_location with type VARCHAR(10)
-01:07:58.211 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: stock_quantity with type INT
-01:07:58.211 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: last_restock with type TIMESTAMP
-01:07:58.211 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
-01:07:58.215 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.215 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.215 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.215 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.215 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.215 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-01:07:58.215 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.215 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.215 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.215 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-01:07:58.215 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Inventory with 5 columns.
-01:07:58.215 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Inventory with 5 columns.
+00:28:07.400 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
+00:28:07.405 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Inventory
+00:28:07.406 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: inventory_id with type INT
+00:28:07.406 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
+00:28:07.406 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: warehouse_location with type VARCHAR(10)
+00:28:07.406 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: stock_quantity with type INT
+00:28:07.406 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: last_restock with type TIMESTAMP
+00:28:07.406 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
+00:28:07.408 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.409 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.409 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.409 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.409 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.409 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Inventory with 5 columns.
+00:28:07.409 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Inventory with 5 columns.
 ]]></system-out>
   </testcase>
-  <testcase name="testProductTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.012">
-    <system-out><![CDATA[01:07:58.219 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Product table with SQL:
+  <testcase name="testProductTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.01">
+    <system-out><![CDATA[00:28:07.411 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Product table with SQL:
 CREATE TABLE Product (
     product_id INT PRIMARY KEY,
     product_name VARCHAR(100) NOT NULL,
@@ -110,7 +105,7 @@ CREATE TABLE Product (
     updated_at TIMESTAMP
 );
 
-01:07:58.219 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Product (
+00:28:07.412 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Product (
     product_id INT PRIMARY KEY,
     product_name VARCHAR(100) NOT NULL,
     category VARCHAR(50),
@@ -120,36 +115,29 @@ CREATE TABLE Product (
     updated_at TIMESTAMP
 );
 
-01:07:58.227 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-01:07:58.227 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Product
-01:07:58.227 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
-01:07:58.227 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_name with type VARCHAR(100)
-01:07:58.227 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: category with type VARCHAR(50)
-01:07:58.227 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: price with type DECIMAL(10,2)
-01:07:58.227 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: stock_quantity with type INT
-01:07:58.227 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: created_at with type TIMESTAMP
-01:07:58.227 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: updated_at with type TIMESTAMP
-01:07:58.227 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 7 columns.
-01:07:58.227 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.227 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.227 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.227 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-01:07:58.229 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.229 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-01:07:58.229 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.229 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-01:07:58.229 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.229 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.229 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.229 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-01:07:58.229 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.229 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-01:07:58.229 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Product with 7 columns.
-01:07:58.229 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Product with 7 columns.
+00:28:07.418 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
+00:28:07.418 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Product
+00:28:07.418 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
+00:28:07.418 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_name with type VARCHAR(100)
+00:28:07.418 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: category with type VARCHAR(50)
+00:28:07.418 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: price with type DECIMAL(10,2)
+00:28:07.418 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: stock_quantity with type INT
+00:28:07.419 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: created_at with type TIMESTAMP
+00:28:07.419 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: updated_at with type TIMESTAMP
+00:28:07.419 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 7 columns.
+00:28:07.419 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.419 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.419 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.419 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.419 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.419 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.419 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.419 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Product with 7 columns.
+00:28:07.419 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Product with 7 columns.
 ]]></system-out>
   </testcase>
-  <testcase name="testInventoryTable" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.008">
-    <system-out><![CDATA[01:07:58.233 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Inventory table with SQL:
+  <testcase name="testInventoryTable" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.006">
+    <system-out><![CDATA[00:28:07.421 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Inventory table with SQL:
 CREATE TABLE Inventory (
     inventory_id INT PRIMARY KEY,
     product_id INT NOT NULL,
@@ -159,7 +147,7 @@ CREATE TABLE Inventory (
     FOREIGN KEY (product_id) REFERENCES Product(product_id)
 );
 
-01:07:58.233 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Inventory (
+00:28:07.422 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Inventory (
     inventory_id INT PRIMARY KEY,
     product_id INT NOT NULL,
     warehouse_location VARCHAR(100),
@@ -168,30 +156,25 @@ CREATE TABLE Inventory (
     FOREIGN KEY (product_id) REFERENCES Product(product_id)
 );
 
-01:07:58.235 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-01:07:58.237 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Inventory
-01:07:58.237 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: inventory_id with type INT
-01:07:58.237 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
-01:07:58.237 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: warehouse_location with type VARCHAR(100)
-01:07:58.237 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: stock_quantity with type INT
-01:07:58.237 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: last_restock with type TIMESTAMP
-01:07:58.237 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
-01:07:58.237 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.237 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.237 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.237 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.237 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.237 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-01:07:58.237 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.237 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.237 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.237 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-01:07:58.237 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Inventory with 5 columns.
-01:07:58.237 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Inventory with 5 columns.
+00:28:07.424 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
+00:28:07.424 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Inventory
+00:28:07.424 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: inventory_id with type INT
+00:28:07.424 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
+00:28:07.424 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: warehouse_location with type VARCHAR(100)
+00:28:07.425 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: stock_quantity with type INT
+00:28:07.425 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: last_restock with type TIMESTAMP
+00:28:07.425 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
+00:28:07.425 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.425 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.425 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.425 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.425 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.426 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Inventory with 5 columns.
+00:28:07.426 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Inventory with 5 columns.
 ]]></system-out>
   </testcase>
-  <testcase name="testEmployeeTable" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.01">
-    <system-out><![CDATA[01:07:58.237 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Employee table with SQL:
+  <testcase name="testEmployeeTable" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.007">
+    <system-out><![CDATA[00:28:07.429 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Employee table with SQL:
 CREATE TABLE Employee (
     employee_id INT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
@@ -201,7 +184,7 @@ CREATE TABLE Employee (
     FOREIGN KEY (department_id) REFERENCES Department(department_id)
 );
 
-01:07:58.237 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Employee (
+00:28:07.430 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Employee (
     employee_id INT PRIMARY KEY,
     name VARCHAR(100) NOT NULL,
     department_id INT,
@@ -210,30 +193,25 @@ CREATE TABLE Employee (
     FOREIGN KEY (department_id) REFERENCES Department(department_id)
 );
 
-01:07:58.243 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-01:07:58.245 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Employee
-01:07:58.245 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: employee_id with type INT
-01:07:58.245 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: name with type VARCHAR(100)
-01:07:58.245 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: department_id with type INT
-01:07:58.245 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: hire_date with type DATE
-01:07:58.245 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: salary with type DECIMAL(15,2)
-01:07:58.245 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
-01:07:58.245 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.245 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.245 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.245 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-01:07:58.245 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.245 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.245 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.245 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DATE' to Java type 'java.time.LocalDate'
-01:07:58.245 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.245 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-01:07:58.245 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Employee with 5 columns.
-01:07:58.245 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Employee with 5 columns.
+00:28:07.433 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
+00:28:07.433 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Employee
+00:28:07.433 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: employee_id with type INT
+00:28:07.433 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: name with type VARCHAR(100)
+00:28:07.433 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: department_id with type INT
+00:28:07.433 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: hire_date with type DATE
+00:28:07.433 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: salary with type DECIMAL(15,2)
+00:28:07.433 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
+00:28:07.433 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.433 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.433 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.433 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.433 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.433 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Employee with 5 columns.
+00:28:07.434 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Employee with 5 columns.
 ]]></system-out>
   </testcase>
-  <testcase name="testDepartmentTable" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.007">
-    <system-out><![CDATA[01:07:58.249 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Department table with SQL:
+  <testcase name="testDepartmentTable" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.006">
+    <system-out><![CDATA[00:28:07.438 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Department table with SQL:
 CREATE TABLE Department (
     department_id INT PRIMARY KEY,
     department_name VARCHAR(100) NOT NULL,
@@ -242,7 +220,7 @@ CREATE TABLE Department (
     budget DECIMAL(15, 2)
 );
 
-01:07:58.249 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Department (
+00:28:07.438 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Department (
     department_id INT PRIMARY KEY,
     department_name VARCHAR(100) NOT NULL,
     location VARCHAR(100),
@@ -250,30 +228,25 @@ CREATE TABLE Department (
     budget DECIMAL(15, 2)
 );
 
-01:07:58.252 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-01:07:58.252 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Department
-01:07:58.252 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: department_id with type INT
-01:07:58.252 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: department_name with type VARCHAR(100)
-01:07:58.252 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: location with type VARCHAR(100)
-01:07:58.252 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: manager_id with type INT
-01:07:58.252 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: budget with type DECIMAL(15,2)
-01:07:58.252 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
-01:07:58.252 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.252 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.252 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.252 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-01:07:58.252 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.252 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-01:07:58.252 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.252 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.252 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.252 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-01:07:58.252 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Department with 5 columns.
-01:07:58.252 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Department with 5 columns.
+00:28:07.440 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
+00:28:07.441 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Department
+00:28:07.441 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: department_id with type INT
+00:28:07.441 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: department_name with type VARCHAR(100)
+00:28:07.441 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: location with type VARCHAR(100)
+00:28:07.441 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: manager_id with type INT
+00:28:07.441 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: budget with type DECIMAL(15,2)
+00:28:07.441 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
+00:28:07.442 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.442 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.442 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.442 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.442 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.442 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Department with 5 columns.
+00:28:07.442 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Department with 5 columns.
 ]]></system-out>
   </testcase>
-  <testcase name="testProductOrderTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.009">
-    <system-out><![CDATA[01:07:58.256 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing ProductOrder table with SQL:
+  <testcase name="testProductOrderTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.008">
+    <system-out><![CDATA[00:28:07.445 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing ProductOrder table with SQL:
 CREATE TABLE ProductOrder (
     product_id INT,
     order_id INT,
@@ -285,7 +258,7 @@ CREATE TABLE ProductOrder (
     FOREIGN KEY (order_id) REFERENCES Orders(order_id)
 );
 
-01:07:58.256 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE ProductOrder (
+00:28:07.445 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE ProductOrder (
     product_id INT,
     order_id INT,
     quantity INT NOT NULL,
@@ -296,30 +269,25 @@ CREATE TABLE ProductOrder (
     FOREIGN KEY (order_id) REFERENCES Orders(order_id)
 );
 
-01:07:58.261 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-01:07:58.261 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: ProductOrder
-01:07:58.261 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
-01:07:58.261 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: order_id with type INT
-01:07:58.261 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: quantity with type INT
-01:07:58.261 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: unit_price with type DECIMAL(10,2)
-01:07:58.261 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: discount with type DECIMAL(5,2)
-01:07:58.261 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
-01:07:58.261 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.261 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.261 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.261 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.261 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.261 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.261 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.261 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-01:07:58.261 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.261 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-01:07:58.261 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: ProductOrder with 5 columns.
-01:07:58.261 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: ProductOrder with 5 columns.
+00:28:07.451 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
+00:28:07.451 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: ProductOrder
+00:28:07.451 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
+00:28:07.451 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: order_id with type INT
+00:28:07.451 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: quantity with type INT
+00:28:07.452 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: unit_price with type DECIMAL(10,2)
+00:28:07.452 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: discount with type DECIMAL(5,2)
+00:28:07.452 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
+00:28:07.452 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.452 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.452 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.452 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.452 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.452 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: ProductOrder with 5 columns.
+00:28:07.452 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: ProductOrder with 5 columns.
 ]]></system-out>
   </testcase>
-  <testcase name="testCustomerTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.007">
-    <system-out><![CDATA[01:07:58.265 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Customer table with SQL:
+  <testcase name="testCustomerTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.005">
+    <system-out><![CDATA[00:28:07.455 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Customer table with SQL:
 CREATE TABLE Customer (
     customer_id INT PRIMARY KEY,
     customer_name VARCHAR(100) NOT NULL,
@@ -330,7 +298,7 @@ CREATE TABLE Customer (
     last_purchase TIMESTAMP
 );
 
-01:07:58.265 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Customer (
+00:28:07.455 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Customer (
     customer_id INT PRIMARY KEY,
     customer_name VARCHAR(100) NOT NULL,
     email VARCHAR(150) UNIQUE,
@@ -340,36 +308,29 @@ CREATE TABLE Customer (
     last_purchase TIMESTAMP
 );
 
-01:07:58.268 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-01:07:58.268 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Customer
-01:07:58.268 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: customer_id with type INT
-01:07:58.268 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: customer_name with type VARCHAR(100)
-01:07:58.268 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: email with type VARCHAR(150)
-01:07:58.268 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: phone_number with type VARCHAR(15)
-01:07:58.268 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: address with type TEXT
-01:07:58.268 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: registered_at with type TIMESTAMP
-01:07:58.268 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: last_purchase with type TIMESTAMP
-01:07:58.268 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 7 columns.
-01:07:58.268 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.268 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.268 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.268 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-01:07:58.268 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.268 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-01:07:58.268 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.268 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-01:07:58.268 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.268 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TEXT' to Java type 'String'
-01:07:58.268 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.268 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-01:07:58.268 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.268 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-01:07:58.268 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Customer with 7 columns.
-01:07:58.268 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Customer with 7 columns.
+00:28:07.458 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
+00:28:07.458 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Customer
+00:28:07.458 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: customer_id with type INT
+00:28:07.458 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: customer_name with type VARCHAR(100)
+00:28:07.458 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: email with type VARCHAR(150)
+00:28:07.458 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: phone_number with type VARCHAR(15)
+00:28:07.458 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: address with type TEXT
+00:28:07.458 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: registered_at with type TIMESTAMP
+00:28:07.458 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: last_purchase with type TIMESTAMP
+00:28:07.458 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 7 columns.
+00:28:07.458 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.458 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.458 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.458 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.459 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.459 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.459 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.459 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Customer with 7 columns.
+00:28:07.459 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Customer with 7 columns.
 ]]></system-out>
   </testcase>
   <testcase name="testProjectTable" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.006">
-    <system-out><![CDATA[01:07:58.270 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Project table with SQL:
+    <system-out><![CDATA[00:28:07.461 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Project table with SQL:
 CREATE TABLE Project (
     project_id INT PRIMARY KEY,
     project_name VARCHAR(100) NOT NULL,
@@ -380,7 +341,7 @@ CREATE TABLE Project (
     FOREIGN KEY (manager_id) REFERENCES Employee(employee_id)
 );
 
-01:07:58.272 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Project (
+00:28:07.462 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Project (
     project_id INT PRIMARY KEY,
     project_name VARCHAR(100) NOT NULL,
     start_date DATE,
@@ -390,29 +351,23 @@ CREATE TABLE Project (
     FOREIGN KEY (manager_id) REFERENCES Employee(employee_id)
 );
 
-01:07:58.274 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-01:07:58.274 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Project
-01:07:58.274 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: project_id with type INT
-01:07:58.274 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: project_name with type VARCHAR(100)
-01:07:58.276 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: start_date with type DATE
-01:07:58.276 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: end_date with type DATE
-01:07:58.276 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: budget with type DECIMAL(20,2)
-01:07:58.276 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: manager_id with type INT
-01:07:58.276 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 6 columns.
-01:07:58.276 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.276 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.276 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.276 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-01:07:58.276 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.276 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DATE' to Java type 'java.time.LocalDate'
-01:07:58.276 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.276 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DATE' to Java type 'java.time.LocalDate'
-01:07:58.276 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.276 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-01:07:58.276 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-01:07:58.276 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-01:07:58.276 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Project with 6 columns.
-01:07:58.276 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Project with 6 columns.
+00:28:07.464 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
+00:28:07.464 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Project
+00:28:07.464 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: project_id with type INT
+00:28:07.464 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: project_name with type VARCHAR(100)
+00:28:07.465 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: start_date with type DATE
+00:28:07.465 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: end_date with type DATE
+00:28:07.465 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: budget with type DECIMAL(20,2)
+00:28:07.465 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: manager_id with type INT
+00:28:07.465 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 6 columns.
+00:28:07.465 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.465 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.465 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.465 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.465 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.465 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+00:28:07.465 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Converted to Table object: Project with 6 columns.
+00:28:07.465 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Project with 6 columns.
 ]]></system-out>
   </testcase>
 </testsuite>

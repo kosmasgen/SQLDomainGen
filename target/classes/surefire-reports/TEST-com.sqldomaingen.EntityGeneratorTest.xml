@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.sqldomaingen.EntityGeneratorTest" time="0.022" tests="1" errors="0" skipped="0" failures="1">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.sqldomaingen.EntityGeneratorTest" time="0.1" tests="1" errors="0" skipped="0" failures="1">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.cpu.isalist" value="amd64"/>
@@ -15,7 +15,7 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="GR"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-17\bin"/>
-    <property name="sun.java.command" value="C:\Users\kosma\AppData\Local\Temp\surefire17464466457876690311\surefirebooter-20250127010756135_3.jar C:\Users\kosma\AppData\Local\Temp\surefire17464466457876690311 2025-01-27T01-07-55_899-jvmRun1 surefire-20250127010756135_1tmp surefire_0-20250127010756135_2tmp"/>
+    <property name="sun.java.command" value="C:\Users\kosma\AppData\Local\Temp\surefire15572946670203893249\surefirebooter-20250128002804930_3.jar C:\Users\kosma\AppData\Local\Temp\surefire15572946670203893249 2025-01-28T00-28-04_675-jvmRun1 surefire-20250128002804930_1tmp surefire_0-20250128002804930_2tmp"/>
     <property name="jdk.debug" value="release"/>
     <property name="surefire.test.class.path" value="C:\Users\kosma\IdeaProjects\SQLDomainGen\target\test-classes;C:\Users\kosma\IdeaProjects\SQLDomainGen\target\classes;C:\Users\kosma\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-classic\1.4.11\logback-classic-1.4.11.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-core\1.4.11\logback-core-1.4.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter\3.1.3\spring-boot-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot\3.1.3\spring-boot-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-context\6.0.11\spring-context-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-aop\6.0.11\spring-aop-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-beans\6.0.11\spring-beans-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-expression\6.0.11\spring-expression-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\3.1.3\spring-boot-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-logging\3.1.3\spring-boot-starter-logging-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.20.0\log4j-to-slf4j-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-api\2.20.0\log4j-api-2.20.0.jar;C:\Users\kosma\.m2\repository\org\slf4j\jul-to-slf4j\2.0.7\jul-to-slf4j-2.0.7.jar;C:\Users\kosma\.m2\repository\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-core\6.0.11\spring-core-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-jcl\6.0.11\spring-jcl-6.0.11.jar;C:\Users\kosma\.m2\repository\org\yaml\snakeyaml\1.33\snakeyaml-1.33.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-test\3.1.3\spring-boot-starter-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test\3.1.3\spring-boot-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\3.1.3\spring-boot-test-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\com\jayway\jsonpath\json-path\2.8.0\json-path-2.8.0.jar;C:\Users\kosma\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.0\jakarta.xml.bind-api-4.0.0.jar;C:\Users\kosma\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar;C:\Users\kosma\.m2\repository\net\minidev\json-smart\2.4.11\json-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\net\minidev\accessors-smart\2.4.11\accessors-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\org\ow2\asm\asm\9.3\asm-9.3.jar;C:\Users\kosma\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\kosma\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-junit-jupiter\5.3.1\mockito-junit-jupiter-5.3.1.jar;C:\Users\kosma\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\kosma\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-test\6.0.11\spring-test-6.0.11.jar;C:\Users\kosma\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\kosma\.m2\repository\org\projectlombok\lombok\1.18.28\lombok-1.18.28.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr4-runtime\4.13.1\antlr4-runtime-4.13.1.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-starter\3.1.3\spring-shell-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-autoconfigure\3.1.3\spring-shell-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-core\3.1.3\spring-shell-core-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-validation\3.1.3\spring-boot-starter-validation-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\10.1.12\tomcat-embed-el-10.1.12.jar;C:\Users\kosma\.m2\repository\org\hibernate\validator\hibernate-validator\8.0.1.Final\hibernate-validator-8.0.1.Final.jar;C:\Users\kosma\.m2\repository\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\Users\kosma\.m2\repository\org\jboss\logging\jboss-logging\3.5.3.Final\jboss-logging-3.5.3.Final.jar;C:\Users\kosma\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-messaging\6.0.11\spring-messaging-6.0.11.jar;C:\Users\kosma\.m2\repository\org\jline\jline\3.23.0\jline-3.23.0.jar;C:\Users\kosma\.m2\repository\org\antlr\ST4\4.3.1\ST4-4.3.1.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr-runtime\3.5.2\antlr-runtime-3.5.2.jar;C:\Users\kosma\.m2\repository\commons-io\commons-io\2.11.0\commons-io-2.11.0.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard\3.1.3\spring-shell-standard-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard-commands\3.1.3\spring-shell-standard-commands-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-table\3.1.3\spring-shell-table-3.1.3.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy\1.14.6\byte-buddy-1.14.6.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.6\byte-buddy-agent-1.14.6.jar;C:\Users\kosma\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter\5.9.3\junit-jupiter-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.3\junit-jupiter-api-5.9.3.jar;C:\Users\kosma\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-commons\1.9.3\junit-platform-commons-1.9.3.jar;C:\Users\kosma\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.9.3\junit-jupiter-params-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.3\junit-jupiter-engine-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-engine\1.9.3\junit-platform-engine-1.9.3.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
@@ -30,7 +30,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\kosma\AppData\Local\Temp\surefire17464466457876690311\surefirebooter-20250127010756135_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\kosma\AppData\Local\Temp\surefire15572946670203893249\surefirebooter-20250128002804930_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.12+8-LTS-286"/>
@@ -56,14 +56,14 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="testGenerateWithComplexTable" classname="com.sqldomaingen.EntityGeneratorTest" time="0.017">
-    <failure message="Content should include id field. ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: Content should include id field. ==> expected: <true> but was: <false>
+  <testcase name="testGenerateEntityWithRelationships" classname="com.sqldomaingen.EntityGeneratorTest" time="0.097">
+    <failure message="Content should include @ManyToOne annotation ==&gt; expected: &lt;true&gt; but was: &lt;false&gt;" type="org.opentest4j.AssertionFailedError"><![CDATA[org.opentest4j.AssertionFailedError: Content should include @ManyToOne annotation ==> expected: <true> but was: <false>
 	at org.junit.jupiter.api.AssertionFailureBuilder.build(AssertionFailureBuilder.java:151)
 	at org.junit.jupiter.api.AssertionFailureBuilder.buildAndThrow(AssertionFailureBuilder.java:132)
 	at org.junit.jupiter.api.AssertTrue.failNotTrue(AssertTrue.java:63)
 	at org.junit.jupiter.api.AssertTrue.assertTrue(AssertTrue.java:36)
 	at org.junit.jupiter.api.Assertions.assertTrue(Assertions.java:211)
-	at com.sqldomaingen.EntityGeneratorTest.testGenerateWithComplexTable(EntityGeneratorTest.java:90)
+	at com.sqldomaingen.EntityGeneratorTest.testGenerateEntityWithRelationships(EntityGeneratorTest.java:107)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
 	at java.base/jdk.internal.reflect.NativeMethodAccessorImpl.invoke(NativeMethodAccessorImpl.java:77)
 	at java.base/jdk.internal.reflect.DelegatingMethodAccessorImpl.invoke(DelegatingMethodAccessorImpl.java:43)
@@ -136,45 +136,43 @@
 	at org.apache.maven.surefire.booter.ForkedBooter.run(ForkedBooter.java:507)
 	at org.apache.maven.surefire.booter.ForkedBooter.main(ForkedBooter.java:495)
 ]]></failure>
-    <system-out><![CDATA[01:07:58.286 [main] INFO com.sqldomaingen.EntityGeneratorTest -- Starting testGenerateWithComplexTable...
-01:07:58.288 [main] INFO com.sqldomaingen.EntityGeneratorTest -- Temporary output directory created at: C:\Users\kosma\AppData\Local\Temp\test-output-complex
-01:07:58.288 [main] INFO com.sqldomaingen.EntityGeneratorTest -- Starting entity generation...
-01:07:58.288 [main] INFO com.sqldomaingen.generator.EntityGenerator -- Starting entity generation...
-01:07:58.294 [main] INFO com.sqldomaingen.generator.EntityGenerator -- Generated entity for table: complex_table
-01:07:58.294 [main] INFO com.sqldomaingen.generator.EntityGenerator -- Entity generation complete. Output directory: C:\Users\kosma\AppData\Local\Temp\test-output-complex
-01:07:58.294 [main] INFO com.sqldomaingen.EntityGeneratorTest -- Entity generation completed.
-01:07:58.295 [main] INFO com.sqldomaingen.EntityGeneratorTest -- Generated file exists at: C:\Users\kosma\AppData\Local\Temp\test-output-complex\ComplexTable.java
-01:07:58.295 [main] INFO com.sqldomaingen.EntityGeneratorTest -- Generated file content:
+    <system-out><![CDATA[00:28:07.474 [main] INFO com.sqldomaingen.EntityGeneratorTest -- Starting testGenerateEntityWithRelationships...
+00:28:07.479 [main] INFO com.sqldomaingen.generator.RelationshipResolver -- Resolving relationships for table: example_table
+00:28:07.479 [main] INFO com.sqldomaingen.generator.RelationshipResolver -- Processing column: Column{name='id', type='Long', length=0, primaryKey=true, nullable=false, defaultValue='null', unique=false}
+00:28:07.479 [main] WARN com.sqldomaingen.generator.RelationshipResolver -- Column does not define a valid relationship: Column{name='id', type='Long', length=0, primaryKey=true, nullable=false, defaultValue='null', unique=false}
+00:28:07.479 [main] INFO com.sqldomaingen.generator.RelationshipResolver -- Processing column: Column{name='user_id', type='Long', length=0, primaryKey=false, nullable=false, defaultValue='null', unique=false}
+00:28:07.479 [main] WARN com.sqldomaingen.generator.RelationshipResolver -- Column does not define a valid relationship: Column{name='user_id', type='Long', length=0, primaryKey=false, nullable=false, defaultValue='null', unique=false}
+00:28:07.479 [main] INFO com.sqldomaingen.generator.RelationshipResolver -- Finished resolving relationships: []
+00:28:07.560 [main] INFO com.sqldomaingen.EntityGeneratorTest -- Temporary output directory created at: C:\Users\kosma\AppData\Local\Temp\entity-test-output5349034195039607658
+00:28:07.560 [main] INFO com.sqldomaingen.generator.EntityGenerator -- Starting entity generation...
+00:28:07.562 [main] ERROR com.sqldomaingen.generator.RelationshipResolver -- Target table name is null.
+00:28:07.562 [main] WARN com.sqldomaingen.generator.RelationshipResolver -- Target table 'null' not found for column 'user_id'
+00:28:07.567 [main] INFO com.sqldomaingen.generator.EntityGenerator -- Generated entity for table: example_table
+00:28:07.567 [main] INFO com.sqldomaingen.generator.EntityGenerator -- Entity generation complete. Output directory: C:\Users\kosma\AppData\Local\Temp\entity-test-output5349034195039607658
+00:28:07.567 [main] INFO com.sqldomaingen.EntityGeneratorTest -- Entity generation completed.
+00:28:07.568 [main] INFO com.sqldomaingen.EntityGeneratorTest -- Generated entity file exists: C:\Users\kosma\AppData\Local\Temp\entity-test-output5349034195039607658\ExampleTable.java
+00:28:07.569 [main] INFO com.sqldomaingen.EntityGeneratorTest -- Generated entity content:
 package com.example;
 
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "complex_table")
+@Table(name = "example_table")
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class ComplexTable {
+public class ExampleTable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id")
-    private null id;
+    private Long id;
 
-    @Column(name = "name", unique = true)
-    private null name;
-
-    @Column(name = "age")
-    private null age;
-
-    @Column(name = "salary")
-    private null salary;
-
-    @Column(name = "active")
-    private null active;
+    @Column(name = "user_id")
+    private Long userId;
 
 }
 

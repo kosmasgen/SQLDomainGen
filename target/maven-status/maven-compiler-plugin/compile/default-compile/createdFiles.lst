@@ -17,6 +17,7 @@ com\sqldomaingen\parser\PostgreSQLParser$AlterColumnActionContext.class
 com\sqldomaingen\parser\PostgreSQLParser$SqlScriptContext.class
 com\sqldomaingen\parser\PostgreSQLParser$PartitionValuesClauseContext.class
 com\sqldomaingen\parser\PostgreSQLParser$OnActionContext.class
+com\sqldomaingen\generator\EntityGenerator$1.class
 com\sqldomaingen\parser\PostgreSQLParser$ExcludeElementContext.class
 com\sqldomaingen\parser\PostgreSQLParser$AlterActionContext.class
 com\sqldomaingen\parser\PostgreSQLParser$RuleEventContext.class
@@ -37,6 +38,7 @@ com\sqldomaingen\parser\PostgreSQLParser.class
 com\sqldomaingen\model\Table.class
 com\sqldomaingen\parser\PostgreSQLParser$PartitionOfClauseContext.class
 com\sqldomaingen\parser\PostgreSQLParser$TableNameContext.class
+com\sqldomaingen\parser\SQLParser$2.class
 com\sqldomaingen\parser\PostgreSQLParser$ColumnDefContext.class
 com\sqldomaingen\parser\PostgreSQLParser$ConstraintContext.class
 com\sqldomaingen\parser\PostgreSQLParser$LimitClauseContext.class

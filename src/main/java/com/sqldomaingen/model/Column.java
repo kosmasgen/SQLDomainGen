@@ -8,12 +8,11 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-
 @ToString
 public class Column {
 
     private String name;
-    private String type;
+    private String sqlType; // SQL Type (TEST)
     private int length;
     private boolean isIdentity;
     private String identityGeneration;
@@ -37,10 +36,8 @@ public class Column {
     private String javaType;
     private boolean foreignKey;
     private String formattedName;
-
-    // Νέα πεδία για foreign key
-    private String referencedTable; // Όνομα πίνακα αναφοράς
-    private String referencedColumn; // Όνομα στήλης αναφοράς
+    private String referencedTable;
+    private String referencedColumn;
 
 
     @Override

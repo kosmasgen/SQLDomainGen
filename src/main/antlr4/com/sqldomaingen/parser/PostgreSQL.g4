@@ -4,9 +4,10 @@ grammar PostgreSQL;
 // Δημιουργία Πίνακα
 // -------------------------
 createTableStatement
-    : CREATE TABLE tableName '(' columnDef (',' columnDef)* (',' tableConstraint)* ')' (partitionClause)? SEMICOLON
+    : CREATE TABLE tableName '(' (columnDef | tableConstraint) (',' (columnDef | tableConstraint))* ')' (partitionClause)? SEMICOLON
     | CREATE TABLE tableName 'PARTITION OF' tableName partitionValuesClause SEMICOLON
     ;
+
 
 // Ορισμός μιας στήλης στον πίνακα
 columnDef
@@ -134,6 +135,7 @@ onUpdateAction
 // Constraints σε επίπεδο πίνακα
 tableConstraint
     : 'PRIMARY KEY' columnNameList
+    | 'CONSTRAINT' IDENTIFIER 'FOREIGN KEY' columnNameList 'REFERENCES' tableName columnNameList (onAction)*
     | 'FOREIGN KEY' columnNameList 'REFERENCES' tableName columnNameList ('RELATIONSHIP' relationshipType)? (onAction)*
     | 'UNIQUE' columnNameList
     | 'CHECK' '(' condition ')'
@@ -215,6 +217,8 @@ condition
     | 'NOT' condition
     | condition 'AND' condition
     | condition 'OR' condition
+    | 'true'
+    | 'false'
     ;
 
 // Υποερώτημα (subquery)
@@ -516,5 +520,3 @@ booleanLiteral
     : 'TRUE'
     | 'FALSE'
     ;
-
-

@@ -122,6 +122,19 @@
           <outputDirectory>${project.build.directory}/generated-sources/antlr4</outputDirectory>
         </configuration>
       </plugin>
+      <plugin>
+        <groupId>com.github.spotbugs</groupId>
+        <artifactId>spotbugs-maven-plugin</artifactId>
+        <version>4.7.3.0</version>
+        <executions>
+          <execution>
+            <phase>verify</phase>
+            <goals>
+              <goal>check</goal>
+            </goals>
+          </execution>
+        </executions>
+      </plugin>
 
       <!-- JaCoCo Maven Plugin -->
       <plugin>
