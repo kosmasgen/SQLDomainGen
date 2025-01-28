@@ -8,12 +8,11 @@ import java.util.List;
 @Getter
 @Setter
 @NoArgsConstructor
-
 @ToString
 public class Column {
 
     private String name;
-    private String type;
+    private String sqlType;
     private int length;
     private boolean isIdentity;
     private String identityGeneration;
@@ -37,16 +36,16 @@ public class Column {
     private String javaType;
     private boolean foreignKey;
     private String formattedName;
+    private String referencedTable;
+    private String referencedColumn;
+    private int precision;  // Default για DECIMAL
+    private int scale;   // Default για DECIMAL(10,2)
 
-    // Νέα πεδία για foreign key
-    private String referencedTable; // Όνομα πίνακα αναφοράς
-    private String referencedColumn; // Όνομα στήλης αναφοράς
 
 
     @Override
     public String toString() {
-        return "Column{" +
-                "name='" + name + '\'' +
+        return "Column{name='" + name + '\'' +
                 ", type='" + javaType + '\'' +
                 ", length=" + length +
                 ", primaryKey=" + primaryKey +
@@ -55,5 +54,6 @@ public class Column {
                 ", unique=" + unique +
                 '}';
     }
+
 
 }

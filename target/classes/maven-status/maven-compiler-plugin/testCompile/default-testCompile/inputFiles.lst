@@ -1,6 +1,5 @@
-C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\GenaratorCommandsTest.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\GeneratorCommandsTest.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\GrammarTest.java
-C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\RelationResolverTest.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\CreateTableDefinitionTest.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\EntityGeneratorTest.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\TableTest.java
@@ -13,3 +12,4 @@ C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\SQLDomai
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\TypeMapperTest.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\ColumnTest.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\RelationshipTest.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen\RelationshipResolverTest.java

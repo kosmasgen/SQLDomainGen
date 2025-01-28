@@ -18,7 +18,7 @@ public class TypeMapper {
     private static final Map<String, String> sqlToJavaTypeMap = new HashMap<>();
 
     // Ιδιωτικός constructor για να αποτρέψουμε τη δημιουργία αντικειμένων.
-    private TypeMapper() {
+    public TypeMapper() {
         // Πετάμε εξαίρεση για να καταστήσουμε σαφές ότι η κλάση δεν επιτρέπεται να δημιουργηθεί.
         throw new AssertionError("Utility class - instantiation not allowed.");
     }

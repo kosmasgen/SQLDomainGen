@@ -63,6 +63,9 @@ public class GeneratorCommands {
             entityGenerator.generate(tables, outputDir, packageName, overwrite, useBuilder);
             logger.info("Entity generation completed successfully. Output directory: {}", outputDir);
 
+            // Τερματισμός εφαρμογής
+            System.exit(0);
+
             return "Entity generation completed successfully.";
         } catch (IOException e) {
             logger.error("Error during entity generation", e);

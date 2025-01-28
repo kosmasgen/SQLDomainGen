@@ -4,9 +4,10 @@ grammar PostgreSQL;
 // Δημιουργία Πίνακα
 // -------------------------
 createTableStatement
-    : CREATE TABLE tableName '(' columnDef (',' columnDef)* (',' tableConstraint)* ')' (partitionClause)? SEMICOLON
+    : CREATE TABLE tableName '(' (columnDef | tableConstraint) (',' (columnDef | tableConstraint))* ')' (partitionClause)? SEMICOLON
     | CREATE TABLE tableName 'PARTITION OF' tableName partitionValuesClause SEMICOLON
     ;
+
 
 // Ορισμός μιας στήλης στον πίνακα
 columnDef
@@ -72,7 +73,7 @@ dataType
     | 'REAL'
     | 'DOUBLE PRECISION'
     | 'NUMERIC' ('(' NUMBER (',' NUMBER)? ')')?
-    | 'DECIMAL' ('(' NUMBER (',' NUMBER)? ')')?
+    | decimalType
     | 'MONEY'
     | 'CHAR' '(' NUMBER ')'
     | 'VARCHAR' '(' NUMBER ')'
@@ -134,6 +135,7 @@ onUpdateAction
 // Constraints σε επίπεδο πίνακα
 tableConstraint
     : 'PRIMARY KEY' columnNameList
+    | 'CONSTRAINT' IDENTIFIER 'FOREIGN KEY' columnNameList 'REFERENCES' tableName columnNameList (onAction)*
     | 'FOREIGN KEY' columnNameList 'REFERENCES' tableName columnNameList ('RELATIONSHIP' relationshipType)? (onAction)*
     | 'UNIQUE' columnNameList
     | 'CHECK' '(' condition ')'
@@ -154,6 +156,7 @@ excludeElement
 onAction
     : 'ON DELETE' action
     | 'ON UPDATE' action
+    | 'DEFERRABLE' ('INITIALLY' ('DEFERRED' | 'IMMEDIATE'))?
     ;
 
 action
@@ -215,6 +218,8 @@ condition
     | 'NOT' condition
     | condition 'AND' condition
     | condition 'OR' condition
+    | 'true'
+    | 'false'
     ;
 
 // Υποερώτημα (subquery)
@@ -390,10 +395,10 @@ INT: 'INT';
 VARCHAR: 'VARCHAR';
 PRIMARY_KEY: 'PRIMARY KEY';
 
-// Κανόνες (με camelCase)
 decimalType
-    : DECIMAL ('(' NUMBER (',' NUMBER)? ')')?
+    : ('DECIMAL' | 'NUMERIC') ('(' precision=NUMBER (',' scale=NUMBER)? ')')?
     ;
+
 
 // Ορισμός partitioning για πίνακα
 partitionClause
@@ -517,4 +522,15 @@ booleanLiteral
     | 'FALSE'
     ;
 
+foreignKeyAction
+    : 'ON DELETE' fkAction=referentialAction
+    | 'ON UPDATE' fkAction=referentialAction
+    ;
 
+referentialAction
+    : 'CASCADE'
+    | 'SET NULL'
+    | 'SET DEFAULT'
+    | 'RESTRICT'
+    | 'NO ACTION'
+    ;

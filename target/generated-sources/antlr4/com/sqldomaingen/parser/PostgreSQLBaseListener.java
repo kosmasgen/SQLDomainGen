@@ -792,6 +792,30 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBooleanLiteral(PostgreSQLParser.BooleanLiteralContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterForeignKeyAction(PostgreSQLParser.ForeignKeyActionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitForeignKeyAction(PostgreSQLParser.ForeignKeyActionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterReferentialAction(PostgreSQLParser.ReferentialActionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitReferentialAction(PostgreSQLParser.ReferentialActionContext ctx) { }
 
 	/**
 	 * {@inheritDoc}

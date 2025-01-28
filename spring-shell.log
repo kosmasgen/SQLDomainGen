@@ -25,3 +25,53 @@
 1737577091131:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite false --use-builder false
 1737874667357:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities
 1737885336049:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite false --use-builder false
+1738161661496:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1738162256128:2025-01-29T16:47:30.754+02:00  INFO 14932 --- [           main] c.sqldomaingen.SQLDomainGenApplication   : Starting SQLDomainGenApplication using Java 17.0.12 with PID 14932 (C:\\Users\\kosma\\IdeaProjects\\SQLDomainGen\\target\\classes started by kosma in C:\\Users\\kosma\\IdeaProjects\\SQLDomainGen)
+1738162256144:2025-01-29T16:47:30.763+02:00  INFO 14932 --- [           main] c.sqldomaingen.SQLDomainGenApplication   : No active profile set, falling back to 1 default profile: "default"
+1738162256155:2025-01-29T16:47:31.699+02:00  WARN 14932 --- [           main] org.jline                                : Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+1738162256165:2025-01-29T16:47:31.958+02:00  INFO 14932 --- [           main] c.sqldomaingen.SQLDomainGenApplication   : Started SQLDomainGenApplication in 1.735 seconds (process running for 2.175)
+1738162256167:shell:>generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1738162256167:2025-01-29T16:47:37.612+02:00  INFO 14932 --- [           main] c.sqldomaingen.shell.GeneratorCommands   : Processing SQL file: input/test_script.sql
+1738162256178:2025-01-29T16:47:37.672+02:00  INFO 14932 --- [           main] com.sqldomaingen.parser.SQLParser        : TokenStream generated successfully for SQL content.
+1738162256190:line 10:30 mismatched input 'true' expecting {'NULL', 'TRUE', 'FALSE', 'CURRENT_TIMESTAMP', 'current_user', STRING, NUMBER}
+1738162256194:line 24:33 mismatched input 'true' expecting {'NULL', 'TRUE', 'FALSE', 'CURRENT_TIMESTAMP', 'current_user', STRING, NUMBER}
+1738162256194:2025-01-29T16:47:37.720+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Processing CREATE TABLE definition...
+1738162256210:2025-01-29T16:47:37.727+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Extracted table name: Customer
+1738162256217:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] com.sqldomaingen.util.TypeMapper         : Mapping SQL type 'SERIAL' to Java type 'Long'
+1738162256223:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Extracted column: customer_id with type SERIAL
+1738162256232:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] com.sqldomaingen.util.TypeMapper         : Mapping SQL type 'VARCHAR' to Java type 'String'
+1738162256233:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Extracted column: first_name with type VARCHAR(50)
+1738162256244:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] com.sqldomaingen.util.TypeMapper         : Mapping SQL type 'VARCHAR' to Java type 'String'
+1738162301671:2025-01-29T16:47:30.754+02:00  INFO 14932 --- [           main] c.sqldomaingen.SQLDomainGenApplication   : Starting SQLDomainGenApplication using Java 17.0.12 with PID 14932 (C:\\Users\\kosma\\IdeaProjects\\SQLDomainGen\\target\\classes started by kosma in C:\\Users\\kosma\\IdeaProjects\\SQLDomainGen)
+1738162301685:2025-01-29T16:47:30.763+02:00  INFO 14932 --- [           main] c.sqldomaingen.SQLDomainGenApplication   : No active profile set, falling back to 1 default profile: "default"
+1738162301698:2025-01-29T16:47:31.699+02:00  WARN 14932 --- [           main] org.jline                                : Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+1738162301710:2025-01-29T16:47:31.958+02:00  INFO 14932 --- [           main] c.sqldomaingen.SQLDomainGenApplication   : Started SQLDomainGenApplication in 1.735 seconds (process running for 2.175)
+1738162301714:shell:>generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1738162301714:2025-01-29T16:47:37.612+02:00  INFO 14932 --- [           main] c.sqldomaingen.shell.GeneratorCommands   : Processing SQL file: input/test_script.sql
+1738162301730:2025-01-29T16:47:37.672+02:00  INFO 14932 --- [           main] com.sqldomaingen.parser.SQLParser        : TokenStream generated successfully for SQL content.
+1738162301735:line 10:30 mismatched input 'true' expecting {'NULL', 'TRUE', 'FALSE', 'CURRENT_TIMESTAMP', 'current_user', STRING, NUMBER}
+1738162301746:line 24:33 mismatched input 'true' expecting {'NULL', 'TRUE', 'FALSE', 'CURRENT_TIMESTAMP', 'current_user', STRING, NUMBER}
+1738162301747:2025-01-29T16:47:37.720+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Processing CREATE TABLE definition...
+1738162301759:2025-01-29T16:47:37.727+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Extracted table name: Customer
+1738162301762:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] com.sqldomaingen.util.TypeMapper         : Mapping SQL type 'SERIAL' to Java type 'Long'
+1738162301762:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Extracted column: customer_id with type SERIAL
+1738162301781:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] com.sqldomaingen.util.TypeMapper         : Mapping SQL type 'VARCHAR' to Java type 'String'
+1738162301781:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Extracted column: first_name with type VARCHAR(50)
+1738162301793:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] com.sqldomaingen.util.TypeMapper         : Mapping SQL type 'VARCHAR' to Java type 'String'
+1738162336103:2025-01-29T16:47:30.754+02:00  INFO 14932 --- [           main] c.sqldomaingen.SQLDomainGenApplication   : Starting SQLDomainGenApplication using Java 17.0.12 with PID 14932 (C:\\Users\\kosma\\IdeaProjects\\SQLDomainGen\\target\\classes started by kosma in C:\\Users\\kosma\\IdeaProjects\\SQLDomainGen)
+1738162336120:2025-01-29T16:47:30.763+02:00  INFO 14932 --- [           main] c.sqldomaingen.SQLDomainGenApplication   : No active profile set, falling back to 1 default profile: "default"
+1738162336132:2025-01-29T16:47:31.699+02:00  WARN 14932 --- [           main] org.jline                                : Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+1738162336144:2025-01-29T16:47:31.958+02:00  INFO 14932 --- [           main] c.sqldomaingen.SQLDomainGenApplication   : Started SQLDomainGenApplication in 1.735 seconds (process running for 2.175)
+1738162336151:shell:>generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1738162336159:2025-01-29T16:47:37.612+02:00  INFO 14932 --- [           main] c.sqldomaingen.shell.GeneratorCommands   : Processing SQL file: input/test_script.sql
+1738162336165:2025-01-29T16:47:37.672+02:00  INFO 14932 --- [           main] com.sqldomaingen.parser.SQLParser        : TokenStream generated successfully for SQL content.
+1738162336172:line 10:30 mismatched input 'true' expecting {'NULL', 'TRUE', 'FALSE', 'CURRENT_TIMESTAMP', 'current_user', STRING, NUMBER}
+1738162336179:line 24:33 mismatched input 'true' expecting {'NULL', 'TRUE', 'FALSE', 'CURRENT_TIMESTAMP', 'current_user', STRING, NUMBER}
+1738162336184:2025-01-29T16:47:37.720+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Processing CREATE TABLE definition...
+1738162336193:2025-01-29T16:47:37.727+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Extracted table name: Customer
+1738162336198:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] com.sqldomaingen.util.TypeMapper         : Mapping SQL type 'SERIAL' to Java type 'Long'
+1738162336206:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Extracted column: customer_id with type SERIAL
+1738162336214:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] com.sqldomaingen.util.TypeMapper         : Mapping SQL type 'VARCHAR' to Java type 'String'
+1738162336225:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] c.s.parser.CreateTableDefinition         : Extracted column: first_name with type VARCHAR(50)
+1738162336228:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] com.sqldomaingen.util.TypeMapper         : Mapping SQL type 'VARCHAR' to Java type 'String'
+1738162408270:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite false --use-builder false

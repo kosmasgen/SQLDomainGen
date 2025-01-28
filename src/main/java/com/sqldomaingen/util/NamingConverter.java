@@ -11,7 +11,7 @@ public class NamingConverter {
     private static final Logger logger = LoggerFactory.getLogger(NamingConverter.class);
 
     // Ιδιωτικός constructor για να αποτρέψουμε τη δημιουργία αντικειμένων
-    private NamingConverter() {
+    public NamingConverter() {
         throw new UnsupportedOperationException("Utility class");
     }
 

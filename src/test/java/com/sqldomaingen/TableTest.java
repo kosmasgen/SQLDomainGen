@@ -25,7 +25,7 @@ public class TableTest {
         // Δημιουργία αντικειμένου Column
         Column column = new Column();
         column.setName("id");
-        column.setType("INT");
+        column.setJavaType("Long");
         column.setPrimaryKey(true);
 
         // Προσθήκη στήλης
@@ -38,7 +38,7 @@ public class TableTest {
         // Επαλήθευση
         Assertions.assertEquals(1, table.getColumns().size());
         Assertions.assertEquals("id", table.getColumns().get(0).getName());
-        Assertions.assertEquals("INT", table.getColumns().get(0).getType());
+        Assertions.assertEquals("Long", table.getColumns().get(0).getJavaType());
         Assertions.assertTrue(table.getColumns().get(0).isPrimaryKey());
     }
 
@@ -72,8 +72,8 @@ public class TableTest {
         // Προσθήκη στηλών
         Column idColumn = new Column();
         idColumn.setName("id");
-        idColumn.setType("INT");
-        idColumn.setLength(11);
+        idColumn.setJavaType("Long");
+        idColumn.setLength(255);
         idColumn.setPrimaryKey(true);
         idColumn.setNullable(false);
         idColumn.setDefaultValue(null);
@@ -81,7 +81,7 @@ public class TableTest {
 
         Column nameColumn = new Column();
         nameColumn.setName("name");
-        nameColumn.setType("VARCHAR");
+        nameColumn.setJavaType("String");
         nameColumn.setLength(255);
         nameColumn.setPrimaryKey(false);
         nameColumn.setNullable(true);
@@ -95,8 +95,8 @@ public class TableTest {
         table.addConstraints(List.of("PRIMARY KEY (id)", "FOREIGN KEY (dept_id) REFERENCES Department(id)"));
 
         String expectedToString = "Table{name='SampleTable', columns=[" +
-                "Column{name='id', type='INT', length=11, primaryKey=true, nullable=false, defaultValue='null', unique=true}, " +
-                "Column{name='name', type='VARCHAR', length=255, primaryKey=false, nullable=true, defaultValue='default_name', unique=false}], " +
+                "Column{name='id', type='Long', length=255, primaryKey=true, nullable=false, defaultValue='null', unique=true}, " +
+                "Column{name='name', type='String', length=255, primaryKey=false, nullable=true, defaultValue='default_name', unique=false}], " +
                 "constraints=[PRIMARY KEY (id), FOREIGN KEY (dept_id) REFERENCES Department(id)]}";
 
         logger.info("Table state: {}", table);

@@ -657,4 +657,24 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBooleanLiteral(PostgreSQLParser.BooleanLiteralContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#foreignKeyAction}.
+	 * @param ctx the parse tree
+	 */
+	void enterForeignKeyAction(PostgreSQLParser.ForeignKeyActionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#foreignKeyAction}.
+	 * @param ctx the parse tree
+	 */
+	void exitForeignKeyAction(PostgreSQLParser.ForeignKeyActionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#referentialAction}.
+	 * @param ctx the parse tree
+	 */
+	void enterReferentialAction(PostgreSQLParser.ReferentialActionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#referentialAction}.
+	 * @param ctx the parse tree
+	 */
+	void exitReferentialAction(PostgreSQLParser.ReferentialActionContext ctx);
 }

@@ -1,14 +1,22 @@
-CREATE TABLE test_table (
-    id INT PRIMARY KEY,
-    name VARCHAR(255)
-);
-CREATE TABLE Employee (
-    id INT PRIMARY KEY,
-    name VARCHAR(255) NOT NULL,
-    salary DECIMAL(10, 2)
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    email VARCHAR(100) UNIQUE NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE TABLE Department (
-    dept_id INT PRIMARY KEY,
-    dept_name VARCHAR(255) NOT NULL
+CREATE TABLE posts (
+    id SERIAL PRIMARY KEY,
+    user_id INT REFERENCES users(id) ON DELETE CASCADE,
+    title VARCHAR(255) NOT NULL,
+    content TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+CREATE TABLE comments (
+    id SERIAL PRIMARY KEY,
+    post_id INT REFERENCES posts(id) ON DELETE CASCADE,
+    user_id INT REFERENCES users(id) ON DELETE SET NULL,
+    comment_text TEXT NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
