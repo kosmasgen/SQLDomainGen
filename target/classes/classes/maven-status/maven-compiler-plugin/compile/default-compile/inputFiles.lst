@@ -1,0 +1,16 @@
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\model\Relationship.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\parser\CreateTableDefinition.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\model\Table.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\SQLDomainGenApplication.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\util\NamingConverter.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\shell\GeneratorCommands.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\target\generated-sources\antlr4\com\sqldomaingen\parser\PostgreSQLParser.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\parser\ColumnDefinition.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\target\generated-sources\antlr4\com\sqldomaingen\parser\PostgreSQLBaseListener.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\model\Column.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\util\TypeMapper.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\generator\EntityGenerator.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\target\generated-sources\antlr4\com\sqldomaingen\parser\PostgreSQLLexer.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\parser\SQLParser.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\generator\RelationshipResolver.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\target\generated-sources\antlr4\com\sqldomaingen\parser\PostgreSQLListener.java
