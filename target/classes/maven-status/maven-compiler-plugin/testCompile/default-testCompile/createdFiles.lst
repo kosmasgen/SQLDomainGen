@@ -9,7 +9,6 @@ com\sqldomaingen\NamingConverterTest.class
 com\sqldomaingen\SQLDomainGenIntegrationTest.class
 com\sqldomaingen\GrammarTest.class
 com\sqldomaingen\SQLParserTest.class
-com\sqldomaingen\EntityGeneratorTest.class
 com\sqldomaingen\RelationshipResolverTest.class
 com\sqldomaingen\GrammarRelationshipTest.class
 com\sqldomaingen\SQLDomainGenApplicationTest.class

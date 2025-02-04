@@ -1,0 +1,231 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="el"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>ColumnDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SQLDomainGen</a> &gt; <a href="index.source.html" class="el_package">com.sqldomaingen.parser</a> &gt; <span class="el_source">ColumnDefinition.java</span></div><h1>ColumnDefinition.java</h1><pre class="source lang-java linenums">package com.sqldomaingen.parser;
+
+import com.sqldomaingen.util.TypeMapper;
+import com.sqldomaingen.model.Column;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+@Getter
+<span class="fc" id="L14">@Setter</span>
+<span class="fc" id="L15">@NoArgsConstructor</span>
+<span class="nc" id="L16">@AllArgsConstructor</span>
+public class ColumnDefinition extends PostgreSQLBaseListener {
+
+<span class="fc" id="L19">    private static final Logger logger = LoggerFactory.getLogger(ColumnDefinition.class);</span>
+
+<span class="fc" id="L21">    private String columnName;</span>
+<span class="fc" id="L22">    private String sqlType;</span>
+<span class="fc" id="L23">    private String javaType;</span>
+<span class="fc" id="L24">    private int length;</span>
+<span class="pc" id="L25">    private boolean primaryKey = false;</span>
+<span class="pc" id="L26">    private boolean nullable = true;</span>
+<span class="pc" id="L27">    private boolean unique = false;</span>
+<span class="fc" id="L28">    private String defaultValue;</span>
+<span class="fc" id="L29">    private String checkConstraint;</span>
+<span class="fc" id="L30">    private String referencedTable;</span>
+<span class="fc" id="L31">    private String referencedColumn;</span>
+<span class="pc" id="L32">    private boolean foreignKey = false;</span>
+<span class="fc" id="L33">    private int precision;</span>
+<span class="fc" id="L34">    private int scale;</span>
+<span class="nc" id="L35">    private String onUpdate;</span>
+<span class="nc" id="L36">    private String onDelete;</span>
+
+
+    /**
+     * Factory method που δημιουργεί `ColumnDefinition` χρησιμοποιώντας `Listener`
+     */
+    public static ColumnDefinition fromContext(PostgreSQLParser.ColumnDefContext ctx) {
+<span class="pc bpc" id="L43" title="1 of 2 branches missed.">        if (ctx == null) {</span>
+<span class="nc" id="L44">            throw new IllegalArgumentException(&quot;ColumnDefContext is null&quot;);</span>
+        }
+
+<span class="fc" id="L47">        logger.info(&quot;Parsing Column Definition -&gt; {}&quot;, ctx.getText());</span>
+
+<span class="fc" id="L49">        ColumnDefinition columnDefinition = new ColumnDefinition();</span>
+<span class="fc" id="L50">        ParseTreeWalker.DEFAULT.walk(columnDefinition, ctx);</span>
+<span class="fc" id="L51">        columnDefinition.javaType = TypeMapper.mapToJavaType(columnDefinition.sqlType);</span>
+<span class="fc" id="L52">        logger.info(&quot;Parsed Column -&gt; Name: {}, SQL Type: {}, Java Type: {}, Primary Key: {}&quot;,</span>
+<span class="fc" id="L53">                columnDefinition.getColumnName(), columnDefinition.getSqlType(), columnDefinition.getJavaType(), columnDefinition.isPrimaryKey());</span>
+
+<span class="fc" id="L55">        return columnDefinition;</span>
+    }
+
+    /**
+     * Listener για την εξαγωγή του ονόματος της στήλης
+     */
+    @Override
+    public void enterColumnDef(PostgreSQLParser.ColumnDefContext ctx) {
+<span class="fc" id="L63">        columnName = ctx.columnName().getText();</span>
+<span class="fc" id="L64">        logger.debug(&quot;Extracted column name: {}&quot;, columnName);</span>
+<span class="fc" id="L65">    }</span>
+
+    /**
+     * Listener για την εξαγωγή του τύπου δεδομένων SQL και των παραμέτρων του (π.χ., DECIMAL(precision, scale))
+     */
+    @Override
+    public void enterDataType(PostgreSQLParser.DataTypeContext ctx) {
+<span class="fc" id="L72">        sqlType = ctx.getText().toUpperCase();</span>
+
+<span class="fc bfc" id="L74" title="All 2 branches covered.">        if (ctx.decimalType() != null) {</span>
+<span class="pc bpc" id="L75" title="1 of 2 branches missed.">            precision = ctx.decimalType().precision != null ? Integer.parseInt(ctx.decimalType().precision.getText()) : 0;</span>
+<span class="fc bfc" id="L76" title="All 2 branches covered.">            scale = ctx.decimalType().scale != null ? Integer.parseInt(ctx.decimalType().scale.getText()) : 0;</span>
+        }
+<span class="fc" id="L78">        length = extractLength(sqlType);</span>
+
+<span class="fc" id="L80">        logger.debug(&quot;Extracted SQL type: {}, precision: {}, scale: {}&quot;, sqlType, precision, scale);</span>
+<span class="fc" id="L81">    }</span>
+
+
+    /**
+     * Listener για `PRIMARY KEY`, `UNIQUE`, `NOT NULL`, και άλλα constraints
+     */
+    @Override
+    public void enterConstraint(PostgreSQLParser.ConstraintContext ctx) {
+<span class="fc" id="L89">        String constraintText = ctx.getText().toUpperCase();</span>
+
+<span class="fc bfc" id="L91" title="All 2 branches covered.">        if (constraintText.contains(&quot;PRIMARY KEY&quot;)) {</span>
+<span class="fc" id="L92">            primaryKey = true;</span>
+<span class="fc" id="L93">            nullable = false; // PRIMARY KEY σημαίνει NOT NULL</span>
+        }
+<span class="fc bfc" id="L95" title="All 2 branches covered.">        if (constraintText.contains(&quot;NOT NULL&quot;)) {</span>
+<span class="fc" id="L96">            nullable = false;</span>
+        }
+<span class="fc bfc" id="L98" title="All 2 branches covered.">        if (constraintText.contains(&quot;UNIQUE&quot;)) {</span>
+<span class="fc" id="L99">            unique = true;</span>
+        }
+<span class="fc bfc" id="L101" title="All 2 branches covered.">        if (constraintText.contains(&quot;DEFAULT&quot;)) {</span>
+<span class="fc" id="L102">            defaultValue = extractDefaultValue(ctx);</span>
+        }
+<span class="fc bfc" id="L104" title="All 2 branches covered.">        if (constraintText.contains(&quot;CHECK&quot;)) {</span>
+<span class="fc" id="L105">            checkConstraint = extractCheckConstraint(ctx);</span>
+        }
+<span class="fc bfc" id="L107" title="All 2 branches covered.">        if (constraintText.contains(&quot;REFERENCES&quot;)) {</span>
+<span class="fc" id="L108">            foreignKey = true;</span>
+<span class="fc" id="L109">            extractForeignKeyDetails(ctx);</span>
+        }
+
+<span class="fc" id="L112">        logger.debug(&quot;Extracted constraints - primaryKey: {}, nullable: {}, unique: {}, defaultValue: {}, checkConstraint: {}, foreignKey: {}&quot;,</span>
+<span class="fc" id="L113">                primaryKey, nullable, unique, defaultValue, checkConstraint, foreignKey);</span>
+<span class="fc" id="L114">    }</span>
+
+    public String getBaseSqlType() {
+<span class="fc bfc" id="L117" title="All 2 branches covered.">        return sqlType.contains(&quot;(&quot;) ? sqlType.substring(0, sqlType.indexOf(&quot;(&quot;)) : sqlType;</span>
+    }
+
+
+    /**
+     * Υπολογίζει το μήκος του πεδίου αν υπάρχει (π.χ., VARCHAR(255))
+     */
+    private int extractLength(String typeText) {
+<span class="pc bpc" id="L125" title="1 of 4 branches missed.">        if (typeText.contains(&quot;(&quot;) &amp;&amp; typeText.contains(&quot;)&quot;)) {</span>
+            try {
+<span class="fc" id="L127">                String insideParentheses = typeText.substring(typeText.indexOf(&quot;(&quot;) + 1, typeText.indexOf(&quot;)&quot;));</span>
+<span class="fc" id="L128">                String[] parts = insideParentheses.split(&quot;,&quot;);</span>
+<span class="fc" id="L129">                return Integer.parseInt(parts[0].trim());</span>
+<span class="nc" id="L130">            } catch (NumberFormatException e) {</span>
+<span class="nc" id="L131">                logger.warn(&quot;Invalid length format in SQL type '{}'. Defaulting to 255.&quot;, typeText);</span>
+            }
+        }
+<span class="fc" id="L134">        return 255;</span>
+    }
+
+    /**
+     * Εξάγει την προεπιλεγμένη τιμή (`DEFAULT `)
+     */
+    private String extractDefaultValue(PostgreSQLParser.ConstraintContext ctx) {
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">        if (ctx.value() != null) {</span>
+<span class="fc" id="L142">            return ctx.value().getText().replaceAll(&quot;[\&quot;']&quot;, &quot;&quot;).trim();</span>
+        }
+<span class="nc" id="L144">        return null;</span>
+    }
+
+
+    /**
+     * Εξάγει το `CHECK ()` constraint αν υπάρχει και διατηρεί σωστή μορφοποίηση.
+     */
+    private String extractCheckConstraint(PostgreSQLParser.ConstraintContext ctx) {
+<span class="pc bpc" id="L152" title="1 of 2 branches missed.">        if (ctx.getText().contains(&quot;CHECK&quot;)) {</span>
+<span class="fc" id="L153">            int start = ctx.getText().indexOf(&quot;CHECK&quot;) + 5;</span>
+<span class="fc" id="L154">            int openParen = ctx.getText().indexOf(&quot;(&quot;, start);</span>
+<span class="fc" id="L155">            int closeParen = ctx.getText().lastIndexOf(&quot;)&quot;);</span>
+
+<span class="pc bpc" id="L157" title="3 of 6 branches missed.">            if (openParen != -1 &amp;&amp; closeParen != -1 &amp;&amp; closeParen &gt; openParen) {</span>
+<span class="fc" id="L158">                String constraint = ctx.getText().substring(openParen + 1, closeParen).trim();</span>
+
+                // Διαχωρίζουμε σωστά τους τελεστές με κενά
+<span class="fc" id="L161">                constraint = constraint.replaceAll(&quot;\\s*(&gt;=|&lt;=|&gt;|&lt;|=|AND|OR|BETWEEN)\\s*&quot;, &quot; $1 &quot;);</span>
+
+<span class="fc" id="L163">                return &quot;(&quot; + constraint + &quot;)&quot;; // Προσθέτουμε ξανά τις παρενθέσεις</span>
+            }
+        }
+<span class="nc" id="L166">        return null;</span>
+    }
+
+    /**
+     * Εξάγει τις πληροφορίες του Foreign Key (`REFERENCES ...`)
+     */
+
+    private void extractForeignKeyDetails(PostgreSQLParser.ConstraintContext ctx) {
+<span class="fc" id="L174">        logger.debug(&quot;Extracting Foreign Key: Context Text -&gt; {}&quot;, ctx.getText());</span>
+
+<span class="pc bpc" id="L176" title="1 of 2 branches missed.">        if (ctx.tableName() != null) {</span>
+<span class="fc" id="L177">            referencedTable = ctx.tableName().getText();</span>
+        } else {
+<span class="nc" id="L179">            logger.warn(&quot;ForeignKey Extraction: tableName is NULL!&quot;);</span>
+        }
+
+<span class="pc bpc" id="L182" title="1 of 2 branches missed.">        if (ctx.columnName() != null) {</span>
+<span class="fc" id="L183">            referencedColumn = ctx.columnName().getText();</span>
+        } else {
+<span class="nc" id="L185">            logger.warn(&quot;ForeignKey Extraction: columnName is NULL!&quot;);</span>
+        }
+
+<span class="fc" id="L188">        logger.debug(&quot;Foreign Key Check for column: {} -&gt; foreignKey={}, referencedTable={}, referencedColumn={}&quot;,</span>
+<span class="fc" id="L189">                this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn);</span>
+
+<span class="fc" id="L191">        logger.info(&quot;Extracted Foreign Key -&gt; Referenced Table: {}, Referenced Column: {}&quot;, referencedTable, referencedColumn);</span>
+<span class="fc" id="L192">    }</span>
+
+
+    public Column toColumn() {
+<span class="fc" id="L196">        logger.info(&quot;Converting ColumnDefinition to Column object...&quot;);</span>
+<span class="fc" id="L197">        logger.debug(&quot;Before Column creation: name={}, foreignKey={}, referencedTable={}, referencedColumn={}&quot;,</span>
+<span class="fc" id="L198">                this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn);</span>
+
+<span class="fc" id="L200">        Column column = new Column();</span>
+<span class="fc" id="L201">        column.setName(this.columnName);</span>
+<span class="fc" id="L202">        column.setJavaType(this.javaType);</span>
+<span class="fc" id="L203">        column.setSqlType(this.sqlType);</span>
+<span class="fc" id="L204">        column.setLength(this.length);</span>
+<span class="fc" id="L205">        column.setPrecision(this.precision);</span>
+<span class="fc" id="L206">        column.setScale(this.scale);</span>
+<span class="fc" id="L207">        column.setPrimaryKey(this.primaryKey);</span>
+<span class="fc" id="L208">        column.setNullable(this.nullable);</span>
+<span class="fc" id="L209">        column.setDefaultValue(this.defaultValue);</span>
+<span class="fc" id="L210">        column.setUnique(this.unique);</span>
+<span class="fc" id="L211">        column.setCheckConstraint(this.checkConstraint);</span>
+<span class="fc" id="L212">        column.setOnDelete(this.onDelete);</span>
+<span class="fc" id="L213">        column.setOnUpdate(this.onUpdate);</span>
+
+<span class="fc bfc" id="L215" title="All 2 branches covered.">        if (this.foreignKey) {</span>
+<span class="fc" id="L216">            column.setForeignKey(true);</span>
+<span class="fc" id="L217">            column.setReferencedTable(this.referencedTable);</span>
+<span class="fc" id="L218">            column.setReferencedColumn(this.referencedColumn);</span>
+
+<span class="fc" id="L220">            logger.debug(&quot;Foreign Key Check for column: {} -&gt; foreignKey={}, referencedTable={}, referencedColumn={}&quot;,</span>
+<span class="fc" id="L221">                    this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn);</span>
+
+<span class="fc" id="L223">            logger.info(&quot;✅ Column is Foreign Key: {} -&gt; {}.{}&quot;, column.getName(), column.getReferencedTable(), column.getReferencedColumn());</span>
+        }
+
+<span class="fc" id="L226">        return column;</span>
+    }
+
+
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

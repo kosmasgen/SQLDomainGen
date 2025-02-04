@@ -45,6 +45,7 @@ com\sqldomaingen\parser\PostgreSQLParser$LimitClauseContext.class
 com\sqldomaingen\generator\RelationshipResolver.class
 com\sqldomaingen\parser\PostgreSQLParser$SqlActionContext.class
 com\sqldomaingen\SQLDomainGenApplication.class
+com\sqldomaingen\parser\PostgreSQLParser$ReferentialActionContext.class
 com\sqldomaingen\parser\PostgreSQLParser$ConflictActionContext.class
 com\sqldomaingen\parser\PostgreSQLParser$OrderByClauseContext.class
 com\sqldomaingen\parser\PostgreSQLLexer.class
@@ -72,6 +73,7 @@ com\sqldomaingen\parser\PostgreSQLParser$ColumnNameListContext.class
 com\sqldomaingen\parser\CreateTableDefinition.class
 com\sqldomaingen\parser\PostgreSQLParser$PlpgsqlBlockContext.class
 com\sqldomaingen\parser\PostgreSQLParser$UpdateStatementContext.class
+com\sqldomaingen\parser\PostgreSQLParser$ForeignKeyActionContext.class
 com\sqldomaingen\parser\ColumnDefinition.class
 com\sqldomaingen\parser\PostgreSQLParser$SelectListContext.class
 com\sqldomaingen\parser\PostgreSQLParser$CreatePolicyStatementContext.class

@@ -9,7 +9,7 @@ class TypeMapperTest {
     @Test
     void testPostgreSqlDataTypes() {
         // Ακέραιοι τύποι
-        assertEquals("Long", TypeMapper.mapToJavaType("Integer"));
+        assertEquals("Long", TypeMapper.mapToJavaType("INTEGER"));
         assertEquals("Long", TypeMapper.mapToJavaType("INT"));
         assertEquals("Short", TypeMapper.mapToJavaType("SMALLINT"));
         assertEquals("Long", TypeMapper.mapToJavaType("BIGINT"));

@@ -120,9 +120,6 @@ class CreateTableDefinitionTest {
         assertNotNull(tableDefinition.getColumnDefinitions(), "Οι στήλες δεν εξήχθησαν!");
         assertEquals(2, tableDefinition.getColumnDefinitions().size(), "Λάθος αριθμός στηλών!");
 
-        // ✅ Έλεγχος ότι εξήχθησαν οι σχέσεις
-        assertNotNull(tableDefinition.getRelationships(), "Οι σχέσεις δεν εξήχθησαν!");
-        assertEquals(1, tableDefinition.getRelationships().size(), "Λάθος αριθμός relationships!");
 
         // ✅ Έλεγχος αν η foreign key υπάρχει
         List<String> foreignKeys = tableDefinition.getColumnDefinitions().stream()

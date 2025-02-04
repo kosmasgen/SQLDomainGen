@@ -25,7 +25,6 @@ public class Column {
     private boolean isDefaultExpression;
     private String defaultExpression;
     private String checkConstraint;
-    private String relationshipType;
     private String targetTable;
     private String joinTableName;
     private String inverseJoinColumn;
@@ -40,20 +39,5 @@ public class Column {
     private String referencedColumn;
     private int precision;  // Default για DECIMAL
     private int scale;   // Default για DECIMAL(10,2)
-
-
-
-    @Override
-    public String toString() {
-        return "Column{name='" + name + '\'' +
-                ", type='" + javaType + '\'' +
-                ", length=" + length +
-                ", primaryKey=" + primaryKey +
-                ", nullable=" + nullable +
-                ", defaultValue='" + defaultValue + '\'' +
-                ", unique=" + unique +
-                '}';
-    }
-
 
 }

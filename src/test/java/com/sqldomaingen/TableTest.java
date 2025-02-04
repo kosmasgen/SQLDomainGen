@@ -72,7 +72,7 @@ public class TableTest {
         // Προσθήκη στηλών
         Column idColumn = new Column();
         idColumn.setName("id");
-        idColumn.setJavaType("Long");
+        idColumn.setSqlType("INTEGER");
         idColumn.setLength(255);
         idColumn.setPrimaryKey(true);
         idColumn.setNullable(false);
@@ -81,7 +81,7 @@ public class TableTest {
 
         Column nameColumn = new Column();
         nameColumn.setName("name");
-        nameColumn.setJavaType("String");
+        nameColumn.setSqlType("String");
         nameColumn.setLength(255);
         nameColumn.setPrimaryKey(false);
         nameColumn.setNullable(true);

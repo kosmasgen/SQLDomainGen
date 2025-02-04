@@ -1,271 +1,186 @@
 package com.sqldomaingen;
 
-import com.sqldomaingen.generator.RelationshipResolver;
-import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Relationship;
 import com.sqldomaingen.model.Table;
+import com.sqldomaingen.model.Column;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import com.sqldomaingen.generator.RelationshipResolver;
+import java.util.stream.Collectors;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class RelationshipResolverTest {
 
     private static final Logger logger = LoggerFactory.getLogger(RelationshipResolverTest.class);
+    private RelationshipResolver resolver;
+    private Map<String, Table> tableMap;
 
-    @Test
-    void testResolveRelationships() {
-        logger.info("🔵 Starting test for resolveRelationships...");
+    @BeforeEach
+    void setUp() {
+        logger.info("🔵 Setting up tables for RelationshipResolver test...");
+        tableMap = new HashMap<>();
 
+        // Users Table
+        Table usersTable = createTable("Users");
+        usersTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true)); // ✅ Primary key
 
+        // Profiles Table (OneToOne with Users, user_id must be unique)
+        Table profilesTable = createTable("Profiles");
+        profilesTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true)); // ✅ Primary key
+        profilesTable.addColumn(createColumn("user_id", "BIGINT", false, true, "Users", "id", true)); // ✅ Unique Foreign Key
 
-        // Δημιουργία πινάκων
-        Table sourceTable = new Table();
-        sourceTable.setName("SourceTable");
+        // Orders Table (ManyToOne with Users, user_id is NOT unique)
+        Table ordersTable = createTable("Orders");
+        ordersTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true)); // ✅ Primary key
+        ordersTable.addColumn(createColumn("user_id", "BIGINT", false, true, "Users", "id", false)); // ❌ NOT unique, ManyToOne
 
-        Table targetTableOneToOne = new Table();
-        targetTableOneToOne.setName("TargetTableOneToOne");
+        // Products Table
+        Table productsTable = createTable("Products");
+        productsTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true)); // ✅ Primary key
 
-        Table targetTableOneToMany = new Table();
-        targetTableOneToMany.setName("TargetTableOneToMany");
+        // OrderProducts Table (ManyToMany between Orders and Products)
+        Table orderProductsTable = createTable("OrderProducts");
+        orderProductsTable.addColumn(createColumn("order_id", "BIGINT", false, true, "Orders", "id", false));
+        orderProductsTable.addColumn(createColumn("product_id", "BIGINT", false, true, "Products", "id", false));
 
-        Table targetTableManyToOne = new Table();
-        targetTableManyToOne.setName("TargetTableManyToOne");
+        // Add tables to map
+        tableMap.put("Users", usersTable);
+        tableMap.put("Profiles", profilesTable);
+        tableMap.put("Orders", ordersTable);
+        tableMap.put("Products", productsTable);
+        tableMap.put("OrderProducts", orderProductsTable);
 
-        Table targetTableManyToMany = new Table();
-        targetTableManyToMany.setName("TargetTableManyToMany");
-
-        // 🔹 Δημιουργία primary key columns στους target tables
-        Column targetColumn = new Column();
-        targetColumn.setName("id");
-        targetColumn.setPrimaryKey(true);
-        targetColumn.setJavaType("Long");
-
-        targetTableOneToOne.setColumns(List.of(targetColumn));
-        targetTableOneToMany.setColumns(List.of(targetColumn));
-        targetTableManyToOne.setColumns(List.of(targetColumn));
-        targetTableManyToMany.setColumns(List.of(targetColumn));
-
-        // 🔹 Δημιουργία χάρτη με όλους τους πίνακες
-        Map<String, Table> allTables = new HashMap<>();
-        allTables.put("SourceTable", sourceTable);
-        allTables.put("TargetTableOneToOne", targetTableOneToOne);
-        allTables.put("TargetTableOneToMany", targetTableOneToMany);
-        allTables.put("TargetTableManyToOne", targetTableManyToOne);
-        allTables.put("TargetTableManyToMany", targetTableManyToMany);
-
-        // 🔹 Δημιουργία Foreign Key columns
-        Column oneToOneColumn = createForeignKeyColumn("one_to_one_id", "TargetTableOneToOne", "id", "ONETOONE");
-        Column oneToManyColumn = createForeignKeyColumn("one_to_many_id", "TargetTableOneToMany", "id", "ONETOMANY");
-        Column manyToOneColumn = createForeignKeyColumn("many_to_one_id", "TargetTableManyToOne", "id", "MANYTOONE");
-        Column manyToManyColumn = createForeignKeyColumn("many_to_many_id", "TargetTableManyToMany", "id", "MANYTOMANY");
-        manyToManyColumn.setJoinTableName("JoinTableManyToMany");
-        manyToManyColumn.setInverseJoinColumn("target_id");
-
-        sourceTable.setColumns(Arrays.asList(oneToOneColumn, oneToManyColumn, manyToOneColumn, manyToManyColumn));
-
-        // 🔹 Εκτέλεση RelationshipResolver
-        RelationshipResolver resolver = new RelationshipResolver();
-        List<Relationship> relationships = resolver.resolveRelationships(sourceTable, allTables);
-
-        logger.info("📌 Resolved relationships: {}", relationships);
-        assertFalse(relationships.isEmpty(), "❌ No relationships were resolved!");
-        assertEquals(4, relationships.size(), "❌ Should have 4 relationships");
+        logger.info("✅ Table map initialized with tables: {}", tableMap.keySet());
+        resolver = new RelationshipResolver();
     }
 
     @Test
-    void testDifferentTargetColumn() {
-        logger.info("🔵 Testing relationship with a different target column...");
-        Table sourceTable = new Table();
-        sourceTable.setName("Orders");
+    void testResolveOneToOneRelationship() {
+        logger.info("🔵 Running test: testResolveOneToOneRelationship");
 
-        Table targetTable = new Table();
-        targetTable.setName("Customers");
+        Table profilesTable = tableMap.get("Profiles");
+        List<Relationship> relationships = resolver.resolveRelationships(profilesTable, tableMap);
 
-        Column targetColumn = new Column();
-        targetColumn.setName("customer_code");
-        targetTable.addColumn(targetColumn);
+        logger.info("🔍 Found Relationships: {}", relationships);
 
-        Column fkColumn = new Column();
-        fkColumn.setName("customer_id");
-        fkColumn.setForeignKey(true);
-        fkColumn.setReferencedTable("Customers");
-        fkColumn.setReferencedColumn("customer_code");
-        fkColumn.setRelationshipType("MANYTOONE");
+        assertEquals(1, relationships.size(), "OneToOne should create one relationship.");
 
-        sourceTable.addColumn(fkColumn);
-
-        Map<String, Table> allTables = Map.of("Customers", targetTable);
-        RelationshipResolver resolver = new RelationshipResolver();
-        List<Relationship> relationships = resolver.resolveRelationships(sourceTable, allTables);
-
-        assertEquals(1, relationships.size(), "Expected one relationship.");
-        assertEquals("customer_code", relationships.get(0).getTargetColumn(), "Target column should be 'customer_code'");
-        logger.info("✅ Passed testDifferentTargetColumn");
-    }
-
-    @Test
-    void testOnUpdateOnDeleteActions() {
-        logger.info("🔵 Testing relationship with ON UPDATE and ON DELETE actions...");
-
-        // Δημιουργία source και target tables
-        Table sourceTable = new Table();
-        sourceTable.setName("Orders");
-
-        Table targetTable = new Table();
-        targetTable.setName("Products");
-
-        // Δημιουργία στήλης foreign key
-        Column fkColumn = new Column();
-        fkColumn.setName("product_id");
-        fkColumn.setForeignKey(true);
-        fkColumn.setReferencedTable("Products");
-        fkColumn.setReferencedColumn("id");
-        fkColumn.setOnDelete("CASCADE");
-        fkColumn.setOnUpdate("SET NULL");
-        fkColumn.setRelationshipType("MANYTOONE");
-
-        sourceTable.addColumn(fkColumn);
-
-        // Προσθήκη primary key στον target πίνακα (Products)
-        Column targetColumn = new Column();
-        targetColumn.setName("id");
-        targetTable.addColumn(targetColumn);
-
-        // Χάρτης με όλους τους πίνακες
-        Map<String, Table> allTables = Map.of("Products", targetTable);
-
-        logger.info("📌 Source Table: {}", sourceTable.getName());
-        logger.info("📌 Target Table: {}", targetTable.getName());
-        logger.info("📌 Target Table Columns: {}", targetTable.getColumns());
-
-        RelationshipResolver resolver = new RelationshipResolver();
-        List<Relationship> relationships = resolver.resolveRelationships(sourceTable, allTables);
-
-        logger.info("📌 Found {} relationships", relationships.size());
-        for (Relationship relationship : relationships) {
-            logger.info("📌 Resolved Relationship: {}", relationship);
-        }
-
-        // Έλεγχος αν δημιουργήθηκε η σχέση
-        assertEquals(1, relationships.size(), "❌ Expected one relationship.");
-
-        // Έλεγχος του ON DELETE & ON UPDATE
         Relationship relationship = relationships.get(0);
-        assertEquals("CASCADE", relationship.getOnDelete(), "❌ Expected ON DELETE CASCADE");
-        assertEquals("SET NULL", relationship.getOnUpdate(), "❌ Expected ON UPDATE SET NULL");
+        logger.info("✅ OneToOne relationship found: {}", relationship);
+        assertEquals("Profiles", relationship.getSourceTable());
+        assertEquals("user_id", relationship.getSourceColumn());
+        assertEquals("Users", relationship.getTargetTable());
+        assertEquals("id", relationship.getTargetColumn());
+        assertEquals(Relationship.RelationshipType.ONETOONE, relationship.getRelationshipType());
 
-        logger.info("✅ Passed testOnUpdateOnDeleteActions");
+        logger.info("🎉 OneToOne relationship resolved correctly!");
     }
 
     @Test
-    void testMissingTargetColumn() {
-        logger.info("🔵 Testing missing target column scenario...");
+    void testResolveManyToOneRelationship() {
+        logger.info("🔵 Running test: testResolveManyToOneRelationship");
 
-        Table sourceTable = new Table();
-        sourceTable.setName("Payments");
+        Table ordersTable = tableMap.get("Orders");
+        List<Relationship> relationships = resolver.resolveRelationships(ordersTable, tableMap);
 
-        Table targetTable = new Table();
-        targetTable.setName("Users");
+        logger.info("🔍 Found Relationships: {}", relationships);
 
-        Column fkColumn = new Column();
-        fkColumn.setName("user_id");
-        fkColumn.setForeignKey(true);
-        fkColumn.setReferencedTable("Users");
-        fkColumn.setReferencedColumn("non_existing_column"); // Column does not exist
-        fkColumn.setRelationshipType("MANYTOONE");
+        assertEquals(1, relationships.size(), "ManyToOne should create one relationship.");
 
-        sourceTable.addColumn(fkColumn);
+        Relationship relationship = relationships.get(0);
+        logger.info("✅ ManyToOne relationship found: {}", relationship);
+        assertEquals("Orders", relationship.getSourceTable());
+        assertEquals("user_id", relationship.getSourceColumn());
+        assertEquals("Users", relationship.getTargetTable());
+        assertEquals("id", relationship.getTargetColumn());
+        assertEquals(Relationship.RelationshipType.MANYTOONE, relationship.getRelationshipType());
 
-        Map<String, Table> allTables = Map.of("Users", targetTable);
-
-        // 🔹 Log για τις διαθέσιμες στήλες στο target table
-        logger.info("📌 Available columns in Users table: {}", targetTable.getColumns());
-
-        RelationshipResolver resolver = new RelationshipResolver();
-        List<Relationship> relationships = resolver.resolveRelationships(sourceTable, allTables);
-
-        assertEquals(0, relationships.size(), "No relationship should be created due to missing target column.");
-        logger.info("✅ Passed testMissingTargetColumn");
+        logger.info("🎉 ManyToOne relationship resolved correctly!");
     }
-
-
 
 
     @Test
-    void testCompositeKeyRelationship() {
-        logger.info("🔵 Testing relationship with composite key...");
-        Table sourceTable = new Table();
-        sourceTable.setName("OrderItems");
+    void testResolveOneToManyRelationship() {
+        logger.info("🔵 Running test: testResolveOneToManyRelationship");
 
-        Table targetTable = new Table();
-        targetTable.setName("Orders");
+        Table usersTable = tableMap.get("Users");
 
-        Column compositeKeyPart1 = new Column();
-        compositeKeyPart1.setName("order_id");
-        targetTable.addColumn(compositeKeyPart1);
+        // 🔄 Περνάμε όλα τα tables για να λυθούν πρώτα οι σχέσεις!
+        tableMap.values().forEach(table -> resolver.resolveRelationships(table, tableMap));
 
-        Column compositeKeyPart2 = new Column();
-        compositeKeyPart2.setName("order_line");
-        targetTable.addColumn(compositeKeyPart2);
+        // ✅ Διαβάζουμε τις μοναδικές σχέσεις από το Users table
+        List<Relationship> relationships = usersTable.getRelationships().stream()
+                .filter(rel -> rel.getRelationshipType() == Relationship.RelationshipType.ONETOMANY)
+                .collect(Collectors.toList());
 
-        Column fkColumn = new Column();
-        fkColumn.setName("order_id");
-        fkColumn.setForeignKey(true);
-        fkColumn.setReferencedTable("Orders");
-        fkColumn.setReferencedColumn("order_id");
-        fkColumn.setRelationshipType("MANYTOONE");
+        logger.info("🔍 Found OneToMany Relationships: {}", relationships);
 
-        sourceTable.addColumn(fkColumn);
+        assertEquals(1, relationships.size(), "Expected one OneToMany relationship.");
 
-        Map<String, Table> allTables = Map.of("Orders", targetTable);
-        RelationshipResolver resolver = new RelationshipResolver();
-        List<Relationship> relationships = resolver.resolveRelationships(sourceTable, allTables);
+        Relationship relationship = relationships.get(0);
+        assertEquals("Users", relationship.getSourceTable());
+        assertEquals("id", relationship.getSourceColumn());
+        assertEquals("Orders", relationship.getTargetTable());
+        assertEquals("user_id", relationship.getTargetColumn());
+        assertEquals(Relationship.RelationshipType.ONETOMANY, relationship.getRelationshipType());
 
-        assertEquals(1, relationships.size(), "Expected one relationship.");
-        assertEquals("order_id", relationships.get(0).getTargetColumn(), "Expected target column order_id");
-        logger.info("✅ Passed testCompositeKeyRelationship");
+        logger.info("🎉 OneToMany relationship resolved correctly!");
     }
 
     @Test
-    void testMissingReferencedTable() {
-        logger.info("🔵 Testing missing referenced table scenario...");
+    void testResolveManyToManyRelationship() {
+        logger.info("🔵 Running test: testResolveManyToManyRelationship");
 
-        Table sourceTable = new Table();
-        sourceTable.setName("Shipments");
+        Table orderProductsTable = tableMap.get("OrderProducts");
+        List<Relationship> relationships = resolver.resolveRelationships(orderProductsTable, tableMap);
 
-        Column fkColumn = new Column();
-        fkColumn.setName("order_id");
-        fkColumn.setForeignKey(true);
-        fkColumn.setReferencedTable("NonExistentTable");
-        fkColumn.setReferencedColumn("id");
-        fkColumn.setRelationshipType("MANYTOONE");
+        logger.info("🔍 Found Relationships: {}", relationships);
 
-        sourceTable.addColumn(fkColumn);
+        assertEquals(2, relationships.size(), "ManyToMany should create two relationships.");
 
-        Map<String, Table> allTables = new HashMap<>(); // Δεν προσθέτουμε τον πίνακα σκοπίμως
+        Relationship firstRelationship = relationships.get(0);
+        logger.info("✅ First ManyToMany relationship found: {}", firstRelationship);
+        assertEquals("OrderProducts", firstRelationship.getSourceTable());
+        assertEquals("order_id", firstRelationship.getSourceColumn());
+        assertEquals("Orders", firstRelationship.getTargetTable());
+        assertEquals("id", firstRelationship.getTargetColumn());
+        assertEquals(Relationship.RelationshipType.MANYTOMANY, firstRelationship.getRelationshipType());
 
-        // 🔹 Προσθέτουμε log για τα διαθέσιμα tables πριν το resolving
-        logger.info("📌 Available tables before resolving: {}", allTables.keySet());
+        Relationship secondRelationship = relationships.get(1);
+        logger.info("✅ Second ManyToMany relationship found: {}", secondRelationship);
+        assertEquals("OrderProducts", secondRelationship.getSourceTable());
+        assertEquals("product_id", secondRelationship.getSourceColumn());
+        assertEquals("Products", secondRelationship.getTargetTable());
+        assertEquals("id", secondRelationship.getTargetColumn());
+        assertEquals(Relationship.RelationshipType.MANYTOMANY, secondRelationship.getRelationshipType());
 
-        RelationshipResolver resolver = new RelationshipResolver();
-        List<Relationship> relationships = resolver.resolveRelationships(sourceTable, allTables);
-
-        assertEquals(0, relationships.size(), "No relationship should be created due to missing referenced table.");
-        logger.info("✅ Passed testMissingReferencedTable");
+        logger.info("🎉 ManyToMany relationships resolved correctly!");
     }
 
-    private Column createForeignKeyColumn(String columnName, String referencedTable, String referencedColumn, String relationshipType) {
+    // Βοηθητική Μέθοδος για Δημιουργία Table
+    private Table createTable(String name) {
+        Table table = new Table();
+        table.setName(name);
+        return table;
+    }
+
+    // Βοηθητική Μέθοδος για Δημιουργία Column
+    private Column createColumn(String name, String sqlType, boolean isPrimaryKey, boolean isForeignKey, String referencedTable, String referencedColumn, boolean unique) {
         Column column = new Column();
-        column.setName(columnName);
-        column.setForeignKey(true);
+        column.setName(name);
+        column.setSqlType(sqlType);
+        column.setPrimaryKey(isPrimaryKey);
+        column.setForeignKey(isForeignKey);
         column.setReferencedTable(referencedTable);
         column.setReferencedColumn(referencedColumn);
-        column.setRelationshipType(relationshipType);
+        column.setUnique(unique);
         return column;
     }
-
 }

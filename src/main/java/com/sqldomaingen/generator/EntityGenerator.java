@@ -3,20 +3,19 @@ package com.sqldomaingen.generator;
 import com.sqldomaingen.model.Relationship;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.NamingConverter;
+import com.sqldomaingen.model.Column;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import com.sqldomaingen.model.Column;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.util.List;
-import java.util.Map;
 import java.nio.charset.StandardCharsets;
-import java.util.Objects;
-
+import java.util.*;
+import java.util.stream.Collectors;
 
 @NoArgsConstructor
 @Component
@@ -27,10 +26,18 @@ public class EntityGenerator {
     public void generate(List<Table> tables, String outputDir, String packageName, boolean overwrite, boolean useBuilder) {
         logger.info("Starting entity generation...");
 
+
+        // Δημιουργία του tablesMap για να μπορούν να βρεθούν οι σχέσεις
+        Map<String, Table> tablesMap = tables.stream()
+                .collect(Collectors.toMap(Table::getName, t -> t));
+
+        logger.info("📌 Tables map created: {}", tablesMap.keySet());
+
+
         for (Table table : tables) {
             logger.debug("Processing table: {}", table.getName());
 
-            String entityContent = createEntityContent(table, packageName, useBuilder);
+            String entityContent = createEntityContent(table, packageName, useBuilder, tablesMap);
             Path outputPath = Paths.get(outputDir, NamingConverter.toPascalCase(table.getName()) + ".java");
             String fileName = outputPath.toString();
 
@@ -50,12 +57,12 @@ public class EntityGenerator {
         logger.info("Entity generation complete. Output directory: {}", outputDir);
     }
 
-    public String createEntityContent(Table table, String packageName, boolean useBuilder) {
+    public String createEntityContent(Table table, String packageName, boolean useBuilder, Map<String, Table> tablesMap) {
         StringBuilder entityBuilder = new StringBuilder();
 
         generatePackageAndImports(entityBuilder, packageName, table);
         generateClassAnnotations(entityBuilder, table, useBuilder);
-        generateFields(entityBuilder, table);
+        generateFields(entityBuilder, table, tablesMap);
         entityBuilder.append("}\n");
 
         logger.debug("Generated entity content for table '{}':\n{}", table.getName(), entityBuilder);
@@ -97,7 +104,7 @@ public class EntityGenerator {
         builder.append("public class ").append(NamingConverter.toPascalCase(table.getName())).append(" {\n\n");
     }
 
-    public void generateFields(StringBuilder builder, Table table) {
+    public void generateFields(StringBuilder builder, Table table, Map<String, Table> tablesMap) {
         RelationshipResolver resolver = new RelationshipResolver();
 
         table.getColumns().forEach(column -> {
@@ -108,7 +115,7 @@ public class EntityGenerator {
             }
 
             if (column.isForeignKey()) {
-                addForeignKeyAnnotations(builder, column, table, resolver, Map.of());
+                addForeignKeyAnnotations(builder, column, table, resolver, tablesMap);
             }
 
             addColumnField(builder, column);
@@ -121,10 +128,13 @@ public class EntityGenerator {
     }
 
     private void addForeignKeyAnnotations(StringBuilder builder, Column column, Table table, RelationshipResolver resolver, Map<String, Table> allTables) {
+        logger.debug("🔍 Resolving relationship for column: {} in table: {}", column.getName(), table.getName());
+
         Relationship relationship = resolver.createRelationship(column, table, allTables);
 
+
         if (relationship == null) {
-            logger.warn("Skipping foreign key annotation for column '{}' because no relationship was found.", column.getName());
+            logger.warn("⚠️ Skipping foreign key annotation for column '{}' because no relationship was found.", column.getName());
             return;
         }
 
@@ -188,14 +198,12 @@ public class EntityGenerator {
             builder.append(", columnDefinition = \"DEFAULT '").append(column.getDefaultValue()).append("'\"");
         }
 
-        if (column.getCheckConstraint() != null) {
-            builder.append(", columnDefinition = \"CHECK (").append(column.getCheckConstraint()).append(")\"");
-        }
-
         builder.append(")\n");
         builder.append("    private ").append(column.getJavaType()).append(" ")
                 .append(NamingConverter.toCamelCase(column.getName())).append(";\n\n");
     }
+
+
 
     public void writeToFile(String filePath, String content) throws IOException {
         Objects.requireNonNull(filePath, "File path cannot be null");
@@ -208,3 +216,8 @@ public class EntityGenerator {
         logger.debug("File written successfully: {}", filePath);
     }
 }
+
+
+
+
+

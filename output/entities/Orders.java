@@ -19,16 +19,15 @@ public class Orders {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "customer_id")
-    private Long customerId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", referencedColumnName = "id")
+    @Column(name = "user_id")
+    private Long userId;
 
     @Column(name = "order_date", columnDefinition = "DEFAULT 'CURRENT_TIMESTAMP'")
     private java.time.LocalDateTime orderDate;
 
-    @Column(name = "total_amount", precision = 10, scale = 2, columnDefinition = "CHECK ((total_amount >= 0))")
-    private java.math.BigDecimal totalAmount;
-
-    @Column(name = "status", length = 50, columnDefinition = "CHECK ((statusIN('Pending','Shipped','Delivered','Cancelled')))")
-    private String status;
+    @Column(name = "total_price", precision = 10, scale = 2, nullable = false)
+    private java.math.BigDecimal totalPrice;
 
 }

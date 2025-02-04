@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="el"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>CreateTableDefinition.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SQLDomainGen</a> &gt; <a href="index.source.html" class="el_package">com.sqldomaingen.parser</a> &gt; <span class="el_source">CreateTableDefinition.java</span></div><h1>CreateTableDefinition.java</h1><pre class="source lang-java linenums">package com.sqldomaingen.parser;
+
+import com.sqldomaingen.model.Column;
+import com.sqldomaingen.model.Table;
+import com.sqldomaingen.util.NamingConverter;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+
+@Getter
+<span class="nc" id="L17">@Setter</span>
+<span class="fc" id="L18">@NoArgsConstructor</span>
+<span class="nc" id="L19">@AllArgsConstructor</span>
+public class CreateTableDefinition {
+<span class="fc" id="L21">    private static final Logger logger = LoggerFactory.getLogger(CreateTableDefinition.class);</span>
+
+<span class="fc" id="L23">    private String tableName;</span>
+<span class="pc" id="L24">    private List&lt;ColumnDefinition&gt; columnDefinitions = new ArrayList&lt;&gt;();</span>
+<span class="pc" id="L25">    private List&lt;String&gt; constraints = new ArrayList&lt;&gt;();</span>
+
+    public Table processCreateTable(PostgreSQLParser.CreateTableStatementContext ctx) {
+<span class="fc" id="L28">        logger.info(&quot;➡️ processCreateTable() - START | Context: {}&quot;, ctx);</span>
+
+        // Extract table name
+<span class="fc" id="L31">        this.tableName = extractTableName(ctx);</span>
+<span class="fc" id="L32">        logger.info(&quot;Extracted table name: {}&quot;, this.tableName);</span>
+
+<span class="fc" id="L34">        logger.info(&quot;🛠 BEFORE extractColumnDefinitions: columnDefinitions = {}&quot;, this.columnDefinitions);</span>
+<span class="fc" id="L35">        this.columnDefinitions = extractColumnDefinitions(ctx);</span>
+<span class="fc" id="L36">        logger.info(&quot;🛠 AFTER extractColumnDefinitions: columnDefinitions = {} | Size: {}&quot;, this.columnDefinitions, this.columnDefinitions.size());</span>
+
+<span class="fc" id="L38">        Table table = toTable();</span>
+<span class="fc" id="L39">        logger.info(&quot;⬅️ processCreateTable() - END | Generated Table: {}&quot;, table.getName());</span>
+
+<span class="fc" id="L41">        return table;</span>
+    }
+
+    public String extractTableName(PostgreSQLParser.CreateTableStatementContext ctx) {
+<span class="pc bpc" id="L45" title="3 of 6 branches missed.">        if (ctx == null || ctx.tableName() == null || ctx.tableName().isEmpty()) {</span>
+<span class="nc" id="L46">            throw new IllegalArgumentException(&quot;Table name not found in CREATE TABLE statement.&quot;);</span>
+        }
+
+<span class="fc" id="L49">        this.tableName = ctx.tableName().get(0).getText();</span>
+<span class="fc" id="L50">        logger.info(&quot;Extracted raw table name: {}&quot;, tableName);</span>
+<span class="fc" id="L51">        return NamingConverter.toPascalCase(tableName);</span>
+    }
+
+    public List&lt;ColumnDefinition&gt; extractColumnDefinitions(PostgreSQLParser.CreateTableStatementContext ctx) {
+<span class="fc" id="L55">        logger.info(&quot;➡️ extractColumnDefinitions() - START | Context: {}&quot;, ctx);</span>
+
+<span class="fc" id="L57">        List&lt;ColumnDefinition&gt; extractedColumns = new ArrayList&lt;&gt;();</span>
+
+<span class="pc bpc" id="L59" title="1 of 2 branches missed.">        if (ctx.columnDef() != null) {</span>
+<span class="fc bfc" id="L60" title="All 2 branches covered.">            for (PostgreSQLParser.ColumnDefContext columnCtx : ctx.columnDef()) {</span>
+                try {
+<span class="fc" id="L62">                    ColumnDefinition column = ColumnDefinition.fromContext(columnCtx);</span>
+<span class="fc" id="L63">                    extractedColumns.add(column);</span>
+
+<span class="fc" id="L65">                    logger.info(&quot;✅ Extracted column: {} | SQL Type: {} | Primary Key: {} | Default: {}&quot;,</span>
+<span class="fc" id="L66">                            column.getColumnName(), column.getSqlType(), column.isPrimaryKey(), column.getDefaultValue());</span>
+<span class="nc" id="L67">                } catch (Exception e) {</span>
+<span class="nc" id="L68">                    logger.error(&quot;❌ Error extracting column from context: {}&quot;, columnCtx.getText(), e);</span>
+<span class="fc" id="L69">                }</span>
+<span class="fc" id="L70">            }</span>
+        } else {
+<span class="nc" id="L72">            logger.warn(&quot;⚠️ No columns found in the CREATE TABLE statement.&quot;);</span>
+        }
+
+<span class="fc" id="L75">        logger.info(&quot;⬅️ extractColumnDefinitions() - END | Extracted {} columns.&quot;, extractedColumns.size());</span>
+<span class="fc" id="L76">        return extractedColumns;</span>
+    }
+
+    public Table toTable() {
+<span class="fc" id="L80">        logger.info(&quot;➡️ toTable() - START | Table Name: {}&quot;, this.tableName);</span>
+
+<span class="fc" id="L82">        Table table = new Table();</span>
+<span class="fc" id="L83">        table.setName(this.tableName);</span>
+
+<span class="fc" id="L85">        List&lt;Column&gt; columns = this.columnDefinitions.stream()</span>
+<span class="fc" id="L86">                .map(ColumnDefinition::toColumn)</span>
+<span class="fc" id="L87">                .toList();</span>
+<span class="fc" id="L88">        table.setColumns(columns);</span>
+
+<span class="fc" id="L90">        table.addConstraints(this.constraints);</span>
+<span class="fc" id="L91">        logger.info(&quot;⬅️ toTable() - END | Converted Table: {} with {} columns.&quot;,</span>
+<span class="fc" id="L92">                table.getName(), columns.size());</span>
+
+<span class="fc" id="L94">        return table;</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

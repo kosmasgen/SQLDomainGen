@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.sqldomaingen.CreateTableDefinitionTest" time="0.088" tests="8" errors="0" skipped="0" failures="0">
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.sqldomaingen.CreateTableDefinitionTest" time="0.079" tests="5" errors="0" skipped="0" failures="0">
   <properties>
     <property name="java.specification.version" value="17"/>
     <property name="sun.cpu.isalist" value="amd64"/>
     <property name="sun.jnu.encoding" value="Cp1253"/>
-    <property name="java.class.path" value="C:\Users\kosma\IdeaProjects\SQLDomainGen\target\test-classes;C:\Users\kosma\IdeaProjects\SQLDomainGen\target\classes;C:\Users\kosma\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-classic\1.4.11\logback-classic-1.4.11.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-core\1.4.11\logback-core-1.4.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter\3.1.3\spring-boot-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot\3.1.3\spring-boot-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-context\6.0.11\spring-context-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-aop\6.0.11\spring-aop-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-beans\6.0.11\spring-beans-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-expression\6.0.11\spring-expression-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\3.1.3\spring-boot-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-logging\3.1.3\spring-boot-starter-logging-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.20.0\log4j-to-slf4j-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-api\2.20.0\log4j-api-2.20.0.jar;C:\Users\kosma\.m2\repository\org\slf4j\jul-to-slf4j\2.0.7\jul-to-slf4j-2.0.7.jar;C:\Users\kosma\.m2\repository\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-core\6.0.11\spring-core-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-jcl\6.0.11\spring-jcl-6.0.11.jar;C:\Users\kosma\.m2\repository\org\yaml\snakeyaml\1.33\snakeyaml-1.33.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-test\3.1.3\spring-boot-starter-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test\3.1.3\spring-boot-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\3.1.3\spring-boot-test-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\com\jayway\jsonpath\json-path\2.8.0\json-path-2.8.0.jar;C:\Users\kosma\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.0\jakarta.xml.bind-api-4.0.0.jar;C:\Users\kosma\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar;C:\Users\kosma\.m2\repository\net\minidev\json-smart\2.4.11\json-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\net\minidev\accessors-smart\2.4.11\accessors-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\org\ow2\asm\asm\9.3\asm-9.3.jar;C:\Users\kosma\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\kosma\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-junit-jupiter\5.3.1\mockito-junit-jupiter-5.3.1.jar;C:\Users\kosma\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\kosma\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-test\6.0.11\spring-test-6.0.11.jar;C:\Users\kosma\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\kosma\.m2\repository\org\projectlombok\lombok\1.18.28\lombok-1.18.28.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr4-runtime\4.13.1\antlr4-runtime-4.13.1.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-starter\3.1.3\spring-shell-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-autoconfigure\3.1.3\spring-shell-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-core\3.1.3\spring-shell-core-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-validation\3.1.3\spring-boot-starter-validation-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\10.1.12\tomcat-embed-el-10.1.12.jar;C:\Users\kosma\.m2\repository\org\hibernate\validator\hibernate-validator\8.0.1.Final\hibernate-validator-8.0.1.Final.jar;C:\Users\kosma\.m2\repository\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\Users\kosma\.m2\repository\org\jboss\logging\jboss-logging\3.5.3.Final\jboss-logging-3.5.3.Final.jar;C:\Users\kosma\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-messaging\6.0.11\spring-messaging-6.0.11.jar;C:\Users\kosma\.m2\repository\org\jline\jline\3.23.0\jline-3.23.0.jar;C:\Users\kosma\.m2\repository\org\antlr\ST4\4.3.1\ST4-4.3.1.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr-runtime\3.5.2\antlr-runtime-3.5.2.jar;C:\Users\kosma\.m2\repository\commons-io\commons-io\2.11.0\commons-io-2.11.0.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard\3.1.3\spring-shell-standard-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard-commands\3.1.3\spring-shell-standard-commands-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-table\3.1.3\spring-shell-table-3.1.3.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy\1.14.6\byte-buddy-1.14.6.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.6\byte-buddy-agent-1.14.6.jar;C:\Users\kosma\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter\5.9.3\junit-jupiter-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.3\junit-jupiter-api-5.9.3.jar;C:\Users\kosma\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-commons\1.9.3\junit-platform-commons-1.9.3.jar;C:\Users\kosma\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.9.3\junit-jupiter-params-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.3\junit-jupiter-engine-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-engine\1.9.3\junit-platform-engine-1.9.3.jar;C:\Users\kosma\.m2\repository\com\github\spotbugs\spotbugs-annotations\4.7.3\spotbugs-annotations-4.7.3.jar;C:\Users\kosma\.m2\repository\com\google\code\findbugs\jsr305\3.0.2\jsr305-3.0.2.jar;"/>
+    <property name="java.class.path" value="C:\Users\kosma\IdeaProjects\SQLDomainGen\target\test-classes;C:\Users\kosma\IdeaProjects\SQLDomainGen\target\classes;C:\Users\kosma\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\kosma\.m2\repository\org\hibernate\orm\hibernate-core\6.2.5.Final\hibernate-core-6.2.5.Final.jar;C:\Users\kosma\.m2\repository\jakarta\persistence\jakarta.persistence-api\3.1.0\jakarta.persistence-api-3.1.0.jar;C:\Users\kosma\.m2\repository\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;C:\Users\kosma\.m2\repository\org\jboss\logging\jboss-logging\3.5.3.Final\jboss-logging-3.5.3.Final.jar;C:\Users\kosma\.m2\repository\org\hibernate\common\hibernate-commons-annotations\6.0.6.Final\hibernate-commons-annotations-6.0.6.Final.jar;C:\Users\kosma\.m2\repository\io\smallrye\jandex\3.0.5\jandex-3.0.5.jar;C:\Users\kosma\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy\1.14.6\byte-buddy-1.14.6.jar;C:\Users\kosma\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.0\jakarta.xml.bind-api-4.0.0.jar;C:\Users\kosma\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-runtime\4.0.3\jaxb-runtime-4.0.3.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-core\4.0.3\jaxb-core-4.0.3.jar;C:\Users\kosma\.m2\repository\org\eclipse\angus\angus-activation\2.0.1\angus-activation-2.0.1.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\txw2\4.0.3\txw2-4.0.3.jar;C:\Users\kosma\.m2\repository\com\sun\istack\istack-commons-runtime\4.1.2\istack-commons-runtime-4.1.2.jar;C:\Users\kosma\.m2\repository\jakarta\inject\jakarta.inject-api\2.0.1\jakarta.inject-api-2.0.1.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-classic\1.4.11\logback-classic-1.4.11.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-core\1.4.11\logback-core-1.4.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter\3.1.3\spring-boot-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot\3.1.3\spring-boot-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-context\6.0.11\spring-context-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-aop\6.0.11\spring-aop-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-beans\6.0.11\spring-beans-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-expression\6.0.11\spring-expression-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\3.1.3\spring-boot-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-logging\3.1.3\spring-boot-starter-logging-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.20.0\log4j-to-slf4j-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-api\2.20.0\log4j-api-2.20.0.jar;C:\Users\kosma\.m2\repository\org\slf4j\jul-to-slf4j\2.0.7\jul-to-slf4j-2.0.7.jar;C:\Users\kosma\.m2\repository\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-core\6.0.11\spring-core-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-jcl\6.0.11\spring-jcl-6.0.11.jar;C:\Users\kosma\.m2\repository\org\yaml\snakeyaml\1.33\snakeyaml-1.33.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-test\3.1.3\spring-boot-starter-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test\3.1.3\spring-boot-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\3.1.3\spring-boot-test-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\com\jayway\jsonpath\json-path\2.8.0\json-path-2.8.0.jar;C:\Users\kosma\.m2\repository\net\minidev\json-smart\2.4.11\json-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\net\minidev\accessors-smart\2.4.11\accessors-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\org\ow2\asm\asm\9.3\asm-9.3.jar;C:\Users\kosma\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\kosma\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-junit-jupiter\5.3.1\mockito-junit-jupiter-5.3.1.jar;C:\Users\kosma\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\kosma\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-test\6.0.11\spring-test-6.0.11.jar;C:\Users\kosma\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\kosma\.m2\repository\org\projectlombok\lombok\1.18.28\lombok-1.18.28.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr4-runtime\4.13.1\antlr4-runtime-4.13.1.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-starter\3.1.3\spring-shell-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-autoconfigure\3.1.3\spring-shell-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-core\3.1.3\spring-shell-core-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-validation\3.1.3\spring-boot-starter-validation-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\10.1.12\tomcat-embed-el-10.1.12.jar;C:\Users\kosma\.m2\repository\org\hibernate\validator\hibernate-validator\8.0.1.Final\hibernate-validator-8.0.1.Final.jar;C:\Users\kosma\.m2\repository\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-messaging\6.0.11\spring-messaging-6.0.11.jar;C:\Users\kosma\.m2\repository\org\jline\jline\3.23.0\jline-3.23.0.jar;C:\Users\kosma\.m2\repository\org\antlr\ST4\4.3.1\ST4-4.3.1.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr-runtime\3.5.2\antlr-runtime-3.5.2.jar;C:\Users\kosma\.m2\repository\commons-io\commons-io\2.11.0\commons-io-2.11.0.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard\3.1.3\spring-shell-standard-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard-commands\3.1.3\spring-shell-standard-commands-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-table\3.1.3\spring-shell-table-3.1.3.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.6\byte-buddy-agent-1.14.6.jar;C:\Users\kosma\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter\5.9.3\junit-jupiter-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.3\junit-jupiter-api-5.9.3.jar;C:\Users\kosma\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-commons\1.9.3\junit-platform-commons-1.9.3.jar;C:\Users\kosma\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.9.3\junit-jupiter-params-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.3\junit-jupiter-engine-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-engine\1.9.3\junit-platform-engine-1.9.3.jar;C:\Users\kosma\.m2\repository\com\github\spotbugs\spotbugs-annotations\4.7.3\spotbugs-annotations-4.7.3.jar;C:\Users\kosma\.m2\repository\com\google\code\findbugs\jsr305\3.0.2\jsr305-3.0.2.jar;"/>
     <property name="java.vm.vendor" value="Oracle Corporation"/>
     <property name="sun.arch.data.model" value="64"/>
     <property name="user.variant" value=""/>
@@ -15,9 +15,9 @@
     <property name="sun.java.launcher" value="SUN_STANDARD"/>
     <property name="user.country" value="GR"/>
     <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-17\bin"/>
-    <property name="sun.java.command" value="C:\Users\kosma\AppData\Local\Temp\surefire1172270381092033968\surefirebooter-20250130111921055_3.jar C:\Users\kosma\AppData\Local\Temp\surefire1172270381092033968 2025-01-30T11-19-20_621-jvmRun1 surefire-20250130111921055_1tmp surefire_0-20250130111921055_2tmp"/>
+    <property name="sun.java.command" value="C:\Users\kosma\AppData\Local\Temp\surefire2359191975716489556\surefirebooter-20250204155510113_3.jar C:\Users\kosma\AppData\Local\Temp\surefire2359191975716489556 2025-02-04T15-55-09_532-jvmRun1 surefire-20250204155510113_1tmp surefire_0-20250204155510113_2tmp"/>
     <property name="jdk.debug" value="release"/>
-    <property name="surefire.test.class.path" value="C:\Users\kosma\IdeaProjects\SQLDomainGen\target\test-classes;C:\Users\kosma\IdeaProjects\SQLDomainGen\target\classes;C:\Users\kosma\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-classic\1.4.11\logback-classic-1.4.11.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-core\1.4.11\logback-core-1.4.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter\3.1.3\spring-boot-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot\3.1.3\spring-boot-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-context\6.0.11\spring-context-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-aop\6.0.11\spring-aop-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-beans\6.0.11\spring-beans-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-expression\6.0.11\spring-expression-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\3.1.3\spring-boot-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-logging\3.1.3\spring-boot-starter-logging-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.20.0\log4j-to-slf4j-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-api\2.20.0\log4j-api-2.20.0.jar;C:\Users\kosma\.m2\repository\org\slf4j\jul-to-slf4j\2.0.7\jul-to-slf4j-2.0.7.jar;C:\Users\kosma\.m2\repository\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-core\6.0.11\spring-core-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-jcl\6.0.11\spring-jcl-6.0.11.jar;C:\Users\kosma\.m2\repository\org\yaml\snakeyaml\1.33\snakeyaml-1.33.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-test\3.1.3\spring-boot-starter-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test\3.1.3\spring-boot-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\3.1.3\spring-boot-test-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\com\jayway\jsonpath\json-path\2.8.0\json-path-2.8.0.jar;C:\Users\kosma\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.0\jakarta.xml.bind-api-4.0.0.jar;C:\Users\kosma\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar;C:\Users\kosma\.m2\repository\net\minidev\json-smart\2.4.11\json-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\net\minidev\accessors-smart\2.4.11\accessors-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\org\ow2\asm\asm\9.3\asm-9.3.jar;C:\Users\kosma\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\kosma\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-junit-jupiter\5.3.1\mockito-junit-jupiter-5.3.1.jar;C:\Users\kosma\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\kosma\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-test\6.0.11\spring-test-6.0.11.jar;C:\Users\kosma\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\kosma\.m2\repository\org\projectlombok\lombok\1.18.28\lombok-1.18.28.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr4-runtime\4.13.1\antlr4-runtime-4.13.1.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-starter\3.1.3\spring-shell-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-autoconfigure\3.1.3\spring-shell-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-core\3.1.3\spring-shell-core-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-validation\3.1.3\spring-boot-starter-validation-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\10.1.12\tomcat-embed-el-10.1.12.jar;C:\Users\kosma\.m2\repository\org\hibernate\validator\hibernate-validator\8.0.1.Final\hibernate-validator-8.0.1.Final.jar;C:\Users\kosma\.m2\repository\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\Users\kosma\.m2\repository\org\jboss\logging\jboss-logging\3.5.3.Final\jboss-logging-3.5.3.Final.jar;C:\Users\kosma\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-messaging\6.0.11\spring-messaging-6.0.11.jar;C:\Users\kosma\.m2\repository\org\jline\jline\3.23.0\jline-3.23.0.jar;C:\Users\kosma\.m2\repository\org\antlr\ST4\4.3.1\ST4-4.3.1.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr-runtime\3.5.2\antlr-runtime-3.5.2.jar;C:\Users\kosma\.m2\repository\commons-io\commons-io\2.11.0\commons-io-2.11.0.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard\3.1.3\spring-shell-standard-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard-commands\3.1.3\spring-shell-standard-commands-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-table\3.1.3\spring-shell-table-3.1.3.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy\1.14.6\byte-buddy-1.14.6.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.6\byte-buddy-agent-1.14.6.jar;C:\Users\kosma\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter\5.9.3\junit-jupiter-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.3\junit-jupiter-api-5.9.3.jar;C:\Users\kosma\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-commons\1.9.3\junit-platform-commons-1.9.3.jar;C:\Users\kosma\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.9.3\junit-jupiter-params-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.3\junit-jupiter-engine-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-engine\1.9.3\junit-platform-engine-1.9.3.jar;C:\Users\kosma\.m2\repository\com\github\spotbugs\spotbugs-annotations\4.7.3\spotbugs-annotations-4.7.3.jar;C:\Users\kosma\.m2\repository\com\google\code\findbugs\jsr305\3.0.2\jsr305-3.0.2.jar;"/>
+    <property name="surefire.test.class.path" value="C:\Users\kosma\IdeaProjects\SQLDomainGen\target\test-classes;C:\Users\kosma\IdeaProjects\SQLDomainGen\target\classes;C:\Users\kosma\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\kosma\.m2\repository\org\hibernate\orm\hibernate-core\6.2.5.Final\hibernate-core-6.2.5.Final.jar;C:\Users\kosma\.m2\repository\jakarta\persistence\jakarta.persistence-api\3.1.0\jakarta.persistence-api-3.1.0.jar;C:\Users\kosma\.m2\repository\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;C:\Users\kosma\.m2\repository\org\jboss\logging\jboss-logging\3.5.3.Final\jboss-logging-3.5.3.Final.jar;C:\Users\kosma\.m2\repository\org\hibernate\common\hibernate-commons-annotations\6.0.6.Final\hibernate-commons-annotations-6.0.6.Final.jar;C:\Users\kosma\.m2\repository\io\smallrye\jandex\3.0.5\jandex-3.0.5.jar;C:\Users\kosma\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy\1.14.6\byte-buddy-1.14.6.jar;C:\Users\kosma\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.0\jakarta.xml.bind-api-4.0.0.jar;C:\Users\kosma\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-runtime\4.0.3\jaxb-runtime-4.0.3.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-core\4.0.3\jaxb-core-4.0.3.jar;C:\Users\kosma\.m2\repository\org\eclipse\angus\angus-activation\2.0.1\angus-activation-2.0.1.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\txw2\4.0.3\txw2-4.0.3.jar;C:\Users\kosma\.m2\repository\com\sun\istack\istack-commons-runtime\4.1.2\istack-commons-runtime-4.1.2.jar;C:\Users\kosma\.m2\repository\jakarta\inject\jakarta.inject-api\2.0.1\jakarta.inject-api-2.0.1.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-classic\1.4.11\logback-classic-1.4.11.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-core\1.4.11\logback-core-1.4.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter\3.1.3\spring-boot-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot\3.1.3\spring-boot-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-context\6.0.11\spring-context-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-aop\6.0.11\spring-aop-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-beans\6.0.11\spring-beans-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-expression\6.0.11\spring-expression-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\3.1.3\spring-boot-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-logging\3.1.3\spring-boot-starter-logging-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.20.0\log4j-to-slf4j-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-api\2.20.0\log4j-api-2.20.0.jar;C:\Users\kosma\.m2\repository\org\slf4j\jul-to-slf4j\2.0.7\jul-to-slf4j-2.0.7.jar;C:\Users\kosma\.m2\repository\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-core\6.0.11\spring-core-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-jcl\6.0.11\spring-jcl-6.0.11.jar;C:\Users\kosma\.m2\repository\org\yaml\snakeyaml\1.33\snakeyaml-1.33.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-test\3.1.3\spring-boot-starter-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test\3.1.3\spring-boot-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\3.1.3\spring-boot-test-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\com\jayway\jsonpath\json-path\2.8.0\json-path-2.8.0.jar;C:\Users\kosma\.m2\repository\net\minidev\json-smart\2.4.11\json-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\net\minidev\accessors-smart\2.4.11\accessors-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\org\ow2\asm\asm\9.3\asm-9.3.jar;C:\Users\kosma\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\kosma\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-junit-jupiter\5.3.1\mockito-junit-jupiter-5.3.1.jar;C:\Users\kosma\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\kosma\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-test\6.0.11\spring-test-6.0.11.jar;C:\Users\kosma\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\kosma\.m2\repository\org\projectlombok\lombok\1.18.28\lombok-1.18.28.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr4-runtime\4.13.1\antlr4-runtime-4.13.1.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-starter\3.1.3\spring-shell-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-autoconfigure\3.1.3\spring-shell-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-core\3.1.3\spring-shell-core-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-validation\3.1.3\spring-boot-starter-validation-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\10.1.12\tomcat-embed-el-10.1.12.jar;C:\Users\kosma\.m2\repository\org\hibernate\validator\hibernate-validator\8.0.1.Final\hibernate-validator-8.0.1.Final.jar;C:\Users\kosma\.m2\repository\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-messaging\6.0.11\spring-messaging-6.0.11.jar;C:\Users\kosma\.m2\repository\org\jline\jline\3.23.0\jline-3.23.0.jar;C:\Users\kosma\.m2\repository\org\antlr\ST4\4.3.1\ST4-4.3.1.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr-runtime\3.5.2\antlr-runtime-3.5.2.jar;C:\Users\kosma\.m2\repository\commons-io\commons-io\2.11.0\commons-io-2.11.0.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard\3.1.3\spring-shell-standard-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard-commands\3.1.3\spring-shell-standard-commands-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-table\3.1.3\spring-shell-table-3.1.3.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.6\byte-buddy-agent-1.14.6.jar;C:\Users\kosma\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter\5.9.3\junit-jupiter-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.3\junit-jupiter-api-5.9.3.jar;C:\Users\kosma\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-commons\1.9.3\junit-platform-commons-1.9.3.jar;C:\Users\kosma\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.9.3\junit-jupiter-params-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.3\junit-jupiter-engine-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-engine\1.9.3\junit-platform-engine-1.9.3.jar;C:\Users\kosma\.m2\repository\com\github\spotbugs\spotbugs-annotations\4.7.3\spotbugs-annotations-4.7.3.jar;C:\Users\kosma\.m2\repository\com\google\code\findbugs\jsr305\3.0.2\jsr305-3.0.2.jar;"/>
     <property name="sun.cpu.endian" value="little"/>
     <property name="user.home" value="C:\Users\kosma"/>
     <property name="user.language" value="el"/>
@@ -30,7 +30,7 @@
     <property name="line.separator" value="&#10;"/>
     <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
     <property name="java.specification.name" value="Java Platform API Specification"/>
-    <property name="surefire.real.class.path" value="C:\Users\kosma\AppData\Local\Temp\surefire1172270381092033968\surefirebooter-20250130111921055_3.jar"/>
+    <property name="surefire.real.class.path" value="C:\Users\kosma\AppData\Local\Temp\surefire2359191975716489556\surefirebooter-20250204155510113_3.jar"/>
     <property name="user.script" value=""/>
     <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
     <property name="java.runtime.version" value="17.0.12+8-LTS-286"/>
@@ -56,355 +56,90 @@
     <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
     <property name="java.class.version" value="61.0"/>
   </properties>
-  <testcase name="testInventoryTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.029">
-    <system-out><![CDATA[11:19:23.046 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Inventory table with SQL:
-CREATE TABLE Inventory (
-    inventory_id INT PRIMARY KEY,
-    product_id INT NOT NULL,
-    warehouse_location VARCHAR(10),
-    stock_quantity INT,
-    last_restock TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES Product(product_id)
-);
-
-11:19:23.046 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Inventory (
-    inventory_id INT PRIMARY KEY,
-    product_id INT NOT NULL,
-    warehouse_location VARCHAR(10),
-    stock_quantity INT,
-    last_restock TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES Product(product_id)
-);
-
-11:19:23.060 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-11:19:23.073 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Inventory
-11:19:23.073 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.073 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: inventory_id with type INT
-11:19:23.073 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.073 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
-11:19:23.073 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-11:19:23.073 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: warehouse_location with type VARCHAR(10)
-11:19:23.073 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.075 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: stock_quantity with type INT
-11:19:23.075 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-11:19:23.075 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: last_restock with type TIMESTAMP
-11:19:23.075 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
-11:19:23.075 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.075 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.075 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.075 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.075 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.075 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Inventory with 5 columns.
+  <testcase name="testExtractConstraints" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.029">
+    <system-out><![CDATA[15:55:12.632 [main] INFO com.sqldomaingen.parser.SQLParser -- ParseTree generated: (sqlScript (createTableStatement CREATE TABLE (tableName products) ( (columnDef (columnName id) (dataType INT) (constraint PRIMARY KEY)) , (columnDef (columnName code) (dataType VARCHAR ( 50 )) (constraint UNIQUE)) , (columnDef (columnName price) (dataType (decimalType DECIMAL ( 10 , 2 ))) (constraint CHECK ( (condition (columnName price) (comparisonOperator >) (value 0)) ))) ) ;) <EOF>)
+15:55:12.636 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? extractColumnDefinitions() - START | Context: [683]
+15:55:12.637 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> idINTPRIMARY KEY
+15:55:12.637 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+15:55:12.637 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: id, SQL Type: INT, Java Type: Long, Primary Key: true
+15:55:12.637 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? Extracted column: id | SQL Type: INT | Primary Key: true | Default: null
+15:55:12.638 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> codeVARCHAR(50)UNIQUE
+15:55:12.638 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
+15:55:12.638 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: code, SQL Type: VARCHAR(50), Java Type: String, Primary Key: false
+15:55:12.638 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? Extracted column: code | SQL Type: VARCHAR(50) | Primary Key: false | Default: null
+15:55:12.638 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> priceDECIMAL(10,2)CHECK(price>0)
+15:55:12.638 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
+15:55:12.638 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: price, SQL Type: DECIMAL(10,2), Java Type: java.math.BigDecimal, Primary Key: false
+15:55:12.639 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? Extracted column: price | SQL Type: DECIMAL(10,2) | Primary Key: false | Default: null
+15:55:12.639 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? extractColumnDefinitions() - END | Extracted 3 columns.
 ]]></system-out>
   </testcase>
-  <testcase name="testProductTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.016">
-    <system-out><![CDATA[11:19:23.075 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Product table with SQL:
-CREATE TABLE Product (
-    product_id INT PRIMARY KEY,
-    product_name VARCHAR(100) NOT NULL,
-    category VARCHAR(50),
-    price DECIMAL(10, 2) CHECK (price > 0),
-    stock_quantity INT DEFAULT 0,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-);
-
-11:19:23.075 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Product (
-    product_id INT PRIMARY KEY,
-    product_name VARCHAR(100) NOT NULL,
-    category VARCHAR(50),
-    price DECIMAL(10, 2) CHECK (price > 0),
-    stock_quantity INT DEFAULT 0,
-    created_at TIMESTAMP,
-    updated_at TIMESTAMP
-);
-
-11:19:23.084 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-11:19:23.085 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Product
-11:19:23.085 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.085 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
-11:19:23.087 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-11:19:23.087 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_name with type VARCHAR(100)
-11:19:23.087 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-11:19:23.087 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: category with type VARCHAR(50)
-11:19:23.089 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-11:19:23.089 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: price with type DECIMAL(10,2)
-11:19:23.089 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.089 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: stock_quantity with type INT
-11:19:23.090 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-11:19:23.090 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: created_at with type TIMESTAMP
-11:19:23.090 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-11:19:23.091 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: updated_at with type TIMESTAMP
-11:19:23.091 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 7 columns.
-11:19:23.091 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.091 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.091 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.091 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.091 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.091 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.091 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.091 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Product with 7 columns.
+  <testcase name="testExtractForeignKeys" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.029">
+    <system-out><![CDATA[15:55:12.645 [main] INFO com.sqldomaingen.parser.SQLParser -- ParseTree generated: (sqlScript (createTableStatement CREATE TABLE (tableName orders) ( (columnDef (columnName id) (dataType INT) (constraint PRIMARY KEY)) , (columnDef (columnName customer_id) (dataType INT) (constraint REFERENCES (tableName customers) ( (columnName id) ))) ) ;) <EOF>)
+15:55:12.646 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? processCreateTable() - START | Context: [683]
+15:55:12.646 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted raw table name: orders
+15:55:12.657 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Orders
+15:55:12.657 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? BEFORE extractColumnDefinitions: columnDefinitions = []
+15:55:12.657 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? extractColumnDefinitions() - START | Context: [683]
+15:55:12.657 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> idINTPRIMARY KEY
+15:55:12.658 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+15:55:12.658 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: id, SQL Type: INT, Java Type: Long, Primary Key: true
+15:55:12.658 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? Extracted column: id | SQL Type: INT | Primary Key: true | Default: null
+15:55:12.658 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> customer_idINTREFERENCEScustomers(id)
+15:55:12.658 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: customers, Referenced Column: id
+15:55:12.658 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+15:55:12.658 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: customer_id, SQL Type: INT, Java Type: Long, Primary Key: false
+15:55:12.658 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? Extracted column: customer_id | SQL Type: INT | Primary Key: false | Default: null
+15:55:12.658 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? extractColumnDefinitions() - END | Extracted 2 columns.
+15:55:12.658 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? AFTER extractColumnDefinitions: columnDefinitions = [com.sqldomaingen.parser.ColumnDefinition@756b58a7, com.sqldomaingen.parser.ColumnDefinition@2cc04358] | Size: 2
+15:55:12.658 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? toTable() - START | Table Name: Orders
+15:55:12.662 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+15:55:12.663 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+15:55:12.663 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- ? Column is Foreign Key: customer_id -> customers.id
+15:55:12.663 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? toTable() - END | Converted Table: Orders with 2 columns.
+15:55:12.663 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? processCreateTable() - END | Generated Table: Orders
 ]]></system-out>
   </testcase>
-  <testcase name="testInventoryTable" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.004">
-    <system-out><![CDATA[11:19:23.094 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Inventory table with SQL:
-CREATE TABLE Inventory (
-    inventory_id INT PRIMARY KEY,
-    product_id INT NOT NULL,
-    warehouse_location VARCHAR(100),
-    stock_quantity INT,
-    last_restock TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES Product(product_id)
-);
-
-11:19:23.094 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Inventory (
-    inventory_id INT PRIMARY KEY,
-    product_id INT NOT NULL,
-    warehouse_location VARCHAR(100),
-    stock_quantity INT,
-    last_restock TIMESTAMP,
-    FOREIGN KEY (product_id) REFERENCES Product(product_id)
-);
-
-11:19:23.094 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-11:19:23.094 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Inventory
-11:19:23.098 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.098 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: inventory_id with type INT
-11:19:23.098 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.098 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
-11:19:23.098 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-11:19:23.098 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: warehouse_location with type VARCHAR(100)
-11:19:23.098 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.098 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: stock_quantity with type INT
-11:19:23.098 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-11:19:23.098 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: last_restock with type TIMESTAMP
-11:19:23.098 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
-11:19:23.098 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.098 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.098 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.098 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.098 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.098 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Inventory with 5 columns.
+  <testcase name="testExtractTableName" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.003">
+    <system-out><![CDATA[15:55:12.675 [main] INFO com.sqldomaingen.parser.SQLParser -- ParseTree generated: (sqlScript (createTableStatement CREATE TABLE (tableName orders) ( (columnDef (columnName id) (dataType INT) (constraint PRIMARY KEY)) , (columnDef (columnName name) (dataType VARCHAR ( 100 ))) ) ;) <EOF>)
+15:55:12.675 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted raw table name: orders
+15:55:12.676 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Extracted Table Name: orders
 ]]></system-out>
   </testcase>
-  <testcase name="testEmployeeTable" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0">
-    <system-out><![CDATA[11:19:23.100 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Employee table with SQL:
-CREATE TABLE Employee (
-    employee_id INT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    department_id INT,
-    hire_date DATE,
-    salary DECIMAL(15, 2),
-    FOREIGN KEY (department_id) REFERENCES Department(department_id)
-);
-
-11:19:23.100 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Employee (
-    employee_id INT PRIMARY KEY,
-    name VARCHAR(100) NOT NULL,
-    department_id INT,
-    hire_date DATE,
-    salary DECIMAL(15, 2),
-    FOREIGN KEY (department_id) REFERENCES Department(department_id)
-);
-
-11:19:23.100 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-11:19:23.100 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Employee
-11:19:23.100 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.100 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: employee_id with type INT
-11:19:23.100 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-11:19:23.100 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: name with type VARCHAR(100)
-11:19:23.100 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.100 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: department_id with type INT
-11:19:23.100 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DATE' to Java type 'java.time.LocalDate'
-11:19:23.100 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: hire_date with type DATE
-11:19:23.100 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-11:19:23.100 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: salary with type DECIMAL(15,2)
-11:19:23.100 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
-11:19:23.100 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.100 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.100 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.100 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.100 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.100 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Employee with 5 columns.
+  <testcase name="testExtractPrimaryKeys" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.006">
+    <system-out><![CDATA[15:55:12.679 [main] INFO com.sqldomaingen.parser.SQLParser -- ParseTree generated: (sqlScript (createTableStatement CREATE TABLE (tableName employees) ( (columnDef (columnName id) (dataType INT) (constraint PRIMARY KEY)) , (columnDef (columnName email) (dataType VARCHAR ( 100 ))) , (columnDef (columnName name) (dataType VARCHAR ( 50 ))) ) ;) <EOF>)
+15:55:12.679 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? extractColumnDefinitions() - START | Context: [683]
+15:55:12.679 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> idINTPRIMARY KEY
+15:55:12.679 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+15:55:12.679 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: id, SQL Type: INT, Java Type: Long, Primary Key: true
+15:55:12.680 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? Extracted column: id | SQL Type: INT | Primary Key: true | Default: null
+15:55:12.680 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> emailVARCHAR(100)
+15:55:12.680 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
+15:55:12.680 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: email, SQL Type: VARCHAR(100), Java Type: String, Primary Key: false
+15:55:12.680 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? Extracted column: email | SQL Type: VARCHAR(100) | Primary Key: false | Default: null
+15:55:12.680 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> nameVARCHAR(50)
+15:55:12.680 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
+15:55:12.680 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: name, SQL Type: VARCHAR(50), Java Type: String, Primary Key: false
+15:55:12.680 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? Extracted column: name | SQL Type: VARCHAR(50) | Primary Key: false | Default: null
+15:55:12.680 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? extractColumnDefinitions() - END | Extracted 3 columns.
 ]]></system-out>
   </testcase>
-  <testcase name="testDepartmentTable" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.005">
-    <system-out><![CDATA[11:19:23.109 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Department table with SQL:
-CREATE TABLE Department (
-    department_id INT PRIMARY KEY,
-    department_name VARCHAR(100) NOT NULL,
-    location VARCHAR(100),
-    manager_id INT,
-    budget DECIMAL(15, 2)
-);
-
-11:19:23.109 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Department (
-    department_id INT PRIMARY KEY,
-    department_name VARCHAR(100) NOT NULL,
-    location VARCHAR(100),
-    manager_id INT,
-    budget DECIMAL(15, 2)
-);
-
-11:19:23.110 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-11:19:23.110 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Department
-11:19:23.111 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.111 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: department_id with type INT
-11:19:23.112 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-11:19:23.112 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: department_name with type VARCHAR(100)
-11:19:23.112 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-11:19:23.112 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: location with type VARCHAR(100)
-11:19:23.112 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.112 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: manager_id with type INT
-11:19:23.112 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-11:19:23.112 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: budget with type DECIMAL(15,2)
-11:19:23.112 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
-11:19:23.112 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.112 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.112 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.112 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.112 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.112 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Department with 5 columns.
-]]></system-out>
-  </testcase>
-  <testcase name="testProductOrderTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.004">
-    <system-out><![CDATA[11:19:23.114 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing ProductOrder table with SQL:
-CREATE TABLE ProductOrder (
-    product_id INT,
-    order_id INT,
-    quantity INT NOT NULL,
-    unit_price DECIMAL(10, 2),
-    discount DECIMAL(5, 2),
-    PRIMARY KEY (product_id, order_id),
-    FOREIGN KEY (product_id) REFERENCES Product(product_id),
-    FOREIGN KEY (order_id) REFERENCES Orders(order_id)
-);
-
-11:19:23.114 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE ProductOrder (
-    product_id INT,
-    order_id INT,
-    quantity INT NOT NULL,
-    unit_price DECIMAL(10, 2),
-    discount DECIMAL(5, 2),
-    PRIMARY KEY (product_id, order_id),
-    FOREIGN KEY (product_id) REFERENCES Product(product_id),
-    FOREIGN KEY (order_id) REFERENCES Orders(order_id)
-);
-
-11:19:23.116 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-11:19:23.118 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: ProductOrder
-11:19:23.118 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.118 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: product_id with type INT
-11:19:23.118 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.118 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: order_id with type INT
-11:19:23.118 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.118 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: quantity with type INT
-11:19:23.118 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-11:19:23.118 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: unit_price with type DECIMAL(10,2)
-11:19:23.118 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-11:19:23.118 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: discount with type DECIMAL(5,2)
-11:19:23.118 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 5 columns.
-11:19:23.118 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.118 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.118 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.118 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.118 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.118 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: ProductOrder with 5 columns.
-]]></system-out>
-  </testcase>
-  <testcase name="testCustomerTables" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.004">
-    <system-out><![CDATA[11:19:23.120 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Customer table with SQL:
-CREATE TABLE Customer (
-    customer_id INT PRIMARY KEY,
-    customer_name VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE,
-    phone_number VARCHAR(15),
-    address TEXT,
-    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_purchase TIMESTAMP
-);
-
-11:19:23.120 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Customer (
-    customer_id INT PRIMARY KEY,
-    customer_name VARCHAR(100) NOT NULL,
-    email VARCHAR(150) UNIQUE,
-    phone_number VARCHAR(15),
-    address TEXT,
-    registered_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-    last_purchase TIMESTAMP
-);
-
-11:19:23.122 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-11:19:23.122 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Customer
-11:19:23.122 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.122 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: customer_id with type INT
-11:19:23.122 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-11:19:23.122 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: customer_name with type VARCHAR(100)
-11:19:23.122 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-11:19:23.122 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: email with type VARCHAR(150)
-11:19:23.122 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-11:19:23.122 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: phone_number with type VARCHAR(15)
-11:19:23.124 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TEXT' to Java type 'String'
-11:19:23.124 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: address with type TEXT
-11:19:23.124 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-11:19:23.124 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: registered_at with type TIMESTAMP
-11:19:23.124 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
-11:19:23.124 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: last_purchase with type TIMESTAMP
-11:19:23.124 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 7 columns.
-11:19:23.124 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.124 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.124 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.124 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.124 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.124 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.124 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.124 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Customer with 7 columns.
-]]></system-out>
-  </testcase>
-  <testcase name="testProjectTable" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.007">
-    <system-out><![CDATA[11:19:23.124 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Testing Project table with SQL:
-CREATE TABLE Project (
-    project_id INT PRIMARY KEY,
-    project_name VARCHAR(100) NOT NULL,
-    start_date DATE,
-    end_date DATE,
-    budget DECIMAL(20, 2),
-    manager_id INT,
-    FOREIGN KEY (manager_id) REFERENCES Employee(employee_id)
-);
-
-11:19:23.127 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Generated tokens for SQL: CREATE TABLE Project (
-    project_id INT PRIMARY KEY,
-    project_name VARCHAR(100) NOT NULL,
-    start_date DATE,
-    end_date DATE,
-    budget DECIMAL(20, 2),
-    manager_id INT,
-    FOREIGN KEY (manager_id) REFERENCES Employee(employee_id)
-);
-
-11:19:23.128 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Processing CREATE TABLE definition...
-11:19:23.128 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted table name: Project
-11:19:23.129 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.129 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: project_id with type INT
-11:19:23.130 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
-11:19:23.130 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: project_name with type VARCHAR(100)
-11:19:23.130 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DATE' to Java type 'java.time.LocalDate'
-11:19:23.130 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: start_date with type DATE
-11:19:23.130 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DATE' to Java type 'java.time.LocalDate'
-11:19:23.130 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: end_date with type DATE
-11:19:23.130 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
-11:19:23.130 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: budget with type DECIMAL(20,2)
-11:19:23.130 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
-11:19:23.130 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted column: manager_id with type INT
-11:19:23.130 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- Extracted 6 columns.
-11:19:23.130 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.130 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.130 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.130 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.130 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.130 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
-11:19:23.130 [main] INFO com.sqldomaingen.CreateTableDefinitionTest -- Converted to Table object: Project with 6 columns.
+  <testcase name="testExtractColumns" classname="com.sqldomaingen.CreateTableDefinitionTest" time="0.005">
+    <system-out><![CDATA[15:55:12.685 [main] INFO com.sqldomaingen.parser.SQLParser -- ParseTree generated: (sqlScript (createTableStatement CREATE TABLE (tableName customers) ( (columnDef (columnName id) (dataType SERIAL)) , (columnDef (columnName name) (dataType VARCHAR ( 255 ))) , (columnDef (columnName age) (dataType INT) (constraint NOT NULL)) ) ;) <EOF>)
+15:55:12.685 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? extractColumnDefinitions() - START | Context: [683]
+15:55:12.686 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> idSERIAL
+15:55:12.686 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'SERIAL' to Java type 'Long'
+15:55:12.686 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: id, SQL Type: SERIAL, Java Type: Long, Primary Key: false
+15:55:12.686 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? Extracted column: id | SQL Type: SERIAL | Primary Key: false | Default: null
+15:55:12.686 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> nameVARCHAR(255)
+15:55:12.686 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
+15:55:12.686 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: name, SQL Type: VARCHAR(255), Java Type: String, Primary Key: false
+15:55:12.686 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? Extracted column: name | SQL Type: VARCHAR(255) | Primary Key: false | Default: null
+15:55:12.686 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> ageINTNOT NULL
+15:55:12.687 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+15:55:12.687 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: age, SQL Type: INT, Java Type: Long, Primary Key: false
+15:55:12.687 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ? Extracted column: age | SQL Type: INT | Primary Key: false | Default: null
+15:55:12.687 [main] INFO com.sqldomaingen.parser.CreateTableDefinition -- ?? extractColumnDefinitions() - END | Extracted 3 columns.
 ]]></system-out>
   </testcase>
 </testsuite>
