@@ -101,6 +101,7 @@ public class RelationshipResolver {
             return null;
         }
 
+        // ✅ Δημιουργία relationship
         Relationship relationship = new Relationship();
         relationship.setSourceTable(sourceTable.getName());
         relationship.setSourceColumn(column.getName());
@@ -110,10 +111,43 @@ public class RelationshipResolver {
         relationship.setOnDelete(column.getOnDelete());
         relationship.setOnUpdate(column.getOnUpdate());
 
+        // ✅ Αν η σχέση είναι MANYTOMANY, προσθέτουμε joinTableName
+        if (relationshipType == Relationship.RelationshipType.MANYTOMANY) {
+            setJoinTableInfo(relationship, sourceTable, column, targetTable );
+        }
+
+
         log.info("✅ Created relationship: {}", relationship);
+
         return relationship;
     }
 
+    private void setJoinTableInfo(Relationship relationship, Table sourceTable, Column column, Table targetTable) {
+        relationship.setJoinTableName(sourceTable.getName());
+        log.info("🔗 Setting join table name for ManyToMany: {}", sourceTable.getName());
+
+        // ✅ Εύρεση της άλλης foreign key
+        String inverseColumn = findInverseJoinColumn(sourceTable, column);
+
+        if (inverseColumn != null) {
+            relationship.setInverseJoinColumn(inverseColumn); // 🔥 Ενημέρωση του αρχικού relationship
+            log.info("🔗 Setting inverse join column for ManyToMany: {}", inverseColumn);
+        } else {
+            log.warn("⚠️ Inverse join column not found for table '{}'", sourceTable.getName());
+        }
+    }
+
+
+    private String findInverseJoinColumn(Table joinTable, Column column) {
+        for (Column col : joinTable.getColumns()) {
+            if (!col.getName().equals(column.getName()) && col.isForeignKey()) {
+                log.info("🔎 Found inverse join column: {}", col.getName());
+                return col.getName(); // **Επιστρέφει την άλλη foreign key**
+            }
+        }
+        log.warn("⚠️ No inverse join column found for table '{}'", joinTable.getName());
+        return null;
+    }
 
 
     /**
@@ -143,7 +177,7 @@ public class RelationshipResolver {
             return Relationship.RelationshipType.ONETOMANY;
         }
 
-        // ✅ Default περίπτωση (δεν θα πρέπει να φτάσει εδώ)
+        // ✅ Default περίπτωση (δε θα πρέπει να φτάσει εδώ)
         return Relationship.RelationshipType.MANYTOONE;
     }
 

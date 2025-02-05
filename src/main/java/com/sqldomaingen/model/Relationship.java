@@ -18,8 +18,8 @@ public class Relationship {
     private String targetTable;
     private String onUpdate;
     private String onDelete;
-    private String joinTableName = "";
-    private String inverseJoinColumn = "";
+    private String joinTableName;
+    private String inverseJoinColumn ;
     private RelationshipType relationshipType;
 
 

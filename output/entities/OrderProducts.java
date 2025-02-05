@@ -12,15 +12,13 @@ import lombok.*;
 @AllArgsConstructor
 public class OrderProducts {
 
-    @ManyToMany
-    @JoinTable(name = "", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = ""))
-    @Column(name = "order_id")
-    private Long orderId;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "OrderProducts", joinColumns = @JoinColumn(name = "order_id"), inverseJoinColumns = @JoinColumn(name = "product_id"))
+    private List<Orders> Orders = new ArrayList<>();
 
-    @ManyToMany
-    @JoinTable(name = "", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = ""))
-    @Column(name = "product_id")
-    private Long productId;
+    @ManyToMany(fetch = FetchType.LAZY)
+    @JoinTable(name = "OrderProducts", joinColumns = @JoinColumn(name = "product_id"), inverseJoinColumns = @JoinColumn(name = "order_id"))
+    private List<Products> Products = new ArrayList<>();
 
     @Column(name = "quantity", nullable = false)
     private Long quantity;

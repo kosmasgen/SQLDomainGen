@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sqldomaingen.generator.RelationshipResolver;
-import java.util.stream.Collectors;
 
 import java.util.HashMap;
 import java.util.List;
@@ -118,7 +117,8 @@ class RelationshipResolverTest {
         // ✅ Διαβάζουμε τις μοναδικές σχέσεις από το Users table
         List<Relationship> relationships = usersTable.getRelationships().stream()
                 .filter(rel -> rel.getRelationshipType() == Relationship.RelationshipType.ONETOMANY)
-                .collect(Collectors.toList());
+                .toList();  // ✅ Βελτιωμένη χρήση!
+
 
         logger.info("🔍 Found OneToMany Relationships: {}", relationships);
 
@@ -153,6 +153,13 @@ class RelationshipResolverTest {
         assertEquals("id", firstRelationship.getTargetColumn());
         assertEquals(Relationship.RelationshipType.MANYTOMANY, firstRelationship.getRelationshipType());
 
+        // 🔴 Προσθέτουμε έλεγχο για το Join Table και τα Join Columns
+        assertNotNull(firstRelationship.getJoinTableName(), "Join table name should not be null");
+        assertEquals("OrderProducts", firstRelationship.getJoinTableName(), "Join table name should be correct");
+        logger.info("🔍 Checking inverse join column for first relationship: {}", firstRelationship.getInverseJoinColumn());
+        assertNotNull(firstRelationship.getInverseJoinColumn(), "Inverse join column should not be null");
+        assertEquals("product_id", firstRelationship.getInverseJoinColumn(), "Inverse join column should be correct");
+
         Relationship secondRelationship = relationships.get(1);
         logger.info("✅ Second ManyToMany relationship found: {}", secondRelationship);
         assertEquals("OrderProducts", secondRelationship.getSourceTable());
@@ -161,8 +168,16 @@ class RelationshipResolverTest {
         assertEquals("id", secondRelationship.getTargetColumn());
         assertEquals(Relationship.RelationshipType.MANYTOMANY, secondRelationship.getRelationshipType());
 
+        // 🔴 Προσθέτουμε έλεγχο για το Join Table και τα Join Columns
+        assertNotNull(secondRelationship.getJoinTableName(), "Join table name should not be null");
+        assertEquals("OrderProducts", secondRelationship.getJoinTableName(), "Join table name should be correct");
+        logger.info("🔍 Checking inverse join column for second relationship: {}", secondRelationship.getInverseJoinColumn());
+        assertNotNull(secondRelationship.getInverseJoinColumn(), "Inverse join column should not be null");
+        assertEquals("order_id", secondRelationship.getInverseJoinColumn(), "Inverse join column should be correct");
+
         logger.info("🎉 ManyToMany relationships resolved correctly!");
     }
+
 
     // Βοηθητική Μέθοδος για Δημιουργία Table
     private Table createTable(String name) {

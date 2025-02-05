@@ -18,8 +18,8 @@ public class Products {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "poduct_name", length = 100, nullable = false)
-    private String poductName;
+    @Column(name = "product_name", length = 100, nullable = false)
+    private String productName;
 
     @Column(name = "price", precision = 10, scale = 2, nullable = false)
     private java.math.BigDecimal price;

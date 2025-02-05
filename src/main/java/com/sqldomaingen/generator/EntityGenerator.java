@@ -31,7 +31,7 @@ public class EntityGenerator {
         Map<String, Table> tablesMap = tables.stream()
                 .collect(Collectors.toMap(Table::getName, t -> t));
 
-        logger.info("📌 Tables map created: {}", tablesMap.keySet());
+        logger.info("? Tables map created: {}", tablesMap.keySet());
 
 
         for (Table table : tables) {
@@ -57,6 +57,7 @@ public class EntityGenerator {
         logger.info("Entity generation complete. Output directory: {}", outputDir);
     }
 
+
     public String createEntityContent(Table table, String packageName, boolean useBuilder, Map<String, Table> tablesMap) {
         StringBuilder entityBuilder = new StringBuilder();
 
@@ -68,6 +69,7 @@ public class EntityGenerator {
         logger.debug("Generated entity content for table '{}':\n{}", table.getName(), entityBuilder);
         return entityBuilder.toString();
     }
+
 
     public void generatePackageAndImports(StringBuilder builder, String packageName, Table table) {
         builder.append("package ").append(packageName).append(";\n\n");
@@ -91,6 +93,8 @@ public class EntityGenerator {
         builder.append("\n");
     }
 
+
+
     public void generateClassAnnotations(StringBuilder builder, Table table, boolean useBuilder) {
         builder.append("@Entity\n");
         builder.append("@Table(name = \"").append(table.getName()).append("\")\n");
@@ -104,68 +108,96 @@ public class EntityGenerator {
         builder.append("public class ").append(NamingConverter.toPascalCase(table.getName())).append(" {\n\n");
     }
 
+
     public void generateFields(StringBuilder builder, Table table, Map<String, Table> tablesMap) {
         RelationshipResolver resolver = new RelationshipResolver();
 
-        table.getColumns().forEach(column -> {
+        for (Column column : table.getColumns()) {
             logger.debug("Processing column: {}", column.getName());
 
-            if (column.isPrimaryKey()) {
-                addPrimaryKeyAnnotations(builder);
+            boolean isForeignKey = column.isForeignKey();
+            boolean isPrimaryKey = column.isPrimaryKey();
+
+            if (isPrimaryKey) {
+                addPrimaryKeyAnnotations(builder, column);
             }
 
-            if (column.isForeignKey()) {
+            if (isForeignKey) {
                 addForeignKeyAnnotations(builder, column, table, resolver, tablesMap);
+            } else if (!isPrimaryKey) {
+                addColumnField(builder, column);
             }
-
-            addColumnField(builder, column);
-        });
+        }
     }
 
-    private void addPrimaryKeyAnnotations(StringBuilder builder) {
+
+    private void addPrimaryKeyAnnotations(StringBuilder builder, Column column) {
         builder.append("    @Id\n");
         builder.append("    @GeneratedValue(strategy = GenerationType.IDENTITY)\n");
+
+        // Χρησιμοποιούμε την κοινή μέθοδο addColumnField
+        addColumnField(builder, column);
     }
 
+
+
     private void addForeignKeyAnnotations(StringBuilder builder, Column column, Table table, RelationshipResolver resolver, Map<String, Table> allTables) {
-        logger.debug("🔍 Resolving relationship for column: {} in table: {}", column.getName(), table.getName());
+        logger.debug("? Resolving relationship for column: {} in table: {}", column.getName(), table.getName());
 
         Relationship relationship = resolver.createRelationship(column, table, allTables);
 
-
         if (relationship == null) {
-            logger.warn("⚠️ Skipping foreign key annotation for column '{}' because no relationship was found.", column.getName());
+            logger.warn("?? Skipping foreign key annotation for column '{}' because no relationship was found.", column.getName());
             return;
         }
 
+        String targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
+        String targetField = NamingConverter.toCamelCase(relationship.getTargetTable());
+
         switch (relationship.getRelationshipType()) {
             case ONETOONE:
-                builder.append("    @OneToOne\n");
+                builder.append("    @OneToOne(fetch = FetchType.LAZY)\n");
+                builder.append("    @JoinColumn(name = \"").append(relationship.getSourceColumn())
+                        .append("\", referencedColumnName = \"").append(relationship.getTargetColumn()).append("\"");
+                addOnDeleteAndOnUpdate(builder, relationship);
+                builder.append(")\n");
+                builder.append("    private ").append(targetEntity).append(" ").append(targetField).append(";\n\n");
                 break;
+
             case MANYTOONE:
-                builder.append("    @ManyToOne\n");
+                builder.append("    @ManyToOne(fetch = FetchType.LAZY)\n");
+                builder.append("    @JoinColumn(name = \"").append(relationship.getSourceColumn())
+                        .append("\", referencedColumnName = \"").append(relationship.getTargetColumn()).append("\"");
+                addOnDeleteAndOnUpdate(builder, relationship);
+                builder.append(")\n");
+                builder.append("    private ").append(targetEntity).append(" ").append(targetField).append(";\n\n");
                 break;
+
             case ONETOMANY:
-                builder.append("    @OneToMany(mappedBy = \"").append(relationship.getSourceColumn()).append("\")\n");
-                return;
+                builder.append("    @OneToMany(mappedBy = \"").append(NamingConverter.toCamelCase(relationship.getSourceTable()))
+                        .append("\", fetch = FetchType.LAZY, cascade = CascadeType.ALL)\n");
+                builder.append("    private List<").append(targetEntity).append("> ")
+                        .append(NamingConverter.toCamelCase(targetEntity)).append(" = new ArrayList<>();\n\n");
+                break;
+
             case MANYTOMANY:
-                builder.append("    @ManyToMany\n");
+                builder.append("    @ManyToMany(fetch = FetchType.LAZY)\n");
                 builder.append("    @JoinTable(name = \"").append(relationship.getJoinTableName())
                         .append("\", joinColumns = @JoinColumn(name = \"").append(relationship.getSourceColumn())
                         .append("\"), inverseJoinColumns = @JoinColumn(name = \"").append(relationship.getInverseJoinColumn())
                         .append("\"))\n");
-                return;
+                builder.append("    private List<").append(targetEntity).append("> ")
+                        .append(NamingConverter.toCamelCase(targetEntity)).append(" = new ArrayList<>();\n\n");
+                break;
         }
-
-        builder.append("    @JoinColumn(name = \"").append(relationship.getSourceColumn())
-                .append("\", referencedColumnName = \"").append(relationship.getTargetColumn()).append("\"");
-        addOnDeleteAndOnUpdate(builder, relationship);
-        builder.append(")\n");
 
         if (relationship.getOnDelete() != null) {
             builder.append("    @OnDelete(action = OnDeleteAction.").append(relationship.getOnDelete()).append(")\n");
         }
     }
+
+
+
 
     private void addOnDeleteAndOnUpdate(StringBuilder builder, Relationship relationship) {
         if (relationship.getOnDelete() != null || relationship.getOnUpdate() != null) {
@@ -175,7 +207,10 @@ public class EntityGenerator {
     }
 
     private void addColumnField(StringBuilder builder, Column column) {
-        builder.append("    @Column(name = \"").append(column.getName()).append("\"");
+        // Αν είναι Foreign Key, δεν προσθέτουμε το @Column annotation.
+        if (!column.isForeignKey()) {
+            builder.append("    @Column(name = \"").append(column.getName()).append("\"");
+        }
 
         if (column.getSqlType().startsWith("VARCHAR") || column.getSqlType().startsWith("CHAR")) {
             builder.append(", length = ").append(column.getLength());
@@ -198,10 +233,14 @@ public class EntityGenerator {
             builder.append(", columnDefinition = \"DEFAULT '").append(column.getDefaultValue()).append("'\"");
         }
 
-        builder.append(")\n");
-        builder.append("    private ").append(column.getJavaType()).append(" ")
+        if (!column.isForeignKey()) {
+            builder.append(")");
+        }
+
+        builder.append("\n    private ").append(column.getJavaType()).append(" ")
                 .append(NamingConverter.toCamelCase(column.getName())).append(";\n\n");
     }
+
 
 
 
@@ -216,6 +255,7 @@ public class EntityGenerator {
         logger.debug("File written successfully: {}", filePath);
     }
 }
+
 
 
 

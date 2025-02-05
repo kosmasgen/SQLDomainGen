@@ -18,10 +18,9 @@ public class Profiles {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @OneToOne
+    @OneToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @Column(name = "user_id", unique = true)
-    private Long userId;
+    private Users Users;
 
     @Column(name = "bio", nullable = false)
     private String bio;

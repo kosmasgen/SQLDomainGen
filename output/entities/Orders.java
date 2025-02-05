@@ -19,10 +19,9 @@ public class Orders {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", referencedColumnName = "id")
-    @Column(name = "user_id")
-    private Long userId;
+    private Users Users;
 
     @Column(name = "order_date", columnDefinition = "DEFAULT 'CURRENT_TIMESTAMP'")
     private java.time.LocalDateTime orderDate;
