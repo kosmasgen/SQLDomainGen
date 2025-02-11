@@ -63,44 +63,48 @@ public class TableTest {
     }
 
     @Test
-    public void testToString() {
-        logger.info("Testing toString method...");
+    void testToString() {
+        logger.info("🔵 Testing toString method...");
 
+        // Δημιουργία δείγματος πίνακα
         Table table = new Table();
         table.setName("SampleTable");
 
-        // Προσθήκη στηλών
         Column idColumn = new Column();
         idColumn.setName("id");
         idColumn.setSqlType("INTEGER");
         idColumn.setLength(255);
         idColumn.setPrimaryKey(true);
-        idColumn.setNullable(false);
-        idColumn.setDefaultValue(null);
         idColumn.setUnique(true);
+        idColumn.setNullable(false);
 
         Column nameColumn = new Column();
         nameColumn.setName("name");
         nameColumn.setSqlType("String");
         nameColumn.setLength(255);
-        nameColumn.setPrimaryKey(false);
-        nameColumn.setNullable(true);
         nameColumn.setDefaultValue("default_name");
-        nameColumn.setUnique(false);
+        nameColumn.setNullable(true);
 
         table.addColumn(idColumn);
         table.addColumn(nameColumn);
 
-        // Προσθήκη constraints
-        table.addConstraints(List.of("PRIMARY KEY (id)", "FOREIGN KEY (dept_id) REFERENCES Department(id)"));
+        // Αντί για addConstraint, χρησιμοποιούμε το setter
+        List<String> constraints = Arrays.asList(
+                "PRIMARY KEY (id)",
+                "FOREIGN KEY (dept_id) REFERENCES Department(id)"
+        );
+        table.setConstraints(constraints); // Χρήση του setter
 
-        String expectedToString = "Table{name='SampleTable', columns=[" +
-                "Column{name='id', type='Long', length=255, primaryKey=true, nullable=false, defaultValue='null', unique=true}, " +
-                "Column{name='name', type='String', length=255, primaryKey=false, nullable=true, defaultValue='default_name', unique=false}], " +
-                "constraints=[PRIMARY KEY (id), FOREIGN KEY (dept_id) REFERENCES Department(id)]}";
 
-        logger.info("Table state: {}", table);
+        // Αναμενόμενο αποτέλεσμα
+        String expected = "Table{name='SampleTable', columns=[Column(name=id, sqlType=INTEGER, length=255, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=null, primaryKey=true, unique=true, nullable=false, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0), " +
+                "Column(name=name, sqlType=String, length=255, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=default_name, primaryKey=false, unique=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0)], " +
+                "constraints=[PRIMARY KEY (id), FOREIGN KEY (dept_id) REFERENCES Department(id)], relationships=[]}";
 
-        Assertions.assertEquals(expectedToString, table.toString());
+        logger.info("✅ Table state: {}", table);
+        Assertions.assertEquals(expected, table.toString(), "Table toString should match the expected format.");
     }
+
+
+
 }

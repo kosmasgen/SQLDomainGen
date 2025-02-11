@@ -1,0 +1,258 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="el"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>EntityGenerator.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SQLDomainGen</a> &gt; <a href="index.source.html" class="el_package">com.sqldomaingen.generator</a> &gt; <span class="el_source">EntityGenerator.java</span></div><h1>EntityGenerator.java</h1><pre class="source lang-java linenums">package com.sqldomaingen.generator;
+
+import com.sqldomaingen.model.Relationship;
+import com.sqldomaingen.model.Table;
+import com.sqldomaingen.util.NamingConverter;
+import com.sqldomaingen.model.Column;
+import lombok.NoArgsConstructor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
+
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.charset.StandardCharsets;
+import java.util.*;
+import java.util.stream.Collectors;
+
+<span class="fc" id="L20">@NoArgsConstructor</span>
+@Component
+public class EntityGenerator {
+
+<span class="fc" id="L24">    private static final Logger logger = LoggerFactory.getLogger(EntityGenerator.class);</span>
+
+    public void generate(List&lt;Table&gt; tables, String outputDir, String packageName, boolean overwrite, boolean useBuilder) {
+<span class="fc" id="L27">        logger.info(&quot;Starting entity generation...&quot;);</span>
+
+
+        // Δημιουργία του tablesMap για να μπορούν να βρεθούν οι σχέσεις
+<span class="fc" id="L31">        Map&lt;String, Table&gt; tablesMap = tables.stream()</span>
+<span class="fc" id="L32">                .collect(Collectors.toMap(Table::getName, t -&gt; t));</span>
+
+<span class="fc" id="L34">        logger.info(&quot;? Tables map created: {}&quot;, tablesMap.keySet());</span>
+
+
+<span class="fc bfc" id="L37" title="All 2 branches covered.">        for (Table table : tables) {</span>
+<span class="fc" id="L38">            logger.debug(&quot;Processing table: {}&quot;, table.getName());</span>
+
+<span class="fc" id="L40">            String entityContent = createEntityContent(table, packageName, useBuilder, tablesMap);</span>
+<span class="fc" id="L41">            Path outputPath = Paths.get(outputDir, NamingConverter.toPascalCase(table.getName()) + &quot;.java&quot;);</span>
+<span class="fc" id="L42">            String fileName = outputPath.toString();</span>
+
+<span class="pc bpc" id="L44" title="1 of 4 branches missed.">            if (!overwrite &amp;&amp; outputPath.toFile().exists()) {</span>
+<span class="fc" id="L45">                logger.warn(&quot;File already exists, skipping: {}&quot;, fileName);</span>
+<span class="fc" id="L46">                continue;</span>
+            }
+
+            try {
+<span class="fc" id="L50">                writeToFile(fileName, entityContent);</span>
+<span class="fc" id="L51">                logger.info(&quot;Generated entity for table: {}&quot;, table.getName());</span>
+<span class="nc" id="L52">            } catch (IOException e) {</span>
+<span class="nc" id="L53">                logger.error(&quot;Failed to write entity file for table: {}&quot;, table.getName(), e);</span>
+<span class="fc" id="L54">            }</span>
+<span class="fc" id="L55">        }</span>
+
+<span class="fc" id="L57">        logger.info(&quot;Entity generation complete. Output directory: {}&quot;, outputDir);</span>
+<span class="fc" id="L58">    }</span>
+
+
+    public String createEntityContent(Table table, String packageName, boolean useBuilder, Map&lt;String, Table&gt; tablesMap) {
+<span class="fc" id="L62">        StringBuilder entityBuilder = new StringBuilder();</span>
+
+<span class="fc" id="L64">        generatePackageAndImports(entityBuilder, packageName, table);</span>
+<span class="fc" id="L65">        generateClassAnnotations(entityBuilder, table, useBuilder);</span>
+<span class="fc" id="L66">        generateFields(entityBuilder, table, tablesMap);</span>
+<span class="fc" id="L67">        entityBuilder.append(&quot;}\n&quot;);</span>
+
+<span class="fc" id="L69">        logger.debug(&quot;Generated entity content for table '{}':\n{}&quot;, table.getName(), entityBuilder);</span>
+<span class="fc" id="L70">        return entityBuilder.toString();</span>
+    }
+
+
+    public void generatePackageAndImports(StringBuilder builder, String packageName, Table table) {
+<span class="fc" id="L75">        builder.append(&quot;package &quot;).append(packageName).append(&quot;;\n\n&quot;);</span>
+<span class="fc" id="L76">        builder.append(&quot;import jakarta.persistence.*;\n&quot;);</span>
+<span class="fc" id="L77">        builder.append(&quot;import lombok.*;\n&quot;);</span>
+
+<span class="fc" id="L79">        boolean hasBigDecimal = false;</span>
+<span class="fc" id="L80">        boolean hasLocalDate = false;</span>
+<span class="fc" id="L81">        boolean hasLocalDateTime = false;</span>
+
+<span class="fc bfc" id="L83" title="All 2 branches covered.">        for (Column column : table.getColumns()) {</span>
+<span class="pc bpc" id="L84" title="1 of 2 branches missed.">            if (column.getJavaType().equals(&quot;java.math.BigDecimal&quot;)) hasBigDecimal = true;</span>
+<span class="pc bpc" id="L85" title="1 of 2 branches missed.">            if (column.getJavaType().equals(&quot;java.time.LocalDate&quot;)) hasLocalDate = true;</span>
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">            if (column.getJavaType().equals(&quot;java.time.LocalDateTime&quot;)) hasLocalDateTime = true;</span>
+<span class="fc" id="L87">        }</span>
+
+<span class="pc bpc" id="L89" title="1 of 2 branches missed.">        if (hasBigDecimal) builder.append(&quot;import java.math.BigDecimal;\n&quot;);</span>
+<span class="pc bpc" id="L90" title="1 of 2 branches missed.">        if (hasLocalDate) builder.append(&quot;import java.time.LocalDate;\n&quot;);</span>
+<span class="pc bpc" id="L91" title="1 of 2 branches missed.">        if (hasLocalDateTime) builder.append(&quot;import java.time.LocalDateTime;\n&quot;);</span>
+
+<span class="fc" id="L93">        builder.append(&quot;\n&quot;);</span>
+<span class="fc" id="L94">    }</span>
+
+
+
+    public void generateClassAnnotations(StringBuilder builder, Table table, boolean useBuilder) {
+<span class="fc" id="L99">        builder.append(&quot;@Entity\n&quot;);</span>
+<span class="fc" id="L100">        builder.append(&quot;@Table(name = \&quot;&quot;).append(table.getName()).append(&quot;\&quot;)\n&quot;);</span>
+<span class="fc" id="L101">        builder.append(&quot;@Getter\n@Setter\n&quot;);</span>
+<span class="fc" id="L102">        builder.append(&quot;@ToString\n&quot;);</span>
+
+<span class="pc bpc" id="L104" title="1 of 2 branches missed.">        if (useBuilder) {</span>
+<span class="nc" id="L105">            builder.append(&quot;@Builder\n&quot;);</span>
+        }
+<span class="fc" id="L107">        builder.append(&quot;@NoArgsConstructor\n@AllArgsConstructor\n&quot;);</span>
+<span class="fc" id="L108">        builder.append(&quot;public class &quot;).append(NamingConverter.toPascalCase(table.getName())).append(&quot; {\n\n&quot;);</span>
+<span class="fc" id="L109">    }</span>
+
+
+    public void generateFields(StringBuilder builder, Table table, Map&lt;String, Table&gt; tablesMap) {
+<span class="fc" id="L113">        RelationshipResolver resolver = new RelationshipResolver();</span>
+
+<span class="fc bfc" id="L115" title="All 2 branches covered.">        for (Column column : table.getColumns()) {</span>
+<span class="fc" id="L116">            logger.debug(&quot;Processing column: {}&quot;, column.getName());</span>
+
+<span class="fc" id="L118">            boolean isForeignKey = column.isForeignKey();</span>
+<span class="fc" id="L119">            boolean isPrimaryKey = column.isPrimaryKey();</span>
+
+<span class="fc bfc" id="L121" title="All 2 branches covered.">            if (isPrimaryKey) {</span>
+<span class="fc" id="L122">                addPrimaryKeyAnnotations(builder, column);</span>
+            }
+
+<span class="fc bfc" id="L125" title="All 2 branches covered.">            if (isForeignKey) {</span>
+<span class="fc" id="L126">                addForeignKeyAnnotations(builder, column, table, resolver, tablesMap);</span>
+<span class="pc bpc" id="L127" title="1 of 2 branches missed.">            } else if (!isPrimaryKey) {</span>
+<span class="nc" id="L128">                addColumnField(builder, column);</span>
+            }
+<span class="fc" id="L130">        }</span>
+<span class="fc" id="L131">    }</span>
+
+
+    private void addPrimaryKeyAnnotations(StringBuilder builder, Column column) {
+<span class="fc" id="L135">        builder.append(&quot;    @Id\n&quot;);</span>
+<span class="fc" id="L136">        builder.append(&quot;    @GeneratedValue(strategy = GenerationType.IDENTITY)\n&quot;);</span>
+
+        // Χρησιμοποιούμε την κοινή μέθοδο addColumnField
+<span class="fc" id="L139">        addColumnField(builder, column);</span>
+<span class="fc" id="L140">    }</span>
+
+
+
+    private void addForeignKeyAnnotations(StringBuilder builder, Column column, Table table, RelationshipResolver resolver, Map&lt;String, Table&gt; allTables) {
+<span class="fc" id="L145">        logger.debug(&quot;? Resolving relationship for column: {} in table: {}&quot;, column.getName(), table.getName());</span>
+
+<span class="fc" id="L147">        Relationship relationship = resolver.createRelationship(column, table, allTables);</span>
+
+<span class="pc bpc" id="L149" title="1 of 2 branches missed.">        if (relationship == null) {</span>
+<span class="nc" id="L150">            logger.warn(&quot;?? Skipping foreign key annotation for column '{}' because no relationship was found.&quot;, column.getName());</span>
+<span class="nc" id="L151">            return;</span>
+        }
+
+<span class="fc" id="L154">        String targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());</span>
+<span class="fc" id="L155">        String targetField = NamingConverter.toCamelCase(relationship.getTargetTable());</span>
+
+<span class="pc bpc" id="L157" title="2 of 5 branches missed.">        switch (relationship.getRelationshipType()) {</span>
+            case ONETOONE:
+<span class="fc" id="L159">                builder.append(&quot;    @OneToOne(fetch = FetchType.LAZY)\n&quot;);</span>
+<span class="fc" id="L160">                builder.append(&quot;    @JoinColumn(name = \&quot;&quot;).append(relationship.getSourceColumn())</span>
+<span class="fc" id="L161">                        .append(&quot;\&quot;, referencedColumnName = \&quot;&quot;).append(relationship.getTargetColumn()).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L162">                addOnDeleteAndOnUpdate(builder, relationship);</span>
+<span class="fc" id="L163">                builder.append(&quot;)\n&quot;);</span>
+<span class="fc" id="L164">                builder.append(&quot;    private &quot;).append(targetEntity).append(&quot; &quot;).append(targetField).append(&quot;;\n\n&quot;);</span>
+<span class="fc" id="L165">                break;</span>
+
+            case MANYTOONE:
+<span class="fc" id="L168">                builder.append(&quot;    @ManyToOne(fetch = FetchType.LAZY)\n&quot;);</span>
+<span class="fc" id="L169">                builder.append(&quot;    @JoinColumn(name = \&quot;&quot;).append(relationship.getSourceColumn())</span>
+<span class="fc" id="L170">                        .append(&quot;\&quot;, referencedColumnName = \&quot;&quot;).append(relationship.getTargetColumn()).append(&quot;\&quot;&quot;);</span>
+<span class="fc" id="L171">                addOnDeleteAndOnUpdate(builder, relationship);</span>
+<span class="fc" id="L172">                builder.append(&quot;)\n&quot;);</span>
+<span class="fc" id="L173">                builder.append(&quot;    private &quot;).append(targetEntity).append(&quot; &quot;).append(targetField).append(&quot;;\n\n&quot;);</span>
+<span class="fc" id="L174">                break;</span>
+
+            case ONETOMANY:
+<span class="nc" id="L177">                builder.append(&quot;    @OneToMany(mappedBy = \&quot;&quot;).append(NamingConverter.toCamelCase(relationship.getSourceTable()))</span>
+<span class="nc" id="L178">                        .append(&quot;\&quot;, fetch = FetchType.LAZY, cascade = CascadeType.ALL)\n&quot;);</span>
+<span class="nc" id="L179">                builder.append(&quot;    private List&lt;&quot;).append(targetEntity).append(&quot;&gt; &quot;)</span>
+<span class="nc" id="L180">                        .append(NamingConverter.toCamelCase(targetEntity)).append(&quot; = new ArrayList&lt;&gt;();\n\n&quot;);</span>
+<span class="nc" id="L181">                break;</span>
+
+            case MANYTOMANY:
+<span class="fc" id="L184">                builder.append(&quot;    @ManyToMany(fetch = FetchType.LAZY)\n&quot;);</span>
+<span class="fc" id="L185">                builder.append(&quot;    @JoinTable(name = \&quot;&quot;).append(relationship.getJoinTableName())</span>
+<span class="fc" id="L186">                        .append(&quot;\&quot;, joinColumns = @JoinColumn(name = \&quot;&quot;).append(relationship.getSourceColumn())</span>
+<span class="fc" id="L187">                        .append(&quot;\&quot;), inverseJoinColumns = @JoinColumn(name = \&quot;&quot;).append(relationship.getInverseJoinColumn())</span>
+<span class="fc" id="L188">                        .append(&quot;\&quot;))\n&quot;);</span>
+<span class="fc" id="L189">                builder.append(&quot;    private List&lt;&quot;).append(targetEntity).append(&quot;&gt; &quot;)</span>
+<span class="fc" id="L190">                        .append(NamingConverter.toCamelCase(targetEntity)).append(&quot; = new ArrayList&lt;&gt;();\n\n&quot;);</span>
+                break;
+        }
+
+<span class="pc bpc" id="L194" title="1 of 2 branches missed.">        if (relationship.getOnDelete() != null) {</span>
+<span class="nc" id="L195">            builder.append(&quot;    @OnDelete(action = OnDeleteAction.&quot;).append(relationship.getOnDelete()).append(&quot;)\n&quot;);</span>
+        }
+<span class="fc" id="L197">    }</span>
+
+
+
+
+    private void addOnDeleteAndOnUpdate(StringBuilder builder, Relationship relationship) {
+<span class="pc bpc" id="L203" title="2 of 4 branches missed.">        if (relationship.getOnDelete() != null || relationship.getOnUpdate() != null) {</span>
+<span class="nc" id="L204">            builder.append(&quot;, foreignKey = @ForeignKey(name = \&quot;fk_&quot;).append(relationship.getSourceColumn())</span>
+<span class="nc" id="L205">                    .append(&quot;_&quot;).append(relationship.getTargetColumn()).append(&quot;\&quot;, value = ConstraintMode.CONSTRAINT)&quot;);</span>
+        }
+<span class="fc" id="L207">    }</span>
+
+    private void addColumnField(StringBuilder builder, Column column) {
+        // Αν είναι Foreign Key, δεν προσθέτουμε το @Column annotation.
+<span class="fc bfc" id="L211" title="All 2 branches covered.">        if (!column.isForeignKey()) {</span>
+<span class="fc" id="L212">            builder.append(&quot;    @Column(name = \&quot;&quot;).append(column.getName()).append(&quot;\&quot;&quot;);</span>
+        }
+
+<span class="pc bpc" id="L215" title="2 of 4 branches missed.">        if (column.getSqlType().startsWith(&quot;VARCHAR&quot;) || column.getSqlType().startsWith(&quot;CHAR&quot;)) {</span>
+<span class="nc" id="L216">            builder.append(&quot;, length = &quot;).append(column.getLength());</span>
+        }
+
+<span class="pc bpc" id="L219" title="2 of 4 branches missed.">        if (column.getSqlType().startsWith(&quot;DECIMAL&quot;) || column.getSqlType().startsWith(&quot;NUMERIC&quot;)) {</span>
+<span class="nc" id="L220">            builder.append(&quot;, precision = &quot;).append(column.getPrecision())</span>
+<span class="nc" id="L221">                    .append(&quot;, scale = &quot;).append(column.getScale());</span>
+        }
+
+<span class="pc bpc" id="L224" title="1 of 2 branches missed.">        if (column.isUnique()) {</span>
+<span class="nc" id="L225">            builder.append(&quot;, unique = true&quot;);</span>
+        }
+
+<span class="pc bpc" id="L228" title="1 of 2 branches missed.">        if (!column.isNullable()) {</span>
+<span class="fc" id="L229">            builder.append(&quot;, nullable = false&quot;);</span>
+        }
+
+<span class="pc bpc" id="L232" title="1 of 2 branches missed.">        if (column.getDefaultValue() != null) {</span>
+<span class="nc" id="L233">            builder.append(&quot;, columnDefinition = \&quot;DEFAULT '&quot;).append(column.getDefaultValue()).append(&quot;'\&quot;&quot;);</span>
+        }
+
+<span class="fc bfc" id="L236" title="All 2 branches covered.">        if (!column.isForeignKey()) {</span>
+<span class="fc" id="L237">            builder.append(&quot;)&quot;);</span>
+        }
+
+<span class="fc" id="L240">        builder.append(&quot;\n    private &quot;).append(column.getJavaType()).append(&quot; &quot;)</span>
+<span class="fc" id="L241">                .append(NamingConverter.toCamelCase(column.getName())).append(&quot;;\n\n&quot;);</span>
+<span class="fc" id="L242">    }</span>
+
+
+
+
+    public void writeToFile(String filePath, String content) throws IOException {
+<span class="fc" id="L248">        Objects.requireNonNull(filePath, &quot;File path cannot be null&quot;);</span>
+<span class="fc" id="L249">        Objects.requireNonNull(content, &quot;Content cannot be null&quot;);</span>
+
+<span class="fc" id="L251">        Path path = Paths.get(filePath);</span>
+<span class="fc" id="L252">        Files.createDirectories(path.getParent());</span>
+<span class="fc" id="L253">        Files.write(path, content.getBytes(StandardCharsets.UTF_8));</span>
+
+<span class="fc" id="L255">        logger.debug(&quot;File written successfully: {}&quot;, filePath);</span>
+<span class="fc" id="L256">    }</span>
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

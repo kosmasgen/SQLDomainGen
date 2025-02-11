@@ -7,6 +7,12 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import org.antlr.v4.runtime.tree.ParseTreeListener;
+import org.antlr.v4.runtime.tree.TerminalNode;
+import org.antlr.v4.runtime.tree.ErrorNode;
+import org.antlr.v4.runtime.ParserRuleContext;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 class SQLParserTest {
@@ -576,5 +582,109 @@ class SQLParserTest {
         });
     }
 
+    @Test
+    void testParseAlterTableWithMultipleConstraints() {
+        sqlParser.setSqlContent(
+                "ALTER TABLE users ADD CONSTRAINT chk_email CHECK (email LIKE '%@%'), " +
+                        "ADD CONSTRAINT unique_username UNIQUE (username);"
+        );
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for ALTER TABLE with multiple constraints.");
+            logger.info("ParseTree generated for ALTER TABLE with multiple constraints: {}", parseTree.toStringTree());
+            assertTrue(parseTree.toStringTree().contains("chk_email"));
+            assertTrue(parseTree.toStringTree().contains("unique_username"));
+        });
+    }
+
+
+
+
+    @Test
+    void testParseSelfReferencingForeignKeys() {
+        sqlParser.setSqlContent(
+                "CREATE TABLE employee (\n" +
+                        "id INT PRIMARY KEY,\n" +
+                        "manager_id INT,\n" +
+                        "FOREIGN KEY (manager_id) REFERENCES employee(id)\n" +
+                        ");"
+        );
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for self-referencing FOREIGN KEY.");
+            assertTrue(parseTree.toStringTree().contains("FOREIGN KEY"));
+            logger.info("ParseTree successfully generated for self-referencing FOREIGN KEY.");
+        });
+    }
+    @Test
+    void testParseComplexForeignKey() {
+        sqlParser.setSqlContent(
+                "CREATE TABLE orders (\n" +
+                        "id INT PRIMARY KEY,\n" +
+                        "customer_id INT,\n" +
+                        "FOREIGN KEY (customer_id) REFERENCES customers(id) ON DELETE CASCADE ON UPDATE SET NULL\n" +
+                        ");"
+        );
+
+        logger.info("Starting test for complex FOREIGN KEY...");
+        logger.info("SQL Content:\n{}", sqlParser.getSqlContent());
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for complex FOREIGN KEY.");
+
+            // Εμφάνιση ολόκληρου του ParseTree
+            String parseTreeStr = parseTree.toStringTree().toUpperCase();
+            logger.info("Full ParseTree:\n{}", parseTreeStr);
+
+            // **Λεπτομερής Διάσχιση του ParseTree (DFS)**
+            logParseTree(parseTree, 0);
+
+            // Έλεγχος για τα ON DELETE και ON UPDATE
+            assertTrue(parseTreeStr.contains("ON DELETE") && parseTreeStr.contains("CASCADE"), "Expected 'ON DELETE CASCADE' in parse tree.");
+            assertTrue(parseTreeStr.contains("ON UPDATE") && parseTreeStr.contains("SET NULL"), "Expected 'ON UPDATE SET NULL' in parse tree.");
+
+            logger.info("Test for complex FOREIGN KEY passed successfully.");
+        });
+    }
+
+    /**
+     * Αναδρομική συνάρτηση για την καταγραφή όλων των κόμβων του ParseTree.
+     */
+    private void logParseTree(ParseTree tree, int level) {
+        if (tree == null) return;
+
+        String indent = "  ".repeat(level);  // Για οπτική διάταξη των κόμβων
+        logger.info("{}Node: {}", indent, tree.getText());
+
+        for (int i = 0; i < tree.getChildCount(); i++) {
+            logParseTree(tree.getChild(i), level + 1);
+        }
+    }
+
+
+    @Test
+    void testParseGeneratedAlwaysAs() {
+        sqlParser.setSqlContent(
+                "CREATE TABLE sales (" +
+                        "id SERIAL PRIMARY KEY," +
+                        "quantity INT," +
+                        "price_per_unit DECIMAL(10, 2)," +
+                        "total_price DECIMAL(10, 2) GENERATED ALWAYS AS (quantity * price_per_unit) STORED" +
+                        ");"
+        );
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree);
+            assertTrue(parseTree.toStringTree().contains("GENERATED ALWAYS AS"));
+        });
+    }
 
 }
+
+
+
+

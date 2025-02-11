@@ -65,7 +65,6 @@ public class RelationshipResolver {
     }
 
 
-
     /**
      * Επιστρέφει όλες τις foreign key στήλες του πίνακα.
      */
@@ -122,7 +121,7 @@ public class RelationshipResolver {
         return relationship;
     }
 
-    private void setJoinTableInfo(Relationship relationship, Table sourceTable, Column column, Table targetTable) {
+    private void setJoinTableInfo(Relationship relationship, Table sourceTable, Column column,Table table) {
         relationship.setJoinTableName(sourceTable.getName());
         log.info("🔗 Setting join table name for ManyToMany: {}", sourceTable.getName());
 

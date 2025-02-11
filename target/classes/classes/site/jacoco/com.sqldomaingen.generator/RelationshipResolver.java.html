@@ -1,0 +1,243 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd"><html xmlns="http://www.w3.org/1999/xhtml" lang="el"><head><meta http-equiv="Content-Type" content="text/html;charset=UTF-8"/><link rel="stylesheet" href="../jacoco-resources/report.css" type="text/css"/><link rel="shortcut icon" href="../jacoco-resources/report.gif" type="image/gif"/><title>RelationshipResolver.java</title><link rel="stylesheet" href="../jacoco-resources/prettify.css" type="text/css"/><script type="text/javascript" src="../jacoco-resources/prettify.js"></script></head><body onload="window['PR_TAB_WIDTH']=4;prettyPrint()"><div class="breadcrumb" id="breadcrumb"><span class="info"><a href="../jacoco-sessions.html" class="el_session">Sessions</a></span><a href="../index.html" class="el_report">SQLDomainGen</a> &gt; <a href="index.source.html" class="el_package">com.sqldomaingen.generator</a> &gt; <span class="el_source">RelationshipResolver.java</span></div><h1>RelationshipResolver.java</h1><pre class="source lang-java linenums">package com.sqldomaingen.generator;
+
+import com.sqldomaingen.model.Relationship;
+import com.sqldomaingen.model.Table;
+import com.sqldomaingen.model.Column;
+import com.sqldomaingen.util.NamingConverter;
+import lombok.extern.slf4j.Slf4j;
+import java.util.*;
+
+<span class="fc" id="L10">@Slf4j</span>
+<span class="fc" id="L11">public class RelationshipResolver {</span>
+
+    /**
+     * Αναγνωρίζει και δημιουργεί σχέσεις για έναν συγκεκριμένο πίνακα.
+     *
+     * @param sourceTable Ο πίνακας προς ανάλυση
+     * @param allTables   Χάρτης με όλους τους πίνακες
+     * @return Λίστα με τις σχέσεις που βρέθηκαν
+     */
+    public List&lt;Relationship&gt; resolveRelationships(Table sourceTable, Map&lt;String, Table&gt; allTables) {
+<span class="nc" id="L21">        log.info(&quot;🔵 Resolving relationships for table: {}&quot;, sourceTable.getName());</span>
+
+<span class="nc" id="L23">        List&lt;Relationship&gt; relationships = new ArrayList&lt;&gt;();</span>
+<span class="nc" id="L24">        List&lt;Column&gt; foreignKeys = getForeignKeys(sourceTable);</span>
+
+<span class="nc bnc" id="L26" title="All 2 branches missed.">        for (Column column : foreignKeys) {</span>
+<span class="nc" id="L27">            Relationship relationship = createRelationship(column, sourceTable, allTables);</span>
+<span class="nc" id="L28">            relationships.add(relationship);</span>
+
+<span class="nc" id="L30">            Table targetTable = allTables.get(column.getReferencedTable());</span>
+<span class="nc bnc" id="L31" title="All 2 branches missed.">            if (targetTable != null) {</span>
+                Relationship.RelationshipType inverseType;
+
+                // 🛠️ Διόρθωση: Αν η foreign key είναι UNIQUE, τότε είναι OneToOne, αλλιώς OneToMany
+<span class="nc" id="L35">                boolean isUnique = column.isUnique();</span>
+
+<span class="nc bnc" id="L37" title="All 2 branches missed.">                if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOONE) {</span>
+<span class="nc bnc" id="L38" title="All 2 branches missed.">                    inverseType = isUnique ? Relationship.RelationshipType.ONETOONE : Relationship.RelationshipType.ONETOMANY;</span>
+<span class="nc bnc" id="L39" title="All 2 branches missed.">                } else if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE) {</span>
+<span class="nc" id="L40">                    inverseType = Relationship.RelationshipType.ONETOONE;</span>
+                } else {
+<span class="nc" id="L42">                    inverseType = Relationship.RelationshipType.ONETOMANY;</span>
+                }
+
+
+<span class="nc" id="L46">                Relationship inverseRelationship = new Relationship();</span>
+<span class="nc" id="L47">                inverseRelationship.setSourceColumn(column.getReferencedColumn());</span>
+<span class="nc" id="L48">                inverseRelationship.setTargetColumn(column.getName());</span>
+<span class="nc" id="L49">                inverseRelationship.setSourceTable(targetTable.getName());</span>
+<span class="nc" id="L50">                inverseRelationship.setTargetTable(sourceTable.getName());</span>
+<span class="nc" id="L51">                inverseRelationship.setRelationshipType(inverseType);</span>
+
+                // 🛠️ Εξασφάλιση ότι δεν προσθέτουμε OneToMany αν είναι πραγματικά OneToOne
+<span class="nc bnc" id="L54" title="All 2 branches missed.">                if (!targetTable.getRelationships().contains(inverseRelationship)) {</span>
+<span class="nc" id="L55">                    targetTable.addRelationship(inverseRelationship);</span>
+<span class="nc" id="L56">                    log.info(&quot;🔄 Inverse {} added to '{}': {}&quot;, inverseType, targetTable.getName(), inverseRelationship);</span>
+                }
+            }
+<span class="nc" id="L59">        }</span>
+
+<span class="nc" id="L61">        log.info(&quot;🏁 Finished resolving relationships for table '{}'. Total relationships found: {}&quot;,</span>
+<span class="nc" id="L62">                sourceTable.getName(), relationships.size());</span>
+
+<span class="nc" id="L64">        return relationships;</span>
+    }
+
+
+    /**
+     * Επιστρέφει όλες τις foreign key στήλες του πίνακα.
+     */
+    private List&lt;Column&gt; getForeignKeys(Table table) {
+<span class="nc" id="L72">        return table.getColumns().stream()</span>
+<span class="nc" id="L73">                .filter(Column::isForeignKey)</span>
+<span class="nc" id="L74">                .toList();</span>
+    }
+
+    /**
+     * Δημιουργεί ένα `Relationship` αντικείμενο, καθορίζοντας τον τύπο του.
+     */
+    public Relationship createRelationship(Column column, Table sourceTable, Map&lt;String, Table&gt; allTables) {
+<span class="fc" id="L81">        log.info(&quot;🔄 Creating relationship for column '{}' in table '{}', referencing '{}.{}'&quot;,</span>
+<span class="fc" id="L82">                column.getName(), sourceTable.getName(), column.getReferencedTable(), column.getReferencedColumn());</span>
+
+<span class="fc" id="L84">        Table targetTable = findTargetTable(NamingConverter.toPascalCase(column.getReferencedTable()), allTables);</span>
+
+<span class="pc bpc" id="L86" title="1 of 2 branches missed.">        if (targetTable == null) {</span>
+<span class="nc" id="L87">            log.warn(&quot;⚠️ Target table '{}' not found for column '{}'&quot;, column.getReferencedTable(), column.getName());</span>
+<span class="nc" id="L88">            return null;</span>
+        }
+
+<span class="fc" id="L91">        Column targetColumn = findTargetColumn(targetTable, column.getReferencedColumn());</span>
+<span class="pc bpc" id="L92" title="1 of 2 branches missed.">        if (targetColumn == null) {</span>
+<span class="nc" id="L93">            log.warn(&quot;⚠️ Target column '{}' not found in table '{}'&quot;, column.getReferencedColumn(), targetTable.getName());</span>
+<span class="nc" id="L94">            return null;</span>
+        }
+
+<span class="fc" id="L97">        Relationship.RelationshipType relationshipType = determineType(column, sourceTable, targetTable);</span>
+<span class="pc bpc" id="L98" title="1 of 2 branches missed.">        if (relationshipType == null) {</span>
+<span class="nc" id="L99">            log.warn(&quot;⚠️ Unable to determine relationship type for column '{}' in table '{}'&quot;, column.getName(), sourceTable.getName());</span>
+<span class="nc" id="L100">            return null;</span>
+        }
+
+        // ✅ Δημιουργία relationship
+<span class="fc" id="L104">        Relationship relationship = new Relationship();</span>
+<span class="fc" id="L105">        relationship.setSourceTable(sourceTable.getName());</span>
+<span class="fc" id="L106">        relationship.setSourceColumn(column.getName());</span>
+<span class="fc" id="L107">        relationship.setTargetTable(targetTable.getName());</span>
+<span class="fc" id="L108">        relationship.setTargetColumn(targetColumn.getName());</span>
+<span class="fc" id="L109">        relationship.setRelationshipType(relationshipType);</span>
+<span class="fc" id="L110">        relationship.setOnDelete(column.getOnDelete());</span>
+<span class="fc" id="L111">        relationship.setOnUpdate(column.getOnUpdate());</span>
+
+        // ✅ Αν η σχέση είναι MANYTOMANY, προσθέτουμε joinTableName
+<span class="fc bfc" id="L114" title="All 2 branches covered.">        if (relationshipType == Relationship.RelationshipType.MANYTOMANY) {</span>
+<span class="fc" id="L115">            setJoinTableInfo(relationship, sourceTable, column, targetTable );</span>
+        }
+
+
+<span class="fc" id="L119">        log.info(&quot;✅ Created relationship: {}&quot;, relationship);</span>
+
+<span class="fc" id="L121">        return relationship;</span>
+    }
+
+    private void setJoinTableInfo(Relationship relationship, Table sourceTable, Column column,Table table) {
+<span class="fc" id="L125">        relationship.setJoinTableName(sourceTable.getName());</span>
+<span class="fc" id="L126">        log.info(&quot;🔗 Setting join table name for ManyToMany: {}&quot;, sourceTable.getName());</span>
+
+        // ✅ Εύρεση της άλλης foreign key
+<span class="fc" id="L129">        String inverseColumn = findInverseJoinColumn(sourceTable, column);</span>
+
+<span class="pc bpc" id="L131" title="1 of 2 branches missed.">        if (inverseColumn != null) {</span>
+<span class="fc" id="L132">            relationship.setInverseJoinColumn(inverseColumn); // 🔥 Ενημέρωση του αρχικού relationship</span>
+<span class="fc" id="L133">            log.info(&quot;🔗 Setting inverse join column for ManyToMany: {}&quot;, inverseColumn);</span>
+        } else {
+<span class="nc" id="L135">            log.warn(&quot;⚠️ Inverse join column not found for table '{}'&quot;, sourceTable.getName());</span>
+        }
+<span class="fc" id="L137">    }</span>
+
+
+    private String findInverseJoinColumn(Table joinTable, Column column) {
+<span class="pc bpc" id="L141" title="1 of 2 branches missed.">        for (Column col : joinTable.getColumns()) {</span>
+<span class="pc bpc" id="L142" title="1 of 4 branches missed.">            if (!col.getName().equals(column.getName()) &amp;&amp; col.isForeignKey()) {</span>
+<span class="fc" id="L143">                log.info(&quot;🔎 Found inverse join column: {}&quot;, col.getName());</span>
+<span class="fc" id="L144">                return col.getName(); // **Επιστρέφει την άλλη foreign key**</span>
+            }
+<span class="fc" id="L146">        }</span>
+<span class="nc" id="L147">        log.warn(&quot;⚠️ No inverse join column found for table '{}'&quot;, joinTable.getName());</span>
+<span class="nc" id="L148">        return null;</span>
+    }
+
+
+    /**
+     * Καθορίζει αν η σχέση είναι `OneToMany`, `ManyToOne`, `OneToOne` ή `ManyToMany`.
+     */
+    private Relationship.RelationshipType determineType(Column column, Table sourceTable, Table targetTable) {
+<span class="fc bfc" id="L156" title="All 2 branches covered.">        if (isJoinTable(sourceTable)) {</span>
+<span class="fc" id="L157">            log.info(&quot;🔥 Table '{}' detected as a join table. Assigning MANYTOMANY.&quot;, sourceTable.getName());</span>
+<span class="fc" id="L158">            return Relationship.RelationshipType.MANYTOMANY;</span>
+        }
+
+        // ✅ Αν η foreign key ΔΕΝ είναι unique, είναι σίγουρα MANYTOONE
+<span class="fc bfc" id="L162" title="All 2 branches covered.">        if (!column.isUnique()) {</span>
+<span class="fc" id="L163">            log.info(&quot;🔥 Column '{}' is NOT unique. Assigning MANYTOONE.&quot;, column.getName());</span>
+<span class="fc" id="L164">            return Relationship.RelationshipType.MANYTOONE;</span>
+        }
+
+        // ✅ Αν υπάρχει μόνο μία αναφορά στον targetTable, είναι OneToOne
+<span class="pc bpc" id="L168" title="1 of 2 branches missed.">        if (hasSingleReference(sourceTable, targetTable)) {</span>
+<span class="fc" id="L169">            log.info(&quot;🔥 Column '{}' is unique AND '{}' has only one reference. Assigning ONETOONE.&quot;, column.getName(), targetTable.getName());</span>
+<span class="fc" id="L170">            return Relationship.RelationshipType.ONETOONE;</span>
+        }
+
+        // ✅ Αν ο targetTable έχει πολλές αναφορές από το sourceTable, είναι OneToMany
+<span class="nc bnc" id="L174" title="All 2 branches missed.">        if (isOneToMany(targetTable, sourceTable)) {</span>
+<span class="nc" id="L175">            log.info(&quot;🔥 Table '{}' is referenced multiple times from '{}'. Assigning ONETOMANY.&quot;, targetTable.getName(), sourceTable.getName());</span>
+<span class="nc" id="L176">            return Relationship.RelationshipType.ONETOMANY;</span>
+        }
+
+        // ✅ Default περίπτωση (δε θα πρέπει να φτάσει εδώ)
+<span class="nc" id="L180">        return Relationship.RelationshipType.MANYTOONE;</span>
+    }
+
+
+
+    /**
+     * Ελέγχει αν ένας πίνακας είναι join table (δηλαδή έχει δύο foreign keys).
+     */
+    private boolean isJoinTable(Table table) {
+<span class="fc bfc" id="L189" title="All 2 branches covered.">        return table.getColumns().stream().filter(Column::isForeignKey).count() == 2;</span>
+    }
+
+    /**
+     * Ελέγχει αν υπάρχει σχέση `OneToMany` μετρώντας αναφορές στον πίνακα προορισμού.
+     */
+    private boolean isOneToMany(Table targetTable, Table sourceTable) {
+<span class="nc" id="L196">        long referenceCount = sourceTable.getColumns().stream()</span>
+<span class="nc bnc" id="L197" title="All 4 branches missed.">                .filter(col -&gt; col.getReferencedTable() != null &amp;&amp; col.getReferencedTable().equalsIgnoreCase(targetTable.getName()))</span>
+<span class="nc" id="L198">                .count();</span>
+<span class="nc bnc" id="L199" title="All 2 branches missed.">        return referenceCount &gt; 1;</span>
+    }
+
+    /**
+     * Επιστρέφει `true` αν ο πίνακας-στόχος έχει μόνο μία αναφορά.
+     */
+    private boolean hasSingleReference(Table sourceTable, Table targetTable) {
+<span class="fc" id="L206">        return sourceTable.getColumns().stream()</span>
+<span class="pc bpc" id="L207" title="1 of 4 branches missed.">                .filter(col -&gt; col.getReferencedTable() != null &amp;&amp; col.getReferencedTable().equalsIgnoreCase(targetTable.getName()))</span>
+<span class="pc bpc" id="L208" title="1 of 2 branches missed.">                .count() == 1;</span>
+    }
+
+
+    /**
+     * Βρίσκει τον πίνακα-στόχο.
+     */
+    private Table findTargetTable(String targetTableName, Map&lt;String, Table&gt; allTables) {
+<span class="pc bpc" id="L216" title="2 of 4 branches missed.">        if (targetTableName == null || targetTableName.isBlank()) {</span>
+<span class="nc" id="L217">            log.error(&quot;❌ Target table name is null or blank.&quot;);</span>
+<span class="nc" id="L218">            return null;</span>
+        }
+
+<span class="fc" id="L221">        Table targetTable = allTables.get(targetTableName);</span>
+<span class="pc bpc" id="L222" title="1 of 2 branches missed.">        if (targetTable == null) {</span>
+<span class="nc" id="L223">            log.error(&quot;❌ Table '{}' not found.&quot;, targetTableName);</span>
+        }
+<span class="fc" id="L225">        return targetTable;</span>
+    }
+
+    /**
+     * Βρίσκει τη στήλη-στόχο.
+     */
+    private Column findTargetColumn(Table targetTable, String targetColumnName) {
+<span class="pc bpc" id="L232" title="3 of 6 branches missed.">        if (targetTable == null || targetColumnName == null || targetColumnName.isBlank()) {</span>
+<span class="nc" id="L233">            log.warn(&quot;⚠️ Invalid target column lookup.&quot;);</span>
+<span class="nc" id="L234">            return null;</span>
+        }
+
+<span class="fc" id="L237">        return targetTable.getColumns().stream()</span>
+<span class="fc" id="L238">                .filter(col -&gt; col.getName().equalsIgnoreCase(targetColumnName))</span>
+<span class="fc" id="L239">                .findFirst()</span>
+<span class="fc" id="L240">                .orElse(null);</span>
+    }
+}
+</pre><div class="footer"><span class="right">Created with <a href="http://www.jacoco.org/jacoco">JaCoCo</a> 0.8.10.202304240956</span></div></body></html>

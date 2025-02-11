@@ -255,9 +255,3 @@ public class EntityGenerator {
         logger.debug("File written successfully: {}", filePath);
     }
 }
-
-
-
-
-
-

@@ -206,6 +206,7 @@ class EntityGeneratorTest {
         userIdFk.setPrimaryKey(false);
         userIdFk.setForeignKey(true);
         userIdFk.setNullable(false); // Είναι υποχρεωτικό
+        userIdFk.setUnique(true);    // 🚩 Απαραίτητο για OneToOne
         userIdFk.setReferencedTable("Users");
         userIdFk.setReferencedColumn("id");
         userDetails.getColumns().add(userIdFk);
@@ -230,6 +231,7 @@ class EntityGeneratorTest {
         assertTrue(content.contains("@OneToOne"), "⚠️ Δεν βρέθηκε η σχέση OneToOne");
         assertTrue(content.contains("@JoinColumn(name = \"user_id\", referencedColumnName = \"id\")"), "⚠️ Το JoinColumn δεν δημιουργήθηκε σωστά");
     }
+
 
 
 

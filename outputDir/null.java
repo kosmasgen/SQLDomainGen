@@ -7,6 +7,7 @@ import lombok.*;
 @Table(name = "null")
 @Getter
 @Setter
+@ToString
 @NoArgsConstructor
 @AllArgsConstructor
 public class null {
