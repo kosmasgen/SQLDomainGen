@@ -28,26 +28,26 @@ class RelationshipResolverTest {
 
         // Users Table
         Table usersTable = createTable("Users");
-        usersTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true)); // ✅ Primary key
+        usersTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true, null)); // ✅ Primary key
 
-        // Profiles Table (OneToOne with Users, user_id must be unique)
+        // Profiles Table (OneToOne with Users, user_id must be unique
         Table profilesTable = createTable("Profiles");
-        profilesTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true)); // ✅ Primary key
-        profilesTable.addColumn(createColumn("user_id", "BIGINT", false, true, "Users", "id", true)); // ✅ Unique Foreign Key
+        profilesTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true, null)); // ✅ Primary key
+        profilesTable.addColumn(createColumn("user_id", "BIGINT", false, true, "Users", "id", true, null)); // ✅ Unique Foreign Key
 
         // Orders Table (ManyToOne with Users, user_id is NOT unique)
         Table ordersTable = createTable("Orders");
-        ordersTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true)); // ✅ Primary key
-        ordersTable.addColumn(createColumn("user_id", "BIGINT", false, true, "Users", "id", false)); // ❌ NOT unique, ManyToOne
+        ordersTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true, null)); // ✅ Primary key
+        ordersTable.addColumn(createColumn("user_id", "BIGINT", false, true, "Users", "id", false, null)); // ❌ NOT unique, ManyToOne
 
         // Products Table
         Table productsTable = createTable("Products");
-        productsTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true)); // ✅ Primary key
+        productsTable.addColumn(createColumn("id", "BIGINT", true, false, null, null, true, null)); // ✅ Primary key
 
         // OrderProducts Table (ManyToMany between Orders and Products)
         Table orderProductsTable = createTable("OrderProducts");
-        orderProductsTable.addColumn(createColumn("order_id", "BIGINT", false, true, "Orders", "id", false));
-        orderProductsTable.addColumn(createColumn("product_id", "BIGINT", false, true, "Products", "id", false));
+        orderProductsTable.addColumn(createColumn("order_id", "BIGINT", false, true, "Orders", "id", false,null));
+        orderProductsTable.addColumn(createColumn("product_id", "BIGINT", false, true, "Products", "id", false,null));
 
         // Add tables to map
         tableMap.put("Users", usersTable);
@@ -57,7 +57,7 @@ class RelationshipResolverTest {
         tableMap.put("OrderProducts", orderProductsTable);
 
         logger.info("✅ Table map initialized with tables: {}", tableMap.keySet());
-        resolver = new RelationshipResolver();
+        resolver = new RelationshipResolver(tableMap);
     }
 
     @Test
@@ -65,7 +65,7 @@ class RelationshipResolverTest {
         logger.info("🔵 Running test: testResolveOneToOneRelationship");
 
         Table profilesTable = tableMap.get("Profiles");
-        List<Relationship> relationships = resolver.resolveRelationships(profilesTable, tableMap);
+        List<Relationship> relationships = resolver.resolveRelationships(profilesTable);
 
         logger.info("🔍 Found Relationships: {}", relationships);
 
@@ -87,7 +87,7 @@ class RelationshipResolverTest {
         logger.info("🔵 Running test: testResolveManyToOneRelationship");
 
         Table ordersTable = tableMap.get("Orders");
-        List<Relationship> relationships = resolver.resolveRelationships(ordersTable, tableMap);
+        List<Relationship> relationships = resolver.resolveRelationships(ordersTable);
 
         logger.info("🔍 Found Relationships: {}", relationships);
 
@@ -112,7 +112,7 @@ class RelationshipResolverTest {
         Table usersTable = tableMap.get("Users");
 
         // 🔄 Περνάμε όλα τα tables για να λυθούν πρώτα οι σχέσεις!
-        tableMap.values().forEach(table -> resolver.resolveRelationships(table, tableMap));
+        tableMap.values().forEach(table -> resolver.resolveRelationships(table));
 
         // ✅ Διαβάζουμε τις μοναδικές σχέσεις από το Users table
         List<Relationship> relationships = usersTable.getRelationships().stream()
@@ -139,7 +139,7 @@ class RelationshipResolverTest {
         logger.info("🔵 Running test: testResolveManyToManyRelationship");
 
         Table orderProductsTable = tableMap.get("OrderProducts");
-        List<Relationship> relationships = resolver.resolveRelationships(orderProductsTable, tableMap);
+        List<Relationship> relationships = resolver.resolveRelationships(orderProductsTable);
 
         logger.info("🔍 Found Relationships: {}", relationships);
 
@@ -178,6 +178,100 @@ class RelationshipResolverTest {
         logger.info("🎉 ManyToMany relationships resolved correctly!");
     }
 
+    @Test
+    void testTableMapInitialization() {
+        logger.info("🔍 Running test: testTableMapInitialization");
+
+        // ✅ Έλεγχος αν το tableMap δεν είναι null και έχει 5 πίνακες
+        assertNotNull(tableMap, "❌ Το tableMap δεν πρέπει να είναι null!");
+        assertEquals(5, tableMap.size(), "❌ Ο αριθμός των πινάκων δεν είναι σωστός!");
+
+        // ✅ Έλεγχος αν υπάρχουν οι σωστοί πίνακες
+        assertTrue(tableMap.containsKey("Users"), "❌ Ο πίνακας 'Users' λείπει!");
+        assertTrue(tableMap.containsKey("Profiles"), "❌ Ο πίνακας 'Profiles' λείπει!");
+        assertTrue(tableMap.containsKey("Orders"), "❌ Ο πίνακας 'Orders' λείπει!");
+        assertTrue(tableMap.containsKey("Products"), "❌ Ο πίνακας 'Products' λείπει!");
+        assertTrue(tableMap.containsKey("OrderProducts"), "❌ Ο πίνακας 'OrderProducts' λείπει!");
+
+        // ✅ Έλεγχος στήλης για τον πίνακα Users
+        Table usersTable = tableMap.get("Users");
+        assertEquals(1, usersTable.getColumns().size(), "❌ Λάθος αριθμός στηλών στον πίνακα 'Users'!");
+        assertTrue(usersTable.getColumns().stream().anyMatch(c -> c.getName().equals("id") && c.isPrimaryKey()), "❌ Λείπει το πρωτεύον κλειδί 'id' στον πίνακα 'Users'!");
+
+        // ✅ Έλεγχος στήλης για τον πίνακα Profiles
+        Table profilesTable = tableMap.get("Profiles");
+        assertTrue(profilesTable.getColumns().stream().anyMatch(c -> c.getName().equals("user_id") && c.isForeignKey()), "❌ Λείπει το ξένο κλειδί 'user_id' στον πίνακα 'Profiles'!");
+
+        // ✅ Έλεγχος Many-to-One σχέσης για Orders
+        Table ordersTable = tableMap.get("Orders");
+        assertTrue(ordersTable.getColumns().stream().anyMatch(c -> c.getName().equals("user_id") && c.isForeignKey()), "❌ Ο πίνακας 'Orders' δεν έχει σωστό foreign key για 'user_id'!");
+
+        logger.info("🎯 Το tableMap έχει ρυθμιστεί σωστά με όλους τους πίνακες και τις στήλες!");
+    }
+
+    @Test
+    void testResolveRelationshipsForAllTables() {
+        logger.info("🔵 Running test: testResolveRelationshipsForAllTables");
+
+        // Εκκίνηση της ανάλυσης σχέσεων για όλους τους πίνακες
+        resolver.resolveRelationshipsForAllTables();
+
+        // ✅ Έλεγχος σχέσεων για κάθε πίνακα
+        tableMap.forEach((tableName, table) -> {
+            logger.info("🔍 Checking relationships for table: {}", tableName);
+            List<Relationship> relationships = table.getRelationships();
+
+            // ✅ Εξασφάλιση ότι οι πίνακες έχουν αναγνωριστεί σωστά
+            assertNotNull(relationships, "❌ Relationships list should not be null for table: " + tableName);
+
+            // ✅ Εξατομικευμένοι έλεγχοι για συγκεκριμένους πίνακες
+            if (tableName.equals("Profiles")) {
+                assertEquals(1, relationships.size(), "❌ Profiles should have 1 OneToOne relationship.");
+                assertEquals(Relationship.RelationshipType.ONETOONE, relationships.get(0).getRelationshipType(), "❌ Relationship should be OneToOne.");
+            }
+
+            if (tableName.equals("Orders")) {
+                assertTrue(relationships.stream().anyMatch(r -> r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE),
+                        "❌ Orders should have at least one ManyToOne relationship.");
+            }
+
+            if (tableName.equals("Users")) {
+                assertTrue(relationships.stream().anyMatch(r -> r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY),
+                        "❌ Users should have at least one OneToMany relationship.");
+            }
+
+            if (tableName.equals("OrderProducts")) {
+                assertEquals(2, relationships.size(), "❌ OrderProducts should have 2 relationships.");
+
+                // ✅ Ορθός έλεγχος για ManyToMany σχέσεις
+                assertTrue(relationships.stream().allMatch(r -> r.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY),
+                        "❌ All relationships in OrderProducts should be ManyToMany.");
+
+                // ✅ Logging για mappedBy (αν υπάρχει)
+                relationships.forEach(relationship -> {
+                    logger.info("🔗 Relationship from '{}' to '{}', Type: {}, MappedBy: {}",
+                            relationship.getSourceTable(),
+                            relationship.getTargetTable(),
+                            relationship.getRelationshipType(),
+                            relationship.getMappedBy() != null ? relationship.getMappedBy() : "None"
+                    );
+                });
+            }
+
+
+            // ✅ Προσθήκη logging για το mappedBy
+            relationships.forEach(rel -> {
+                logger.info("🔗 Relationship from '{}' to '{}', Type: {}, MappedBy: {}",
+                        rel.getSourceTable(), rel.getTargetTable(), rel.getRelationshipType(),
+                        rel.getMappedBy() != null ? rel.getMappedBy() : "None");
+            });
+
+            logger.info("✅ Relationships verified for table: {}", tableName);
+        });
+
+        logger.info("🎉 All relationships resolved correctly for all tables!");
+    }
+
 
     // Βοηθητική Μέθοδος για Δημιουργία Table
     private Table createTable(String name) {
@@ -187,7 +281,7 @@ class RelationshipResolverTest {
     }
 
     // Βοηθητική Μέθοδος για Δημιουργία Column
-    private Column createColumn(String name, String sqlType, boolean isPrimaryKey, boolean isForeignKey, String referencedTable, String referencedColumn, boolean unique) {
+    private Column createColumn(String name, String sqlType, boolean isPrimaryKey, boolean isForeignKey, String referencedTable, String referencedColumn, boolean unique, String mappedBy) {
         Column column = new Column();
         column.setName(name);
         column.setSqlType(sqlType);
@@ -196,6 +290,12 @@ class RelationshipResolverTest {
         column.setReferencedTable(referencedTable);
         column.setReferencedColumn(referencedColumn);
         column.setUnique(unique);
+        column.setMappedBy(mappedBy); // ✅ Προσθήκη mappedBy
+
+        // ✅ Καταγραφή για παρακολούθηση
+        logger.info("📊 Created Column: name={}, sqlType={}, isPrimaryKey={}, isForeignKey={}, referencedTable={}, referencedColumn={}, unique={}, mappedBy={}",
+                name, sqlType, isPrimaryKey, isForeignKey, referencedTable, referencedColumn, unique, mappedBy);
+
         return column;
     }
 }

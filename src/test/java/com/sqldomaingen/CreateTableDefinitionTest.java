@@ -10,8 +10,10 @@ import org.slf4j.LoggerFactory;
 import com.sqldomaingen.parser.PostgreSQLParser;
 import com.sqldomaingen.model.Table;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
+import java.util.ArrayList;
+import java.util.Map;
+
 
 class CreateTableDefinitionTest {
     private static final Logger logger = LoggerFactory.getLogger(CreateTableDefinitionTest.class);
@@ -129,6 +131,111 @@ class CreateTableDefinitionTest {
 
         assertEquals(1, foreignKeys.size(), "Λάθος αριθμός foreign keys!");
         assertTrue(foreignKeys.contains("customer_id -> customers(id)"), "Η foreign key δεν εξήχθη σωστά!");
+    }
+
+
+
+    @Test
+    void testParseAllTables() {
+        String sql1 = "CREATE TABLE orders (id INT PRIMARY KEY, customer_id INT REFERENCES customers(id));";
+        String sql2 = "CREATE TABLE customers (id SERIAL PRIMARY KEY, name VARCHAR(255));";
+
+        SQLParser sqlParser = new SQLParser();
+        sqlParser.setSqlContent(sql1 + " " + sql2);
+        ParseTree parseTree = sqlParser.parseTreeFromSQL();
+
+        List<PostgreSQLParser.CreateTableStatementContext> createTableStatements = new ArrayList<>();
+        for (int i = 0; i < parseTree.getChildCount(); i++) {
+            if (parseTree.getChild(i) instanceof PostgreSQLParser.CreateTableStatementContext) {
+                createTableStatements.add((PostgreSQLParser.CreateTableStatementContext) parseTree.getChild(i));
+            }
+        }
+
+        CreateTableDefinition tableDefinition = new CreateTableDefinition();
+        Map<String, Table> tableMap = tableDefinition.parseAllTables(createTableStatements);
+
+        assertNotNull(tableMap, "Ο tableMap δεν πρέπει να είναι null!");
+        assertEquals(2, tableMap.size(), "Δεν εξήχθησαν σωστά οι πίνακες!");
+
+        assertTrue(tableMap.containsKey("Orders"), "Ο πίνακας 'Orders' λείπει!");
+        assertTrue(tableMap.containsKey("Customers"), "Ο πίνακας 'Customers' λείπει!");
+
+
+        assertEquals(2, tableMap.get("Orders").getColumns().size(), "Λάθος αριθμός στηλών στον πίνακα 'Orders'!");
+        assertEquals(2, tableMap.get("Customers").getColumns().size(), "Λάθος αριθμός στηλών στον πίνακα 'Customers'!");
+
+    }
+
+    @Test
+    void testParseAllTables2() {
+        logger.info("🚀 Ξεκινάει το test: testParseAllTables");
+
+        String sql1 = "CREATE TABLE orders (id INT PRIMARY KEY, customer_id INT REFERENCES customers(id));";
+        String sql2 = "CREATE TABLE customers (id SERIAL PRIMARY KEY, name VARCHAR(255));";
+
+        logger.info("📄 SQL Scripts:\n1️⃣ {}\n2️⃣ {}", sql1, sql2);
+
+        // Ανάλυση SQL
+        SQLParser sqlParser = new SQLParser();
+        sqlParser.setSqlContent(sql1 + " " + sql2);
+        ParseTree parseTree = sqlParser.parseTreeFromSQL();
+
+        logger.info("✅ ParseTree δημιουργήθηκε με {} κόμβους.", parseTree.getChildCount());
+
+        List<PostgreSQLParser.CreateTableStatementContext> createTableStatements = new ArrayList<>();
+        for (int i = 0; i < parseTree.getChildCount(); i++) {
+            if (parseTree.getChild(i) instanceof PostgreSQLParser.CreateTableStatementContext) {
+                createTableStatements.add((PostgreSQLParser.CreateTableStatementContext) parseTree.getChild(i));
+                logger.info("📥 Βρέθηκε CREATE TABLE: {}", parseTree.getChild(i).getText());
+            }
+        }
+
+        logger.info("✅ Συνολικά βρέθηκαν {} εντολές CREATE TABLE.", createTableStatements.size());
+
+        // Ανάλυση Πινάκων
+        CreateTableDefinition tableDefinition = new CreateTableDefinition();
+        Map<String, Table> tableMap = tableDefinition.parseAllTables(createTableStatements);
+
+        // Έλεγχοι Αποτελεσμάτων
+        assertNotNull(tableMap, () -> {
+            logger.error("❌ Ο tableMap είναι null!");
+            return "Ο tableMap δεν πρέπει να είναι null!";
+        });
+        logger.info("✅ Ο tableMap δεν είναι null.");
+
+        assertEquals(2, tableMap.size(), () -> {
+            logger.error("❌ Λάθος αριθμός πινάκων! Αναμενόμενοι: 2, Βρέθηκαν: {}", tableMap.size());
+            return "Δεν εξήχθησαν σωστά οι πίνακες!";
+        });
+        logger.info("✅ Ο αριθμός πινάκων είναι σωστός: {}", tableMap.size());
+
+        assertTrue(tableMap.containsKey("Orders"), () -> {
+            logger.error("❌ Ο πίνακας 'Orders' λείπει!");
+            return "Ο πίνακας 'Orders' λείπει!";
+        });
+        logger.info("✅ Ο πίνακας 'Orders' βρέθηκε.");
+
+        assertTrue(tableMap.containsKey("Customers"), () -> {
+            logger.error("❌ Ο πίνακας 'Customers' λείπει!");
+            return "Ο πίνακας 'Customers' λείπει!";
+        });
+        logger.info("✅ Ο πίνακας 'Customers' βρέθηκε.");
+
+        // Έλεγχος Στηλών στον Πίνακα Orders
+        assertEquals(2, tableMap.get("Orders").getColumns().size(), () -> {
+            logger.error("❌ Λάθος αριθμός στηλών στον πίνακα 'Orders'. Αναμενόμενος: 2, Βρέθηκαν: {}", tableMap.get("Orders").getColumns().size());
+            return "Λάθος αριθμός στηλών στον πίνακα 'Orders'!";
+        });
+        logger.info("✅ Ο αριθμός στηλών στον πίνακα 'Orders' είναι σωστός.");
+
+        // Έλεγχος Στηλών στον Πίνακα Customers
+        assertEquals(2, tableMap.get("Customers").getColumns().size(), () -> {
+            logger.error("❌ Λάθος αριθμός στηλών στον πίνακα 'Customers'. Αναμενόμενος: 2, Βρέθηκαν: {}", tableMap.get("Customers").getColumns().size());
+            return "Λάθος αριθμός στηλών στον πίνακα 'Customers'!";
+        });
+        logger.info("✅ Ο αριθμός στηλών στον πίνακα 'Customers' είναι σωστός.");
+
+        logger.info("🎯 Το test ολοκληρώθηκε με επιτυχία!");
     }
 
 }

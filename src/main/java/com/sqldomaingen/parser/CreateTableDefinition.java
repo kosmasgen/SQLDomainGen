@@ -9,7 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import java.util.HashMap;
+import java.util.Map;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -74,6 +75,20 @@ public class CreateTableDefinition {
 
         logger.info("⬅️ extractColumnDefinitions() - END | Extracted {} columns.", extractedColumns.size());
         return extractedColumns;
+    }
+
+    public Map<String, Table> parseAllTables(List<PostgreSQLParser.CreateTableStatementContext> createTableStatements) {
+        logger.info("➡️ parseAllTables() - START");
+
+        Map<String, Table> tableMap = new HashMap<>();
+        for (PostgreSQLParser.CreateTableStatementContext ctx : createTableStatements) {
+            Table table = processCreateTable(ctx);
+            tableMap.put(table.getName(), table);
+            logger.info("✅ Added table '{}' to tableMap", table.getName());
+        }
+
+        logger.info("⬅️ parseAllTables() - END | Total tables parsed: {}", tableMap.size());
+        return tableMap;
     }
 
     public Table toTable() {

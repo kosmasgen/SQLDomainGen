@@ -34,6 +34,7 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
     private int scale;
     private String onUpdate;
     private String onDelete;
+    private String mappedBy;
 
 
     /**
@@ -194,8 +195,8 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
 
     public Column toColumn() {
         logger.info("Converting ColumnDefinition to Column object...");
-        logger.debug("Before Column creation: name={}, foreignKey={}, referencedTable={}, referencedColumn={}",
-                this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn);
+        logger.debug("Before Column creation: name={}, foreignKey={}, referencedTable={}, referencedColumn={}, mappedBy={}",
+                this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn, this.mappedBy);
 
         Column column = new Column();
         column.setName(this.columnName);
@@ -211,20 +212,20 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
         column.setCheckConstraint(this.checkConstraint);
         column.setOnDelete(this.onDelete);
         column.setOnUpdate(this.onUpdate);
+        column.setMappedBy(this.mappedBy);  // ✅ Προσθήκη του mappedBy
 
         if (this.foreignKey) {
             column.setForeignKey(true);
             column.setReferencedTable(this.referencedTable);
             column.setReferencedColumn(this.referencedColumn);
 
-            logger.debug("Foreign Key Check for column: {} -> foreignKey={}, referencedTable={}, referencedColumn={}",
-                    this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn);
+            logger.debug("Foreign Key Check for column: {} -> foreignKey={}, referencedTable={}, referencedColumn={}, mappedBy={}",
+                    this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn, this.mappedBy);
 
-            logger.info("✅ Column is Foreign Key: {} -> {}.{}", column.getName(), column.getReferencedTable(), column.getReferencedColumn());
+            logger.info("✅ Column is Foreign Key: {} -> {}.{} (mappedBy={})",
+                    column.getName(), column.getReferencedTable(), column.getReferencedColumn(), column.getMappedBy());
         }
 
         return column;
     }
-
-
 }

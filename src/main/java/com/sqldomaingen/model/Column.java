@@ -39,5 +39,7 @@ public class Column {
     private String referencedColumn;
     private int precision;  // Default για DECIMAL
     private int scale;   // Default για DECIMAL(10,2)
+    private String mappedBy;
+
 
 }
