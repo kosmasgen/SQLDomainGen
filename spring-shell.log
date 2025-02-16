@@ -76,3 +76,5 @@
 1738162336228:2025-01-29T16:47:37.734+02:00  INFO 14932 --- [           main] com.sqldomaingen.util.TypeMapper         : Mapping SQL type 'VARCHAR' to Java type 'String'
 1738162408270:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite false --use-builder false
 1739351677102:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1739576677339:mvn generate-sources
+1739576699265:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false

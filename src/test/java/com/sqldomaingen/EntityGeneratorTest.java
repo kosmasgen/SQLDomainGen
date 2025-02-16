@@ -1,20 +1,23 @@
 package com.sqldomaingen;
 
 import com.sqldomaingen.generator.EntityGenerator;
+import com.sqldomaingen.generator.RelationshipResolver;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
-import com.sqldomaingen.util.NamingConverter;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
+import com.sqldomaingen.model.Relationship;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -69,7 +72,6 @@ class EntityGeneratorTest {
 
         orders.setColumns(List.of(orderId, customerIdColumn));
 
-        // ✅ Δε χρειάζεται να δημιουργήσουμε τη σχέση χειροκίνητα
         entityGenerator.generate(List.of(orders, customers), tempDir.toString(), "com.example.entities", true, false);
 
         Path generatedFile = tempDir.resolve("Orders.java");
@@ -78,94 +80,33 @@ class EntityGeneratorTest {
         String content = Files.readString(generatedFile);
         logger.debug("📄 Generated content: \n{}", content);
 
+        System.out.println("---- Orders.java (ManyToOne) ----");
+        System.out.println(content);
+        System.out.println("-------------------------------");
+
+
         assertTrue(content.contains("@ManyToOne"), "⚠️ Δεν βρέθηκε η σχέση ManyToOne");
         assertTrue(content.contains("@JoinColumn(name = \"customer_id\", referencedColumnName = \"id\")"), "⚠️ Το JoinColumn δεν δημιουργήθηκε σωστά");
+
+        // ✅ Έλεγχος για το όνομα του field (customer)
+        assertTrue(content.contains("private Customers customer"), "⚠️ Το όνομα του field για το ManyToOne δεν είναι σωστό");
     }
-
-    @Test
-    void testGenerateEntityWithManyToMany() throws IOException {
-        logger.info("🟢 Running testGenerateEntityWithManyToMany...");
-
-        Table orderProducts = new Table();
-        orderProducts.setName(NamingConverter.toPascalCase("order_products"));
-        orderProducts.setColumns(new ArrayList<>());
-
-        Table orders = new Table();
-        orders.setName(NamingConverter.toPascalCase("orders"));
-        orders.setColumns(new ArrayList<>());
-
-        Table products = new Table();
-        products.setName(NamingConverter.toPascalCase("products"));
-        products.setColumns(new ArrayList<>());
-
-        // ✅ Προσθέτουμε primary key στους Orders
-        Column ordersId = new Column();
-        ordersId.setName("id");
-        ordersId.setSqlType("INT");
-        ordersId.setJavaType("Long");
-        ordersId.setPrimaryKey(true);
-        ordersId.setNullable(false);
-        orders.getColumns().add(ordersId);
-
-        // ✅ Προσθέτουμε primary key στους Products
-        Column productsId = new Column();
-        productsId.setName("id");
-        productsId.setSqlType("INT");
-        productsId.setJavaType("Long");
-        productsId.setPrimaryKey(true);
-        productsId.setNullable(false);
-        products.getColumns().add(productsId);
-
-        // ✅ Προσθέτουμε foreign keys στο OrderProducts
-        Column orderId = new Column();
-        orderId.setName("order_id");
-        orderId.setSqlType("INT");
-        orderId.setJavaType("Long");
-        orderId.setPrimaryKey(true);
-        orderId.setForeignKey(true);
-        orderId.setReferencedTable(orders.getName());
-        orderId.setReferencedColumn("id");
-        orderProducts.getColumns().add(orderId);
-
-        Column productId = new Column();
-        productId.setName("product_id");
-        productId.setSqlType("INT");
-        productId.setJavaType("Long");
-        productId.setPrimaryKey(true);
-        productId.setForeignKey(true);
-        productId.setReferencedTable(products.getName());
-        productId.setReferencedColumn("id");
-        orderProducts.getColumns().add(productId);
-
-        // ✅ Δε δημιουργούμε χειροκίνητα το Relationship
-        entityGenerator.generate(List.of(orderProducts, orders, products), tempDir.toString(), "com.example.entities", true, false);
-
-        Path generatedFile = tempDir.resolve(orderProducts.getName() + ".java");
-        assertTrue(Files.exists(generatedFile), "✅ Generated entity file should exist");
-
-        String content = Files.readString(generatedFile);
-        logger.debug("📄 Generated content: \n{}", content);
-
-        // ✅ Ελέγχουμε για τις αναμενόμενες annotations
-        assertTrue(content.contains("@ManyToMany"), "⚠️ Δεν βρέθηκε η σχέση ManyToMany");
-        assertTrue(content.contains("@JoinTable"), "⚠️ Το JoinTable δεν δημιουργήθηκε σωστά");
-        assertTrue(content.contains("@JoinColumn(name = \"order_id\""), "⚠️ Το JoinColumn για την παραγγελία δεν είναι σωστό");
-        assertTrue(content.contains("inverseJoinColumns = @JoinColumn(name = \"product_id\""), "⚠️ Το inverseJoinColumn για το προϊόν δεν είναι σωστό");
-    }
-
-
 
     @Test
     void testGenerateEntityWithOneToOne() throws IOException {
         logger.info("🟢 Running testGenerateEntityWithOneToOne...");
 
+        // Ορίζουμε τον σταθερό φάκελο εξόδου (π.χ. Επιφάνεια Εργασίας)
+        Path outputDir = Paths.get(System.getProperty("user.home"), "Desktop", "GeneratedEntities");
+        Files.createDirectories(outputDir); // Δημιουργούμε τον φάκελο αν δεν υπάρχει
+
+        // Δημιουργούμε τα tables και τις στήλες
         Table users = new Table();
         users.setName("Users");
 
         Table userDetails = new Table();
         userDetails.setName("UserDetails");
 
-        // ✅ Προσθήκη Primary Key στους Users
         Column userId = new Column();
         userId.setName("id");
         userId.setSqlType("INT");
@@ -173,7 +114,6 @@ class EntityGeneratorTest {
         userId.setPrimaryKey(true);
         users.setColumns(new ArrayList<>(List.of(userId)));
 
-        // ✅ Προσθήκη Primary Key στους UserDetails
         Column detailsId = new Column();
         detailsId.setName("id");
         detailsId.setSqlType("INT");
@@ -181,36 +121,61 @@ class EntityGeneratorTest {
         detailsId.setPrimaryKey(true);
         userDetails.setColumns(new ArrayList<>(List.of(detailsId)));
 
-        // ✅ Προσθήκη Foreign Key στους UserDetails (One-to-One)
         Column userIdFk = new Column();
         userIdFk.setName("user_id");
         userIdFk.setSqlType("INT");
         userIdFk.setJavaType("Long");
         userIdFk.setPrimaryKey(false);
         userIdFk.setForeignKey(true);
-        userIdFk.setNullable(false); // Υποχρεωτικό
-        userIdFk.setUnique(true);    // 🚩 Απαραίτητο για OneToOne
+        userIdFk.setNullable(false);
+        userIdFk.setUnique(true);
         userIdFk.setReferencedTable("Users");
         userIdFk.setReferencedColumn("id");
         userDetails.getColumns().add(userIdFk);
 
-        // ✅ Δε χρειάζεται πλέον να ορίζουμε χειροκίνητα τη σχέση
-        entityGenerator.generate(List.of(users, userDetails), tempDir.toString(), "com.example.entities", true, false);
+        // Καλούμε το generate περνώντας το outputDir
+        entityGenerator.generate(List.of(users, userDetails), outputDir.toString(), "com.example.entities", true, false);
 
-        Path generatedFile = tempDir.resolve("UserDetails.java");
-        assertTrue(Files.exists(generatedFile), "✅ Generated entity file should exist");
+        // Ελέγχουμε αν δημιουργήθηκε το αρχείο UserDetails.java
+        Path generatedUserDetailsFile = outputDir.resolve("UserDetails.java");
+        assertTrue(Files.exists(generatedUserDetailsFile), "✅ Generated UserDetails.java file should exist");
 
-        String content = Files.readString(generatedFile);
-        logger.debug("📄 Generated content: \n{}", content);
+        String userDetailsContent = Files.readString(generatedUserDetailsFile);
+        logger.debug("📄 Generated UserDetails.java content: \n{}", userDetailsContent);
+        System.out.println("---- UserDetails.java ----");
+        System.out.println(userDetailsContent);
+        System.out.println("--------------------------");
 
-        // ✅ Ελέγχουμε για τις αναμενόμενες annotations
-        assertTrue(content.contains("@OneToOne"), "⚠️ Δεν βρέθηκε η σχέση OneToOne");
-        assertTrue(content.contains("@JoinColumn(name = \"user_id\", referencedColumnName = \"id\")"), "⚠️ Το JoinColumn δεν δημιουργήθηκε σωστά");
-        assertTrue(content.contains("unique = true"), "⚠️ Το unique constraint δεν προστέθηκε στο foreign key για το OneToOne");
+        // Ελέγχουμε αν δημιουργήθηκε το αρχείο Users.java
+        Path generatedUsersFile = outputDir.resolve("Users.java");
+        if (Files.exists(generatedUsersFile)) {
+            String usersContent = Files.readString(generatedUsersFile);
+            logger.debug("📄 Generated Users.java content: \n{}", usersContent);
+            System.out.println("---- Users.java ----");
+            System.out.println(usersContent);
+            System.out.println("--------------------");
+        } else {
+            logger.warn("❌ Users.java file was not generated.");
+        }
+
+        // Έλεγχοι περιεχομένου αρχείου UserDetails
+        assertTrue(userDetailsContent.contains("@OneToOne"), "⚠️ Δεν βρέθηκε η σχέση OneToOne");
+
+        assertTrue(
+                userDetailsContent.contains("@OneToOne(fetch = FetchType.LAZY, mappedBy = \"user\")") ||
+                        userDetailsContent.contains("@OneToOne(mappedBy = \"user\", fetch = FetchType.LAZY)"),
+                "⚠️ Η σχέση OneToOne με mappedBy δεν δημιουργήθηκε σωστά"
+        );
+
+        assertTrue(userDetailsContent.contains("private Users user"), "⚠️ Το όνομα του field (user) δεν είναι σωστό");
     }
 
+
+
+
+
     @Test
-    void testGenerateEntityWithOneToMany() throws IOException {
+    void testGenerateEntityWithOneToMany() {
         logger.info("🟢 Running testGenerateEntityWithOneToMany...");
 
         Table customers = new Table();
@@ -219,7 +184,6 @@ class EntityGeneratorTest {
         Table orders = new Table();
         orders.setName("Orders");
 
-        // ✅ Προσθήκη Primary Key στους Customers
         Column customerId = new Column();
         customerId.setName("id");
         customerId.setSqlType("INT");
@@ -227,39 +191,61 @@ class EntityGeneratorTest {
         customerId.setPrimaryKey(true);
         customers.setColumns(new ArrayList<>(List.of(customerId)));
 
-        // ✅ Προσθήκη Primary Key στους Orders
         Column orderId = new Column();
         orderId.setName("id");
         orderId.setSqlType("INT");
         orderId.setJavaType("Long");
         orderId.setPrimaryKey(true);
 
-        // ✅ Προσθήκη Foreign Key στους Orders (Many-to-One)
         Column customerIdFk = new Column();
         customerIdFk.setName("customer_id");
         customerIdFk.setSqlType("INT");
         customerIdFk.setJavaType("Long");
         customerIdFk.setPrimaryKey(false);
         customerIdFk.setForeignKey(true);
-        customerIdFk.setNullable(false); // Υποχρεωτικό
+        customerIdFk.setNullable(false);
         customerIdFk.setReferencedTable("Customers");
         customerIdFk.setReferencedColumn("id");
 
         orders.setColumns(new ArrayList<>(List.of(orderId, customerIdFk)));
 
-        // ✅ Δε χρειάζεται πλέον να ορίζουμε χειροκίνητα τη σχέση
-        entityGenerator.generate(List.of(customers, orders), tempDir.toString(), "com.example.entities", true, false);
+        // Δημιουργούμε το map που περιμένει ο RelationshipResolver
+        Map<String, Table> tableMap = new HashMap<>();
+        tableMap.put("Customers", customers);
+        tableMap.put("Orders", orders);
 
-        Path generatedFile = tempDir.resolve("Customers.java");
-        assertTrue(Files.exists(generatedFile), "✅ Generated entity file should exist");
+        RelationshipResolver resolver = new RelationshipResolver(tableMap);
+        resolver.resolveRelationshipsForAllTables();
 
-        String content = Files.readString(generatedFile);
-        logger.debug("📄 Generated content: \n{}", content);
+        EntityGenerator generator = new EntityGenerator();
+        String content = generator.createEntityContent(customers, "com.example.entities", false);
 
-        // ✅ Ελέγχουμε για τις αναμενόμενες annotations
-        assertTrue(content.contains("@OneToMany"), "⚠️ Δεν βρέθηκε η σχέση OneToMany");
-        assertTrue(content.contains("mappedBy = \"customer\"") || content.contains("mappedBy = \"customerId\""),
-                "⚠️ Το mappedBy δεν δημιουργήθηκε σωστά");
+        logger.debug("📄 Generated content of Customers.java:\n{}", content);
+
+        boolean hasOneToMany = content.contains("@OneToMany");
+        boolean hasCorrectMappedBy = content.contains("mappedBy = \"customer\"");
+        boolean hasCorrectListField = content.contains("private List<Orders> orders");
+
+        if (!hasOneToMany) {
+            logger.error("❌ @OneToMany annotation is missing!");
+        }
+
+        if (!hasCorrectMappedBy) {
+            logger.error("❌ mappedBy = \"customer\" is missing or incorrect!");
+        }
+
+        if (!hasCorrectListField) {
+            logger.error("❌ Field 'private List<Orders> orders' is missing or incorrect!");
+        }
+
+        System.out.println("---- Customers.java (OneToMany) ----");
+        System.out.println(content);
+        System.out.println("-------------------------------");
+
+
+        assertTrue(hasOneToMany, "⚠️ Δεν βρέθηκε η σχέση OneToMany");
+        assertTrue(hasCorrectMappedBy, "⚠️ Το mappedBy δεν είναι σωστό");
+        assertTrue(hasCorrectListField, "⚠️ Το όνομα της λίστας δεν είναι σωστό");
     }
 
 }

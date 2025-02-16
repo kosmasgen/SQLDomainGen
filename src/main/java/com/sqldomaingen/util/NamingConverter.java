@@ -11,7 +11,7 @@ public class NamingConverter {
     private static final Logger logger = LoggerFactory.getLogger(NamingConverter.class);
 
     // Ιδιωτικός constructor για να αποτρέψουμε τη δημιουργία αντικειμένων
-    public NamingConverter() {
+    private NamingConverter() {
         throw new UnsupportedOperationException("Utility class");
     }
 
@@ -109,4 +109,20 @@ public class NamingConverter {
         logger.debug("Decapitalized first letter of '{}': '{}'.", name, result);
         return result;
     }
+
+    public static String toCamelCasePlural(String input) {
+        String singular = toCamelCase(input);
+        if (singular == null) {
+            return null;
+        }
+
+        singular = Character.toLowerCase(singular.charAt(0)) + singular.substring(1);
+
+        if (singular.endsWith("s")) {
+            return singular;
+        }
+        return singular + "s";
+    }
+
+
 }

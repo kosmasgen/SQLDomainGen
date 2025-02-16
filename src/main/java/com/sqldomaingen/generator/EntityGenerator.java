@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,6 +15,8 @@ import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
+import com.sqldomaingen.model.Relationship.RelationshipType;
+
 
 @NoArgsConstructor
 @Component
@@ -28,23 +29,25 @@ public class EntityGenerator {
 
         Map<String, Table> tablesMap = tables.stream()
                 .collect(Collectors.toMap(Table::getName, t -> t));
+        logger.debug("📄 Created tablesMap with keys: {}", tablesMap.keySet());
+
         RelationshipResolver resolver = new RelationshipResolver(tablesMap);
         resolver.resolveRelationshipsForAllTables();
-
         logger.info("✅ RelationshipResolver initialized and all relationships resolved for tables: {}", tablesMap.keySet());
 
         for (Table table : tables) {
             logger.debug("Processing table: {}", table.getName());
 
-            String entityContent = createEntityContent(table, packageName, useBuilder, resolver);
+            String entityContent = createEntityContent(table, packageName, useBuilder);
+            logger.debug("📄 Generated entity content for table '{}':\n{}", table.getName(), entityContent);
             Path outputPath = Paths.get(outputDir, NamingConverter.toPascalCase(table.getName()) + ".java");
             String fileName = outputPath.toString();
+            logger.debug("📂 Output path for table '{}': {}", table.getName(), fileName);
 
             if (!overwrite && outputPath.toFile().exists()) {
                 logger.warn("File already exists, skipping: {}", fileName);
                 continue;
             }
-
             try {
                 writeToFile(fileName, entityContent);
                 logger.info("Generated entity for table: {}", table.getName());
@@ -52,22 +55,24 @@ public class EntityGenerator {
                 logger.error("Failed to write entity file for table: {}", table.getName(), e);
             }
         }
-
         logger.info("Entity generation complete. Output directory: {}", outputDir);
     }
 
 
-    public String createEntityContent(Table table, String packageName, boolean useBuilder, RelationshipResolver resolver) {
+
+    public String createEntityContent(Table table, String packageName, boolean useBuilder) {
         StringBuilder entityBuilder = new StringBuilder();
 
         generatePackageAndImports(entityBuilder, packageName, table);
         generateClassAnnotations(entityBuilder, table, useBuilder);
-        generateFields(entityBuilder, table, resolver);
+        generateFields(entityBuilder, table);
+
         entityBuilder.append("}\n");
 
         logger.debug("Generated entity content for table '{}':\n{}", table.getName(), entityBuilder);
         return entityBuilder.toString();
     }
+
 
 
     public void generatePackageAndImports(StringBuilder builder, String packageName, Table table) {
@@ -78,6 +83,7 @@ public class EntityGenerator {
         boolean hasBigDecimal = false;
         boolean hasLocalDate = false;
         boolean hasLocalDateTime = false;
+        boolean hasList = false;
 
         for (Column column : table.getColumns()) {
             if (column.getJavaType().equals("java.math.BigDecimal")) hasBigDecimal = true;
@@ -85,12 +91,23 @@ public class EntityGenerator {
             if (column.getJavaType().equals("java.time.LocalDateTime")) hasLocalDateTime = true;
         }
 
+        // Έλεγχος για σχέσεις OneToMany ή ManyToMany
+        for (Relationship relationship : table.getRelationships()) {
+            if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY ||
+                    relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) {
+                hasList = true;
+                break;
+            }
+        }
+
         if (hasBigDecimal) builder.append("import java.math.BigDecimal;\n");
         if (hasLocalDate) builder.append("import java.time.LocalDate;\n");
         if (hasLocalDateTime) builder.append("import java.time.LocalDateTime;\n");
+        if (hasList) builder.append("import java.util.List;\nimport java.util.ArrayList;\n");
 
         builder.append("\n");
     }
+
 
 
 
@@ -107,27 +124,32 @@ public class EntityGenerator {
         builder.append("public class ").append(NamingConverter.toPascalCase(table.getName())).append(" {\n\n");
     }
 
-
-    public void generateFields(StringBuilder builder, Table table, RelationshipResolver resolver) {
+    public void generateFields(StringBuilder builder, Table table) {
         for (Column column : table.getColumns()) {
             logger.debug("Processing column: {}", column.getName());
 
-            boolean isForeignKey = column.isForeignKey();
-            boolean isPrimaryKey = column.isPrimaryKey();
-
-            if (isPrimaryKey) {
+            if (column.isPrimaryKey()) {
                 addPrimaryKeyAnnotations(builder, column);
-            }
-
-            if (isForeignKey) {
-                addForeignKeyAnnotations(builder, column, table, resolver);
-            } else if (!isPrimaryKey) {
+            } else if (column.isForeignKey()) {
+                addRelationshipField(builder, column, table);
+            } else {
                 addColumnField(builder, column);
             }
         }
+
+        // Προσθήκη μόνο των inverse relationships από το ίδιο το table
+        for (Relationship relationship : table.getRelationships()) {
+            if ((relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY ||
+                    relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) &&
+                    relationship.getMappedBy() != null) {
+
+                logger.debug("🔄 Adding inverse relationship field for table '{}', target '{}', type: {}, mappedBy: '{}'",
+                        relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy());
+
+                addInverseRelationshipField(builder, relationship);
+            }
+        }
     }
-
-
 
     private void addPrimaryKeyAnnotations(StringBuilder builder, Column column) {
         builder.append("    @Id\n");
@@ -137,20 +159,24 @@ public class EntityGenerator {
         addColumnField(builder, column);
     }
 
+    public void addRelationshipField(StringBuilder builder, Column column, Table table) {
+        logger.debug("🔵 Resolving relationship for column: {} in table: {}", column.getName(), table.getName());
 
+        Optional<Relationship> relationshipOpt = table.getRelationships().stream()
+                .filter(rel -> rel.getSourceTable().equals(table.getName()) && rel.getSourceColumn().equals(column.getName()))
+                .findFirst();
 
-    private void addForeignKeyAnnotations(StringBuilder builder, Column column, Table table, RelationshipResolver resolver) {
-        logger.debug("? Resolving relationship for column: {} in table: {}", column.getName(), table.getName());
-
-        Relationship relationship = resolver.createRelationship(column, table);
-
-        if (relationship == null) {
-            logger.warn("?? Skipping foreign key annotation for column '{}' because no relationship was found.", column.getName());
+        if (relationshipOpt.isEmpty()) {
+            logger.warn("⚠️ Skipping relationship field for column '{}' because no relationship was found.", column.getName());
             return;
         }
 
-        String targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
+        Relationship relationship = relationshipOpt.get();
+        logger.debug("💬 Relationship details -> Source: {}, Target: {}, Type: {}, MappedBy: {}",
+                relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy());
 
+        String targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
+        String fieldName = relationship.getMappedBy() != null ? relationship.getMappedBy() : NamingConverter.toCamelCase(column.getName());
 
         switch (relationship.getRelationshipType()) {
             case ONETOONE:
@@ -160,80 +186,86 @@ public class EntityGenerator {
                 }
                 builder.append(")\n");
 
-                if (relationship.getMappedBy() == null) {  // ✅ Το JoinColumn μπαίνει μόνο αν ΔΕΝ υπάρχει mappedBy
-                    builder.append("    @JoinColumn(name = \"").append(relationship.getSourceColumn())
+                if (relationship.getMappedBy() == null) {
+                    builder.append("    @JoinColumn(name = \"").append(column.getName())
                             .append("\", referencedColumnName = \"").append(relationship.getTargetColumn()).append("\"");
 
-                    if (column.isUnique()) { // ✅ Προσθήκη του unique για OneToOne
+                    if (column.isUnique()) {
                         builder.append(", unique = true");
                     }
-
                     addOnDeleteAndOnUpdate(builder, relationship);
                     builder.append(")\n");
                 }
 
-                builder.append("    private ")
-                        .append(targetEntity)
-                        .append(" ")
-                        .append(Character.toLowerCase(targetEntity.charAt(0)))
-                        .append(targetEntity.substring(1))
-                        .append(";\n\n");
+                builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
                 break;
-
 
             case MANYTOONE:
                 builder.append("    @ManyToOne(fetch = FetchType.LAZY)\n");
-                builder.append("    @JoinColumn(name = \"").append(relationship.getSourceColumn())
+                builder.append("    @JoinColumn(name = \"").append(column.getName())
                         .append("\", referencedColumnName = \"").append(relationship.getTargetColumn()).append("\"");
                 addOnDeleteAndOnUpdate(builder, relationship);
                 builder.append(")\n");
-                builder.append("    private ")
-                        .append(targetEntity)
-                        .append(" ")
-                        .append(Character.toLowerCase(targetEntity.charAt(0)))
-                        .append(targetEntity.substring(1))
-                        .append(";\n\n");
+
+                builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
                 break;
 
-            case ONETOMANY:
-                builder.append("    @OneToMany(mappedBy = \"")
-                        .append(relationship.getMappedBy() != null
-                                ? relationship.getMappedBy()
-                                : Character.toLowerCase(relationship.getSourceTable().charAt(0)) + relationship.getSourceTable().substring(1)) // ✅ Χρήση του sourceTable
-                        .append("\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)\n");
-
-                builder.append("    private List<")
-                        .append(targetEntity)
-                        .append("> ")
-                        .append(Character.toLowerCase(targetEntity.charAt(0)))
-                        .append(targetEntity.substring(1))
-                        .append(" = new ArrayList<>();\n\n");
-                break;
-
-
-
-
-            case MANYTOMANY:
-                builder.append("    @ManyToMany(fetch = FetchType.LAZY)\n");
-                builder.append("    @JoinTable(name = \"").append(relationship.getJoinTableName())
-                        .append("\", joinColumns = @JoinColumn(name = \"").append(relationship.getSourceColumn())
-                        .append("\"), inverseJoinColumns = @JoinColumn(name = \"").append(relationship.getInverseJoinColumn())
-                        .append("\"))\n");
-                builder.append("    private List<")
-                        .append(targetEntity)
-                        .append("> ")
-                        .append(Character.toLowerCase(targetEntity.charAt(0)))
-                        .append(targetEntity.substring(1))
-                        .append(" = new ArrayList<>();\n\n");
-
-                break;
-        }
-
-        if (relationship.getOnDelete() != null) {
-            builder.append("    @OnDelete(action = OnDeleteAction.").append(relationship.getOnDelete()).append(")\n");
+            default:
+                logger.warn("⚠️ Relationship type {} is not handled here for column: {}", relationship.getRelationshipType(), column.getName());
         }
     }
 
+
+
+    public void addInverseRelationshipField(StringBuilder builder, Relationship relationship) {
+        String targetEntity;
+        String fieldName;
+
+        if (relationship.getRelationshipType() == RelationshipType.ONETOMANY) {
+            // Για OneToMany θέλουμε το sourceTable γιατί είναι το "παιδί"
+            targetEntity = NamingConverter.toPascalCase(relationship.getSourceTable());
+            fieldName = NamingConverter.toCamelCasePlural(relationship.getSourceTable());
+        } else {
+            // Για ManyToMany κρατάμε το targetTable
+            targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
+            fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
+        }
+
+        logger.debug("🔄 Creating inverse relationship field for table '{}' -> '{}', type: {}, mappedBy: '{}'",
+                relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy());
+
+        switch (relationship.getRelationshipType()) {
+            case ONETOMANY:
+                builder.append("    @OneToMany(mappedBy = \"")
+                        .append(relationship.getMappedBy())
+                        .append("\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)\n");
+                builder.append("    private List<").append(targetEntity).append("> ")
+                        .append(fieldName).append(" = new ArrayList<>();\n\n");
+                break;
+
+            case MANYTOMANY:
+                builder.append("    @ManyToMany");
+                if (relationship.getMappedBy() != null) {
+                    builder.append("(mappedBy = \"").append(relationship.getMappedBy()).append("\", fetch = FetchType.LAZY)");
+                } else {
+                    builder.append("(fetch = FetchType.LAZY)");
+                }
+                builder.append("\n");
+
+                if (relationship.getMappedBy() == null) {
+                    builder.append("    @JoinTable(name = \"").append(relationship.getJoinTableName())
+                            .append("\", joinColumns = @JoinColumn(name = \"").append(relationship.getSourceColumn()).append("\"), ")
+                            .append("inverseJoinColumns = @JoinColumn(name = \"").append(relationship.getInverseJoinColumn()).append("\"))\n");
+                }
+
+                builder.append("    private List<").append(targetEntity).append("> ")
+                        .append(fieldName).append(" = new ArrayList<>();\n\n");
+                break;
+
+            default:
+                logger.warn("⚠️ Relationship type {} is not handled here for inverse relationships.", relationship.getRelationshipType());
+        }
+    }
 
 
     private void addOnDeleteAndOnUpdate(StringBuilder builder, Relationship relationship) {

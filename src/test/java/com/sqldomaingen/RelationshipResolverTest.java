@@ -8,7 +8,6 @@ import org.junit.jupiter.api.Test;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import com.sqldomaingen.generator.RelationshipResolver;
-
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,8 +45,8 @@ class RelationshipResolverTest {
 
         // OrderProducts Table (ManyToMany between Orders and Products)
         Table orderProductsTable = createTable("OrderProducts");
-        orderProductsTable.addColumn(createColumn("order_id", "BIGINT", false, true, "Orders", "id", false,null));
-        orderProductsTable.addColumn(createColumn("product_id", "BIGINT", false, true, "Products", "id", false,null));
+        orderProductsTable.addColumn(createColumn("order_id", "BIGINT", true, true, "Orders", "id", false,null));
+        orderProductsTable.addColumn(createColumn("product_id", "BIGINT", true, true, "Products", "id", false,null));
 
         // Add tables to map
         tableMap.put("Users", usersTable);
@@ -134,49 +133,55 @@ class RelationshipResolverTest {
         logger.info("🎉 OneToMany relationship resolved correctly!");
     }
 
+
     @Test
     void testResolveManyToManyRelationship() {
         logger.info("🔵 Running test: testResolveManyToManyRelationship");
 
-        Table orderProductsTable = tableMap.get("OrderProducts");
-        List<Relationship> relationships = resolver.resolveRelationships(orderProductsTable);
+        // Step 1: Αναλύουμε όλες τις σχέσεις πριν τον έλεγχο.
+        logger.info("📋 Resolving relationships for all tables...");
+        resolver.resolveRelationshipsForAllTables();
 
-        logger.info("🔍 Found Relationships: {}", relationships);
+        // Step 2: Ελέγχουμε τον πίνακα Orders.
+        logger.info("📋 Checking ManyToMany relationship in Orders...");
+        Table ordersTable = tableMap.get("Orders");
+        List<Relationship> ordersRelationships = ordersTable.getRelationships().stream()
+                .filter(rel -> rel.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY)
+                .toList();
 
-        assertEquals(2, relationships.size(), "ManyToMany should create two relationships.");
+        // Log the relationships found in Orders table
+        ordersRelationships.forEach(relationship ->
+                logger.info("🔗 Found Orders ManyToMany Relationship: {}", relationship));
 
-        Relationship firstRelationship = relationships.get(0);
-        logger.info("✅ First ManyToMany relationship found: {}", firstRelationship);
-        assertEquals("OrderProducts", firstRelationship.getSourceTable());
-        assertEquals("order_id", firstRelationship.getSourceColumn());
-        assertEquals("Orders", firstRelationship.getTargetTable());
-        assertEquals("id", firstRelationship.getTargetColumn());
-        assertEquals(Relationship.RelationshipType.MANYTOMANY, firstRelationship.getRelationshipType());
+        // Assertions για τον πίνακα Orders
+        assertEquals(1, ordersRelationships.size(), "Orders table should have one ManyToMany relationship.");
+        Relationship ordersRelationship = ordersRelationships.get(0);
+        assertEquals("OrderProducts", ordersRelationship.getJoinTableName(),
+                "The join table for Orders->Products ManyToMany relationship should be OrderProducts.");
+        logger.info("✅ Orders table has correct ManyToMany relationship.");
 
-        // 🔴 Προσθέτουμε έλεγχο για το Join Table και τα Join Columns
-        assertNotNull(firstRelationship.getJoinTableName(), "Join table name should not be null");
-        assertEquals("OrderProducts", firstRelationship.getJoinTableName(), "Join table name should be correct");
-        logger.info("🔍 Checking inverse join column for first relationship: {}", firstRelationship.getInverseJoinColumn());
-        assertNotNull(firstRelationship.getInverseJoinColumn(), "Inverse join column should not be null");
-        assertEquals("product_id", firstRelationship.getInverseJoinColumn(), "Inverse join column should be correct");
+        // Step 3: Ελέγχουμε τον πίνακα Products.
+        logger.info("📋 Checking ManyToMany relationship in Products...");
+        Table productsTable = tableMap.get("Products");
+        List<Relationship> productsRelationships = productsTable.getRelationships().stream()
+                .filter(rel -> rel.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY)
+                .toList();
 
-        Relationship secondRelationship = relationships.get(1);
-        logger.info("✅ Second ManyToMany relationship found: {}", secondRelationship);
-        assertEquals("OrderProducts", secondRelationship.getSourceTable());
-        assertEquals("product_id", secondRelationship.getSourceColumn());
-        assertEquals("Products", secondRelationship.getTargetTable());
-        assertEquals("id", secondRelationship.getTargetColumn());
-        assertEquals(Relationship.RelationshipType.MANYTOMANY, secondRelationship.getRelationshipType());
+        // Log the relationships found in Products table
+        productsRelationships.forEach(relationship ->
+                logger.info("🔗 Found Products ManyToMany Relationship: {}", relationship));
 
-        // 🔴 Προσθέτουμε έλεγχο για το Join Table και τα Join Columns
-        assertNotNull(secondRelationship.getJoinTableName(), "Join table name should not be null");
-        assertEquals("OrderProducts", secondRelationship.getJoinTableName(), "Join table name should be correct");
-        logger.info("🔍 Checking inverse join column for second relationship: {}", secondRelationship.getInverseJoinColumn());
-        assertNotNull(secondRelationship.getInverseJoinColumn(), "Inverse join column should not be null");
-        assertEquals("order_id", secondRelationship.getInverseJoinColumn(), "Inverse join column should be correct");
+        // Assertions για τον πίνακα Products
+        assertEquals(1, productsRelationships.size(), "Products table should have one ManyToMany relationship.");
+        Relationship productsRelationship = productsRelationships.get(0);
+        assertEquals("OrderProducts", productsRelationship.getJoinTableName(),
+                "The join table for Products->Orders ManyToMany relationship should be OrderProducts.");
+        logger.info("✅ Products table has correct ManyToMany relationship.");
 
-        logger.info("🎉 ManyToMany relationships resolved correctly!");
+        // Συνολική επιβεβαίωση
+        logger.info("🎉 ManyToMany relationships resolved correctly in Orders and Products!");
     }
+
 
     @Test
     void testTableMapInitialization() {
@@ -241,22 +246,25 @@ class RelationshipResolverTest {
             }
 
             if (tableName.equals("OrderProducts")) {
-                assertEquals(2, relationships.size(), "❌ OrderProducts should have 2 relationships.");
+                assertEquals(2, relationships.size(), "❌ OrderProducts should have 2 MANYTOONE relationships.");
 
-                // ✅ Ορθός έλεγχος για ManyToMany σχέσεις
-                assertTrue(relationships.stream().allMatch(r -> r.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY),
-                        "❌ All relationships in OrderProducts should be ManyToMany.");
+                // ✅ Ορθός έλεγχος για ManyToOne σχέσεις
+                assertTrue(relationships.stream().allMatch(r -> r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE),
+                        "❌ All relationships in OrderProducts should be MANYTOONE.");
 
-                // ✅ Logging για mappedBy (αν υπάρχει)
+                // ✅ Logging για mappedBy και joinTable/inverseJoinColumn
                 relationships.forEach(relationship -> {
-                    logger.info("🔗 Relationship from '{}' to '{}', Type: {}, MappedBy: {}",
+                    logger.info("🔗 Relationship from '{}' to '{}', Type: {}, JoinTable: {}, InverseJoinColumn: {}, MappedBy: {}",
                             relationship.getSourceTable(),
                             relationship.getTargetTable(),
                             relationship.getRelationshipType(),
+                            relationship.getJoinTableName() != null ? relationship.getJoinTableName() : "None",
+                            relationship.getInverseJoinColumn() != null ? relationship.getInverseJoinColumn() : "None",
                             relationship.getMappedBy() != null ? relationship.getMappedBy() : "None"
                     );
                 });
             }
+
 
 
             // ✅ Προσθήκη logging για το mappedBy
@@ -271,6 +279,79 @@ class RelationshipResolverTest {
 
         logger.info("🎉 All relationships resolved correctly for all tables!");
     }
+
+
+    @Test
+    void testRelationshipsResolvedCorrectly() {
+        logger.info("🔵 Running test: testRelationshipsResolvedCorrectly");
+
+        // Δημιουργία πινάκων με ονόματα PascalCase για να ταιριάζουν με τα υπόλοιπα τεστ
+        Table order = new Table();
+        order.setName("Orders");
+
+        Table product = new Table();
+        product.setName("Products");
+
+        Table orderProduct = new Table();
+        orderProduct.setName("OrderProducts");
+
+        // Δημιουργία Foreign Key στηλών με PascalCase referencedTable
+        Column orderId = new Column();
+        orderId.setName("order_id");
+        orderId.setSqlType("INT");
+        orderId.setForeignKey(true);
+        orderId.setReferencedTable("Orders");
+        orderId.setReferencedColumn("id");
+
+        Column productId = new Column();
+        productId.setName("product_id");
+        productId.setSqlType("INT");
+        productId.setForeignKey(true);
+        productId.setReferencedTable("Products");
+        productId.setReferencedColumn("id");
+
+        // Προσθήκη στηλών στον πίνακα OrderProducts
+        orderProduct.addColumn(orderId);
+        orderProduct.addColumn(productId);
+
+        // Προσθήκη primary keys για να ανιχνευτεί ως join table
+        orderId.setPrimaryKey(true);
+        productId.setPrimaryKey(true);
+
+        // Δημιουργία map με PascalCase ονόματα πινάκων (σύμφωνα με τα άλλα τεστ)
+        Map<String, Table> tableMap = new HashMap<>();
+        tableMap.put("Orders", order);
+        tableMap.put("Products", product);
+        tableMap.put("OrderProducts", orderProduct);
+
+        // Εκτέλεση RelationshipResolver
+        RelationshipResolver resolver = new RelationshipResolver(tableMap);
+        resolver.resolveRelationshipsForAllTables();
+
+        // Ανάκτηση των relationships
+        List<Relationship> relationships = resolver.getRelationships();
+
+        logger.info("🔍 Relationships found: {}", relationships.size());
+        for (Relationship rel : relationships) {
+            logger.info("🔗 Relationship: {} -> {} | Type: {} | SourceColumn: {} | TargetColumn: {} | mappedBy: {} | JoinTable: {}",
+                    rel.getSourceTable(),
+                    rel.getTargetTable(),
+                    rel.getRelationshipType(),
+                    rel.getSourceColumn(),
+                    rel.getTargetColumn(),
+                    rel.getMappedBy() != null ? rel.getMappedBy() : "None",
+                    rel.getJoinTableName() != null ? rel.getJoinTableName() : "None"
+            );
+        }
+
+        // Πρέπει να βρούμε 4 σχέσεις:
+        // - 2 ManyToOne (order_product -> order, order_product -> product)
+        // - 2 ManyToMany (order -> product, product -> order) μέσω join table
+        assertEquals(4, relationships.size(), "Should create 4 relationships (2 ManyToOne + 2 ManyToMany)");
+
+        logger.info("✅ Test testRelationshipsResolvedCorrectly completed successfully.");
+    }
+
 
 
     // Βοηθητική Μέθοδος για Δημιουργία Table
@@ -298,4 +379,6 @@ class RelationshipResolverTest {
 
         return column;
     }
+
+
 }

@@ -558,6 +558,26 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 */
 	void exitValue(PostgreSQLParser.ValueContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#expressionList}.
+	 * @param ctx the parse tree
+	 */
+	void enterExpressionList(PostgreSQLParser.ExpressionListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#expressionList}.
+	 * @param ctx the parse tree
+	 */
+	void exitExpressionList(PostgreSQLParser.ExpressionListContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#arrayConstructor}.
+	 * @param ctx the parse tree
+	 */
+	void enterArrayConstructor(PostgreSQLParser.ArrayConstructorContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#arrayConstructor}.
+	 * @param ctx the parse tree
+	 */
+	void exitArrayConstructor(PostgreSQLParser.ArrayConstructorContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#createPolicyStatement}.
 	 * @param ctx the parse tree
 	 */
@@ -677,4 +697,34 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitReferentialAction(PostgreSQLParser.ReferentialActionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#anyExpression}.
+	 * @param ctx the parse tree
+	 */
+	void enterAnyExpression(PostgreSQLParser.AnyExpressionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#anyExpression}.
+	 * @param ctx the parse tree
+	 */
+	void exitAnyExpression(PostgreSQLParser.AnyExpressionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#intervalLiteral}.
+	 * @param ctx the parse tree
+	 */
+	void enterIntervalLiteral(PostgreSQLParser.IntervalLiteralContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#intervalLiteral}.
+	 * @param ctx the parse tree
+	 */
+	void exitIntervalLiteral(PostgreSQLParser.IntervalLiteralContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#typeName}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeName(PostgreSQLParser.TypeNameContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#typeName}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeName(PostgreSQLParser.TypeNameContext ctx);
 }

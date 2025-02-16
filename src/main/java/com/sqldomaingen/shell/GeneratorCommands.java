@@ -130,7 +130,7 @@ public class GeneratorCommands {
             // Παράγουμε το TokenStream από τον SQLParser
             TokenStream tokenStream = sqlParserInstance.parseSQL();
 
-            // Δημιουργούμε έναν PostgreSQLParser από το TokenStream
+            // Δημιουργούμε έναν SQLParser από το TokenStream
             PostgreSQLParser parser = new PostgreSQLParser(tokenStream);
 
             // Παίρνουμε το SqlScriptContext
@@ -141,19 +141,12 @@ public class GeneratorCommands {
                 CreateTableDefinition createTableDefinition = new CreateTableDefinition();
                 createTableDefinition.processCreateTable(createContext);
 
-                Table table = new Table();
-                table.setName(createTableDefinition.getTableName());
-                table.setColumns(
-                        createTableDefinition.getColumnDefinitions()
-                                .stream()
-                                .map(ColumnDefinition::toColumn)
-                                .toList()
-                );
-                table.setConstraints(createTableDefinition.getConstraints());
+                Table table = createTableDefinition.toTable();
                 tables.add(table);
-            }
 
+            }
             return tables;
+
         } catch (Exception e) {
             logger.error("Error parsing SQL content", e);
             return List.of();

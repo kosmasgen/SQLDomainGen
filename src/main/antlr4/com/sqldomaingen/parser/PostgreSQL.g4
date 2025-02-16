@@ -64,6 +64,9 @@ alterColumnAction
 // Τύποι δεδομένων (PostgreSQL-specific)
 dataType
     : 'INTEGER'
+    | 'FLOAT8'
+    | 'FLOAT4'
+    | 'INT8'
     | 'INT'
     | 'SMALLINT'
     | 'BIGINT'
@@ -329,7 +332,7 @@ schemaName
 
 // Όνομα πίνακα
 tableName
-    : IDENTIFIER
+    : (schemaName DOT)? IDENTIFIER
     ;
 
 // Όνομα στήλης
@@ -355,6 +358,7 @@ NUMBER
     : DIGIT+                                          // Απλοί ακέραιοι αριθμοί
     | '-'? DIGIT+ ('.' DIGIT+)? ([eE] [+-]? DIGIT+)? // Δεκαδικοί & επιστημονική σημειογραφία
     ;
+
 DIGIT : [0-9] ;
 
 // Παραβλέπει κενά διαστήματα
@@ -367,10 +371,10 @@ LPAREN : '(';
 RPAREN : ')';
 LBRACE : '{';
 RBRACE : '}';
-SEMICOLON : ';';   // Τέλος SQL εντολής
+SEMICOLON : ';';
 COLON : ':';
 DOUBLE_COLON : '::';
-COMMA : ',';   // Διαχωρισμός στηλών ή παραμέτρων
+COMMA : ',';
 DOUBLE_QUOTE : '"';
 ON : 'ON';
 DELETE : 'DELETE';
@@ -385,15 +389,40 @@ SELECT : 'SELECT';
 USING : 'USING';
 DOLLAR_QUOTE: '$$';
 NEW : 'NEW';
-CREATE_TABLE : 'CREATE_TABLE';
 TABLE : 'TABLE';
 CREATE : 'CREATE';
 RELATIONSHIP : 'RELATIONSHIP';
 DECIMAL: 'DECIMAL';
-
 INT: 'INT';
 VARCHAR: 'VARCHAR';
-PRIMARY_KEY: 'PRIMARY KEY';
+DOT : '.';
+CONSTRAINT : 'CONSTRAINT';
+NULL : 'NULL';
+FOREIGN_KEY : 'FOREIGN KEY';
+NOT : 'NOT';
+SET : 'SET';
+REFERENCES : 'REFERENCES';
+PRIMARY_KEY : 'PRIMARY KEY';
+NOT_NULL : 'NOT NULL';
+CHECK : 'CHECK';
+ANY : 'ANY';
+LBRACKET : '[';
+RBRACKET : ']';
+ARRAY : 'ARRAY';
+DEFAULT : 'DEFAULT';
+NEXTVAL : 'nextval';
+REGCLASS : 'regclass';
+CASCADE : 'CASCADE';
+SET_NULL : 'SET NULL';
+SET_DEFAULT : 'SET DEFAULT';
+NO_ACTION : 'NO ACTION';
+RESTRICT : 'RESTRICT';
+ON_DELETE : 'ON DELETE';
+ON_UPDATE : 'ON UPDATE';
+UNIQUE : 'UNIQUE';
+EQUALS : '=';
+
+
 
 decimalType
     : ('DECIMAL' | 'NUMERIC') ('(' precision=NUMBER (',' scale=NUMBER)? ')')?
@@ -442,9 +471,16 @@ indexOptionsClause
 expression
     : value
     | columnName
-    | expression ('+' | '-' | '*' | '/') expression
+    | anyExpression
+    | arrayConstructor
     | '(' expression ')'
+    | expression ('+' | '-' | '*' | '/') expression
+    | expression comparisonOperator expression
+    | expression 'AND' expression
+    | expression 'OR' expression
+    | expression DOUBLE_COLON (typeName | dataType)
     ;
+
 
 // Τιμές για στήλες, εκφράσεις, και DEFAULT
 value
@@ -455,6 +491,20 @@ value
     | 'NULL'
     | 'CURRENT_TIMESTAMP'
     | 'current_user'
+    | 'now'
+    | 'infinity'
+    | 'NaN'
+    | intervalLiteral
+    | arrayConstructor
+    ;
+
+expressionList
+    : expression (',' expression)*
+    ;
+
+
+arrayConstructor
+    : 'ARRAY' '[' expressionList ']' (DOUBLE_COLON dataType)?
     ;
 
 
@@ -533,4 +583,18 @@ referentialAction
     | 'SET DEFAULT'
     | 'RESTRICT'
     | 'NO ACTION'
+    ;
+
+
+
+anyExpression
+    : 'ANY' '(' arrayConstructor ')'
+    ;
+
+intervalLiteral
+    : 'INTERVAL' STRING
+    ;
+
+typeName
+    : IDENTIFIER ('.' IDENTIFIER)?
     ;
