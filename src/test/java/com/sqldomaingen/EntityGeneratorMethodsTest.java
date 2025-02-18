@@ -304,6 +304,7 @@ class EntityGeneratorMethodsTest {
         logger.info("✅ testOneToOneRelationshipGeneration completed successfully!");
     }
 
+
     @Test
     void testManyToManyWithoutJoinTableGeneration() {
         Table students = new Table();
@@ -327,13 +328,26 @@ class EntityGeneratorMethodsTest {
         students.getColumns().add(studentId);
         courses.getColumns().add(courseId);
 
-        // Δημιουργούμε τη ManyToMany σχέση
+        // Δημιουργούμε τη ManyToMany σχέση από την πλευρά των Students
         Relationship relationship = new Relationship();
         relationship.setSourceTable("Students");
         relationship.setTargetTable("Courses");
+        relationship.setSourceColumn("id");
+        relationship.setTargetColumn("id");
+        relationship.setJoinTableName("students_courses");
+        relationship.setInverseJoinColumn("id");
         relationship.setRelationshipType(Relationship.RelationshipType.MANYTOMANY);
 
         students.getRelationships().add(relationship);
+
+        // Αντίστροφη σχέση για Courses (inverse side)
+        Relationship inverseRelationship = new Relationship();
+        inverseRelationship.setSourceTable("Courses");
+        inverseRelationship.setTargetTable("Students");
+        inverseRelationship.setRelationshipType(Relationship.RelationshipType.MANYTOMANY);
+        inverseRelationship.setMappedBy("courses");
+
+        courses.getRelationships().add(inverseRelationship);
 
         Map<String, Table> tableMap = new HashMap<>();
         tableMap.put("Students", students);
@@ -341,6 +355,9 @@ class EntityGeneratorMethodsTest {
 
         RelationshipResolver resolver = new RelationshipResolver(tableMap);
         resolver.resolveRelationshipsForAllTables();
+        students.getRelationships().forEach(rel -> System.out.println("Students relationship -> " + rel));
+        courses.getRelationships().forEach(rel -> System.out.println("Courses relationship -> " + rel));
+
 
         EntityGenerator generator = new EntityGenerator();
         String studentsContent = generator.createEntityContent(students, "com.example", false);
@@ -356,7 +373,9 @@ class EntityGeneratorMethodsTest {
     }
 
 
-        @Test
+
+
+    @Test
         void testManyToManyWithJoinTableGeneration() {
             logger.info("🟢 Running testManyToManyWithJoinTableGeneration...");
 

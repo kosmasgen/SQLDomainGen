@@ -15,7 +15,6 @@ import java.nio.file.Paths;
 import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
-import com.sqldomaingen.model.Relationship.RelationshipType;
 
 
 @NoArgsConstructor
@@ -159,11 +158,14 @@ public class EntityGenerator {
         addColumnField(builder, column);
     }
 
+
+    // parent  Side Table
     public void addRelationshipField(StringBuilder builder, Column column, Table table) {
         logger.debug("🔵 Resolving relationship for column: {} in table: {}", column.getName(), table.getName());
 
         Optional<Relationship> relationshipOpt = table.getRelationships().stream()
-                .filter(rel -> rel.getSourceTable().equals(table.getName()) && rel.getSourceColumn().equals(column.getName()))
+                .filter(rel -> rel.getSourceTable().equals(table.getName()) &&
+                        (rel.getSourceColumn() == null || rel.getSourceColumn().equals(column.getName())))
                 .findFirst();
 
         if (relationshipOpt.isEmpty()) {
@@ -176,10 +178,10 @@ public class EntityGenerator {
                 relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy());
 
         String targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
-        String fieldName = relationship.getMappedBy() != null ? relationship.getMappedBy() : NamingConverter.toCamelCase(column.getName());
+        String fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
 
         switch (relationship.getRelationshipType()) {
-            case ONETOONE:
+            case ONETOONE -> {
                 builder.append("    @OneToOne(fetch = FetchType.LAZY");
                 if (relationship.getMappedBy() != null) {
                     builder.append(", mappedBy = \"").append(relationship.getMappedBy()).append("\"");
@@ -197,75 +199,75 @@ public class EntityGenerator {
                     builder.append(")\n");
                 }
 
-                builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
-                break;
-
-            case MANYTOONE:
+                builder.append("    private ").append(targetEntity).append(" ").append(NamingConverter.toCamelCase(column.getName().replaceAll("_id$", ""))).append(";\n\n");
+            }
+            case MANYTOONE -> {
                 builder.append("    @ManyToOne(fetch = FetchType.LAZY)\n");
                 builder.append("    @JoinColumn(name = \"").append(column.getName())
                         .append("\", referencedColumnName = \"").append(relationship.getTargetColumn()).append("\"");
                 addOnDeleteAndOnUpdate(builder, relationship);
                 builder.append(")\n");
 
-                builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
-                break;
+                builder.append("    private ").append(targetEntity).append(" ").append(NamingConverter.toCamelCase(column.getName().replaceAll("_id$", ""))).append(";\n\n");
+            }
+            case MANYTOMANY -> {
+                if (relationship.getMappedBy() != null) {
+                    builder.append("    @ManyToMany(mappedBy = \"")
+                            .append(relationship.getMappedBy())
+                            .append("\", fetch = FetchType.LAZY)\n");
+                } else {
+                    builder.append("    @ManyToMany(fetch = FetchType.LAZY)\n");
+                    if (relationship.getJoinTableName() != null && relationship.getSourceColumn() != null && relationship.getInverseJoinColumn() != null) {
+                        builder.append("    @JoinTable(\n")
+                                .append("        name = \"").append(relationship.getJoinTableName()).append("\",\n")
+                                .append("        joinColumns = @JoinColumn(name = \"").append(relationship.getSourceColumn()).append("\"),\n")
+                                .append("        inverseJoinColumns = @JoinColumn(name = \"").append(relationship.getInverseJoinColumn()).append("\")\n")
+                                .append("    )\n");
+                    } else {
+                        logger.warn("⚠️ Missing JoinTable or JoinColumn details for ManyToMany relationship in table: {}", table.getName());
+                    }
+                }
 
-            default:
-                logger.warn("⚠️ Relationship type {} is not handled here for column: {}", relationship.getRelationshipType(), column.getName());
+                builder.append("    private List<").append(targetEntity).append("> ").append(fieldName).append(" = new ArrayList<>();\n\n");
+            }
+
+            default -> logger.warn("⚠️ Relationship type {} is not handled here for column: {}", relationship.getRelationshipType(), column.getName());
         }
     }
 
 
 
-    public void addInverseRelationshipField(StringBuilder builder, Relationship relationship) {
-        String targetEntity;
-        String fieldName;
 
-        if (relationship.getRelationshipType() == RelationshipType.ONETOMANY) {
-            // Για OneToMany θέλουμε το sourceTable γιατί είναι το "παιδί"
-            targetEntity = NamingConverter.toPascalCase(relationship.getSourceTable());
-            fieldName = NamingConverter.toCamelCasePlural(relationship.getSourceTable());
-        } else {
-            // Για ManyToMany κρατάμε το targetTable
-            targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
-            fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
-        }
+
+
+    // Child side Table
+    public void addInverseRelationshipField(StringBuilder builder, Relationship relationship) {
+        String sourceEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
+        String fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
 
         logger.debug("🔄 Creating inverse relationship field for table '{}' -> '{}', type: {}, mappedBy: '{}'",
                 relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy());
+        logger.debug("🎯 Source entity: {}, Field name: {}", sourceEntity, fieldName);
 
         switch (relationship.getRelationshipType()) {
-            case ONETOMANY:
+            case ONETOMANY -> {
                 builder.append("    @OneToMany(mappedBy = \"")
                         .append(relationship.getMappedBy())
                         .append("\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)\n");
-                builder.append("    private List<").append(targetEntity).append("> ")
+                builder.append("    private List<").append(sourceEntity).append("> ")
                         .append(fieldName).append(" = new ArrayList<>();\n\n");
-                break;
-
-            case MANYTOMANY:
-                builder.append("    @ManyToMany");
-                if (relationship.getMappedBy() != null) {
-                    builder.append("(mappedBy = \"").append(relationship.getMappedBy()).append("\", fetch = FetchType.LAZY)");
-                } else {
-                    builder.append("(fetch = FetchType.LAZY)");
-                }
-                builder.append("\n");
-
-                if (relationship.getMappedBy() == null) {
-                    builder.append("    @JoinTable(name = \"").append(relationship.getJoinTableName())
-                            .append("\", joinColumns = @JoinColumn(name = \"").append(relationship.getSourceColumn()).append("\"), ")
-                            .append("inverseJoinColumns = @JoinColumn(name = \"").append(relationship.getInverseJoinColumn()).append("\"))\n");
-                }
-
-                builder.append("    private List<").append(targetEntity).append("> ")
+            }
+            case MANYTOMANY -> {
+                builder.append("    @ManyToMany(mappedBy = \"").append(relationship.getMappedBy())
+                        .append("\", fetch = FetchType.LAZY)\n");
+                builder.append("    private List<").append(sourceEntity).append("> ")
                         .append(fieldName).append(" = new ArrayList<>();\n\n");
-                break;
-
-            default:
-                logger.warn("⚠️ Relationship type {} is not handled here for inverse relationships.", relationship.getRelationshipType());
+            }
+            default -> logger.warn("⚠️ Relationship type {} is not handled here for inverse relationships.", relationship.getRelationshipType());
         }
     }
+
+
 
 
     private void addOnDeleteAndOnUpdate(StringBuilder builder, Relationship relationship) {

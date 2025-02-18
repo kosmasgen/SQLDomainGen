@@ -380,5 +380,175 @@ class RelationshipResolverTest {
         return column;
     }
 
+    @Test
+    void testResolveOneToManyRelationship2() {
+        logger.info("🔵 Running test: testResolveOneToManyRelationship");
+
+        Table usersTable = tableMap.get("Users");
+
+        // 🔄 Περνάμε όλα τα tables για να λυθούν πρώτα οι σχέσεις!
+        tableMap.values().forEach(table -> resolver.resolveRelationships(table));
+
+        // ✅ Διαβάζουμε τις μοναδικές σχέσεις από το Users table
+        List<Relationship> relationships = usersTable.getRelationships().stream()
+                .filter(rel -> rel.getRelationshipType() == Relationship.RelationshipType.ONETOMANY)
+                .toList();
+
+        logger.info("🔍 Found OneToMany Relationships: {}", relationships);
+
+        assertEquals(1, relationships.size(), "Expected one OneToMany relationship.");
+
+        Relationship relationship = relationships.get(0);
+        assertEquals("Users", relationship.getSourceTable());
+        assertEquals("id", relationship.getSourceColumn());
+        assertEquals("Orders", relationship.getTargetTable());
+        assertEquals("user_id", relationship.getTargetColumn());
+        assertEquals(Relationship.RelationshipType.ONETOMANY, relationship.getRelationshipType());
+
+        // ✅ Εδώ προσθέτεις έλεγχο για το mappedBy
+        assertEquals("user", relationship.getMappedBy(), "mappedBy should be 'user' for Users -> Orders");
+
+        logger.info("🎉 OneToMany relationship resolved correctly!");
+    }
+
+    @Test
+    void testJoinTableWithExtraColumnIsNotManyToMany() {
+        logger.info("🔵 Running test: testJoinTableWithExtraColumnIsNotManyToMany");
+
+        Table order = new Table();
+        order.setName("Orders");
+        Column orderPrimaryKey = new Column();
+        orderPrimaryKey.setName("id");
+        orderPrimaryKey.setSqlType("BIGINT");
+        orderPrimaryKey.setPrimaryKey(true);
+        orderPrimaryKey.setUnique(true);
+        order.addColumn(orderPrimaryKey);
+
+        Table product = new Table();
+        product.setName("Products");
+        Column productPrimaryKey = new Column();
+        productPrimaryKey.setName("id");
+        productPrimaryKey.setSqlType("BIGINT");
+        productPrimaryKey.setPrimaryKey(true);
+        productPrimaryKey.setUnique(true);
+        product.addColumn(productPrimaryKey);
+
+        Table orderProduct = new Table();
+        orderProduct.setName("OrderProducts");
+
+        Column orderId = new Column();
+        orderId.setName("order_id");
+        orderId.setSqlType("INT");
+        orderId.setForeignKey(true);
+        orderId.setReferencedTable("Orders");
+        orderId.setReferencedColumn("id");
+        orderId.setPrimaryKey(true);
+
+        Column productId = new Column();
+        productId.setName("product_id");
+        productId.setSqlType("INT");
+        productId.setForeignKey(true);
+        productId.setReferencedTable("Products");
+        productId.setReferencedColumn("id");
+        productId.setPrimaryKey(true);
+
+        Column extraColumn = new Column();
+        extraColumn.setName("quantity");
+        extraColumn.setSqlType("INT");
+
+        orderProduct.addColumn(orderId);
+        orderProduct.addColumn(productId);
+        orderProduct.addColumn(extraColumn);
+
+        Map<String, Table> tableMap = new HashMap<>();
+        tableMap.put("Orders", order);
+        tableMap.put("Products", product);
+        tableMap.put("OrderProducts", orderProduct);
+
+        RelationshipResolver resolver = new RelationshipResolver(tableMap);
+        resolver.resolveRelationshipsForAllTables();
+
+        List<Relationship> relationships = resolver.getRelationships();
+
+        System.out.println("🔍 Relationships found: " + relationships.size());
+        relationships.forEach(rel -> System.out.println(
+                "🔗 Relationship: " + rel.getSourceTable() + " -> " + rel.getTargetTable() + " | Type: " + rel.getRelationshipType()
+        ));
+
+        assertEquals(2, relationships.size(), "Should create only 2 ManyToOne relationships, no ManyToMany");
+        assertTrue(relationships.stream().allMatch(rel -> rel.getRelationshipType() == Relationship.RelationshipType.MANYTOONE), "All relationships should be ManyToOne");
+
+        logger.info("✅ Test testJoinTableWithExtraColumnIsNotManyToMany completed successfully.");
+    }
+
+
+    @Test
+    void testJoinTableWithoutCompositePrimaryKeyIsNotManyToMany() {
+        logger.info("🔵 Running test: testJoinTableWithoutCompositePrimaryKeyIsNotManyToMany");
+
+        Table order = new Table();
+        order.setName("Orders");
+
+        Column orderPrimaryKey = new Column();
+        orderPrimaryKey.setName("id");
+        orderPrimaryKey.setSqlType("BIGINT");
+        orderPrimaryKey.setPrimaryKey(true);
+
+        order.addColumn(orderPrimaryKey);
+
+        Table product = new Table();
+        product.setName("Products");
+
+        Column productPrimaryKey = new Column();
+        productPrimaryKey.setName("id");
+        productPrimaryKey.setSqlType("BIGINT");
+        productPrimaryKey.setPrimaryKey(true);
+
+        product.addColumn(productPrimaryKey);
+
+        Table orderProduct = new Table();
+        orderProduct.setName("OrderProducts");
+
+        Column orderId = new Column();
+        orderId.setName("order_id");
+        orderId.setSqlType("INT");
+        orderId.setForeignKey(true);
+        orderId.setReferencedTable("Orders");
+        orderId.setReferencedColumn("id");
+        orderId.setPrimaryKey(true);
+
+        Column productId = new Column();
+        productId.setName("product_id");
+        productId.setSqlType("INT");
+        productId.setForeignKey(true);
+        productId.setReferencedTable("Products");
+        productId.setReferencedColumn("id");
+        productId.setPrimaryKey(false); // Δεν είναι primary key!
+
+        orderProduct.addColumn(orderId);
+        orderProduct.addColumn(productId);
+
+        Map<String, Table> tableMap = new HashMap<>();
+        tableMap.put("Orders", order);
+        tableMap.put("Products", product);
+        tableMap.put("OrderProducts", orderProduct);
+
+        RelationshipResolver resolver = new RelationshipResolver(tableMap);
+        resolver.resolveRelationshipsForAllTables();
+
+        List<Relationship> relationships = resolver.getRelationships();
+
+        System.out.println("🔍 Relationships found: " + relationships.size());
+        relationships.forEach(rel -> System.out.println(
+                "🔗 Relationship: " + rel.getSourceTable() + " -> " + rel.getTargetTable() + " | Type: " + rel.getRelationshipType()
+        ));
+
+        assertEquals(2, relationships.size(), "Should create only 2 ManyToOne relationships, no ManyToMany");
+        assertTrue(relationships.stream().allMatch(rel -> rel.getRelationshipType() == Relationship.RelationshipType.MANYTOONE), "All relationships should be ManyToOne");
+
+        logger.info("✅ Test testJoinTableWithoutCompositePrimaryKeyIsNotManyToMany completed successfully.");
+    }
+
+
 
 }

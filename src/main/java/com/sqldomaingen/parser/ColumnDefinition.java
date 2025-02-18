@@ -219,8 +219,8 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
             column.setReferencedTable(this.referencedTable);
             column.setReferencedColumn(this.referencedColumn);
 
-            logger.debug("Foreign Key Check for column: {} -> foreignKey={}, referencedTable={}, referencedColumn={}, mappedBy={}",
-                    this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn, this.mappedBy);
+            logger.debug("Foreign Key Check for column: {}, referencedTable={}, referencedColumn={}, mappedBy={}",
+                    this.columnName,  this.referencedTable, this.referencedColumn, this.mappedBy);
 
             logger.info("✅ Column is Foreign Key: {} -> {}.{} (mappedBy={})",
                     column.getName(), column.getReferencedTable(), column.getReferencedColumn(), column.getMappedBy());

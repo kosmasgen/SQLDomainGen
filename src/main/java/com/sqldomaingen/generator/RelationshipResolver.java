@@ -30,12 +30,13 @@ public class RelationshipResolver {
     public List<Relationship> resolveRelationships(Table sourceTable) {
         logger.info("🔵 Resolving relationships for table: {}", sourceTable.getName());
 
-        if (isCompositePrimaryKeyJoinTable(sourceTable)) {
+        if (isJoinTable(sourceTable)) { // <--- ΑΛΛΑΓΗ ΕΔΩ
             return handleManyToManyJoinTable(sourceTable);
         }
 
         return handleForeignKeyRelationships(sourceTable);
     }
+
 
     private List<Relationship> handleManyToManyJoinTable(Table sourceTable) {
         logger.info("🔥 Detected join table '{}' with composite primary key. Treating as ManyToMany.", sourceTable.getName());
@@ -132,10 +133,6 @@ public class RelationshipResolver {
     }
 
 
-
-
-
-
     private void addInverseRelationship(Relationship relationship, Column column, Table sourceTable) {
         Table targetTable = tableMap.get(relationship.getTargetTable());
         if (targetTable == null) {
@@ -176,7 +173,6 @@ public class RelationshipResolver {
             logger.debug("⚠️ Inverse relationship already exists in '{}'. Skipping: {}", targetTable.getName(), inverseRelationship);
         }
     }
-
 
 
     private List<Relationship> handleForeignKeyRelationships(Table sourceTable) {
@@ -254,18 +250,13 @@ public class RelationshipResolver {
         relationship.setOnUpdate(column.getOnUpdate());
 
         if (relationshipType == Relationship.RelationshipType.MANYTOMANY) {
-            setJoinTableInfo(relationship, sourceTable, column );
+            setJoinTableInfo(relationship, sourceTable, column);
         }
         logger.info("✅ Created relationship: {}", relationship);
 
         return relationship;
     }
 
-    public List<Relationship> getRelationshipsBySourceTable(String tableName) {
-        return relationships.stream()
-                .filter(rel -> rel.getSourceTable().equals(tableName))
-                .toList();
-    }
 
 
     private void setJoinTableInfo(Relationship relationship, Table sourceTable, Column column) {
@@ -337,38 +328,31 @@ public class RelationshipResolver {
         return Relationship.RelationshipType.MANYTOONE;
     }
 
-    private boolean isCompositePrimaryKeyJoinTable(Table table) {
-        List<Column> primaryKeyColumns = table.getColumns().stream()
-                .filter(Column::isPrimaryKey)
-                .toList();
-
-        List<Column> foreignKeyColumns = table.getColumns().stream()
-                .filter(Column::isForeignKey)
-                .toList();
-
-        if (primaryKeyColumns.size() != 2 || foreignKeyColumns.size() != 2) {
-            return false;
-        }
-
-        Set<String> primaryKeyNames = primaryKeyColumns.stream()
-                .map(Column::getName)
-                .collect(Collectors.toSet());
-
-        Set<String> foreignKeyNames = foreignKeyColumns.stream()
-                .map(Column::getName)
-                .collect(Collectors.toSet());
-
-        return primaryKeyNames.equals(foreignKeyNames);
-    }
 
 
 
-    /**
-     * Ελέγχει αν ένας πίνακας είναι join table (δηλαδή έχει δύο foreign keys).
-     */
     private boolean isJoinTable(Table table) {
-        return table.getColumns().stream().filter(Column::isForeignKey).count() == 2;
+        List<Column> columns = table.getColumns();
+
+        long fkCount = columns.stream().filter(Column::isForeignKey).count();
+        long pkCount = columns.stream().filter(Column::isPrimaryKey).count();
+
+        boolean allPKsAreFKs = columns.stream()
+                .filter(Column::isPrimaryKey)
+                .allMatch(Column::isForeignKey);
+
+        boolean hasExtraNonKeyColumn = columns.stream()
+                .anyMatch(c -> !c.isForeignKey() && !c.isPrimaryKey());
+
+        logger.debug("🔍 Checking if '{}' is join table. FK Count: {}, PK Count: {}, All PKs are FKs: {}, Has Extra Column: {}, Columns: {}",
+                table.getName(), fkCount, pkCount, allPKsAreFKs, hasExtraNonKeyColumn, columns);
+
+        // Join Table θεωρείται ΜΟΝΟ αν έχει 2 FK, 2 PK και ΚΑΜΙΑ extra non-key column, και τα PK είναι FK
+        return fkCount == 2 && pkCount == 2 && allPKsAreFKs && !hasExtraNonKeyColumn;
     }
+
+
+
 
     /**
      * Ελέγχει αν υπάρχει σχέση `OneToMany` μετρώντας αναφορές στον πίνακα προορισμού.
@@ -409,12 +393,23 @@ public class RelationshipResolver {
     /**
      * Βρίσκει τη στήλη-στόχο στον πίνακα προορισμού.
      */
+    /**
+     * Βρίσκει τη στήλη-στόχο στον πίνακα προορισμού.
+     */
     private Column findTargetColumn(Table targetTable, String targetColumnName) {
         if (targetTable == null || targetColumnName == null || targetColumnName.isBlank()) {
             logger.warn("⚠️ Invalid target column lookup. Table: '{}', Column: '{}'",
                     targetTable != null ? targetTable.getName() : "null", targetColumnName);
             return null;
         }
+
+        // Προσθήκη print για τις στήλες του πίνακα-στόχου
+        logger.info("🔍 Checking columns in table '{}'. Looking for '{}'. Available columns: {}",
+                targetTable.getName(), targetColumnName,
+                targetTable.getColumns().stream()
+                        .map(Column::getName)
+                        .toList()
+        );
 
         Column targetColumn = targetTable.getColumns().stream()
                 .filter(col -> col.getName().equalsIgnoreCase(targetColumnName))
@@ -433,16 +428,30 @@ public class RelationshipResolver {
     public void resolveRelationshipsForAllTables() {
         logger.info("🔍 Starting to resolve relationships for all {} tables...", tableMap.size());
 
-        int relationshipsCount = 0;
-
         for (Table table : tableMap.values()) {
             logger.info("📋 Resolving relationships for table: {}", table.getName());
+
+            for (Column column : table.getColumns()) {
+                logger.info("🔎 Column: {} | Type: {} | PK: {} | FK: {} | RefTable: {} | RefColumn: {}",
+                        column.getName(),
+                        column.getSqlType(),
+                        column.isPrimaryKey(),
+                        column.isForeignKey(),
+                        column.getReferencedTable(),
+                        column.getReferencedColumn());
+            }
+
             List<Relationship> localRelationships = resolveRelationships(table);
-            relationshipsCount += localRelationships.size();
+
+            for (Relationship relationship : localRelationships) {
+                logger.info("🔗 Relationship created: {} -> {} | Type: {}",
+                        relationship.getSourceTable(),
+                        relationship.getTargetTable(),
+                        relationship.getRelationshipType());
+            }
         }
 
-        logger.info("✅ All relationships have been resolved. Total relationships created: {}", relationshipsCount);
+        logger.info("✅ Relationships resolved for all tables.");
     }
-
 
 }
