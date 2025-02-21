@@ -78,3 +78,5 @@
 1739351677102:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
 1739576677339:mvn generate-sources
 1739576699265:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1739951426117:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false\\
+1739951921240:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false

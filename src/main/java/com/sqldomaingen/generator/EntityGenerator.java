@@ -136,19 +136,33 @@ public class EntityGenerator {
             }
         }
 
-        // Προσθήκη μόνο των inverse relationships από το ίδιο το table
+        // Inverse Side Relationships
         for (Relationship relationship : table.getRelationships()) {
             if ((relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY ||
                     relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) &&
                     relationship.getMappedBy() != null) {
 
-                logger.debug("🔄 Adding inverse relationship field for table '{}', target '{}', type: {}, mappedBy: '{}'",
+                logger.debug("🔄 Adding inverse relationship field for table '{}', target '{}', type: {}, mappedBy: '{}' ",
                         relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy());
 
                 addInverseRelationshipField(builder, relationship);
             }
         }
+
+        // Parent Side Relationships (Join Table) - ManyToMany
+        for (Relationship relationship : table.getRelationships()) {
+            if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY
+                    && relationship.getMappedBy() == null
+                    && relationship.getJoinTableName() != null) {
+
+                logger.debug("🔵 Adding ManyToMany Parent Side field for table '{}', target '{}', joinTable '{}'",
+                        relationship.getSourceTable(), relationship.getTargetTable(), relationship.getJoinTableName());
+
+                addManyToManyParentSide(builder, relationship);
+            }
+        }
     }
+
 
     private void addPrimaryKeyAnnotations(StringBuilder builder, Column column) {
         builder.append("    @Id\n");
@@ -174,8 +188,9 @@ public class EntityGenerator {
         }
 
         Relationship relationship = relationshipOpt.get();
-        logger.debug("💬 Relationship details -> Source: {}, Target: {}, Type: {}, MappedBy: {}",
-                relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy());
+        logger.debug("💬 Relationship details -> Source: {}, Target: {}, Type: {}, MappedBy: {}, JoinTable: {}",
+                relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(),
+                relationship.getMappedBy(), relationship.getJoinTableName());
 
         String targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
         String fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
@@ -199,7 +214,8 @@ public class EntityGenerator {
                     builder.append(")\n");
                 }
 
-                builder.append("    private ").append(targetEntity).append(" ").append(NamingConverter.toCamelCase(column.getName().replaceAll("_id$", ""))).append(";\n\n");
+                builder.append("    private ").append(targetEntity).append(" ")
+                        .append(NamingConverter.toCamelCase(column.getName().replaceAll("_id$", ""))).append(";\n\n");
             }
             case MANYTOONE -> {
                 builder.append("    @ManyToOne(fetch = FetchType.LAZY)\n");
@@ -208,46 +224,57 @@ public class EntityGenerator {
                 addOnDeleteAndOnUpdate(builder, relationship);
                 builder.append(")\n");
 
-                builder.append("    private ").append(targetEntity).append(" ").append(NamingConverter.toCamelCase(column.getName().replaceAll("_id$", ""))).append(";\n\n");
+                builder.append("    private ").append(targetEntity).append(" ")
+                        .append(NamingConverter.toCamelCase(column.getName().replaceAll("_id$", ""))).append(";\n\n");
             }
             case MANYTOMANY -> {
-                if (relationship.getMappedBy() != null) {
-                    builder.append("    @ManyToMany(mappedBy = \"")
-                            .append(relationship.getMappedBy())
-                            .append("\", fetch = FetchType.LAZY)\n");
-                } else {
+                // Εδώ είναι Parent Side ΜΟΝΟ αν έχει JoinTable!
+                if (relationship.getJoinTableName() != null) {
                     builder.append("    @ManyToMany(fetch = FetchType.LAZY)\n");
-                    if (relationship.getJoinTableName() != null && relationship.getSourceColumn() != null && relationship.getInverseJoinColumn() != null) {
-                        builder.append("    @JoinTable(\n")
-                                .append("        name = \"").append(relationship.getJoinTableName()).append("\",\n")
-                                .append("        joinColumns = @JoinColumn(name = \"").append(relationship.getSourceColumn()).append("\"),\n")
-                                .append("        inverseJoinColumns = @JoinColumn(name = \"").append(relationship.getInverseJoinColumn()).append("\")\n")
-                                .append("    )\n");
-                    } else {
-                        logger.warn("⚠️ Missing JoinTable or JoinColumn details for ManyToMany relationship in table: {}", table.getName());
-                    }
+                    builder.append("    @JoinTable(\n")
+                            .append("        name = \"").append(relationship.getJoinTableName()).append("\",\n")
+                            .append("        joinColumns = @JoinColumn(name = \"").append(relationship.getSourceColumn()).append("\"),\n")
+                            .append("        inverseJoinColumns = @JoinColumn(name = \"").append(relationship.getInverseJoinColumn()).append("\")\n")
+                            .append("    )\n");
+                    builder.append("    private List<").append(targetEntity).append("> ").append(fieldName).append(" = new ArrayList<>();\n\n");
                 }
-
-                builder.append("    private List<").append(targetEntity).append("> ").append(fieldName).append(" = new ArrayList<>();\n\n");
             }
 
             default -> logger.warn("⚠️ Relationship type {} is not handled here for column: {}", relationship.getRelationshipType(), column.getName());
         }
     }
 
+    public void addManyToManyParentSide(StringBuilder builder, Relationship relationship) {
+        String targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
+        String fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
 
-
+        builder.append("    @ManyToMany(fetch = FetchType.LAZY)\n")
+                .append("    @JoinTable(\n")
+                .append("        name = \"").append(relationship.getJoinTableName()).append("\",\n")
+                .append("        joinColumns = @JoinColumn(name = \"").append(relationship.getSourceColumn()).append("\"),\n")
+                .append("        inverseJoinColumns = @JoinColumn(name = \"").append(relationship.getInverseJoinColumn()).append("\")\n")
+                .append("    )\n")
+                .append("    private List<").append(targetEntity).append("> ").append(fieldName).append(" = new ArrayList<>();\n\n");
+    }
 
 
 
     // Child side Table
     public void addInverseRelationshipField(StringBuilder builder, Relationship relationship) {
         String sourceEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
-        String fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
+        String fieldName;
 
-        logger.debug("🔄 Creating inverse relationship field for table '{}' -> '{}', type: {}, mappedBy: '{}'",
-                relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy());
-        logger.debug("🎯 Source entity: {}, Field name: {}", sourceEntity, fieldName);
+        if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) {
+            // Για ManyToMany παίρνουμε το MappedBy, αν δεν υπάρχει φτιάχνουμε plural το Target
+            fieldName = relationship.getMappedBy() != null
+                    ? relationship.getMappedBy()
+                    : NamingConverter.toCamelCasePlural(relationship.getTargetTable());
+        } else {
+            fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
+        }
+
+        logger.debug("🔄 Creating inverse relationship field for table '{}' -> '{}', type: {}, mappedBy: '{}' FieldName: '{}'",
+                relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy(), fieldName);
 
         switch (relationship.getRelationshipType()) {
             case ONETOMANY -> {
@@ -266,8 +293,6 @@ public class EntityGenerator {
             default -> logger.warn("⚠️ Relationship type {} is not handled here for inverse relationships.", relationship.getRelationshipType());
         }
     }
-
-
 
 
     private void addOnDeleteAndOnUpdate(StringBuilder builder, Relationship relationship) {

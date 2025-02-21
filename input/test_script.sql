@@ -1,11 +1,21 @@
-CREATE TABLE customer (
+CREATE TABLE professor (
     id SERIAL PRIMARY KEY,
-    c_name VARCHAR(100)
+    p_name VARCHAR(100)
 );
 
-CREATE TABLE orders (
+CREATE TABLE course (
     id SERIAL PRIMARY KEY,
-    customer_id INTEGER,
-    description VARCHAR(255),
-    FOREIGN KEY (customer_id) REFERENCES customer (id)
+    title VARCHAR(100),
+    professor_id INT REFERENCES professor(id)
+);
+
+CREATE TABLE student (
+    id SERIAL PRIMARY KEY,
+    s_name VARCHAR(100)
+);
+
+CREATE TABLE enrollment (
+    id SERIAL PRIMARY KEY,
+    student_id INT REFERENCES student(id),
+    course_id INT REFERENCES course(id)
 );

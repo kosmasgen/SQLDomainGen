@@ -212,17 +212,17 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
         column.setCheckConstraint(this.checkConstraint);
         column.setOnDelete(this.onDelete);
         column.setOnUpdate(this.onUpdate);
-        column.setMappedBy(this.mappedBy);  // ✅ Προσθήκη του mappedBy
+        column.setMappedBy(this.mappedBy);
 
         if (this.foreignKey) {
             column.setForeignKey(true);
             column.setReferencedTable(this.referencedTable);
             column.setReferencedColumn(this.referencedColumn);
 
-            logger.debug("Foreign Key Check for column: {}, referencedTable={}, referencedColumn={}, mappedBy={}",
-                    this.columnName,  this.referencedTable, this.referencedColumn, this.mappedBy);
+            logger.debug("\u001B[33mForeign Key Check for column: {}, referencedTable={}, referencedColumn={}, mappedBy={}\u001B[0m",
+                    this.columnName, this.referencedTable, this.referencedColumn, this.mappedBy);
 
-            logger.info("✅ Column is Foreign Key: {} -> {}.{} (mappedBy={})",
+            logger.info("\u001B[32m✅ Column is Foreign Key: {} -> {}.{} (mappedBy={})\u001B[0m",
                     column.getName(), column.getReferencedTable(), column.getReferencedColumn(), column.getMappedBy());
         }
 
