@@ -11,7 +11,6 @@ import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.sqldomaingen.parser.ColumnDefinition;
 import com.sqldomaingen.parser.PostgreSQLParser;
 import java.util.ArrayList;
 

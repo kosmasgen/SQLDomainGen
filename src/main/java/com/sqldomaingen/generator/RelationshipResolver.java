@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
-import java.util.stream.Collectors;
+
 
 import java.util.*;
 
@@ -30,7 +30,7 @@ public class RelationshipResolver {
     public List<Relationship> resolveRelationships(Table sourceTable) {
         logger.info("🔵 Resolving relationships for table: {}", sourceTable.getName());
 
-        if (isJoinTable(sourceTable)) { // <--- ΑΛΛΑΓΗ ΕΔΩ
+        if (isJoinTable(sourceTable)) {
             return handleManyToManyJoinTable(sourceTable);
         }
 
@@ -53,9 +53,6 @@ public class RelationshipResolver {
         String fk1ReferencedTablePascal = NamingConverter.toPascalCase(fk1.getReferencedTable());
         String fk2ReferencedTablePascal = NamingConverter.toPascalCase(fk2.getReferencedTable());
 
-        logger.debug("🔍 ManyToMany Processing Join Table '{}': FK1 references '{}', FK2 references '{}'",
-                sourceTable.getName(), fk1ReferencedTablePascal, fk2ReferencedTablePascal);
-
         Table table1 = tableMap.get(fk1ReferencedTablePascal);
         Table table2 = tableMap.get(fk2ReferencedTablePascal);
 
@@ -67,35 +64,11 @@ public class RelationshipResolver {
             return Collections.emptyList();
         }
 
-        // MANYTOONE relationships στο ίδιο το join table
-        Relationship manyToOne1 = new Relationship(
-                fk1.getName(),
-                fk1.getReferencedColumn(),
-                sourceTable.getName(),
-                fk1ReferencedTablePascal,
-                null, null,
-                null, null, null,
-                Relationship.RelationshipType.MANYTOONE
-        );
+        // 🚨 Αφαιρούμε τυχόν προηγούμενες σχέσεις ManyToOne που μπορεί να υπήρχαν
+        sourceTable.getRelationships().removeIf(r -> r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE);
 
-        Relationship manyToOne2 = new Relationship(
-                fk2.getName(),
-                fk2.getReferencedColumn(),
-                sourceTable.getName(),
-                fk2ReferencedTablePascal,
-                null, null,
-                null, null, null,
-                Relationship.RelationshipType.MANYTOONE
-        );
-
-        sourceTable.addRelationship(manyToOne1);
-        sourceTable.addRelationship(manyToOne2);
-
-        addInverseRelationship(manyToOne1, fk1, sourceTable);
-        addInverseRelationship(manyToOne2, fk2, sourceTable);
-
-        // MANYTOMANY relationships στις συνδεδεμένες οντότητες
-        Relationship manyToMany1 = new Relationship(
+        // ✅ Δημιουργούμε ΜΟΝΟ **μια** ManyToMany σχέση
+        Relationship manyToMany = new Relationship(
                 fk1.getReferencedColumn(),
                 fk2.getReferencedColumn(),
                 fk1ReferencedTablePascal,
@@ -107,50 +80,23 @@ public class RelationshipResolver {
                 Relationship.RelationshipType.MANYTOMANY
         );
 
-        Relationship manyToMany2 = new Relationship(
-                fk2.getReferencedColumn(),
-                fk1.getReferencedColumn(),
-                fk2ReferencedTablePascal,
-                fk1ReferencedTablePascal,
-                null, null,
-                null, // Inverse side δεν έχει JoinTable
-                null,
-                NamingConverter.toCamelCasePlural(fk1ReferencedTablePascal),
-                Relationship.RelationshipType.MANYTOMANY
-        );
+        // Owning Side -> JoinTable
+        manyToMany.setJoinTableName(sourceTable.getName());
+        manyToMany.setSourceColumn(fk1.getName());
+        manyToMany.setInverseJoinColumn(fk2.getName());
 
-        // Owning Side (table1) -> JoinTable
-        manyToMany1.setJoinTableName(sourceTable.getName());
-        manyToMany1.setSourceColumn(fk1.getName());
-        manyToMany1.setInverseJoinColumn(fk2.getName());
-
-        // Inverse Side (table2) -> mappedBy
-        manyToMany2.setMappedBy(NamingConverter.toCamelCasePlural(table1.getName()));
-
-
-        // Προσθήκη σχέσεων στα αντίστοιχα tables
-        table1.addRelationship(manyToMany1);
-        table2.addRelationship(manyToMany2);
+        table1.addRelationship(manyToMany);
 
         logger.info("🔄 ManyToMany relationship added: {} -> {} via {}",
                 table1.getName(), table2.getName(), sourceTable.getName());
-        logger.info("🔄 ManyToMany relationship added: {} -> {} via {}",
-                table2.getName(), table1.getName(), sourceTable.getName());
 
-        // Ενημερώνουμε το RelationshipResolver
-        this.relationships.add(manyToOne1);
-        this.relationships.add(manyToOne2);
-        this.relationships.add(manyToMany1);
-        this.relationships.add(manyToMany2);
+        // ✅ Προσθέτουμε **ΜΟΝΟ μία** σχέση ManyToMany
+        this.relationships.add(manyToMany);
 
-        logger.info("✅ ManyToMany and ManyToOne relationships created for join table '{}'", sourceTable.getName());
+        logger.info("✅ ManyToMany relationship created for join table '{}'", sourceTable.getName());
 
-        return List.of(manyToOne1, manyToOne2, manyToMany1, manyToMany2);
+        return List.of(manyToMany);
     }
-
-
-
-
 
 
     private void addInverseRelationship(Relationship relationship, Column column, Table sourceTable) {
@@ -193,6 +139,10 @@ public class RelationshipResolver {
             logger.debug("⚠️ Inverse relationship already exists in '{}'. Skipping: {}", targetTable.getName(), inverseRelationship);
         }
     }
+
+
+
+
 
 
     private List<Relationship> handleForeignKeyRelationships(Table sourceTable) {
@@ -354,14 +304,14 @@ public class RelationshipResolver {
 
         long fkCount = columns.stream().filter(Column::isForeignKey).count();
         long pkCount = columns.stream().filter(Column::isPrimaryKey).count();
-
         long nonPkFkColumns = columns.stream()
                 .filter(c -> !c.isPrimaryKey() && !c.isForeignKey())
                 .count();
 
-        boolean isJoinTable = fkCount >= 2 && nonPkFkColumns <= 1;
+        // Ένα Join Table πρέπει να έχει τουλάχιστον 2 FK ή 1 FK + extra columns
+        boolean isJoinTable = fkCount >= 2 || (fkCount >= 1 && nonPkFkColumns > 0);
 
-        logger.debug("🔍 Checking if '{}' is join table. FK Count: {}, PK Count: {}, Non-PK/FK Columns: {}, Is Join Table: {}",
+        logger.debug("🔍 Checking if '{}' is join table. FK Count: {}, PK Count: {}, Extra Columns: {}, Is Join Table: {}",
                 table.getName(), fkCount, pkCount, nonPkFkColumns, isJoinTable);
 
         return isJoinTable;
@@ -382,10 +332,23 @@ public class RelationshipResolver {
      * Επιστρέφει `true` αν ο πίνακας-στόχος έχει μόνο μία αναφορά.
      */
     private boolean hasSingleReference(Table sourceTable, Table targetTable) {
-        return sourceTable.getColumns().stream()
+        logger.debug("🔍 Entering hasSingleReference: Checking '{}' -> '{}'", sourceTable.getName(), targetTable.getName());
+
+        long referenceCount = sourceTable.getColumns().stream()
                 .filter(col -> col.getReferencedTable() != null && col.getReferencedTable().equalsIgnoreCase(targetTable.getName()))
-                .count() == 1;
+                .count();
+
+        logger.debug("📌 Found {} references from '{}' to '{}'", referenceCount, sourceTable.getName(), targetTable.getName());
+
+        boolean result = referenceCount == 1;
+        logger.info("🔍 Checking if '{}' has a single reference to '{}'. Found {} references. Result: {}",
+                sourceTable.getName(), targetTable.getName(), referenceCount, result);
+
+        return result;
     }
+
+
+
 
     /**
      * Βρίσκει τον πίνακα-στόχο.
@@ -402,8 +365,6 @@ public class RelationshipResolver {
         }
         return targetTable;
     }
-
-
 
     /**
      * Βρίσκει τη στήλη-στόχο στον πίνακα προορισμού.
@@ -478,7 +439,10 @@ public class RelationshipResolver {
         logger.info("✅ Relationships resolved for all tables.");
     }
 
-
+    private boolean tableHasForeignKey(Table sourceTable, Table targetTable) {
+        return sourceTable.getColumns().stream()
+                .anyMatch(col -> col.isForeignKey() && col.getReferencedTable().equalsIgnoreCase(targetTable.getName()));
+    }
 
 
 }

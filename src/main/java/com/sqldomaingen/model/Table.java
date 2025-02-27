@@ -1,6 +1,6 @@
 package com.sqldomaingen.model;
 
-import com.sqldomaingen.parser.ColumnDefinition;
+
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;

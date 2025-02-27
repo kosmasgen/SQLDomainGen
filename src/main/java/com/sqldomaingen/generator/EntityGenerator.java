@@ -4,6 +4,7 @@ import com.sqldomaingen.model.Relationship;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.NamingConverter;
 import com.sqldomaingen.model.Column;
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -18,44 +19,50 @@ import java.util.stream.Collectors;
 
 
 @NoArgsConstructor
+@Getter
 @Component
 public class EntityGenerator {
 
     private static final Logger logger = LoggerFactory.getLogger(EntityGenerator.class);
+    private final Map<String, Table> tableMap = new HashMap<>();
+
 
     public void generate(List<Table> tables, String outputDir, String packageName, boolean overwrite, boolean useBuilder) {
         logger.info("Starting entity generation...");
 
+        // Δημιουργία του tableMap
         Map<String, Table> tablesMap = tables.stream()
                 .collect(Collectors.toMap(Table::getName, t -> t));
         logger.debug("📄 Created tablesMap with keys: {}", tablesMap.keySet());
 
+        // Ανάλυση των σχέσεων
         RelationshipResolver resolver = new RelationshipResolver(tablesMap);
         resolver.resolveRelationshipsForAllTables();
         logger.info("✅ RelationshipResolver initialized and all relationships resolved for tables: {}", tablesMap.keySet());
 
+        // Παραγωγή των entities
         for (Table table : tables) {
             logger.debug("Processing table: {}", table.getName());
 
             String entityContent = createEntityContent(table, packageName, useBuilder);
-            logger.debug("📄 Generated entity content for table '{}':\n{}", table.getName(), entityContent);
             Path outputPath = Paths.get(outputDir, NamingConverter.toPascalCase(table.getName()) + ".java");
-            String fileName = outputPath.toString();
-            logger.debug("📂 Output path for table '{}': {}", table.getName(), fileName);
 
             if (!overwrite && outputPath.toFile().exists()) {
-                logger.warn("File already exists, skipping: {}", fileName);
+                logger.warn("File already exists, skipping: {}", outputPath);
                 continue;
             }
+
             try {
-                writeToFile(fileName, entityContent);
+                writeToFile(outputPath.toString(), entityContent);
                 logger.info("Generated entity for table: {}", table.getName());
             } catch (IOException e) {
                 logger.error("Failed to write entity file for table: {}", table.getName(), e);
             }
         }
-        logger.info("Entity generation complete. Output directory: {}", outputDir);
+        logger.info("✅ Entity generation complete. Output directory: {}", outputDir);
+
     }
+
 
 
 
@@ -106,8 +113,6 @@ public class EntityGenerator {
 
         builder.append("\n");
     }
-
-
 
 
     public void generateClassAnnotations(StringBuilder builder, Table table, boolean useBuilder) {
