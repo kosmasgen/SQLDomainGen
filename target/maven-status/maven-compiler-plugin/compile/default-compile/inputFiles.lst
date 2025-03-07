@@ -16,7 +16,9 @@ C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\generato
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\model\Entity.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\generator\MapperGenerator.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\model\Field.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\generator\ServiceGenerator.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\target\generated-sources\antlr4\com\sqldomaingen\parser\PostgreSQLLexer.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\parser\SQLParser.java
+C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\generator\ControllerGenerator.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\src\main\java\com\sqldomaingen\generator\RelationshipResolver.java
 C:\Users\kosma\IdeaProjects\SQLDomainGen\target\generated-sources\antlr4\com\sqldomaingen\parser\PostgreSQLListener.java

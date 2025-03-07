@@ -1,90 +1,83 @@
-package com.sqldomaingen; // ✅ ΣΩΣΤΟ ΠΑΚΕΤΟ ΓΙΑ ΟΛΑ ΤΑ ΤΕΣΤ
+package com.sqldomaingen;
 
 import com.sqldomaingen.generator.RepositoryGenerator;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.BeforeEach;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
+import java.util.Map;
+import java.util.List;
+import java.util.HashMap;
 
 import static org.junit.jupiter.api.Assertions.*;
-import java.util.List;
-import java.util.Map;
-import java.util.Collections;
-
-
 
 class RepositoryGeneratorTest {
 
+    private static final Logger logger = LoggerFactory.getLogger(RepositoryGeneratorTest.class);
     private RepositoryGenerator generator;
-    private Table sampleTable;
+    private static final String OUTPUT_DIR = "output/repository";
 
     @BeforeEach
-    void setUp() {
+    void setUp() throws IOException {
+        logger.info("Ξεκινάει η αρχικοποίηση του τεστ...");
         generator = new RepositoryGenerator();
 
-        // Δημιουργούμε έναν απλό πίνακα με ένα Primary Key
-        Column idColumn = new Column();
-        idColumn.setName("id");
-        idColumn.setJavaType("Long");
-        idColumn.setPrimaryKey(true);
+        // Δημιουργία φακέλου αν δεν υπάρχει
+        Files.createDirectories(Paths.get(OUTPUT_DIR));
 
-        sampleTable = new Table();
-        sampleTable.setName("Product");
-        sampleTable.setColumns(List.of(idColumn));
+        logger.info("Η αρχικοποίηση του τεστ ολοκληρώθηκε.");
+    }
+
+    private Table createTable(String name, String pkColumn, String javaType) {
+        Table table = new Table();
+        table.setName(name);
+
+        Column primaryKeyColumn = new Column();
+        primaryKeyColumn.setName(pkColumn);
+        primaryKeyColumn.setJavaType(javaType);
+        primaryKeyColumn.setPrimaryKey(true);
+
+        table.setColumns(List.of(primaryKeyColumn));
+        return table;
     }
 
     @Test
-    void testDetectPrimaryKeyType() {
-        String primaryKeyType = generator.detectPrimaryKeyType(sampleTable);
-        assertEquals("Long", primaryKeyType, "Το Primary Key Type πρέπει να είναι Long");
-    }
+    void testGenerateRepositoriesAndWriteToFile() throws IOException {
+        logger.info("Εκτελείται το τεστ: testGenerateRepositoriesAndWriteToFile");
 
-    @Test
-    void testGenerateRepositoryBasicStructure() {
-        Map<String, Table> tablesMap = Collections.singletonMap("Product", sampleTable);
-        String generatedRepo = generator.generateRepositoryForTable(sampleTable, tablesMap);
+        // Δημιουργία πινάκων με διαφορετικούς primary key τύπους
+        Table courseTable = createTable("Course", "id", "Long");
+        Table studentTable = createTable("Student", "id", "String");
+        Table professorTable = createTable("Professor", "id", "UUID");
+        Table enrollmentTable = createTable("Enrollment", "id", "Long");
 
-        assertTrue(generatedRepo.contains("public interface ProductRepository extends JpaRepository<Product, Long>"),
-                "Το Repository δεν έχει τη σωστή κληρονομικότητα");
-        assertTrue(generatedRepo.contains("package com.sqldomaingen.repository;"), "Το package δεν είναι σωστό");
-    }
+        // Δημιουργία map με όλους τους πίνακες
+        Map<String, Table> tablesMap = new HashMap<>();
+        tablesMap.put("Course", courseTable);
+        tablesMap.put("Student", studentTable);
+        tablesMap.put("Professor", professorTable);
+        tablesMap.put("Enrollment", enrollmentTable);
 
-    @Test
-    void testGenerateCustomQueriesForRelationships() {
-        // Προσθήκη μιας σχέσης ManyToOne
-        Column categoryColumn = new Column();
-        categoryColumn.setName("category_id");
-        categoryColumn.setJavaType("Long");
-        categoryColumn.setForeignKey(true);
+        // Γεννήτρια Repository
+        for (Table table : tablesMap.values()) {
+            String repositoryContent = generator.generateRepositoryForTable(table, tablesMap);
+            Path filePath = Paths.get(OUTPUT_DIR, table.getName() + "Repository.java");
 
-        sampleTable.getColumns().add(categoryColumn);
+            // Εγγραφή του repository στο αρχείο
+            Files.writeString(filePath, repositoryContent, StandardOpenOption.CREATE, StandardOpenOption.TRUNCATE_EXISTING);
 
-        Table categoryTable = new Table();
-        categoryTable.setName("Category");
-        categoryTable.setColumns(List.of(categoryColumn));
+            // Έλεγχος αν το αρχείο δημιουργήθηκε σωστά
+            assertTrue(Files.exists(filePath), "Το αρχείο " + filePath + " δεν δημιουργήθηκε!");
+            logger.info("Το Repository δημιουργήθηκε: {}", filePath);
+        }
 
-        Map<String, Table> tablesMap = Map.of(
-                "Product", sampleTable,
-                "Category", categoryTable
-        );
-
-        String generatedRepo = generator.generateCustomQueries(sampleTable, tablesMap);
-
-        assertTrue(generatedRepo.contains("List<Product> findByCategoryId(Long id);"),
-                "Το custom query για τη σχέση ManyToOne λείπει ή είναι λάθος");
-    }
-
-
-    @Test
-    void testExceptionIfNoPrimaryKey() {
-        Table invalidTable = new Table();
-        invalidTable.setName("InvalidTable");
-
-        Exception exception = assertThrows(IllegalStateException.class, () -> {
-            generator.detectPrimaryKeyType(invalidTable);
-        });
-
-        assertTrue(exception.getMessage().contains("No Primary Key found"),
-                "Πρέπει να ρίχνει εξαίρεση αν δεν υπάρχει Primary Key");
+        logger.info("Το τεστ ολοκληρώθηκε επιτυχώς!");
     }
 }

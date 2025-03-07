@@ -1,1 +1,3 @@
+com\sqldomaingen\ServiceGeneratorTest.class
+com\sqldomaingen\ControllerGeneratorTest.class
 com\sqldomaingen\RepositoryGeneratorTest.class

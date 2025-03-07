@@ -88,16 +88,6 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 */
 	void exitDataType(PostgreSQLParser.DataTypeContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link PostgreSQLParser#constraint}.
-	 * @param ctx the parse tree
-	 */
-	void enterConstraint(PostgreSQLParser.ConstraintContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PostgreSQLParser#constraint}.
-	 * @param ctx the parse tree
-	 */
-	void exitConstraint(PostgreSQLParser.ConstraintContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#onDeleteAction}.
 	 * @param ctx the parse tree
 	 */
@@ -117,6 +107,16 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitOnUpdateAction(PostgreSQLParser.OnUpdateActionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#constraint}.
+	 * @param ctx the parse tree
+	 */
+	void enterConstraint(PostgreSQLParser.ConstraintContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#constraint}.
+	 * @param ctx the parse tree
+	 */
+	void exitConstraint(PostgreSQLParser.ConstraintContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#tableConstraint}.
 	 * @param ctx the parse tree

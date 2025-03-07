@@ -84,8 +84,10 @@
     <dependency>
       <groupId>org.projectlombok</groupId>
       <artifactId>lombok</artifactId>
+      <version>1.18.30</version>  <!-- Βεβαιώσου ότι έχεις την τελευταία έκδοση -->
       <scope>provided</scope>
     </dependency>
+
 
     <!-- ANTLR4 Runtime -->
     <dependency>
@@ -110,9 +112,7 @@
     </dependency>
 
 
-
-
-      <dependency>
+    <dependency>
           <groupId>com.github.spotbugs</groupId>
           <artifactId>spotbugs-annotations</artifactId>
           <version>4.7.3</version>

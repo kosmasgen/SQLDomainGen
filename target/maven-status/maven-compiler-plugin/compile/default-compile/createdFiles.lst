@@ -20,6 +20,7 @@ com\sqldomaingen\parser\PostgreSQLParser$TableConstraintContext.class
 com\sqldomaingen\model\Relationship$RelationshipType.class
 com\sqldomaingen\parser\PostgreSQLListener.class
 com\sqldomaingen\parser\PostgreSQLParser$TypeNameContext.class
+com\sqldomaingen\generator\ServiceGenerator.class
 com\sqldomaingen\parser\PostgreSQLParser$SchemaNameContext.class
 com\sqldomaingen\parser\PostgreSQLParser$NumericLiteralContext.class
 com\sqldomaingen\parser\PostgreSQLParser$ColumnNameContext.class
@@ -82,6 +83,7 @@ com\sqldomaingen\parser\PostgreSQLParser$ExpressionListContext.class
 com\sqldomaingen\parser\PostgreSQLParser$GeneratedColumnContext.class
 com\sqldomaingen\parser\PostgreSQLParser$AlterTableStatementContext.class
 com\sqldomaingen\parser\PostgreSQLParser$CreateFunctionStatementContext.class
+com\sqldomaingen\generator\ControllerGenerator.class
 com\sqldomaingen\parser\PostgreSQLParser$TriggerStatementContext.class
 com\sqldomaingen\parser\PostgreSQLParser$CreateSchemaStatementContext.class
 com\sqldomaingen\parser\PostgreSQLParser$DecimalTypeContext.class

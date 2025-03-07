@@ -124,5 +124,13 @@ public class NamingConverter {
         return singular + "s";
     }
 
+    public static String toKebabCase(String input) {
+        if (input == null || input.isEmpty()) {
+            return input;
+        }
+        return input.replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase();
+    }
+
+
 
 }

@@ -1,5 +1,69 @@
 grammar PostgreSQL;
 
+// Ειδικοί χαρακτήρες
+LPAREN : '(';
+RPAREN : ')';
+LBRACE : '{';
+RBRACE : '}';
+SEMICOLON : ';';
+COLON : ':';
+DOUBLE_COLON : '::';
+COMMA : ',';
+DOUBLE_QUOTE : '"';
+ON : 'ON';
+DELETE : 'DELETE';
+RULE : 'RULE';
+DO : 'DO';
+AS : 'AS';
+TO : 'TO';
+INSTEAD : 'INSTEAD';
+NOTHING : 'NOTHING';
+FOR : 'FOR';
+SELECT : 'SELECT';
+USING : 'USING';
+DOLLAR_QUOTE: '$$';
+NEW : 'NEW';
+TABLE : 'TABLE';
+CREATE : 'CREATE';
+RELATIONSHIP : 'RELATIONSHIP';
+DECIMAL: 'DECIMAL';
+INT: 'INT';
+VARCHAR  : 'VARCHAR' ;
+DOT : '.';
+CONSTRAINT : 'CONSTRAINT';
+NULL : 'NULL';
+FOREIGN_KEY : 'FOREIGN KEY';
+NOT : 'NOT';
+SET : 'SET';
+REFERENCES : 'REFERENCES';
+PRIMARY_KEY : 'PRIMARY KEY';
+NOT_NULL : 'NOT NULL';
+CHECK : 'CHECK';
+ANY : 'ANY';
+LBRACKET : '[';
+RBRACKET : ']';
+ARRAY : 'ARRAY';
+DEFAULT : 'DEFAULT';
+NEXTVAL : 'nextval';
+REGCLASS : 'regclass';
+CASCADE : 'CASCADE';
+SET_NULL : 'SET NULL';
+SET_DEFAULT : 'SET DEFAULT';
+NO_ACTION : 'NO ACTION';
+RESTRICT : 'RESTRICT';
+ON_DELETE : 'ON DELETE';
+ON_UPDATE : 'ON UPDATE';
+UNIQUE : 'UNIQUE';
+EQUALS : '=';
+TEXT    : 'TEXT' ;
+INTEGER : 'INTEGER' ;
+BOOLEAN : 'BOOLEAN' ;
+
+
+
+
+
+
 // -------------------------
 // Δημιουργία Πίνακα
 // -------------------------
@@ -14,6 +78,8 @@ columnDef
     : columnName dataType (constraint)* (generatedColumn | collateClause)?
     | 'FOREIGN KEY' '(' columnNameList ')' 'REFERENCES' tableName '(' columnNameList ')' ('RELATIONSHIP' relationshipType)? (onAction)*
     ;
+
+
 
 // Υπολογιζόμενη στήλη
 generatedColumn
@@ -78,8 +144,8 @@ dataType
     | 'NUMERIC' ('(' NUMBER (',' NUMBER)? ')')?
     | decimalType
     | 'MONEY'
-    | 'CHAR' '(' NUMBER ')'
-    | 'VARCHAR' '(' NUMBER ')'
+    | 'CHAR' ('(' NUMBER ')')?
+    | 'VARCHAR' ('(' NUMBER ')')?
     | 'TEXT'
     | 'BOOLEAN'
     | 'JSON'
@@ -105,19 +171,6 @@ dataType
     | IDENTIFIER
     ;
 
-// Constraint σε στήλες
-constraint
-    : 'NOT NULL'
-    | 'NULL'
-    | 'UNIQUE' ('ON CONFLICT' conflictAction)?
-    | 'DEFAULT' value
-    | 'CHECK' '(' condition ')'
-    | 'REFERENCES' tableName '(' columnName ')' (onAction)?
-    | 'PRIMARY KEY'
-    | 'PRIMARY KEY' ('USING INDEX TABLESPACE' IDENTIFIER)?
-    | 'FOREIGN KEY' columnNameList 'REFERENCES' tableName columnNameList ('RELATIONSHIP' relationshipType)?
-    | 'EXCLUDE' 'USING' IDENTIFIER '(' excludeElementList ')' ('WHERE' condition)?
-    ;
 
 // Ενέργειες ON DELETE
 onDeleteAction
@@ -136,14 +189,31 @@ onUpdateAction
     ;
 
 // Constraints σε επίπεδο πίνακα
-tableConstraint
-    : 'PRIMARY KEY' columnNameList
-    | 'CONSTRAINT' IDENTIFIER 'FOREIGN KEY' columnNameList 'REFERENCES' tableName columnNameList (onAction)*
-    | 'FOREIGN KEY' columnNameList 'REFERENCES' tableName columnNameList ('RELATIONSHIP' relationshipType)? (onAction)*
-    | 'UNIQUE' columnNameList
+
+// In-line constraints (για μεμονωμένες στήλες)
+constraint
+    : 'NOT NULL'
+    | 'NULL'
+    | 'UNIQUE' ('ON CONFLICT' conflictAction)?
+    | 'DEFAULT' value
     | 'CHECK' '(' condition ')'
+    | 'REFERENCES' (schemaName DOT)? tableName '(' columnName ')' (onAction)?
+    | 'PRIMARY KEY'  // ✅ In-line PRIMARY KEY
+    | 'PRIMARY KEY' ('USING INDEX TABLESPACE' IDENTIFIER)?
+    | 'FOREIGN KEY' columnNameList 'REFERENCES' (schemaName DOT)? tableName columnNameList ('RELATIONSHIP' relationshipType)?
+    | 'EXCLUDE' 'USING' IDENTIFIER '(' excludeElementList ')' ('WHERE' condition)?
+    ;
+
+// Table-level constraints (για ολόκληρο τον πίνακα)
+tableConstraint
+    : 'CONSTRAINT' IDENTIFIER? 'PRIMARY KEY' columnNameList  // ✅ Table-level PRIMARY KEY
+    | 'CONSTRAINT' IDENTIFIER? 'FOREIGN KEY' columnNameList 'REFERENCES' (schemaName DOT)? tableName columnNameList (onAction)*
+    | 'CONSTRAINT' IDENTIFIER? 'UNIQUE' columnNameList
+    | 'CONSTRAINT' IDENTIFIER? 'CHECK' '(' condition ')'
     | 'EXCLUDE' 'USING' IDENTIFIER '(' excludeElementList ')'
     ;
+
+
 
 // Εξαιρέσεις για EXCLUDE constraints
 excludeElementList
@@ -311,7 +381,7 @@ limitClause
 
 // Λίστα στηλών
 columnNameList
-    : '(' columnName (',' columnName)* ')'?
+    : '(' columnName (',' columnName)*
     ;
 
 // Ξένος πίνακας
@@ -348,79 +418,6 @@ relationshipType
     | 'MANYTOMANY'
     ;
 
-// Αναγνώριση αλφαριθμητικών τιμών με υποστήριξη escapes και multiline strings
-STRING
-    : '\'' ( ~[\r\n'] | '\'\'' )* '\''
-    ;
-
-// Αναγνώριση αριθμών (π.χ. 123, 123.45, -123, 1.23e10)
-NUMBER
-    : DIGIT+                                          // Απλοί ακέραιοι αριθμοί
-    | '-'? DIGIT+ ('.' DIGIT+)? ([eE] [+-]? DIGIT+)? // Δεκαδικοί & επιστημονική σημειογραφία
-    ;
-
-DIGIT : [0-9] ;
-
-// Παραβλέπει κενά διαστήματα
-WS
-    : [ \t\r\n]+ -> skip
-    ;
-
-// Ειδικοί χαρακτήρες
-LPAREN : '(';
-RPAREN : ')';
-LBRACE : '{';
-RBRACE : '}';
-SEMICOLON : ';';
-COLON : ':';
-DOUBLE_COLON : '::';
-COMMA : ',';
-DOUBLE_QUOTE : '"';
-ON : 'ON';
-DELETE : 'DELETE';
-RULE : 'RULE';
-DO : 'DO';
-AS : 'AS';
-TO : 'TO';
-INSTEAD : 'INSTEAD';
-NOTHING : 'NOTHING';
-FOR : 'FOR';
-SELECT : 'SELECT';
-USING : 'USING';
-DOLLAR_QUOTE: '$$';
-NEW : 'NEW';
-TABLE : 'TABLE';
-CREATE : 'CREATE';
-RELATIONSHIP : 'RELATIONSHIP';
-DECIMAL: 'DECIMAL';
-INT: 'INT';
-VARCHAR: 'VARCHAR';
-DOT : '.';
-CONSTRAINT : 'CONSTRAINT';
-NULL : 'NULL';
-FOREIGN_KEY : 'FOREIGN KEY';
-NOT : 'NOT';
-SET : 'SET';
-REFERENCES : 'REFERENCES';
-PRIMARY_KEY : 'PRIMARY KEY';
-NOT_NULL : 'NOT NULL';
-CHECK : 'CHECK';
-ANY : 'ANY';
-LBRACKET : '[';
-RBRACKET : ']';
-ARRAY : 'ARRAY';
-DEFAULT : 'DEFAULT';
-NEXTVAL : 'nextval';
-REGCLASS : 'regclass';
-CASCADE : 'CASCADE';
-SET_NULL : 'SET NULL';
-SET_DEFAULT : 'SET DEFAULT';
-NO_ACTION : 'NO ACTION';
-RESTRICT : 'RESTRICT';
-ON_DELETE : 'ON DELETE';
-ON_UPDATE : 'ON UPDATE';
-UNIQUE : 'UNIQUE';
-EQUALS : '=';
 
 
 
@@ -597,4 +594,23 @@ intervalLiteral
 
 typeName
     : IDENTIFIER ('.' IDENTIFIER)?
+    ;
+
+
+// Αναγνώριση αλφαριθμητικών τιμών με υποστήριξη escapes και multiline strings
+STRING
+    : '\'' ( ~[\r\n'] | '\'\'' )* '\''
+    ;
+
+// Αναγνώριση αριθμών (π.χ. 123, 123.45, -123, 1.23e10)
+NUMBER
+    : DIGIT+                                          // Απλοί ακέραιοι αριθμοί
+    | '-'? DIGIT+ ('.' DIGIT+)? ([eE] [+-]? DIGIT+)? // Δεκαδικοί & επιστημονική σημειογραφία
+    ;
+
+DIGIT : [0-9] ;
+
+// Παραβλέπει κενά διαστήματα
+WS
+    : [ \t\r\n]+ -> skip
     ;

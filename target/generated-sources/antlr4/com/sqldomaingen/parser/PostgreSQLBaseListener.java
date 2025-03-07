@@ -113,18 +113,6 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterConstraint(PostgreSQLParser.ConstraintContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitConstraint(PostgreSQLParser.ConstraintContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterOnDeleteAction(PostgreSQLParser.OnDeleteActionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -144,6 +132,18 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitOnUpdateAction(PostgreSQLParser.OnUpdateActionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterConstraint(PostgreSQLParser.ConstraintContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitConstraint(PostgreSQLParser.ConstraintContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

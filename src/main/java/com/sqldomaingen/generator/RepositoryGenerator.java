@@ -3,7 +3,8 @@ package com.sqldomaingen.generator;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.NamingConverter;
-
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 public class RepositoryGenerator {
-
+    private static final Logger logger = LoggerFactory.getLogger(RepositoryGenerator.class);
     private static final String OUTPUT_PATH = "output/repositories";
 
     public void generateRepositories(List<Table> tables) {
@@ -28,6 +29,7 @@ public class RepositoryGenerator {
             writeRepositoryToFile(repositoryCode, table.getName());
         }
     }
+
 
     public String generateRepositoryForTable(Table table, Map<String, Table> tablesMap) {
         String tableName = NamingConverter.toPascalCase(table.getName());
@@ -48,7 +50,8 @@ public class RepositoryGenerator {
         return sb.toString();
     }
 
-    public String detectPrimaryKeyType(Table table) {
+
+    public static String detectPrimaryKeyType(Table table) {
         return table.getColumns().stream()
                 .filter(Column::isPrimaryKey)
                 .findFirst()
@@ -56,9 +59,11 @@ public class RepositoryGenerator {
                 .orElseThrow(() -> new IllegalStateException("❌ No Primary Key found for table: " + table.getName()));
     }
 
+
     public boolean hasRelationships(Table table) {
         return table.getRelationships() != null && !table.getRelationships().isEmpty();
     }
+
 
     public String generateCustomQueries(Table table, Map<String, Table> tablesMap) {
         StringBuilder sb = new StringBuilder();
@@ -75,15 +80,10 @@ public class RepositoryGenerator {
                 throw new IllegalStateException("❌ Related table not found: " + relationship.getTargetTable());
             }
 
-            String relatedPrimaryKeyType = relatedTable.getColumns().stream()
-                    .filter(Column::isPrimaryKey)
-                    .findFirst()
-                    .map(Column::getJavaType)
-                    .orElseThrow(() -> new IllegalStateException(
-                            "❌ No Primary Key found for related table: " + relatedEntity));
+            // 🔥 Χρήση της static μεθόδου detectPrimaryKeyType()
+            String relatedPrimaryKeyType = RepositoryGenerator.detectPrimaryKeyType(relatedTable);
 
             sb.append("    List<").append(NamingConverter.toPascalCase(table.getName())).append("> findBy")
-
                     .append(relatedEntity).append("Id(")
                     .append(relatedPrimaryKeyType).append(" id);\n");
         });
@@ -91,24 +91,30 @@ public class RepositoryGenerator {
         return sb.toString();
     }
 
+
     private void writeRepositoryToFile(String repositoryCode, String entityName) {
         Path filePath = Paths.get(OUTPUT_PATH, entityName + "Repository.java");
         try {
             Files.write(filePath, repositoryCode.getBytes());
-            System.out.println("✅ Repository generated: " + filePath);
+            logger.info("✅ Repository generated successfully: {}", filePath);
         } catch (IOException e) {
-            System.err.println("❌ Failed to write repository file: " + filePath);
+            logger.error("❌ Failed to write repository file: {}", filePath, e);
         }
     }
+
+
 
     private void ensureOutputDirectory() {
         Path path = Paths.get(OUTPUT_PATH);
         if (!Files.exists(path)) {
             try {
                 Files.createDirectories(path);
+                logger.info("✅ Output directory created: {}", path);
             } catch (IOException e) {
-                System.err.println("❌ Failed to create output directory: " + OUTPUT_PATH);
+                logger.error("❌ Failed to create output directory: {}", OUTPUT_PATH, e);
             }
+        } else {
+            logger.info("ℹ️ Output directory already exists: {}", path);
         }
     }
 }
