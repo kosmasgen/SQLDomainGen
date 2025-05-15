@@ -41,6 +41,7 @@ public class Table {
      *
      * @param column το αντικείμενο Column που θα προστεθεί.
      */
+    // // // //
     public void addColumn(Column column) {
         if (column != null) {
             this.columns.add(column);

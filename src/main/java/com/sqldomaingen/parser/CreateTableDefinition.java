@@ -26,15 +26,27 @@ public class CreateTableDefinition {
     private List<String> constraints = new ArrayList<>();
 
     public Table processCreateTable(PostgreSQLParser.CreateTableStatementContext ctx) {
+        logger.info("🔍 FULL PARSE TREE: \n{}", ctx.toStringTree());
         logger.info("➡️ processCreateTable() - START | Context: {}", ctx);
 
-        // Extract table name
+
+
         this.tableName = extractTableName(ctx);
         logger.info("Extracted table name: {}", this.tableName);
 
         logger.info("🛠 BEFORE extractColumnDefinitions: columnDefinitions = {}", this.columnDefinitions);
         this.columnDefinitions = extractColumnDefinitions(ctx);
         logger.info("🛠 AFTER extractColumnDefinitions: columnDefinitions = {} | Size: {}", this.columnDefinitions, this.columnDefinitions.size());
+
+        // 🔑 Νέα μέθοδος που ανιχνεύει το PRIMARY KEY!
+        if (ctx.tableConstraint() != null) {
+            for (PostgreSQLParser.TableConstraintContext constraintCtx : ctx.tableConstraint()) {
+                extractPrimaryKeyConstraint(constraintCtx); // Τώρα δίνουμε το σωστό context
+            }
+        }
+
+        extractForeignKeyConstraints(ctx);
+
 
         Table table = toTable();
         logger.info("⬅️ processCreateTable() - END | Generated Table: {}", table.getName());
@@ -49,8 +61,15 @@ public class CreateTableDefinition {
 
         this.tableName = ctx.tableName().get(0).getText();
         logger.info("Extracted raw table name: {}", tableName);
+
+        // ✅ Αφαίρεση του schema αν υπάρχει
+        if (tableName.contains(".")) {
+            tableName = tableName.substring(tableName.indexOf(".") + 1);
+        }
+
         return NamingConverter.toPascalCase(tableName);
     }
+
 
     public List<ColumnDefinition> extractColumnDefinitions(PostgreSQLParser.CreateTableStatementContext ctx) {
         logger.info("➡️ extractColumnDefinitions() - START | Context: {}", ctx);
@@ -77,6 +96,77 @@ public class CreateTableDefinition {
         return extractedColumns;
     }
 
+    private void extractPrimaryKeyConstraint(PostgreSQLParser.TableConstraintContext ctx) {
+        logger.info("🔍 extractPrimaryKeyConstraint() - START");
+
+        if (ctx.PRIMARY_KEY() != null) {
+            logger.debug("🔑 PRIMARY KEY constraint found.");
+
+            if (ctx.columnNameList() != null && !ctx.columnNameList().isEmpty()) {
+                String primaryKeyColumns = ctx.columnNameList().get(0).getText(); // Παίρνουμε το πρώτο στοιχείο
+// Παίρνουμε όλα τα ονόματα ως string
+                for (String primaryKeyColumn : primaryKeyColumns.replace("(", "").replace(")", "").split(",")) {
+                    primaryKeyColumn = primaryKeyColumn.replace("\"", "").trim();
+
+                    boolean found = false;
+                    for (ColumnDefinition column : columnDefinitions) {
+                        if (column.getColumnName().equalsIgnoreCase(primaryKeyColumn)) {
+                            column.setPrimaryKey(true);
+                            column.setNullable(false);
+                            found = true;
+                            logger.info("✅ PRIMARY KEY applied to column: {}", column.getColumnName());
+                            break;
+                        }
+                    }
+
+                    if (!found) {
+                        logger.warn("⚠️ PRIMARY KEY column '{}' not found in columnDefinitions!", primaryKeyColumn);
+                    }
+                }
+            } else {
+                logger.warn("⚠️ PRIMARY KEY constraint found but no column names detected!");
+            }
+        }
+
+        logger.info("⬅️ extractPrimaryKeyConstraint() - END");
+    }
+
+
+
+
+
+
+    public void extractForeignKeyConstraints(PostgreSQLParser.CreateTableStatementContext ctx) {
+        if (ctx.tableConstraint() != null) {
+            for (PostgreSQLParser.TableConstraintContext constraintCtx : ctx.tableConstraint()) {
+                String constraintText = constraintCtx.getText().toUpperCase();
+
+                if (constraintText.contains("FOREIGN KEY") && constraintText.contains("REFERENCES")) {
+                    int fkStart = constraintText.indexOf("(") + 1;
+                    int fkEnd = constraintText.indexOf(")");
+                    String fkColumn = constraintText.substring(fkStart, fkEnd).replaceAll("\"", "").trim();
+
+                    int refStart = constraintText.indexOf("REFERENCES") + 10;
+                    String refPart = constraintText.substring(refStart).trim();
+                    String[] refSplit = refPart.split("\\(");
+                    String referencedTable = refSplit[0].trim();
+                    String referencedColumn = refSplit[1].replace(")", "").trim();
+
+                    logger.info("🔗 Found FOREIGN KEY: {} -> {}.{}", fkColumn, referencedTable, referencedColumn);
+
+                    columnDefinitions.stream()
+                            .filter(col -> col.getColumnName().equals(fkColumn))
+                            .forEach(col -> {
+                                col.setForeignKey(true);
+                                col.setReferencedTable(referencedTable);
+                                col.setReferencedColumn(referencedColumn);
+                            });
+                }
+            }
+        }
+    }
+
+        // Σε αναμονή
     public Map<String, Table> parseAllTables(List<PostgreSQLParser.CreateTableStatementContext> createTableStatements) {
         logger.info("➡️ parseAllTables() - START");
 

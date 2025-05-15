@@ -16,6 +16,7 @@ com\sqldomaingen\parser\PostgreSQLParser$RuleEventContext.class
 com\sqldomaingen\parser\PostgreSQLParser$ActionContext.class
 com\sqldomaingen\parser\PostgreSQLParser$TriggerEventContext.class
 com\sqldomaingen\parser\PostgreSQLParser$TriggerTimingContext.class
+com\sqldomaingen\parser\PostgreSQLParser$OnUpdateClauseContext.class
 com\sqldomaingen\parser\PostgreSQLParser$TableConstraintContext.class
 com\sqldomaingen\model\Relationship$RelationshipType.class
 com\sqldomaingen\parser\PostgreSQLListener.class
@@ -33,6 +34,7 @@ com\sqldomaingen\parser\PostgreSQLParser$OrderByClauseContext.class
 com\sqldomaingen\parser\PostgreSQLLexer.class
 com\sqldomaingen\parser\PostgreSQLParser$IndexOptionsClauseContext.class
 com\sqldomaingen\parser\SQLParser.class
+com\sqldomaingen\parser\PostgreSQLParser$ColumnTypeModifierContext.class
 com\sqldomaingen\model\Relationship.class
 com\sqldomaingen\parser\PostgreSQLParser$CreateTableStatementContext.class
 com\sqldomaingen\parser\PostgreSQLParser$PartitionStrategyContext.class

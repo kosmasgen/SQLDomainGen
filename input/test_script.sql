@@ -1,9 +1,9 @@
-CREATE TABLE public.announcements_theme (
-	"type" VARCHAR(255) NOT NULL,
-	description VARCHAR(255) NOT NULL,
-	el_desc VARCHAR(255) NULL,
-	tr_desc VARCHAR(255) NULL,
-	en_desc VARCHAR(255) NULL,
-	hr_desc VARCHAR(255) NULL,
-	CONSTRAINT announcements_theme_pkey PRIMARY KEY (type)
+CREATE TABLE department (
+    department_id INT PRIMARY KEY AUTO_INCREMENT,
+    name VARCHAR(100) NOT NULL,
+    description TEXT,
+    parent_dept_id INT,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+    FOREIGN KEY (parent_dept_id) REFERENCES department(department_id)
 );

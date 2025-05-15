@@ -32,12 +32,11 @@ VARCHAR  : 'VARCHAR' ;
 DOT : '.';
 CONSTRAINT : 'CONSTRAINT';
 NULL : 'NULL';
-FOREIGN_KEY : 'FOREIGN KEY';
 NOT : 'NOT';
 SET : 'SET';
 REFERENCES : 'REFERENCES';
+AUTO_INCREMENT : 'AUTO_INCREMENT';
 PRIMARY_KEY : 'PRIMARY KEY';
-NOT_NULL : 'NOT NULL';
 CHECK : 'CHECK';
 ANY : 'ANY';
 LBRACKET : '[';
@@ -58,7 +57,8 @@ EQUALS : '=';
 TEXT    : 'TEXT' ;
 INTEGER : 'INTEGER' ;
 BOOLEAN : 'BOOLEAN' ;
-
+FOREIGN_KEY : 'FOREIGN KEY';
+NOT_NULL    : 'NOT NULL';
 
 
 
@@ -68,17 +68,20 @@ BOOLEAN : 'BOOLEAN' ;
 // Δημιουργία Πίνακα
 // -------------------------
 createTableStatement
-    : CREATE TABLE tableName '(' (columnDef | tableConstraint) (',' (columnDef | tableConstraint))* ')' (partitionClause)? SEMICOLON
+    : CREATE TABLE tableName '(' ( tableConstraint | columnDef ) (',' (tableConstraint | columnDef ))* ')' (partitionClause)? SEMICOLON
     | CREATE TABLE tableName 'PARTITION OF' tableName partitionValuesClause SEMICOLON
     ;
 
 
 // Ορισμός μιας στήλης στον πίνακα
 columnDef
-    : columnName dataType (constraint)* (generatedColumn | collateClause)?
+    : columnName dataType columnTypeModifier? (constraint)* (generatedColumn | collateClause)? onUpdateClause?
     | 'FOREIGN KEY' '(' columnNameList ')' 'REFERENCES' tableName '(' columnNameList ')' ('RELATIONSHIP' relationshipType)? (onAction)*
     ;
 
+columnTypeModifier
+    : '(' NUMBER (',' NUMBER)? ')'
+    ;
 
 
 // Υπολογιζόμενη στήλη
@@ -100,9 +103,8 @@ alterTableStatement
 alterAction
     : 'ADD' 'COLUMN' columnDef
     | 'DROP' 'COLUMN' columnName
-    | 'ADD' 'CONSTRAINT' IDENTIFIER tableConstraint
+    | 'ADD' ('CONSTRAINT' IDENTIFIER)? 'FOREIGN KEY' '(' columnNameList ')' 'REFERENCES' tableName ('(' columnNameList ')')? (onAction)*
     | 'DROP' 'CONSTRAINT' IDENTIFIER
-    | 'ADD' 'FOREIGN KEY' columnNameList 'REFERENCES' tableName columnNameList (onAction)*
     | 'ALTER' 'COLUMN' columnName alterColumnAction
     | 'RENAME COLUMN' columnName 'TO' columnName
     | 'RENAME TO' tableName
@@ -188,7 +190,11 @@ onUpdateAction
     | 'NO ACTION'
     ;
 
-// Constraints σε επίπεδο πίνακα
+onUpdateClause
+    : 'ON UPDATE' 'CURRENT_TIMESTAMP'
+    ;
+
+
 
 // In-line constraints (για μεμονωμένες στήλες)
 constraint
@@ -198,15 +204,15 @@ constraint
     | 'DEFAULT' value
     | 'CHECK' '(' condition ')'
     | 'REFERENCES' (schemaName DOT)? tableName '(' columnName ')' (onAction)?
-    | 'PRIMARY KEY'  // ✅ In-line PRIMARY KEY
-    | 'PRIMARY KEY' ('USING INDEX TABLESPACE' IDENTIFIER)?
     | 'FOREIGN KEY' columnNameList 'REFERENCES' (schemaName DOT)? tableName columnNameList ('RELATIONSHIP' relationshipType)?
     | 'EXCLUDE' 'USING' IDENTIFIER '(' excludeElementList ')' ('WHERE' condition)?
+    | 'AUTO_INCREMENT'
+    | 'PRIMARY KEY'
     ;
 
 // Table-level constraints (για ολόκληρο τον πίνακα)
 tableConstraint
-    : 'CONSTRAINT' IDENTIFIER? 'PRIMARY KEY' columnNameList  // ✅ Table-level PRIMARY KEY
+    : 'CONSTRAINT' IDENTIFIER? 'PRIMARY KEY' '(' columnNameList (',' columnName)* ')'
     | 'CONSTRAINT' IDENTIFIER? 'FOREIGN KEY' columnNameList 'REFERENCES' (schemaName DOT)? tableName columnNameList (onAction)*
     | 'CONSTRAINT' IDENTIFIER? 'UNIQUE' columnNameList
     | 'CONSTRAINT' IDENTIFIER? 'CHECK' '(' condition ')'
@@ -381,7 +387,7 @@ limitClause
 
 // Λίστα στηλών
 columnNameList
-    : '(' columnName (',' columnName)*
+    :  columnName (',' columnName)*
     ;
 
 // Ξένος πίνακας

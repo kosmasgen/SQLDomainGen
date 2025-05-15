@@ -117,7 +117,12 @@ public class EntityGenerator {
 
     public void generateClassAnnotations(StringBuilder builder, Table table, boolean useBuilder) {
         builder.append("@Entity\n");
-        builder.append("@Table(name = \"").append(NamingConverter.toSnakeCase(table.getName())).append("\")\n");
+
+        // ✅ Αφαιρούμε το schema (π.χ. "public.")
+        String rawTableName = table.getName();
+        String tableName = rawTableName.contains(".") ? rawTableName.substring(rawTableName.indexOf(".") + 1) : rawTableName;
+
+        builder.append("@Table(name = \"").append(NamingConverter.toSnakeCase(tableName)).append("\")\n");
         builder.append("@Getter\n@Setter\n");
         builder.append("@ToString\n");
 
@@ -125,8 +130,14 @@ public class EntityGenerator {
             builder.append("@Builder\n");
         }
         builder.append("@NoArgsConstructor\n@AllArgsConstructor\n");
-        builder.append("public class ").append(NamingConverter.toPascalCase(table.getName())).append(" {\n\n");
+
+        // ✅ Μετατροπή του ονόματος της κλάσης σε PascalCase
+        String className = NamingConverter.toPascalCase(tableName);
+        builder.append("public class ").append(className).append(" {\n\n");
     }
+
+
+
 
     public void generateFields(StringBuilder builder, Table table) {
         for (Column column : table.getColumns()) {
@@ -171,11 +182,24 @@ public class EntityGenerator {
 
     private void addPrimaryKeyAnnotations(StringBuilder builder, Column column) {
         builder.append("    @Id\n");
-        builder.append("    @GeneratedValue(strategy = GenerationType.IDENTITY)\n");
 
-        // Χρησιμοποιούμε την κοινή μέθοδο addColumnField
+        String javaType = column.getJavaType(); // Παίρνουμε το Java type της στήλης
+
+        if ("UUID".equalsIgnoreCase(javaType)) {
+            // Αν το Java type είναι UUID, χρησιμοποιούμε Hibernate UUID generator
+            builder.append("    @GeneratedValue(generator = \"UUID\")\n");
+            builder.append("    @GenericGenerator(name = \"UUID\", strategy = \"org.hibernate.id.UUIDGenerator\")\n");
+        } else if ("Long".equalsIgnoreCase(javaType) || "Integer".equalsIgnoreCase(javaType)) {
+            // Για SERIAL/BIGSERIAL/INTEGER, χρησιμοποιούμε IDENTITY
+            builder.append("    @GeneratedValue(strategy = GenerationType.IDENTITY)\n");
+        }
+
+        // Προσθήκη του πεδίου
         addColumnField(builder, column);
     }
+
+
+
 
 
     // parent  Side Table

@@ -41,6 +41,18 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterColumnTypeModifier(PostgreSQLParser.ColumnTypeModifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitColumnTypeModifier(PostgreSQLParser.ColumnTypeModifierContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterGeneratedColumn(PostgreSQLParser.GeneratedColumnContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -132,6 +144,18 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitOnUpdateAction(PostgreSQLParser.OnUpdateActionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterOnUpdateClause(PostgreSQLParser.OnUpdateClauseContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitOnUpdateClause(PostgreSQLParser.OnUpdateClauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

@@ -90,29 +90,31 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
         String constraintText = ctx.getText().toUpperCase();
 
         if (constraintText.contains("PRIMARY KEY")) {
-            primaryKey = true;
-            nullable = false; // PRIMARY KEY σημαίνει NOT NULL
+            this.primaryKey = true;
+            this.nullable = false; // PRIMARY KEY σημαίνει NOT NULL
+            logger.info("🔑 Column '{}' marked as PRIMARY KEY", this.columnName);
         }
         if (constraintText.contains("NOT NULL")) {
-            nullable = false;
+            this.nullable = false;
         }
         if (constraintText.contains("UNIQUE")) {
-            unique = true;
+            this.unique = true;
         }
         if (constraintText.contains("DEFAULT")) {
-            defaultValue = extractDefaultValue(ctx);
+            this.defaultValue = extractDefaultValue(ctx);
         }
         if (constraintText.contains("CHECK")) {
-            checkConstraint = extractCheckConstraint(ctx);
+            this.checkConstraint = extractCheckConstraint(ctx);
         }
         if (constraintText.contains("REFERENCES")) {
-            foreignKey = true;
+            this.foreignKey = true;
             extractForeignKeyDetails(ctx);
         }
 
-        logger.debug("Extracted constraints - primaryKey: {}, nullable: {}, unique: {}, defaultValue: {}, checkConstraint: {}, foreignKey: {}",
-                primaryKey, nullable, unique, defaultValue, checkConstraint, foreignKey);
+        logger.debug("Extracted constraints for column '{}': PK={}, Nullable={}, Unique={}, Default={}, Check={}, FK={}",
+                this.columnName, this.primaryKey, this.nullable, this.unique, this.defaultValue, this.checkConstraint, this.foreignKey);
     }
+
 
     public String getBaseSqlType() {
         return sqlType.contains("(") ? sqlType.substring(0, sqlType.indexOf("(")) : sqlType;

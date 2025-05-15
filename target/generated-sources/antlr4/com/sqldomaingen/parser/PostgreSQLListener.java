@@ -28,6 +28,16 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 */
 	void exitColumnDef(PostgreSQLParser.ColumnDefContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#columnTypeModifier}.
+	 * @param ctx the parse tree
+	 */
+	void enterColumnTypeModifier(PostgreSQLParser.ColumnTypeModifierContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#columnTypeModifier}.
+	 * @param ctx the parse tree
+	 */
+	void exitColumnTypeModifier(PostgreSQLParser.ColumnTypeModifierContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#generatedColumn}.
 	 * @param ctx the parse tree
 	 */
@@ -107,6 +117,16 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitOnUpdateAction(PostgreSQLParser.OnUpdateActionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#onUpdateClause}.
+	 * @param ctx the parse tree
+	 */
+	void enterOnUpdateClause(PostgreSQLParser.OnUpdateClauseContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#onUpdateClause}.
+	 * @param ctx the parse tree
+	 */
+	void exitOnUpdateClause(PostgreSQLParser.OnUpdateClauseContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#constraint}.
 	 * @param ctx the parse tree

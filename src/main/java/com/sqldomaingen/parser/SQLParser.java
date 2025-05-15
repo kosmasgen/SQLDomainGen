@@ -9,6 +9,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+import java.util.List;
+import org.antlr.v4.runtime.CommonTokenStream;
+import org.antlr.v4.runtime.Token;
 
 
 /**
@@ -39,6 +42,7 @@ public class SQLParser {
             logger.error(EMPTY_SQL_ERROR_MESSAGE);
             throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);
         }
+        logger.debug("🔍 Debug mode ενεργοποιημένο: Αναλύουμε τους κανόνες της γραμματικής.");
 
         PostgreSQLLexer lexer = new PostgreSQLLexer(CharStreams.fromString(sqlContent));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -56,8 +60,12 @@ public class SQLParser {
             }
         });
 
+        // 🔍 Ενεργοποίηση debugging στους κανόνες της γραμματικής
+        parser.setTrace(true);
+
         return parser;
     }
+
 
 
     /**
@@ -72,6 +80,14 @@ public class SQLParser {
         }
 
         PostgreSQLParser parser = createParser();
+
+        // 🔍 Logging tokens πριν το parsing
+        CommonTokenStream tokenStream = (CommonTokenStream) parser.getInputStream();
+        List<Token> tokens = tokenStream.getTokens();
+        logger.debug("🔍 Tokens extracted: {}", tokens.stream()
+                .map(token -> String.format("[%s -> %s]", token.getText(), parser.getVocabulary().getSymbolicName(token.getType())))
+                .toList());
+
         ParseTree tree = parser.sqlScript();
 
         // Logging για το ParseTree
