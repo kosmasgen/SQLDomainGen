@@ -5,71 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b0084f3d-faef-4b57-8eff-7f8eb002c2d9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/DTOGeneratorTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/EntityGeneratorTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/GrammarRelationshipTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/GrammarTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/MapperGeneratorTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/SQLParserTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/TableParsingTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/input/test_script.sql" beforeDir="false" afterPath="$PROJECT_DIR$/input/test_script.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/controllers/CourseController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/controllers/EnrollmentController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/controllers/ProfessorController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/controllers/StudentController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/dto/CourseDTO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/dto/EnrollmentDTO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/dto/ProfessorDTO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/dto/StudentDTO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/entities/Course.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/entities/Enrollment.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/entities/Professor.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/entities/Public.announcementsTheme.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/entities/Student.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/mappers/BaseMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/mappers/CourseMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/mappers/EnrollmentMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/mappers/ProfessorMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/mappers/StudentMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/repository/CourseRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/repository/EnrollmentRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/repository/ProfessorRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/repository/StudentRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/CourseService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/CourseServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/EnrollmentService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/EnrollmentServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/ProfessorService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/ProfessorServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/StudentService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/StudentServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/spring-shell.log" beforeDir="false" afterPath="$PROJECT_DIR$/spring-shell.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/antlr4/com/sqldomaingen/parser/PostgreSQL.g4" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/antlr4/com/sqldomaingen/parser/PostgreSQL.g4" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/EntityGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/EntityGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Table.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Table.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/ColumnDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/ColumnDefinition.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/CreateTableDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/CreateTableDefinition.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/SQLParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/SQLParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/resources/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/resources/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/ControllerGeneratorTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/application.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/application.properties" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ControllerGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ControllerGenerator.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/DTOGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/DTOGenerator.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/MapperGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/MapperGenerator.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RelationshipResolver.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RelationshipResolver.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RepositoryGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RepositoryGenerator.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ServiceGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ServiceGenerator.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Column.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Column.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Relationship.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Relationship.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Table.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Table.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/ColumnDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/ColumnDefinition.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/CreateTableDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/CreateTableDefinition.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLBaseListener.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLBaseListener.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/SQLParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/SQLParserTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/PostgreSQL.tokens" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/PostgreSQL.tokens" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/PostgreSQLLexer.tokens" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/PostgreSQLLexer.tokens" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQL.interp" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQL.interp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLLexer.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLLexer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLListener.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLListener.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLLexer.interp" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLLexer.interp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ActionContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterActionContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterColumnActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterColumnActionContext.class" afterDir="false" />
@@ -82,6 +25,7 @@
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnDefContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnDefContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameListContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameListContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnTypeModifierContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnTypeModifierContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ComparisonOperatorContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ComparisonOperatorContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ConditionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ConditionContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ConflictActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ConflictActionContext.class" afterDir="false" />
@@ -114,6 +58,7 @@
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnActionContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnDeleteActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnDeleteActionContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnUpdateActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnUpdateActionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnUpdateClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnUpdateClauseContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OrderByClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OrderByClauseContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ParameterContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ParameterContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PartitionClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PartitionClauseContext.class" afterDir="false" />
@@ -143,32 +88,13 @@
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ValueContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ValueContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$WhereClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$WhereClauseContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$2.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parseroutputfiles/EntityParser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parseroutputfiles/EntityParser.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/shell/GeneratorCommands.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/shell/GeneratorCommands.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/NamingConverter.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/NamingConverter.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/PostgreSQL.tokens" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/PostgreSQL.tokens" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/PostgreSQLLexer.tokens" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/PostgreSQLLexer.tokens" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQL.interp" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQL.interp" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLBaseListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLBaseListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLLexer.interp" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLLexer.interp" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLLexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLLexer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLListener.java" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLListener.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.ControllerGeneratorTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.RepositoryGeneratorTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.ServiceGeneratorTest.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.ControllerGeneratorTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.RepositoryGeneratorTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.ServiceGeneratorTest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ControllerGeneratorTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RepositoryGeneratorTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RepositoryGeneratorTest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ServiceGeneratorTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ServiceGeneratorTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/SQLParserTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/SQLParserTest.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -219,20 +145,33 @@
     "JUnit.RepositoryGeneratorTest.executor": "Run",
     "JUnit.RepositoryGeneratorTest.testDetectPrimaryKeyType.executor": "Run",
     "JUnit.RepositoryGeneratorTest.testGenerateCustomQueriesForRelationships.executor": "Run",
-    "JUnit.SQLParserTest.executor": "Debug",
+    "JUnit.SQLParserTest.executor": "Run",
     "JUnit.SQLParserTest.testAlterRecurringPatternAddEventIdForeignKey.executor": "Run",
+    "JUnit.SQLParserTest.testParseAlterRecurringPatternAddEventId_PostgreSQL.executor": "Debug",
     "JUnit.SQLParserTest.testParseCreateAbsenceTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateAbsenceTable_PostgreSQL.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateDepartmentDayOffTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateDepartmentDayOffTable_PostgreSQL.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateDepartmentTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateDepartmentTable_PostgreSQL.executor": "Debug",
     "JUnit.SQLParserTest.testParseCreateEventAssignmentTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateEventAssignmentTable_PostgreSQL.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateEventExceptionTable.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateEventExceptionTable2.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateEventExceptionTable_PostgreSQL.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateEventTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateEventTable_PostgreSQL.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateHolidayTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateHolidayTable_PostgreSQL.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateRecurringPatternTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateRecurringPatternTable_PostgreSQL.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateTableWithMultipleDefaultConstraints.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateTableWithOutOfLineConstraints_PostgreSQL.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateTimeOffRequestTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateTimeOffRequestTable_PostgreSQL.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateTriggerStatement_PostgreSQL.executor": "Debug",
     "JUnit.SQLParserTest.testParseCreateUserTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateUserTable_PostgreSQL.executor": "Run",
     "JUnit.ServiceGeneratorTest.executor": "Run",
     "JUnit.TableParsingTest.executor": "Run",
     "JUnit.TableParsingTest.testAnnouncementsThemeTable.executor": "Run",
@@ -258,8 +197,8 @@
       <recent name="C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen" />
     </key>
   </component>
-  <component name="RunManager" selected="JUnit.SQLParserTest.testAlterRecurringPatternAddEventIdForeignKey">
-    <configuration name="SQLParserTest.testAlterRecurringPatternAddEventIdForeignKey" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+  <component name="RunManager" selected="JUnit.SQLParserTest.testParseCreateTableWithOutOfLineConstraints_PostgreSQL">
+    <configuration name="SQLParserTest.testParseAlterRecurringPatternAddEventId_PostgreSQL" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="SQLDomainGen" />
       <extension name="coverage">
         <pattern>
@@ -269,13 +208,13 @@
       </extension>
       <option name="PACKAGE_NAME" value="com.sqldomaingen" />
       <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.SQLParserTest" />
-      <option name="METHOD_NAME" value="testAlterRecurringPatternAddEventIdForeignKey" />
+      <option name="METHOD_NAME" value="testParseAlterRecurringPatternAddEventId_PostgreSQL" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="SQLParserTest.testParseCreateAbsenceTable" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="SQLParserTest.testParseCreateAbsenceTable_PostgreSQL" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="SQLDomainGen" />
       <extension name="coverage">
         <pattern>
@@ -285,13 +224,13 @@
       </extension>
       <option name="PACKAGE_NAME" value="com.sqldomaingen" />
       <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.SQLParserTest" />
-      <option name="METHOD_NAME" value="testParseCreateAbsenceTable" />
+      <option name="METHOD_NAME" value="testParseCreateAbsenceTable_PostgreSQL" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="SQLParserTest.testParseCreateDepartmentDayOffTable" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="SQLParserTest.testParseCreateDepartmentTable_PostgreSQL" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="SQLDomainGen" />
       <extension name="coverage">
         <pattern>
@@ -301,13 +240,13 @@
       </extension>
       <option name="PACKAGE_NAME" value="com.sqldomaingen" />
       <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.SQLParserTest" />
-      <option name="METHOD_NAME" value="testParseCreateDepartmentDayOffTable" />
+      <option name="METHOD_NAME" value="testParseCreateDepartmentTable_PostgreSQL" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="SQLParserTest.testParseCreateHolidayTable" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="SQLParserTest.testParseCreateTableWithOutOfLineConstraints_PostgreSQL" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="SQLDomainGen" />
       <extension name="coverage">
         <pattern>
@@ -317,13 +256,13 @@
       </extension>
       <option name="PACKAGE_NAME" value="com.sqldomaingen" />
       <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.SQLParserTest" />
-      <option name="METHOD_NAME" value="testParseCreateHolidayTable" />
+      <option name="METHOD_NAME" value="testParseCreateTableWithOutOfLineConstraints_PostgreSQL" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="SQLParserTest.testParseCreateTimeOffRequestTable" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="SQLParserTest.testParseCreateTriggerStatement_PostgreSQL" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="SQLDomainGen" />
       <extension name="coverage">
         <pattern>
@@ -333,7 +272,7 @@
       </extension>
       <option name="PACKAGE_NAME" value="com.sqldomaingen" />
       <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.SQLParserTest" />
-      <option name="METHOD_NAME" value="testParseCreateTimeOffRequestTable" />
+      <option name="METHOD_NAME" value="testParseCreateTriggerStatement_PostgreSQL" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -341,11 +280,11 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="JUnit.SQLParserTest.testAlterRecurringPatternAddEventIdForeignKey" />
-        <item itemvalue="JUnit.SQLParserTest.testParseCreateAbsenceTable" />
-        <item itemvalue="JUnit.SQLParserTest.testParseCreateDepartmentDayOffTable" />
-        <item itemvalue="JUnit.SQLParserTest.testParseCreateHolidayTable" />
-        <item itemvalue="JUnit.SQLParserTest.testParseCreateTimeOffRequestTable" />
+        <item itemvalue="JUnit.SQLParserTest.testParseCreateTableWithOutOfLineConstraints_PostgreSQL" />
+        <item itemvalue="JUnit.SQLParserTest.testParseAlterRecurringPatternAddEventId_PostgreSQL" />
+        <item itemvalue="JUnit.SQLParserTest.testParseCreateTriggerStatement_PostgreSQL" />
+        <item itemvalue="JUnit.SQLParserTest.testParseCreateDepartmentTable_PostgreSQL" />
+        <item itemvalue="JUnit.SQLParserTest.testParseCreateAbsenceTable_PostgreSQL" />
       </list>
     </recent_temporary>
   </component>
