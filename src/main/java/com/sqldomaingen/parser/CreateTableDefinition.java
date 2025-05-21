@@ -104,7 +104,7 @@ public class CreateTableDefinition {
 
             if (ctx.columnNameList() != null && !ctx.columnNameList().isEmpty()) {
                 String primaryKeyColumns = ctx.columnNameList().get(0).getText(); // Παίρνουμε το πρώτο στοιχείο
-// Παίρνουμε όλα τα ονόματα ως string
+                     // Παίρνουμε όλα τα ονόματα ως string
                 for (String primaryKeyColumn : primaryKeyColumns.replace("(", "").replace(")", "").split(",")) {
                     primaryKeyColumn = primaryKeyColumn.replace("\"", "").trim();
 
@@ -131,42 +131,59 @@ public class CreateTableDefinition {
         logger.info("⬅️ extractPrimaryKeyConstraint() - END");
     }
 
-
-
-
-
-
     public void extractForeignKeyConstraints(PostgreSQLParser.CreateTableStatementContext ctx) {
+        logger.info("➡️ extractForeignKeyConstraints() - START");
+
         if (ctx.tableConstraint() != null) {
             for (PostgreSQLParser.TableConstraintContext constraintCtx : ctx.tableConstraint()) {
+
                 String constraintText = constraintCtx.getText().toUpperCase();
 
                 if (constraintText.contains("FOREIGN KEY") && constraintText.contains("REFERENCES")) {
-                    int fkStart = constraintText.indexOf("(") + 1;
-                    int fkEnd = constraintText.indexOf(")");
-                    String fkColumn = constraintText.substring(fkStart, fkEnd).replaceAll("\"", "").trim();
 
-                    int refStart = constraintText.indexOf("REFERENCES") + 10;
-                    String refPart = constraintText.substring(refStart).trim();
-                    String[] refSplit = refPart.split("\\(");
-                    String referencedTable = refSplit[0].trim();
-                    String referencedColumn = refSplit[1].replace(")", "").trim();
+                    List<PostgreSQLParser.ColumnNameListContext> columnLists = constraintCtx.columnNameList();
+                    if (columnLists.size() != 2) {
+                        logger.warn("⚠️ FOREIGN KEY constraint does not contain both FK and referenced column lists.");
+                        continue;
+                    }
 
-                    logger.info("🔗 Found FOREIGN KEY: {} -> {}.{}", fkColumn, referencedTable, referencedColumn);
+                    List<String> fkColumns = columnLists.get(0).columnName().stream()
+                            .map(c -> c.getText().replace("\"", "").trim())
+                            .toList();
 
-                    columnDefinitions.stream()
-                            .filter(col -> col.getColumnName().equals(fkColumn))
-                            .forEach(col -> {
-                                col.setForeignKey(true);
-                                col.setReferencedTable(referencedTable);
-                                col.setReferencedColumn(referencedColumn);
-                            });
+                    List<String> refColumns = columnLists.get(1).columnName().stream()
+                            .map(c -> c.getText().replace("\"", "").trim())
+                            .toList();
+
+                    String referencedTable = constraintCtx.tableName().getText().replace("\"", "").trim();
+
+                    if (fkColumns.size() == 1 && refColumns.size() == 1) {
+                        String fkColumn = fkColumns.get(0);
+                        String refColumn = refColumns.get(0);
+
+                        logger.info("🔗 Found FOREIGN KEY: {} -> {}.{}", fkColumn, referencedTable, refColumn);
+
+                        columnDefinitions.stream()
+                                .filter(col -> col.getColumnName().equals(fkColumn))
+                                .findFirst()
+                                .ifPresentOrElse(col -> {
+                                    col.setForeignKey(true);
+                                    col.setReferencedTable(referencedTable);
+                                    col.setReferencedColumn(refColumn);
+                                }, () -> logger.warn("⚠️ FK column '{}' not found in columnDefinitions!", fkColumn));
+                    } else {
+                        logger.warn("⚠️ Composite FOREIGN KEY not supported yet: {} -> {} ({})",
+                                fkColumns, referencedTable, refColumns);
+                    }
                 }
             }
         }
+
+        logger.info("⬅️ extractForeignKeyConstraints() - END");
     }
 
-        // Σε αναμονή
+
+    // Σε αναμονή
     public Map<String, Table> parseAllTables(List<PostgreSQLParser.CreateTableStatementContext> createTableStatements) {
         logger.info("➡️ parseAllTables() - START");
 

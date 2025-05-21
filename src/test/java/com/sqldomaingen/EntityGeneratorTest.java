@@ -9,7 +9,6 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import com.sqldomaingen.model.Relationship;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -158,17 +157,15 @@ class EntityGeneratorTest {
             logger.warn("❌ Users.java file was not generated.");
         }
 
-        // Έλεγχοι περιεχομένου αρχείου UserDetails
+        // 🔍 Έλεγχοι περιεχομένου αρχείου UserDetails
         assertTrue(userDetailsContent.contains("@OneToOne"), "⚠️ Δεν βρέθηκε η σχέση OneToOne");
-
-        assertTrue(
-                userDetailsContent.contains("@OneToOne(fetch = FetchType.LAZY, mappedBy = \"user\")") ||
-                        userDetailsContent.contains("@OneToOne(mappedBy = \"user\", fetch = FetchType.LAZY)"),
-                "⚠️ Η σχέση OneToOne με mappedBy δεν δημιουργήθηκε σωστά"
-        );
-
+        assertTrue(userDetailsContent.contains("@JoinColumn(name = \"user_id\""), "⚠️ Δεν βρέθηκε το JoinColumn για user_id");
         assertTrue(userDetailsContent.contains("private Users user"), "⚠️ Το όνομα του field (user) δεν είναι σωστό");
+
+        // ❌ Δεν πρέπει να υπάρχει mappedBy εδώ
+        assertFalse(userDetailsContent.contains("mappedBy"), "❌ Το mappedBy δεν πρέπει να υπάρχει στο UserDetails (owning πλευρά)");
     }
+
 
 
 
@@ -247,5 +244,86 @@ class EntityGeneratorTest {
         assertTrue(hasCorrectMappedBy, "⚠️ Το mappedBy δεν είναι σωστό");
         assertTrue(hasCorrectListField, "⚠️ Το όνομα της λίστας δεν είναι σωστό");
     }
+
+    @Test
+    void testGenerateEntityWithUUIDPrimaryKey() throws IOException {
+        logger.info("🟢 Running testGenerateEntityWithUUIDPrimaryKey...");
+
+        Table logTable = new Table();
+        logTable.setName("AuditLog");
+
+        Column logId = new Column();
+        logId.setName("log_id");
+        logId.setSqlType("UUID");
+        logId.setJavaType("UUID"); // πρέπει να γίνει mapping στο generator σε java.util.UUID
+        logId.setPrimaryKey(true);
+        logId.setNullable(false);
+
+        logTable.setColumns(List.of(logId));
+
+        entityGenerator.generate(List.of(logTable), tempDir.toString(), "com.example.entities", true, false);
+
+        Path generatedFile = tempDir.resolve("AuditLog.java");
+        assertTrue(Files.exists(generatedFile), "✅ AuditLog.java should be generated");
+
+        String content = Files.readString(generatedFile);
+        logger.debug("📄 Generated content: \n{}", content);
+
+        System.out.println("---- AuditLog.java ----");
+        System.out.println(content);
+        System.out.println("------------------------");
+
+        assertTrue(content.contains("private UUID logId"), "⚠️ Το UUID πεδίο δεν εμφανίζεται σωστά");
+        assertTrue(content.contains("@Id"), "⚠️ Δεν βρέθηκε το annotation @Id");
+        assertTrue(content.contains("@Column(name = \"log_id\", nullable = false)"), "⚠️ Το @Column annotation δεν είναι σωστό");
+        assertTrue(content.contains("import java.util.UUID;"), "⚠️ Το import για UUID λείπει");
+    }
+
+    @Test
+    void testNoDuplicateRelationshipFields() throws IOException {
+        logger.info("🟢 Running testNoDuplicateRelationshipFields...");
+
+        Table department = new Table();
+        department.setName("Department");
+
+        Column id = new Column();
+        id.setName("id");
+        id.setSqlType("INT");
+        id.setJavaType("Long");
+        id.setPrimaryKey(true);
+        department.setColumns(new ArrayList<>(List.of(id)));
+
+        Column parentId = new Column();
+        parentId.setName("parent_id");
+        parentId.setSqlType("INT");
+        parentId.setJavaType("Long");
+        parentId.setForeignKey(true);
+        parentId.setReferencedTable("Department");
+        parentId.setReferencedColumn("id");
+        department.getColumns().add(parentId);
+
+        // Δημιουργούμε το map που περιμένει ο RelationshipResolver
+        Map<String, Table> tableMap = new HashMap<>();
+        tableMap.put("Department", department);
+
+        RelationshipResolver resolver = new RelationshipResolver(tableMap);
+        resolver.resolveRelationshipsForAllTables();
+
+        EntityGenerator generator = new EntityGenerator();
+        String content = generator.createEntityContent(department, "com.example.entities", false);
+
+        System.out.println("---- Department.java ----");
+        System.out.println(content);
+        System.out.println("-------------------------");
+
+        // ✅ Πρέπει να υπάρχει ΜΟΝΟ ΜΙΑ private Department parent σχέση
+        long fieldCount = content.lines()
+                .filter(line -> line.contains("private Department parent"))
+                .count();
+
+        assertEquals(1, fieldCount, "❌ Πρέπει να υπάρχει μόνο ένα πεδίο 'parent' για self-referencing σχέση.");
+    }
+
+
 
 }

@@ -13,7 +13,6 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
-import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -64,8 +63,6 @@ public class EntityGenerator {
     }
 
 
-
-
     public String createEntityContent(Table table, String packageName, boolean useBuilder) {
         StringBuilder entityBuilder = new StringBuilder();
 
@@ -80,36 +77,56 @@ public class EntityGenerator {
     }
 
 
-
     public void generatePackageAndImports(StringBuilder builder, String packageName, Table table) {
         builder.append("package ").append(packageName).append(";\n\n");
         builder.append("import jakarta.persistence.*;\n");
         builder.append("import lombok.*;\n");
 
-        boolean hasBigDecimal = false;
-        boolean hasLocalDate = false;
-        boolean hasLocalDateTime = false;
-        boolean hasList = false;
+        Set<String> imports = new TreeSet<>();
+        boolean needsCreationTimestamp = false;
+        boolean needsUpdateTimestamp = false;
 
         for (Column column : table.getColumns()) {
-            if (column.getJavaType().equals("java.math.BigDecimal")) hasBigDecimal = true;
-            if (column.getJavaType().equals("java.time.LocalDate")) hasLocalDate = true;
-            if (column.getJavaType().equals("java.time.LocalDateTime")) hasLocalDateTime = true;
+            String javaType = column.getJavaType();
+
+            if (javaType.startsWith("java.")) {
+                imports.add("import " + javaType + ";");
+            }
+
+            if ("UUID".equalsIgnoreCase(javaType)) {
+                imports.add("import java.util.UUID;");
+                imports.add("import org.hibernate.annotations.GenericGenerator;");
+            }
+
+
+            String columnName = column.getName().toLowerCase();
+            if (columnName.equals("created_at") && javaType.equals("java.time.LocalDateTime")) {
+                needsCreationTimestamp = true;
+            }
+            if (columnName.equals("updated_at") && javaType.equals("java.time.LocalDateTime")) {
+                needsUpdateTimestamp = true;
+            }
         }
 
-        // Έλεγχος για σχέσεις OneToMany ή ManyToMany
         for (Relationship relationship : table.getRelationships()) {
             if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY ||
                     relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) {
-                hasList = true;
+                imports.add("import java.util.List;");
+                imports.add("import java.util.ArrayList;");
                 break;
             }
         }
 
-        if (hasBigDecimal) builder.append("import java.math.BigDecimal;\n");
-        if (hasLocalDate) builder.append("import java.time.LocalDate;\n");
-        if (hasLocalDateTime) builder.append("import java.time.LocalDateTime;\n");
-        if (hasList) builder.append("import java.util.List;\nimport java.util.ArrayList;\n");
+        if (needsCreationTimestamp) {
+            imports.add("import org.hibernate.annotations.CreationTimestamp;");
+        }
+        if (needsUpdateTimestamp) {
+            imports.add("import org.hibernate.annotations.UpdateTimestamp;");
+        }
+
+        for (String imp : imports) {
+            builder.append(imp).append("\n");
+        }
 
         builder.append("\n");
     }
@@ -138,21 +155,21 @@ public class EntityGenerator {
 
 
 
-
     public void generateFields(StringBuilder builder, Table table) {
+        Set<String> generatedFieldNames = new HashSet<>();
+
         for (Column column : table.getColumns()) {
             logger.debug("Processing column: {}", column.getName());
 
             if (column.isPrimaryKey()) {
                 addPrimaryKeyAnnotations(builder, column);
             } else if (column.isForeignKey()) {
-                addRelationshipField(builder, column, table);
+                addRelationshipField(builder, column, table, generatedFieldNames); // 🔁
             } else {
                 addColumnField(builder, column);
             }
         }
 
-        // Inverse Side Relationships
         for (Relationship relationship : table.getRelationships()) {
             if ((relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY ||
                     relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) &&
@@ -161,11 +178,10 @@ public class EntityGenerator {
                 logger.debug("🔄 Adding inverse relationship field for table '{}', target '{}', type: {}, mappedBy: '{}' ",
                         relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy());
 
-                addInverseRelationshipField(builder, relationship);
+                addInverseRelationshipField(builder, relationship, generatedFieldNames); // 🔁
             }
         }
 
-        // Parent Side Relationships (Join Table) - ManyToMany
         for (Relationship relationship : table.getRelationships()) {
             if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY
                     && relationship.getMappedBy() == null
@@ -174,36 +190,57 @@ public class EntityGenerator {
                 logger.debug("🔵 Adding ManyToMany Parent Side field for table '{}', target '{}', joinTable '{}'",
                         relationship.getSourceTable(), relationship.getTargetTable(), relationship.getJoinTableName());
 
-                addManyToManyParentSide(builder, relationship);
+                addManyToManyParentSide(builder, relationship, generatedFieldNames); // 🔁
             }
         }
+
+        for (Relationship relationship : table.getRelationships()) {
+            if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE &&
+                    relationship.getMappedBy() != null &&
+                    relationship.getSourceTable().equals(table.getName())) {
+
+                String targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
+                String fieldName = NamingConverter.toCamelCase(NamingConverter.toSnakeCase(relationship.getTargetTable()));
+                String mappedBy = relationship.getMappedBy(); // αυτό θα πάει στο mappedBy
+
+                if (generatedFieldNames.contains(fieldName)) {
+                    logger.warn("⚠️ Skipping inverse OneToOne field '{}': already generated", fieldName);
+                    continue;
+                }
+                generatedFieldNames.add(fieldName);
+
+                logger.debug("🔁 Adding inverse @OneToOne for '{}', mappedBy: '{}'", targetEntity, mappedBy);
+
+                builder.append("    @OneToOne(mappedBy = \"").append(mappedBy).append("\", fetch = FetchType.LAZY)\n");
+                builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
+            }
+        }
+
     }
+
 
 
     private void addPrimaryKeyAnnotations(StringBuilder builder, Column column) {
         builder.append("    @Id\n");
 
-        String javaType = column.getJavaType(); // Παίρνουμε το Java type της στήλης
+        String javaType = column.getJavaType();
+        logger.debug("🧪 [PK Generation] Column: {}, JavaType: {}", column.getName(), javaType);
 
-        if ("UUID".equalsIgnoreCase(javaType)) {
-            // Αν το Java type είναι UUID, χρησιμοποιούμε Hibernate UUID generator
+        if (javaType.toLowerCase().endsWith("uuid")) {
+            logger.info("✅ UUID detected for primary key: {}", column.getName());
+
             builder.append("    @GeneratedValue(generator = \"UUID\")\n");
             builder.append("    @GenericGenerator(name = \"UUID\", strategy = \"org.hibernate.id.UUIDGenerator\")\n");
         } else if ("Long".equalsIgnoreCase(javaType) || "Integer".equalsIgnoreCase(javaType)) {
-            // Για SERIAL/BIGSERIAL/INTEGER, χρησιμοποιούμε IDENTITY
             builder.append("    @GeneratedValue(strategy = GenerationType.IDENTITY)\n");
         }
 
-        // Προσθήκη του πεδίου
         addColumnField(builder, column);
     }
 
 
-
-
-
     // parent  Side Table
-    public void addRelationshipField(StringBuilder builder, Column column, Table table) {
+    public void addRelationshipField(StringBuilder builder, Column column, Table table, Set<String> generatedFieldNames) {
         logger.debug("🔵 Resolving relationship for column: {} in table: {}", column.getName(), table.getName());
 
         Optional<Relationship> relationshipOpt = table.getRelationships().stream()
@@ -222,30 +259,44 @@ public class EntityGenerator {
                 relationship.getMappedBy(), relationship.getJoinTableName());
 
         String targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
-        String fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
+        String fieldName = NamingConverter.toCamelCase(column.getName().replaceAll("_id$", ""));
+
+        if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY &&
+                relationship.getJoinTableName() != null) {
+            fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
+        }
+
+        if (generatedFieldNames.contains(fieldName)) {
+            logger.warn("⚠️ Skipping relationship field '{}': already generated (possible duplicate)", fieldName);
+            return;
+        }
+
+        generatedFieldNames.add(fieldName);
 
         switch (relationship.getRelationshipType()) {
             case ONETOONE -> {
-                builder.append("    @OneToOne(fetch = FetchType.LAZY");
+                // Αν υπάρχει mappedBy, σημαίνει ότι είμαστε στην inverse (child) πλευρά — δεν γράφουμε τίποτα εδώ
                 if (relationship.getMappedBy() != null) {
-                    builder.append(", mappedBy = \"").append(relationship.getMappedBy()).append("\"");
+                    logger.debug("⏭️ Skipping ONETOONE parent field '{}' because it's inverse side (mappedBy = '{}')",
+                            fieldName, relationship.getMappedBy());
+                    return;
                 }
+
+                builder.append("    @OneToOne(fetch = FetchType.LAZY)\n");
+                builder.append("    @JoinColumn(name = \"").append(column.getName())
+                        .append("\", referencedColumnName = \"").append(relationship.getTargetColumn()).append("\"");
+
+                if (column.isUnique()) {
+                    builder.append(", unique = true");
+                }
+
+                addOnDeleteAndOnUpdate(builder, relationship);
                 builder.append(")\n");
 
-                if (relationship.getMappedBy() == null) {
-                    builder.append("    @JoinColumn(name = \"").append(column.getName())
-                            .append("\", referencedColumnName = \"").append(relationship.getTargetColumn()).append("\"");
-
-                    if (column.isUnique()) {
-                        builder.append(", unique = true");
-                    }
-                    addOnDeleteAndOnUpdate(builder, relationship);
-                    builder.append(")\n");
-                }
-
-                builder.append("    private ").append(targetEntity).append(" ")
-                        .append(NamingConverter.toCamelCase(column.getName().replaceAll("_id$", ""))).append(";\n\n");
+                builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
             }
+
+
             case MANYTOONE -> {
                 builder.append("    @ManyToOne(fetch = FetchType.LAZY)\n");
                 builder.append("    @JoinColumn(name = \"").append(column.getName())
@@ -253,11 +304,10 @@ public class EntityGenerator {
                 addOnDeleteAndOnUpdate(builder, relationship);
                 builder.append(")\n");
 
-                builder.append("    private ").append(targetEntity).append(" ")
-                        .append(NamingConverter.toCamelCase(column.getName().replaceAll("_id$", ""))).append(";\n\n");
+                builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
             }
+
             case MANYTOMANY -> {
-                // Εδώ είναι Parent Side ΜΟΝΟ αν έχει JoinTable!
                 if (relationship.getJoinTableName() != null) {
                     builder.append("    @ManyToMany(fetch = FetchType.LAZY)\n");
                     builder.append("    @JoinTable(\n")
@@ -273,9 +323,17 @@ public class EntityGenerator {
         }
     }
 
-    public void addManyToManyParentSide(StringBuilder builder, Relationship relationship) {
+
+
+    public void addManyToManyParentSide(StringBuilder builder, Relationship relationship, Set<String> generatedFieldNames) {
         String targetEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
         String fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
+
+        if (generatedFieldNames.contains(fieldName)) {
+            logger.warn("⚠️ Skipping ManyToMany parent field '{}': already generated (likely duplicate)", fieldName);
+            return;
+        }
+        generatedFieldNames.add(fieldName);
 
         builder.append("    @ManyToMany(fetch = FetchType.LAZY)\n")
                 .append("    @JoinTable(\n")
@@ -287,20 +345,25 @@ public class EntityGenerator {
     }
 
 
-
     // Child side Table
-    public void addInverseRelationshipField(StringBuilder builder, Relationship relationship) {
+    public void addInverseRelationshipField(StringBuilder builder, Relationship relationship, Set<String> generatedFieldNames) {
         String sourceEntity = NamingConverter.toPascalCase(relationship.getTargetTable());
         String fieldName;
 
         if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) {
-            // Για ManyToMany παίρνουμε το MappedBy, αν δεν υπάρχει φτιάχνουμε plural το Target
             fieldName = relationship.getMappedBy() != null
                     ? relationship.getMappedBy()
                     : NamingConverter.toCamelCasePlural(relationship.getTargetTable());
         } else {
             fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
         }
+
+        if (generatedFieldNames.contains(fieldName)) {
+            logger.warn("⚠️ Skipping inverse field '{}': already generated (probably duplicate relationship)", fieldName);
+            return;
+        }
+
+        generatedFieldNames.add(fieldName);
 
         logger.debug("🔄 Creating inverse relationship field for table '{}' -> '{}', type: {}, mappedBy: '{}' FieldName: '{}'",
                 relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy(), fieldName);
@@ -324,6 +387,7 @@ public class EntityGenerator {
     }
 
 
+
     private void addOnDeleteAndOnUpdate(StringBuilder builder, Relationship relationship) {
         if (relationship.getOnDelete() != null || relationship.getOnUpdate() != null) {
             builder.append(", foreignKey = @ForeignKey(name = \"fk_").append(relationship.getSourceColumn())
@@ -333,38 +397,70 @@ public class EntityGenerator {
 
 
     private void addColumnField(StringBuilder builder, Column column) {
+        boolean isForeignKey = column.isForeignKey();
+        String columnName = column.getName().toLowerCase();
+        String javaType = column.getJavaType();
 
-        if (!column.isForeignKey()) {
+        if (columnName.equals("created_at") && javaType.equals("java.time.LocalDateTime")) {
+            builder.append("    @CreationTimestamp\n");
+        } else if (columnName.equals("updated_at") && javaType.equals("java.time.LocalDateTime")) {
+            builder.append("    @UpdateTimestamp\n");
+        }
+
+        if (!isForeignKey) {
             builder.append("    @Column(name = \"").append(column.getName()).append("\"");
-        }
 
-        if (column.getSqlType().startsWith("VARCHAR") || column.getSqlType().startsWith("CHAR")) {
-            builder.append(", length = ").append(column.getLength());
-        }
+            if (column.getSqlType().startsWith("VARCHAR") || column.getSqlType().startsWith("CHAR")) {
+                builder.append(", length = ").append(column.getLength());
+            }
 
-        if (column.getSqlType().startsWith("DECIMAL") || column.getSqlType().startsWith("NUMERIC")) {
-            builder.append(", precision = ").append(column.getPrecision())
-                    .append(", scale = ").append(column.getScale());
-        }
+            if (column.getSqlType().startsWith("DECIMAL") || column.getSqlType().startsWith("NUMERIC")) {
+                builder.append(", precision = ").append(column.getPrecision())
+                        .append(", scale = ").append(column.getScale());
+            }
 
-        if (column.isUnique()) {
-            builder.append(", unique = true");
-        }
+            if (column.isUnique()) {
+                builder.append(", unique = true");
+            }
 
-        if (!column.isNullable()) {
-            builder.append(", nullable = false");
-        }
+            if (!column.isNullable()) {
+                builder.append(", nullable = false");
+            }
 
-        if (column.getDefaultValue() != null) {
-            builder.append(", columnDefinition = \"DEFAULT '").append(column.getDefaultValue()).append("'\"");
-        }
+            if (columnName.equals("created_at")) {
+                builder.append(", updatable = false");
+            }
 
-        if (!column.isForeignKey()) {
             builder.append(")");
         }
 
-        builder.append("\n    private ").append(column.getJavaType()).append(" ")
-                .append(NamingConverter.toCamelCase(column.getName())).append(";\n\n");
+        String cleanedType = javaType;
+        if (javaType.startsWith("java.time.")) {
+            cleanedType = javaType.substring("java.time.".length());
+        }
+        else if (javaType.startsWith("java.math.")) {
+            cleanedType = javaType.substring("java.math.".length());
+        }
+        else if (javaType.startsWith("java.util.")) {
+            cleanedType = javaType.substring("java.util.".length());
+        }
+
+        builder.append("\n    private ").append(cleanedType).append(" ")
+                .append(NamingConverter.toCamelCase(column.getName()));
+
+        if (cleanedType.equals("Boolean") && column.getDefaultValue() != null) {
+            String defVal = column.getDefaultValue().trim().toLowerCase();
+
+            if (defVal.equals("true") || defVal.equals("1")) {
+                builder.append(" = true");
+            } else if (defVal.equals("false") || defVal.equals("0")) {
+                builder.append(" = false");
+            } else {
+                logger.warn("⚠️ Boolean column '{}' έχει μη αναγνωρίσιμη default τιμή: {}", column.getName(), defVal);
+            }
+        }
+
+        builder.append(";\n\n");
     }
 
 
@@ -374,7 +470,7 @@ public class EntityGenerator {
 
         Path path = Paths.get(filePath);
         Files.createDirectories(path.getParent());
-        Files.write(path, content.getBytes(StandardCharsets.UTF_8));
+        Files.writeString(path, content);
 
         logger.debug("File written successfully: {}", filePath);
     }

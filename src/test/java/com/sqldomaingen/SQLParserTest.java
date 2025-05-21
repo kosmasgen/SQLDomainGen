@@ -480,6 +480,44 @@ class SQLParserTest {
             assertTrue(tree.contains("EVENT"), "Expected 'event' table reference in parse tree.");
         });
     }
+
+    @Test
+    void testParseCreateEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs() {
+        String sql = """
+    CREATE TABLE employee_department (
+        employee_id INT NOT NULL,
+        department_id INT NOT NULL,
+        assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        assigned_by VARCHAR(100),
+        PRIMARY KEY (employee_id, department_id),
+        FOREIGN KEY (employee_id) REFERENCES employee(id),
+        FOREIGN KEY (department_id) REFERENCES department(id)
+    );
+    """;
+
+        sqlParser.setSqlContent(sql);
+        logger.info("Testing PostgreSQL CREATE TABLE with composite primary key and two FKs:\n{}", sql);
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE employee_department.");
+
+            String tree = parseTree.toStringTree().toUpperCase();
+
+            assertTrue(tree.contains("EMPLOYEE_DEPARTMENT"), "Expected 'employee_department' in parse tree.");
+            assertTrue(tree.contains("EMPLOYEE_ID"), "Expected 'employee_id' in parse tree.");
+            assertTrue(tree.contains("DEPARTMENT_ID"), "Expected 'department_id' in parse tree.");
+            assertTrue(tree.contains("PRIMARY KEY"), "Expected composite 'PRIMARY KEY' in parse tree.");
+            assertTrue(tree.contains("FOREIGN KEY"), "Expected 'FOREIGN KEY' in parse tree.");
+            assertTrue(tree.contains("REFERENCES"), "Expected 'REFERENCES' in parse tree.");
+            assertTrue(tree.contains("EMPLOYEE"), "Expected reference to table 'employee'.");
+            assertTrue(tree.contains("DEPARTMENT"), "Expected reference to table 'department'.");
+            assertTrue(tree.contains("ASSIGNED_AT"), "Expected 'assigned_at' column.");
+            assertTrue(tree.contains("DEFAULT"), "Expected 'DEFAULT' keyword.");
+            assertTrue(tree.contains("CURRENT_TIMESTAMP"), "Expected 'CURRENT_TIMESTAMP' in parse tree.");
+        });
+    }
+
 }
 
 

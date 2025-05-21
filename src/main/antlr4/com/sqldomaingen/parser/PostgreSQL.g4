@@ -84,7 +84,6 @@ createTableStatement
 // Ορισμός μιας στήλης στον πίνακα
 columnDef
     : columnName dataType columnTypeModifier? (constraint)* (generatedColumn | collateClause)? onUpdateClause?
-    | 'FOREIGN KEY' '(' columnNameList ')' 'REFERENCES' tableName '(' columnNameList ')' ('RELATIONSHIP' relationshipType)? (onAction)*
     ;
 
 columnTypeModifier
@@ -212,7 +211,7 @@ constraint
     | 'DEFAULT' value
     | 'CHECK' '(' condition ')'
     | 'REFERENCES' (schemaName DOT)? tableName '(' columnName ')' (onAction)?
-    | 'FOREIGN KEY' columnNameList 'REFERENCES' (schemaName DOT)? tableName columnNameList ('RELATIONSHIP' relationshipType)?
+    | 'FOREIGN KEY' '(' columnNameList ')' 'REFERENCES' (schemaName DOT)? tableName '(' columnNameList ')' ('RELATIONSHIP' relationshipType)? (onAction)*
     | 'EXCLUDE' 'USING' IDENTIFIER '(' excludeElementList ')' ('WHERE' condition)?
     | 'AUTO_INCREMENT'
     | 'PRIMARY KEY'
@@ -220,11 +219,13 @@ constraint
 
 // Table-level constraints (για ολόκληρο τον πίνακα)
 tableConstraint
-    : 'CONSTRAINT' IDENTIFIER? 'PRIMARY KEY' '(' columnNameList (',' columnName)* ')'
-    | 'CONSTRAINT' IDENTIFIER? 'FOREIGN KEY' columnNameList 'REFERENCES' (schemaName DOT)? tableName columnNameList (onAction)*
-    | 'CONSTRAINT' IDENTIFIER? 'UNIQUE' columnNameList
+    : 'CONSTRAINT' IDENTIFIER? 'PRIMARY KEY' '(' columnNameList ')'
+    | 'CONSTRAINT' IDENTIFIER? 'FOREIGN KEY' '(' columnNameList ')' 'REFERENCES' (schemaName DOT)? tableName '(' columnNameList ')' (onAction)*
+    | 'FOREIGN KEY' '(' columnNameList ')' 'REFERENCES' (schemaName DOT)? tableName '(' columnNameList ')' (onAction)*
+    | 'CONSTRAINT' IDENTIFIER? 'UNIQUE' '(' columnNameList ')'
     | 'CONSTRAINT' IDENTIFIER? 'CHECK' '(' condition ')'
     | 'EXCLUDE' 'USING' IDENTIFIER '(' excludeElementList ')'
+    | 'PRIMARY KEY' '(' columnNameList ')'
     ;
 
 

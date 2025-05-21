@@ -33,6 +33,8 @@ class TableParsingTest {
             parser.setTrace(true);
 
             ParseTree tree = parser.sqlScript();
+
+            logger.info("🔍 FULL PARSE TREE: \n{}", tree.toStringTree(parser));
             logger.debug("ParseTree generated: {}", tree.toStringTree(parser));
 
             assertNotNull(tree, "The ParseTree should not be null.");
@@ -70,64 +72,255 @@ class TableParsingTest {
         }
     }
 
-
     @Test
-    void testAnnouncementsThemeTable() {
+    void testParseDepartmentTable() {
         String sql = """
-        CREATE TABLE public.announcements_theme (
-            "type" varchar(255) NOT NULL,
-            description varchar(255) NOT NULL,
-            el_desc varchar(255) NULL,
-            tr_desc varchar(255) NULL,
-            en_desc varchar(255) NULL,
-            hr_desc varchar(255) NULL,
-            CONSTRAINT announcements_theme_pkey PRIMARY KEY (type)
-        );""";
+        CREATE TABLE department (
+            department_id SERIAL PRIMARY KEY,
+            name VARCHAR(100) NOT NULL,
+            description TEXT,
+            parent_dept_id INT,
+            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+            FOREIGN KEY (parent_dept_id) REFERENCES department(department_id)
+        );
+    """;
+
         parseAndValidate(sql);
     }
 
     @Test
-    void testProductCategoryTable() {
+    void testParseUserTable() {
         String sql = """
-        CREATE TABLE public.product_category (
-            description varchar(255) NOT NULL,
-            "type" varchar(255) NOT NULL,
-            el_desc varchar(255) NULL,
-            tr_desc varchar(255) NULL,
-            en_desc varchar(255) NULL,
-            hr_desc varchar(255) NULL,
-            CONSTRAINT pk_product_category PRIMARY KEY (type)
-        );""";
+    CREATE TABLE user (
+        user_id SERIAL PRIMARY KEY,
+        username VARCHAR(50) NOT NULL UNIQUE,
+        password VARCHAR(255) NOT NULL,
+        email VARCHAR(100) NOT NULL UNIQUE,
+        full_name VARCHAR(100) NOT NULL,
+        department_id INT,
+        role VARCHAR(50) NOT NULL,
+        supervisor_id INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (department_id) REFERENCES department(department_id),
+        FOREIGN KEY (supervisor_id) REFERENCES user(user_id)
+    );
+    """;
+
         parseAndValidate(sql);
     }
 
     @Test
-    void testUserCategoryTable() {
+    void testParseRecurringPatternTable() {
         String sql = """
-        CREATE TABLE public.user_category (
-            status varchar(255) NOT NULL,
-            description varchar(255) NULL,
-            CONSTRAINT chk_user_status CHECK (((status)::text = ANY ((ARRAY['FARMER'::character varying, 'EXPERT'::character varying, 'ORGANIZATION'::character varying])::text[]))),
-            CONSTRAINT user_category_pkey PRIMARY KEY (status)
-        );""";
+    CREATE TABLE recurring_pattern (
+        pattern_id SERIAL PRIMARY KEY,
+        pattern_type VARCHAR(50) NOT NULL,
+        frequency VARCHAR(50),
+        days_of_week VARCHAR(50),
+        day_of_month INT,
+        month_of_year INT,
+        end_date DATE,
+        end_after_occur INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+    );
+    """;
+
+        parseAndValidate(sql);
+    }
+
+
+    @Test
+    void testParseEventTable() {
+        String sql = """
+    CREATE TABLE event (
+        event_id SERIAL PRIMARY KEY,
+        title VARCHAR(100) NOT NULL,
+        description TEXT,
+        start_time TIMESTAMP NOT NULL,
+        end_time TIMESTAMP NOT NULL,
+        location VARCHAR(255),
+        event_type VARCHAR(50) NOT NULL,
+        visibility_type VARCHAR(50) NOT NULL,
+        creator_id INT NOT NULL,
+        is_recurring BOOLEAN DEFAULT FALSE,
+        recur_pattern_id INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (creator_id) REFERENCES user(user_id),
+        FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
+    );
+    """;
+
         parseAndValidate(sql);
     }
 
     @Test
-    void testFieldActivityTable() {
+    void testParseEventAssignmentTable() {
         String sql = """
-        CREATE TABLE public.field_activity (
-            activity_type varchar(255) NOT NULL,
-            description varchar(255) NULL,
-            field_type varchar(255) NULL,
-            el_desc varchar(255) NULL,
-            tr_desc varchar(255) NULL,
-            en_desc varchar(255) NULL,
-            hr_desc varchar(255) NULL,
-            CONSTRAINT field_activity_pkey PRIMARY KEY (activity_type),
-            CONSTRAINT fk_field_activity_product FOREIGN KEY (field_type) REFERENCES public.product_category("type") ON DELETE SET NULL
-        );""";
+    CREATE TABLE event_assignment (
+        assignment_id SERIAL PRIMARY KEY,
+        event_id INT NOT NULL,
+        user_id INT,
+        department_id INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (event_id) REFERENCES event(event_id),
+        FOREIGN KEY (user_id) REFERENCES user(user_id),
+        FOREIGN KEY (department_id) REFERENCES department(department_id)
+    );
+    """;
+
         parseAndValidate(sql);
     }
+
+    @Test
+    void testParseEventExceptionTable() {
+        String sql = """
+    CREATE TABLE event_exception (
+        exception_id SERIAL PRIMARY KEY,
+        event_id INT NOT NULL,
+        exception_date DATE NOT NULL,
+        is_rescheduled BOOLEAN DEFAULT FALSE,
+        new_start_time TIMESTAMP,
+        new_end_time TIMESTAMP,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (event_id) REFERENCES event(event_id)
+    );
+    """;
+
+        parseAndValidate(sql);
+    }
+
+    @Test
+    void testParseTimeOffRequestTable() {
+        String sql = """
+    CREATE TABLE time_off_request (
+        request_id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL,
+        start_date DATE NOT NULL,
+        end_date DATE NOT NULL,
+        type VARCHAR(50) NOT NULL,
+        status VARCHAR(50) NOT NULL,
+        supervisor_id INT,
+        reason TEXT,
+        comments TEXT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES user(user_id),
+        FOREIGN KEY (supervisor_id) REFERENCES user(user_id)
+    );
+    """;
+
+        parseAndValidate(sql);
+    }
+
+    @Test
+    void testParseHolidayTable() {
+        String sql = """
+    CREATE TABLE holiday (
+        holiday_id SERIAL PRIMARY KEY,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        date DATE NOT NULL,
+        is_recurring BOOLEAN DEFAULT FALSE,
+        recur_pattern_id INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
+    );
+    """;
+
+        parseAndValidate(sql);
+    }
+
+    @Test
+    void testParseDepartmentDayOffTable() {
+        String sql = """
+    CREATE TABLE department_day_off (
+        day_off_id SERIAL PRIMARY KEY,
+        department_id INT NOT NULL,
+        name VARCHAR(100) NOT NULL,
+        description TEXT,
+        date DATE NOT NULL,
+        is_recurring BOOLEAN DEFAULT FALSE,
+        recur_pattern_id INT,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (department_id) REFERENCES department(department_id),
+        FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
+    );
+    """;
+
+        parseAndValidate(sql);
+    }
+
+
+    @Test
+    void testParseAbsenceTable() {
+        String sql = """
+    CREATE TABLE absence (
+        absence_id SERIAL PRIMARY KEY,
+        user_id INT NOT NULL,
+        start_time TIMESTAMP NOT NULL,
+        end_time TIMESTAMP NOT NULL,
+        reason TEXT,
+        is_notification BOOLEAN DEFAULT FALSE,
+        created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        FOREIGN KEY (user_id) REFERENCES user(user_id)
+    );
+    """;
+
+        parseAndValidate(sql);
+    }
+
+
+    @Test
+    void testParseAlterRecurringPatternAddEventId() {
+        String sql = """
+    ALTER TABLE recurring_pattern
+    ADD COLUMN event_id INT,
+    ADD FOREIGN KEY (event_id) REFERENCES event(event_id);
+    """;
+
+        parseAndValidate(sql);
+    }
+
+
+    @Test
+    void testParseCreateTriggerStatement() {
+        String sql = """
+    CREATE TRIGGER trg_department_set_updated_at
+    BEFORE UPDATE ON department
+    FOR EACH ROW
+    EXECUTE FUNCTION set_updated_at();
+    """;
+
+        parseAndValidate(sql);
+    }
+
+    @Test
+    void testParseEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs() {
+        String sql = """
+    CREATE TABLE employee_department (
+        employee_id INT NOT NULL,
+        department_id INT NOT NULL,
+        assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        assigned_by VARCHAR(100),
+        PRIMARY KEY (employee_id, department_id),
+        FOREIGN KEY (employee_id) REFERENCES employee(id),
+        FOREIGN KEY (department_id) REFERENCES department(id)
+    );
+    """;
+
+        parseAndValidate(sql);
+    }
+
+
+
 }
 

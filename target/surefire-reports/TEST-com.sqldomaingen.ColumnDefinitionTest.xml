@@ -1,0 +1,345 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.sqldomaingen.ColumnDefinitionTest" time="0.474" tests="31" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="21"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1253"/>
+    <property name="java.class.path" value="C:\Users\kosma\IdeaProjects\SQLDomainGen\target\test-classes;C:\Users\kosma\IdeaProjects\SQLDomainGen\target\classes;C:\Users\kosma\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\kosma\.m2\repository\org\hibernate\orm\hibernate-core\6.2.5.Final\hibernate-core-6.2.5.Final.jar;C:\Users\kosma\.m2\repository\jakarta\persistence\jakarta.persistence-api\3.1.0\jakarta.persistence-api-3.1.0.jar;C:\Users\kosma\.m2\repository\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;C:\Users\kosma\.m2\repository\org\jboss\logging\jboss-logging\3.5.3.Final\jboss-logging-3.5.3.Final.jar;C:\Users\kosma\.m2\repository\org\hibernate\common\hibernate-commons-annotations\6.0.6.Final\hibernate-commons-annotations-6.0.6.Final.jar;C:\Users\kosma\.m2\repository\io\smallrye\jandex\3.0.5\jandex-3.0.5.jar;C:\Users\kosma\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy\1.14.6\byte-buddy-1.14.6.jar;C:\Users\kosma\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.0\jakarta.xml.bind-api-4.0.0.jar;C:\Users\kosma\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-runtime\4.0.3\jaxb-runtime-4.0.3.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-core\4.0.3\jaxb-core-4.0.3.jar;C:\Users\kosma\.m2\repository\org\eclipse\angus\angus-activation\2.0.1\angus-activation-2.0.1.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\txw2\4.0.3\txw2-4.0.3.jar;C:\Users\kosma\.m2\repository\com\sun\istack\istack-commons-runtime\4.1.2\istack-commons-runtime-4.1.2.jar;C:\Users\kosma\.m2\repository\jakarta\inject\jakarta.inject-api\2.0.1\jakarta.inject-api-2.0.1.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.3\junit-jupiter-api-5.9.3.jar;C:\Users\kosma\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-commons\1.9.3\junit-platform-commons-1.9.3.jar;C:\Users\kosma\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.3\junit-jupiter-engine-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-engine\1.9.3\junit-platform-engine-1.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter\5.9.3\junit-jupiter-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.9.3\junit-jupiter-params-5.9.3.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-classic\1.4.11\logback-classic-1.4.11.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-core\1.4.11\logback-core-1.4.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter\3.1.3\spring-boot-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot\3.1.3\spring-boot-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-context\6.0.11\spring-context-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-aop\6.0.11\spring-aop-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-beans\6.0.11\spring-beans-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-expression\6.0.11\spring-expression-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\3.1.3\spring-boot-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-logging\3.1.3\spring-boot-starter-logging-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.20.0\log4j-to-slf4j-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-api\2.20.0\log4j-api-2.20.0.jar;C:\Users\kosma\.m2\repository\org\slf4j\jul-to-slf4j\2.0.7\jul-to-slf4j-2.0.7.jar;C:\Users\kosma\.m2\repository\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-core\6.0.11\spring-core-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-jcl\6.0.11\spring-jcl-6.0.11.jar;C:\Users\kosma\.m2\repository\org\yaml\snakeyaml\1.33\snakeyaml-1.33.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-test\3.1.3\spring-boot-starter-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test\3.1.3\spring-boot-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\3.1.3\spring-boot-test-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\com\jayway\jsonpath\json-path\2.8.0\json-path-2.8.0.jar;C:\Users\kosma\.m2\repository\net\minidev\json-smart\2.4.11\json-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\net\minidev\accessors-smart\2.4.11\accessors-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\org\ow2\asm\asm\9.3\asm-9.3.jar;C:\Users\kosma\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\kosma\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-junit-jupiter\5.3.1\mockito-junit-jupiter-5.3.1.jar;C:\Users\kosma\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\kosma\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-test\6.0.11\spring-test-6.0.11.jar;C:\Users\kosma\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\kosma\.m2\repository\org\projectlombok\lombok\1.18.30\lombok-1.18.30.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr4-runtime\4.13.1\antlr4-runtime-4.13.1.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-starter\3.1.3\spring-shell-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-autoconfigure\3.1.3\spring-shell-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-core\3.1.3\spring-shell-core-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-validation\3.1.3\spring-boot-starter-validation-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\10.1.12\tomcat-embed-el-10.1.12.jar;C:\Users\kosma\.m2\repository\org\hibernate\validator\hibernate-validator\8.0.1.Final\hibernate-validator-8.0.1.Final.jar;C:\Users\kosma\.m2\repository\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-messaging\6.0.11\spring-messaging-6.0.11.jar;C:\Users\kosma\.m2\repository\org\jline\jline\3.23.0\jline-3.23.0.jar;C:\Users\kosma\.m2\repository\org\antlr\ST4\4.3.1\ST4-4.3.1.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr-runtime\3.5.2\antlr-runtime-3.5.2.jar;C:\Users\kosma\.m2\repository\commons-io\commons-io\2.11.0\commons-io-2.11.0.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard\3.1.3\spring-shell-standard-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard-commands\3.1.3\spring-shell-standard-commands-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-table\3.1.3\spring-shell-table-3.1.3.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.6\byte-buddy-agent-1.14.6.jar;C:\Users\kosma\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\kosma\.m2\repository\com\github\spotbugs\spotbugs-annotations\4.7.3\spotbugs-annotations-4.7.3.jar;C:\Users\kosma\.m2\repository\com\google\code\findbugs\jsr305\3.0.2\jsr305-3.0.2.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="Europe/Athens"/>
+    <property name="os.name" value="Windows 11"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="GR"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-21\bin"/>
+    <property name="sun.java.command" value="C:\Users\kosma\AppData\Local\Temp\surefire12074289061068396285\surefirebooter-20250521142145354_5.jar C:\Users\kosma\AppData\Local\Temp\surefire12074289061068396285 2025-05-21T14-21-44_689-jvmRun1 surefire-20250521142145354_1tmp surefire_0-20250521142145354_3tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="C:\Users\kosma\IdeaProjects\SQLDomainGen\target\test-classes;C:\Users\kosma\IdeaProjects\SQLDomainGen\target\classes;C:\Users\kosma\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\kosma\.m2\repository\org\hibernate\orm\hibernate-core\6.2.5.Final\hibernate-core-6.2.5.Final.jar;C:\Users\kosma\.m2\repository\jakarta\persistence\jakarta.persistence-api\3.1.0\jakarta.persistence-api-3.1.0.jar;C:\Users\kosma\.m2\repository\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;C:\Users\kosma\.m2\repository\org\jboss\logging\jboss-logging\3.5.3.Final\jboss-logging-3.5.3.Final.jar;C:\Users\kosma\.m2\repository\org\hibernate\common\hibernate-commons-annotations\6.0.6.Final\hibernate-commons-annotations-6.0.6.Final.jar;C:\Users\kosma\.m2\repository\io\smallrye\jandex\3.0.5\jandex-3.0.5.jar;C:\Users\kosma\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy\1.14.6\byte-buddy-1.14.6.jar;C:\Users\kosma\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.0\jakarta.xml.bind-api-4.0.0.jar;C:\Users\kosma\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-runtime\4.0.3\jaxb-runtime-4.0.3.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-core\4.0.3\jaxb-core-4.0.3.jar;C:\Users\kosma\.m2\repository\org\eclipse\angus\angus-activation\2.0.1\angus-activation-2.0.1.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\txw2\4.0.3\txw2-4.0.3.jar;C:\Users\kosma\.m2\repository\com\sun\istack\istack-commons-runtime\4.1.2\istack-commons-runtime-4.1.2.jar;C:\Users\kosma\.m2\repository\jakarta\inject\jakarta.inject-api\2.0.1\jakarta.inject-api-2.0.1.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.3\junit-jupiter-api-5.9.3.jar;C:\Users\kosma\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-commons\1.9.3\junit-platform-commons-1.9.3.jar;C:\Users\kosma\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.3\junit-jupiter-engine-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-engine\1.9.3\junit-platform-engine-1.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter\5.9.3\junit-jupiter-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.9.3\junit-jupiter-params-5.9.3.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-classic\1.4.11\logback-classic-1.4.11.jar;C:\Users\kosma\.m2\repository\ch\qos\logback\logback-core\1.4.11\logback-core-1.4.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter\3.1.3\spring-boot-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot\3.1.3\spring-boot-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-context\6.0.11\spring-context-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-aop\6.0.11\spring-aop-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-beans\6.0.11\spring-beans-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-expression\6.0.11\spring-expression-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\3.1.3\spring-boot-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-logging\3.1.3\spring-boot-starter-logging-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-to-slf4j\2.20.0\log4j-to-slf4j-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-api\2.20.0\log4j-api-2.20.0.jar;C:\Users\kosma\.m2\repository\org\slf4j\jul-to-slf4j\2.0.7\jul-to-slf4j-2.0.7.jar;C:\Users\kosma\.m2\repository\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-core\6.0.11\spring-core-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-jcl\6.0.11\spring-jcl-6.0.11.jar;C:\Users\kosma\.m2\repository\org\yaml\snakeyaml\1.33\snakeyaml-1.33.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-test\3.1.3\spring-boot-starter-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test\3.1.3\spring-boot-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\3.1.3\spring-boot-test-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\com\jayway\jsonpath\json-path\2.8.0\json-path-2.8.0.jar;C:\Users\kosma\.m2\repository\net\minidev\json-smart\2.4.11\json-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\net\minidev\accessors-smart\2.4.11\accessors-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\org\ow2\asm\asm\9.3\asm-9.3.jar;C:\Users\kosma\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\kosma\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-junit-jupiter\5.3.1\mockito-junit-jupiter-5.3.1.jar;C:\Users\kosma\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\kosma\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-test\6.0.11\spring-test-6.0.11.jar;C:\Users\kosma\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\kosma\.m2\repository\org\projectlombok\lombok\1.18.30\lombok-1.18.30.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr4-runtime\4.13.1\antlr4-runtime-4.13.1.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-starter\3.1.3\spring-shell-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-autoconfigure\3.1.3\spring-shell-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-core\3.1.3\spring-shell-core-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-validation\3.1.3\spring-boot-starter-validation-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\10.1.12\tomcat-embed-el-10.1.12.jar;C:\Users\kosma\.m2\repository\org\hibernate\validator\hibernate-validator\8.0.1.Final\hibernate-validator-8.0.1.Final.jar;C:\Users\kosma\.m2\repository\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-messaging\6.0.11\spring-messaging-6.0.11.jar;C:\Users\kosma\.m2\repository\org\jline\jline\3.23.0\jline-3.23.0.jar;C:\Users\kosma\.m2\repository\org\antlr\ST4\4.3.1\ST4-4.3.1.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr-runtime\3.5.2\antlr-runtime-3.5.2.jar;C:\Users\kosma\.m2\repository\commons-io\commons-io\2.11.0\commons-io-2.11.0.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard\3.1.3\spring-shell-standard-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard-commands\3.1.3\spring-shell-standard-commands-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-table\3.1.3\spring-shell-table-3.1.3.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.6\byte-buddy-agent-1.14.6.jar;C:\Users\kosma\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\kosma\.m2\repository\com\github\spotbugs\spotbugs-annotations\4.7.3\spotbugs-annotations-4.7.3.jar;C:\Users\kosma\.m2\repository\com\google\code\findbugs\jsr305\3.0.2\jsr305-3.0.2.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\kosma"/>
+    <property name="user.language" value="el"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-04-15"/>
+    <property name="java.home" value="C:\Program Files\Java\jdk-21"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="C:\Users\kosma\IdeaProjects\SQLDomainGen"/>
+    <property name="java.vm.compressedOopsMode" value="32-bit"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\kosma\AppData\Local\Temp\surefire12074289061068396285\surefirebooter-20250521142145354_5.jar"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="21.0.7+8-LTS-245"/>
+    <property name="user.name" value="kosma"/>
+    <property name="stdout.encoding" value="Cp1253"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="C:\Users\kosma\.m2\repository"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="C:\Users\kosma\AppData\Local\Temp\"/>
+    <property name="java.version" value="21.0.7"/>
+    <property name="user.dir" value="C:\Users\kosma\IdeaProjects\SQLDomainGen"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="Cp1253"/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-21\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Program Files\Java\jdk-21\bin;C:\Python313\Scripts\;C:\Python313\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\apache-maven-3.9.9\bin;C:\ProgramData\chocolatey\bin;C:\Program Files\nodejs\;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Git\cmd;C:\Users\kosma\AppData\Local\Microsoft\WindowsApps;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2024.3.3\bin;;C:\Users\kosma\AppData\Local\GitHubDesktop\bin;C:\Users\kosma\AppData\Roaming\npm;C:\Program Files\JetBrains\IntelliJ IDEA 2024.3.3\bin;;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="Cp1253"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="21.0.7+8-LTS-245"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="65.0"/>
+  </properties>
+  <testcase name="testFromContext_WithTextAndTimestampDefault" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.215">
+    <system-out><![CDATA[14:21:46.273 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithTextAndTimestampDefault
+14:21:46.437 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> titleTEXTNOT NULL
+14:21:46.439 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TEXT' to Java type 'String'
+14:21:46.439 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: title, SQL Type: TEXT, Java Type: String, Primary Key: false
+14:21:46.439 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: Text NOT NULL
+14:21:46.439 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: title, SQL Type: TEXT, Base SQL Type: TEXT, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: false, Nullable: false, Unique: false, Default: null, Check Constraint: null
+14:21:46.441 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> contentTEXT
+14:21:46.441 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TEXT' to Java type 'String'
+14:21:46.441 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: content, SQL Type: TEXT, Java Type: String, Primary Key: false
+14:21:46.441 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: Text nullable
+14:21:46.441 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: content, SQL Type: TEXT, Base SQL Type: TEXT, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: false, Nullable: true, Unique: false, Default: null, Check Constraint: null
+14:21:46.448 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> created_atTIMESTAMPDEFAULTCURRENT_TIMESTAMP
+14:21:46.448 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'TIMESTAMP' to Java type 'java.time.LocalDateTime'
+14:21:46.448 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: created_at, SQL Type: TIMESTAMP, Java Type: java.time.LocalDateTime, Primary Key: false
+14:21:46.448 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: Timestamp with default
+14:21:46.448 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: created_at, SQL Type: TIMESTAMP, Base SQL Type: TIMESTAMP, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: false, Nullable: true, Unique: false, Default: CURRENT_TIMESTAMP, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithForeignKey_OnUpdateRestrict" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.001">
+    <system-out><![CDATA[14:21:46.459 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> order_idINTREFERENCESorders(id)ON UPDATERESTRICT
+14:21:46.459 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: orders, Referenced Column: id
+14:21:46.459 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.459 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: order_id, SQL Type: INT, Java Type: Long, Primary Key: false
+14:21:46.459 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithForeignKey_OnUpdateRestrict
+14:21:46.459 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: order_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: true, Nullable: true, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithUniqueConstraint" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.008">
+    <system-out><![CDATA[14:21:46.466 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithUniqueConstraint
+14:21:46.472 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> phone_numberVARCHAR(15)UNIQUE
+14:21:46.472 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
+14:21:46.472 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: phone_number, SQL Type: VARCHAR(15), Java Type: String, Primary Key: false
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithCompositeKey" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.004">
+    <system-out><![CDATA[14:21:46.475 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> order_idINTPRIMARY KEY
+14:21:46.475 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- 🔑 Column 'order_id' marked as PRIMARY KEY
+14:21:46.475 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.475 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: order_id, SQL Type: INT, Java Type: Long, Primary Key: true
+14:21:46.475 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithCompositeKey - Order ID
+14:21:46.475 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: order_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: true, Foreign Key: false, Nullable: false, Unique: false, Default: null, Check Constraint: null
+14:21:46.475 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> customer_idINTPRIMARY KEY
+14:21:46.475 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- 🔑 Column 'customer_id' marked as PRIMARY KEY
+14:21:46.478 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.478 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: customer_id, SQL Type: INT, Java Type: Long, Primary Key: true
+14:21:46.478 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithCompositeKey - Customer ID
+14:21:46.478 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: customer_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: true, Foreign Key: false, Nullable: false, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testToColumn" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.005">
+    <system-out><![CDATA[14:21:46.478 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> idBIGINTPRIMARY KEY
+14:21:46.478 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- 🔑 Column 'id' marked as PRIMARY KEY
+14:21:46.478 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'BIGINT' to Java type 'Long'
+14:21:46.478 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: id, SQL Type: BIGINT, Java Type: Long, Primary Key: true
+14:21:46.478 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testToColumn
+14:21:46.478 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: id, SQL Type: BIGINT, Base SQL Type: BIGINT, Length: 255, Precision: 0, Scale: 0, Primary Key: true, Foreign Key: false, Nullable: false, Unique: false, Default: null, Check Constraint: null
+14:21:46.478 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Converting ColumnDefinition to Column object...
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithForeignKey_OnUpdateCascade" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.005">
+    <system-out><![CDATA[14:21:46.485 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> customer_idINTREFERENCEScustomers(id)ON UPDATECASCADE
+14:21:46.485 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: customers, Referenced Column: id
+14:21:46.485 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.485 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: customer_id, SQL Type: INT, Java Type: Long, Primary Key: false
+14:21:46.485 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithForeignKey_OnUpdateCascade
+14:21:46.485 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: customer_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: true, Nullable: true, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithDefault" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.003">
+    <system-out><![CDATA[14:21:46.491 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> statusVARCHAR(20)DEFAULT'active'
+14:21:46.491 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
+14:21:46.491 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: status, SQL Type: VARCHAR(20), Java Type: String, Primary Key: false
+14:21:46.491 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithDefault
+14:21:46.491 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: status, SQL Type: VARCHAR(20), Base SQL Type: VARCHAR, Length: 20, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: false, Nullable: true, Unique: false, Default: active, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithForeignKey_And_Cascade" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.003">
+    <system-out><![CDATA[14:21:46.491 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> order_idINTREFERENCESorders(id)ON DELETECASCADE
+14:21:46.494 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: orders, Referenced Column: id
+14:21:46.494 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.494 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: order_id, SQL Type: INT, Java Type: Long, Primary Key: false
+14:21:46.494 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithForeignKey_And_Cascade
+14:21:46.494 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: order_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: true, Nullable: true, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithForeignKey_OnUpdateNoAction" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.002">
+    <system-out><![CDATA[14:21:46.495 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> order_idINTREFERENCESorders(id)ON UPDATENO ACTION
+14:21:46.497 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: orders, Referenced Column: id
+14:21:46.497 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.497 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: order_id, SQL Type: INT, Java Type: Long, Primary Key: false
+14:21:46.497 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithForeignKey_OnUpdateNoAction
+14:21:46.497 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: order_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: true, Nullable: true, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithForeignKey" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.004">
+    <system-out><![CDATA[14:21:46.501 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> user_idINTEGERREFERENCESusers(id)
+14:21:46.501 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: users, Referenced Column: id
+14:21:46.501 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INTEGER' to Java type 'Long'
+14:21:46.501 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: user_id, SQL Type: INTEGER, Java Type: Long, Primary Key: false
+14:21:46.501 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithForeignKey
+14:21:46.501 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: user_id, SQL Type: INTEGER, Base SQL Type: INTEGER, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: true, Nullable: true, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithNotNull" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.004">
+    <system-out><![CDATA[14:21:46.505 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> usernameVARCHAR(50)NOT NULL
+14:21:46.505 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
+14:21:46.505 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: username, SQL Type: VARCHAR(50), Java Type: String, Primary Key: false
+14:21:46.507 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithNotNull
+14:21:46.507 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: username, SQL Type: VARCHAR(50), Base SQL Type: VARCHAR, Length: 50, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: false, Nullable: false, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithPrimaryKeyAndForeignKey" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.005">
+    <system-out><![CDATA[14:21:46.509 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithPrimaryKeyAndForeignKey
+14:21:46.511 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> order_idINTPRIMARY KEYREFERENCESorders(id)
+14:21:46.511 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- 🔑 Column 'order_id' marked as PRIMARY KEY
+14:21:46.511 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: orders, Referenced Column: id
+14:21:46.511 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.511 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: order_id, SQL Type: INT, Java Type: Long, Primary Key: true
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithCheckConstraintRange" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.009">
+    <system-out><![CDATA[14:21:46.514 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithCheckConstraintRange
+14:21:46.521 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> salaryDECIMAL(10,2)CHECK(salary>30000ANDsalary<100000)
+14:21:46.521 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
+14:21:46.521 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: salary, SQL Type: DECIMAL(10,2), Java Type: java.math.BigDecimal, Primary Key: false
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithMultipleConstraints" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.003">
+    <system-out><![CDATA[14:21:46.523 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> amountDECIMAL(10,2)NOT NULLCHECK(amount>0)DEFAULT100.00
+14:21:46.526 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
+14:21:46.526 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: amount, SQL Type: DECIMAL(10,2), Java Type: java.math.BigDecimal, Primary Key: false
+14:21:46.526 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithMultipleConstraints
+14:21:46.526 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: amount, SQL Type: DECIMAL(10,2), Base SQL Type: DECIMAL, Length: 10, Precision: 10, Scale: 2, Primary Key: false, Foreign Key: false, Nullable: false, Unique: false, Default: 100.00, Check Constraint: (amount > 0)
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithForeignKey_OnDeleteRestrict" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.004">
+    <system-out><![CDATA[14:21:46.526 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> order_idINTREFERENCESorders(id)ON DELETERESTRICT
+14:21:46.526 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: orders, Referenced Column: id
+14:21:46.526 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.530 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: order_id, SQL Type: INT, Java Type: Long, Primary Key: false
+14:21:46.530 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithForeignKey_OnDeleteRestrict
+14:21:46.530 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: order_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: true, Nullable: true, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithUnique" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.003">
+    <system-out><![CDATA[14:21:46.533 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> emailVARCHAR(100)UNIQUE
+14:21:46.533 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
+14:21:46.533 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: email, SQL Type: VARCHAR(100), Java Type: String, Primary Key: false
+14:21:46.533 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithUnique
+14:21:46.533 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: email, SQL Type: VARCHAR(100), Base SQL Type: VARCHAR, Length: 100, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: false, Nullable: true, Unique: true, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithCheckConstraint" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.002">
+    <system-out><![CDATA[14:21:46.537 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> ageINTEGERCHECK(age>=18)
+14:21:46.537 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INTEGER' to Java type 'Long'
+14:21:46.537 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: age, SQL Type: INTEGER, Java Type: Long, Primary Key: false
+14:21:46.537 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithCheckConstraint
+14:21:46.537 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: age, SQL Type: INTEGER, Base SQL Type: INTEGER, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: false, Nullable: true, Unique: false, Default: null, Check Constraint: (age >= 18)
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithDateType" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.002">
+    <system-out><![CDATA[14:21:46.539 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithDateType
+14:21:46.539 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> birth_dateDATE
+14:21:46.539 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DATE' to Java type 'java.time.LocalDate'
+14:21:46.539 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: birth_date, SQL Type: DATE, Java Type: java.time.LocalDate, Primary Key: false
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithCheckConstraintBetween" classname="com.sqldomaingen.ColumnDefinitionTest" time="0">
+    <system-out><![CDATA[14:21:46.542 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithCheckConstraintBetween
+14:21:46.542 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> ageINTEGERCHECK(ageBETWEEN18AND65)
+14:21:46.542 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INTEGER' to Java type 'Long'
+14:21:46.542 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: age, SQL Type: INTEGER, Java Type: Long, Primary Key: false
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithDecimalNoScale" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.003">
+    <system-out><![CDATA[14:21:46.549 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> weightDECIMAL(8)
+14:21:46.549 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
+14:21:46.549 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: weight, SQL Type: DECIMAL(8), Java Type: java.math.BigDecimal, Primary Key: false
+14:21:46.549 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithDecimalNoScale
+14:21:46.549 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: weight, SQL Type: DECIMAL(8), Base SQL Type: DECIMAL, Length: 8, Precision: 8, Scale: 0, Primary Key: false, Foreign Key: false, Nullable: true, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithForeignKey_OnUpdateSetNull" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.006">
+    <system-out><![CDATA[14:21:46.549 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> order_idINTREFERENCESorders(id)ON UPDATESET NULL
+14:21:46.549 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: orders, Referenced Column: id
+14:21:46.549 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.549 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: order_id, SQL Type: INT, Java Type: Long, Primary Key: false
+14:21:46.549 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithForeignKey_OnUpdateSetNull
+14:21:46.549 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: order_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: true, Nullable: true, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithForeignKey_OnDeleteNoAction" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.002">
+    <system-out><![CDATA[14:21:46.557 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> order_idINTREFERENCESorders(id)ON DELETENO ACTION
+14:21:46.557 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: orders, Referenced Column: id
+14:21:46.557 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.557 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: order_id, SQL Type: INT, Java Type: Long, Primary Key: false
+14:21:46.557 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithForeignKey_OnDeleteNoAction
+14:21:46.557 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: order_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: true, Nullable: true, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithCheckConstraintPercentage" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.002">
+    <system-out><![CDATA[14:21:46.560 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithCheckConstraintPercentage
+14:21:46.560 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> discount_percentageINTCHECK(discount_percentage>=0ANDdiscount_percentage<=50)
+14:21:46.562 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.562 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: discount_percentage, SQL Type: INT, Java Type: Long, Primary Key: false
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithPrimaryKey" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.002">
+    <system-out><![CDATA[14:21:46.565 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> idSERIALPRIMARY KEY
+14:21:46.565 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- 🔑 Column 'id' marked as PRIMARY KEY
+14:21:46.565 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'SERIAL' to Java type 'Long'
+14:21:46.565 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: id, SQL Type: SERIAL, Java Type: Long, Primary Key: true
+14:21:46.565 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithPrimaryKey
+14:21:46.565 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: id, SQL Type: SERIAL, Base SQL Type: SERIAL, Length: 255, Precision: 0, Scale: 0, Primary Key: true, Foreign Key: false, Nullable: false, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_PrimaryKey_WithoutSerial" classname="com.sqldomaingen.ColumnDefinitionTest" time="0">
+    <system-out><![CDATA[14:21:46.567 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> customer_idBIGINTPRIMARY KEY
+14:21:46.567 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- 🔑 Column 'customer_id' marked as PRIMARY KEY
+14:21:46.567 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'BIGINT' to Java type 'Long'
+14:21:46.567 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: customer_id, SQL Type: BIGINT, Java Type: Long, Primary Key: true
+14:21:46.567 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_PrimaryKey_WithoutSerial
+14:21:46.567 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: customer_id, SQL Type: BIGINT, Base SQL Type: BIGINT, Length: 255, Precision: 0, Scale: 0, Primary Key: true, Foreign Key: false, Nullable: false, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithForeignKey_OnDeleteSetNull" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.002">
+    <system-out><![CDATA[14:21:46.570 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> order_idINTREFERENCESorders(id)ON DELETESET NULL
+14:21:46.572 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: orders, Referenced Column: id
+14:21:46.572 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.572 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: order_id, SQL Type: INT, Java Type: Long, Primary Key: false
+14:21:46.572 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithForeignKey_OnDeleteSetNull
+14:21:46.572 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: order_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: true, Nullable: true, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithDefaultNumericValue" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.004">
+    <system-out><![CDATA[14:21:46.572 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> scoreDECIMAL(5,2)DEFAULT99.99
+14:21:46.576 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'DECIMAL' to Java type 'java.math.BigDecimal'
+14:21:46.576 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: score, SQL Type: DECIMAL(5,2), Java Type: java.math.BigDecimal, Primary Key: false
+14:21:46.576 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithDefaultNumericValue
+14:21:46.576 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: score, SQL Type: DECIMAL(5,2), Base SQL Type: DECIMAL, Length: 5, Precision: 5, Scale: 2, Primary Key: false, Foreign Key: false, Nullable: true, Unique: false, Default: 99.99, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithNullableFalse" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.003">
+    <system-out><![CDATA[14:21:46.579 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithNullableFalse
+14:21:46.579 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> emailVARCHAR(100)NOT NULL
+14:21:46.579 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'VARCHAR' to Java type 'String'
+14:21:46.579 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: email, SQL Type: VARCHAR(100), Java Type: String, Primary Key: false
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_JoinTableColumnsWithPKAndFK" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.006">
+    <system-out><![CDATA[14:21:46.583 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_JoinTableColumnsWithPKAndFK
+14:21:46.583 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> employee_idINTNOT NULLPRIMARY KEYREFERENCESemployee(id)
+14:21:46.584 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- 🔑 Column 'employee_id' marked as PRIMARY KEY
+14:21:46.584 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: employee, Referenced Column: id
+14:21:46.584 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.584 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: employee_id, SQL Type: INT, Java Type: Long, Primary Key: true
+14:21:46.584 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: employee_id
+14:21:46.584 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: employee_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: true, Foreign Key: true, Nullable: false, Unique: false, Default: null, Check Constraint: null
+14:21:46.584 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> department_idINTNOT NULLPRIMARY KEYREFERENCESdepartment(id)
+14:21:46.586 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- 🔑 Column 'department_id' marked as PRIMARY KEY
+14:21:46.587 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: department, Referenced Column: id
+14:21:46.587 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.587 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: department_id, SQL Type: INT, Java Type: Long, Primary Key: true
+14:21:46.587 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: department_id
+14:21:46.587 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: department_id, SQL Type: INT, Base SQL Type: INT, Length: 255, Precision: 0, Scale: 0, Primary Key: true, Foreign Key: true, Nullable: false, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_SimpleColumn" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.004">
+    <system-out><![CDATA[14:21:46.590 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> idINTEGER
+14:21:46.591 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INTEGER' to Java type 'Long'
+14:21:46.591 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: id, SQL Type: INTEGER, Java Type: Long, Primary Key: false
+14:21:46.591 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_SimpleColumn
+14:21:46.591 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Column Details - Name: id, SQL Type: INTEGER, Base SQL Type: INTEGER, Length: 255, Precision: 0, Scale: 0, Primary Key: false, Foreign Key: false, Nullable: true, Unique: false, Default: null, Check Constraint: null
+]]></system-out>
+  </testcase>
+  <testcase name="testFromContext_WithForeignKeyCascade" classname="com.sqldomaingen.ColumnDefinitionTest" time="0.003">
+    <system-out><![CDATA[14:21:46.594 [main] INFO com.sqldomaingen.ColumnDefinitionTest -- Starting test: testFromContext_WithForeignKeyCascade
+14:21:46.595 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsing Column Definition -> order_idINTREFERENCESorders(id)ON DELETECASCADE
+14:21:46.595 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Extracted Foreign Key -> Referenced Table: orders, Referenced Column: id
+14:21:46.595 [main] INFO com.sqldomaingen.util.TypeMapper -- Mapping SQL type 'INT' to Java type 'Long'
+14:21:46.595 [main] INFO com.sqldomaingen.parser.ColumnDefinition -- Parsed Column -> Name: order_id, SQL Type: INT, Java Type: Long, Primary Key: false
+]]></system-out>
+  </testcase>
+</testsuite>

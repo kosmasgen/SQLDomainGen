@@ -4,7 +4,7 @@ import com.sqldomaingen.model.Relationship;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.util.NamingConverter;
-import lombok.Getter;  // Εισαγωγή του Lombok @Getter
+import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -13,7 +13,7 @@ import org.springframework.stereotype.Component;
 
 import java.util.*;
 
-@Getter  // Προσθήκη του Lombok @Getter στην κλάση
+@Getter
 @NoArgsConstructor
 @Component
 public class RelationshipResolver {
@@ -53,8 +53,8 @@ public class RelationshipResolver {
         String fk1ReferencedTablePascal = NamingConverter.toPascalCase(fk1.getReferencedTable());
         String fk2ReferencedTablePascal = NamingConverter.toPascalCase(fk2.getReferencedTable());
 
-        Table table1 = tableMap.get(fk1ReferencedTablePascal);
-        Table table2 = tableMap.get(fk2ReferencedTablePascal);
+        Table table1 = findTargetTable(fk1ReferencedTablePascal);
+        Table table2 = findTargetTable(fk2ReferencedTablePascal);
 
         if (table1 == null || table2 == null) {
             logger.warn("⚠️ One or both referenced tables not found for join table '{}': {} -> {}, {} -> {}",
@@ -99,7 +99,7 @@ public class RelationshipResolver {
     }
 
 
-    private void addInverseRelationship(Relationship relationship, Column column, Table sourceTable) {
+    private void addInverseRelationship(Relationship relationship, Column column) {
         Table targetTable = tableMap.get(relationship.getTargetTable());
         if (targetTable == null) {
             logger.warn("⚠️ Target table '{}' not found while adding inverse relationship for '{}'", relationship.getTargetTable(), column.getName());
@@ -126,9 +126,13 @@ public class RelationshipResolver {
 
         // Εδώ θέλουμε mappedBy μόνο αν ΔΕΝ είναι ManyToMany
         if (relationship.getRelationshipType() != Relationship.RelationshipType.MANYTOMANY) {
-            String mappedByValue = NamingConverter.toCamelCase(column.getName().replace("_id", ""));
+            String mappedByValue = getMappedByFieldName(relationship, column);
             inverseRelationship.setMappedBy(mappedByValue);
-            relationship.setMappedBy(mappedByValue);
+            logger.info("🔧 Setting mappedBy='{}' for inverse relationship {} -> {}",
+                    mappedByValue,
+                    inverseRelationship.getSourceTable(),
+                    inverseRelationship.getTargetTable());
+
         }
 
         if (!targetTable.getRelationships().contains(inverseRelationship)) {
@@ -140,6 +144,16 @@ public class RelationshipResolver {
         }
     }
 
+    private String getMappedByFieldName(Relationship relationship, Column column) {
+        String rawName = column.getName();
+
+        // Αν η στήλη τελειώνει σε _id, αφαιρούμε το _id
+        if (rawName.toLowerCase().endsWith("_id")) {
+            rawName = rawName.substring(0, rawName.length() - 3);
+        }
+
+        return NamingConverter.toCamelCase(rawName);
+    }
 
 
 
@@ -162,7 +176,7 @@ public class RelationshipResolver {
                 logger.info("✅ Relationship created: {} -> {} ({})",
                         relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType());
 
-                addInverseRelationship(relationship, column, sourceTable);
+                addInverseRelationship(relationship, column);
             } else {
                 logger.warn("❌ No relationship created for foreign key '{}'", column.getName());
             }
@@ -299,24 +313,27 @@ public class RelationshipResolver {
     }
 
 
-    private boolean isJoinTable(Table table) {
-        List<Column> columns = table.getColumns();
+    public boolean isJoinTable(Table table) {
+        List<Column> pkColumns = table.getColumns().stream()
+                .filter(Column::isPrimaryKey)
+                .toList();
 
-        long fkCount = columns.stream().filter(Column::isForeignKey).count();
-        long pkCount = columns.stream().filter(Column::isPrimaryKey).count();
-        long nonPkFkColumns = columns.stream()
-                .filter(c -> !c.isPrimaryKey() && !c.isForeignKey())
-                .count();
+        List<Column> fkColumns = table.getColumns().stream()
+                .filter(Column::isForeignKey)
+                .toList();
 
-        // Ένα Join Table πρέπει να έχει τουλάχιστον 2 FK ή 1 FK + extra columns
-        boolean isJoinTable = fkCount >= 2 || (fkCount >= 1 && nonPkFkColumns > 0);
+        // Πρέπει να υπάρχουν ακριβώς 2 foreign keys
+        if (fkColumns.size() != 2) return false;
 
-        logger.debug("🔍 Checking if '{}' is join table. FK Count: {}, PK Count: {}, Extra Columns: {}, Is Join Table: {}",
-                table.getName(), fkCount, pkCount, nonPkFkColumns, isJoinTable);
+        // Πρέπει να είναι σύνθετο primary key με 2 στήλες
+        boolean pkIsComposite = pkColumns.size() == 2;
 
-        return isJoinTable;
+        // Πρέπει το primary key να περιέχει και τα δύο foreign keys
+        boolean pkIncludesAllFks = new HashSet<>(pkColumns).containsAll(fkColumns);
+
+        // Αν είναι composite PK με 2 FKs, τότε έστω και με extra στήλες, είναι join table με metadata
+        return pkIsComposite && pkIncludesAllFks;
     }
-
 
     /**
      * Ελέγχει αν υπάρχει σχέση `OneToMany` μετρώντας αναφορές στον πίνακα προορισμού.
@@ -346,9 +363,6 @@ public class RelationshipResolver {
 
         return result;
     }
-
-
-
 
     /**
      * Βρίσκει τον πίνακα-στόχο.
@@ -443,6 +457,4 @@ public class RelationshipResolver {
         return sourceTable.getColumns().stream()
                 .anyMatch(col -> col.isForeignKey() && col.getReferencedTable().equalsIgnoreCase(targetTable.getName()));
     }
-
-
 }

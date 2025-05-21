@@ -82,3 +82,15 @@
 1739951921240:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
 1741685418439:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder fals
 1741685462147:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1747820767986:CREATE TABLE event_assignment (
+1747820768019:);
+1747820768023:CREATE TABLE time_off_request (
+1747820768060:);
+1747820768064:CREATE TABLE absence (
+1747820768088:);
+1747820768092:CREATE TABLE user (
+1747820768104:);
+1747820768107:CREATE TABLE event_resource_booking (
+1747820768124:);
+1747820768126:CREATE TABLE user_profile (
+1747820817526:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
