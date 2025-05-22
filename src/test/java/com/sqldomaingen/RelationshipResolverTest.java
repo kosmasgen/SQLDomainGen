@@ -219,179 +219,7 @@ class RelationshipResolverTest {
         log.info("🎉 OneToMany relationship resolved correctly!");
     }
 
-    @Test
-    void testJoinTableWithExtraColumnIsManyToMany() {
-        log.info("🔵 Running test: testJoinTableWithExtraColumnIsManyToMany");
 
-        Table order = new Table();
-        order.setName("Orders");
-        Column orderPrimaryKey = new Column();
-        orderPrimaryKey.setName("id");
-        orderPrimaryKey.setSqlType("BIGINT");
-        orderPrimaryKey.setPrimaryKey(true);
-        orderPrimaryKey.setUnique(true);
-        order.addColumn(orderPrimaryKey);
-
-        Table product = new Table();
-        product.setName("Products");
-        Column productPrimaryKey = new Column();
-        productPrimaryKey.setName("id");
-        productPrimaryKey.setSqlType("BIGINT");
-        productPrimaryKey.setPrimaryKey(true);
-        productPrimaryKey.setUnique(true);
-        product.addColumn(productPrimaryKey);
-
-        Table orderProduct = new Table();
-        orderProduct.setName("OrderProducts");
-
-        Column orderId = new Column();
-        orderId.setName("order_id");
-        orderId.setSqlType("INT");
-        orderId.setForeignKey(true);
-        orderId.setReferencedTable("Orders");
-        orderId.setReferencedColumn("id");
-        orderId.setPrimaryKey(true);
-
-        Column productId = new Column();
-        productId.setName("product_id");
-        productId.setSqlType("INT");
-        productId.setForeignKey(true);
-        productId.setReferencedTable("Products");
-        productId.setReferencedColumn("id");
-        productId.setPrimaryKey(true);
-
-        Column extraColumn = new Column();
-        extraColumn.setName("quantity");
-        extraColumn.setSqlType("INT");
-
-        orderProduct.addColumn(orderId);
-        orderProduct.addColumn(productId);
-        orderProduct.addColumn(extraColumn);
-
-        Map<String, Table> tableMap = new HashMap<>();
-        tableMap.put("Orders", order);
-        tableMap.put("Products", product);
-        tableMap.put("OrderProducts", orderProduct);
-
-        RelationshipResolver resolver = new RelationshipResolver(tableMap);
-        resolver.resolveRelationshipsForAllTables();
-
-        List<Relationship> relationships = resolver.getRelationships();
-
-        System.out.println("🔍 Relationships found: " + relationships.size());
-        relationships.forEach(rel -> System.out.println(
-                "🔗 Relationship: " + rel.getSourceTable() + " -> " + rel.getTargetTable() + " | Type: " + rel.getRelationshipType()
-        ));
-
-        assertEquals(1, relationships.size(), "Should create only one ManyToMany relationship");
-        assertTrue(relationships.stream().allMatch(rel -> rel.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY),
-                "The relationship should be ManyToMany");
-
-        log.info("✅ Test testJoinTableWithExtraColumnIsManyToMany completed successfully.");
-    }
-
-    @Test
-    void testIsJoinTableWithOnlyTwoFKCompositePK() {
-        log.info("🔵 Running test: testIsJoinTableWithOnlyTwoFKCompositePK");
-
-        Table joinTable = new Table();
-        joinTable.setName("employee_department");
-
-        Column employeeId = new Column();
-        employeeId.setName("employee_id");
-        employeeId.setSqlType("INT");
-        employeeId.setPrimaryKey(true);
-        employeeId.setForeignKey(true);
-        employeeId.setReferencedTable("employee");
-        employeeId.setReferencedColumn("id");
-
-        Column departmentId = new Column();
-        departmentId.setName("department_id");
-        departmentId.setSqlType("INT");
-        departmentId.setPrimaryKey(true);
-        departmentId.setForeignKey(true);
-        departmentId.setReferencedTable("department");
-        departmentId.setReferencedColumn("id");
-
-        joinTable.addColumn(employeeId);
-        joinTable.addColumn(departmentId);
-
-        // ✅ Χρήση instance
-        RelationshipResolver resolver = new RelationshipResolver(Map.of());
-        boolean result = resolver.isJoinTable(joinTable);
-
-        log.info("📎 isJoinTable(employee_department) = {}", result);
-        assertTrue(result, "Table with 2 composite FKs should be considered join table");
-    }
-
-    @Test
-    void testResolveRelationships_ManyToManyJoinTable() {
-        log.info("🔵 Running test: testResolveRelationships_ManyToManyJoinTable");
-
-        // Πίνακας Employee
-        Table employee = new Table();
-        employee.setName("employee");
-        Column employeeId = new Column();
-        employeeId.setName("id");
-        employeeId.setSqlType("INT");
-        employeeId.setPrimaryKey(true);
-        employee.addColumn(employeeId);
-
-        // Πίνακας Department
-        Table department = new Table();
-        department.setName("department");
-        Column departmentId = new Column();
-        departmentId.setName("id");
-        departmentId.setSqlType("INT");
-        departmentId.setPrimaryKey(true);
-        department.addColumn(departmentId);
-
-        // Join Table: employee_department
-        Table employeeDepartment = new Table();
-        employeeDepartment.setName("employee_department");
-
-        Column empFk = new Column();
-        empFk.setName("employee_id");
-        empFk.setSqlType("INT");
-        empFk.setPrimaryKey(true);
-        empFk.setForeignKey(true);
-        empFk.setReferencedTable("employee");
-        empFk.setReferencedColumn("id");
-
-        Column deptFk = new Column();
-        deptFk.setName("department_id");
-        deptFk.setSqlType("INT");
-        deptFk.setPrimaryKey(true);
-        deptFk.setForeignKey(true);
-        deptFk.setReferencedTable("department");
-        deptFk.setReferencedColumn("id");
-
-        employeeDepartment.addColumn(empFk);
-        employeeDepartment.addColumn(deptFk);
-
-        // 📦 Map με όλα τα tables
-        Map<String, Table> tableMap = new HashMap<>();
-        tableMap.put("Employee", employee);
-        tableMap.put("Department", department);
-        tableMap.put("EmployeeDepartment", employeeDepartment); // PascalCase key
-
-        // 🚀 Κλήση resolver
-        RelationshipResolver resolver = new RelationshipResolver(tableMap);
-        List<Relationship> relationships = resolver.resolveRelationships(employeeDepartment);
-
-        // ✅ Έλεγχοι
-        assertEquals(1, relationships.size(), "Expected one ManyToMany relationship");
-
-        Relationship rel = relationships.get(0);
-        assertEquals("Employee", rel.getSourceTable());
-        assertEquals("Department", rel.getTargetTable());
-        assertEquals(Relationship.RelationshipType.MANYTOMANY, rel.getRelationshipType());
-        assertEquals("employee_department", rel.getJoinTableName());
-        assertEquals("employee_id", rel.getSourceColumn());
-        assertEquals("department_id", rel.getInverseJoinColumn());
-
-        log.info("✅ ManyToMany relationship verified: {}", rel);
-    }
 
     @Test
     void testSelfReferencingForeignKeyDetected() {
@@ -494,5 +322,75 @@ class RelationshipResolverTest {
 
         log.info("🎯 Self-referencing supervisor relationship resolved successfully!");
     }
+
+    @Test
+    void testPseudoManyToManyConstraintResolvesCorrectly() {
+        log.info("🔵 Running test: testPseudoManyToManyConstraintResolvesCorrectly");
+
+        // 📦 Table: Student
+        Table studentTable = new Table();
+        studentTable.setName("Student");
+        Column studentId = new Column();
+        studentId.setName("id");
+        studentId.setPrimaryKey(true);
+        studentId.setSqlType("BIGINT");
+        studentId.setUnique(true);
+        studentTable.addColumn(studentId);
+
+        // 📦 Table: Course
+        Table courseTable = new Table();
+        courseTable.setName("Course");
+        Column courseId = new Column();
+        courseId.setName("id");
+        courseId.setPrimaryKey(true);
+        courseId.setSqlType("BIGINT");
+        courseId.setUnique(true);
+        courseTable.addColumn(courseId);
+
+        // 📦 Table: Enrollment (pseudo-ManyToMany via constraint)
+        Table enrollmentTable = new Table();
+        enrollmentTable.setName("Enrollment");
+
+        Column studentRef = new Column();
+        studentRef.setName("student_id");
+        studentRef.setSqlType("BIGINT");
+        studentRef.setForeignKey(true);
+        studentRef.setReferencedTable("Student");
+        studentRef.setReferencedColumn("id");
+        studentRef.setManyToMany(true); // ⛳ pseudo-constraint!
+        enrollmentTable.addColumn(studentRef);
+
+        Column courseRef = new Column();
+        courseRef.setName("course_id");
+        courseRef.setSqlType("BIGINT");
+        courseRef.setForeignKey(true);
+        courseRef.setReferencedTable("Course");
+        courseRef.setReferencedColumn("id");
+        courseRef.setManyToMany(true); // ⛳ pseudo-constraint!
+        enrollmentTable.addColumn(courseRef);
+
+        Map<String, Table> tableMap = new HashMap<>();
+        tableMap.put("Student", studentTable);
+        tableMap.put("Course", courseTable);
+        tableMap.put("Enrollment", enrollmentTable);
+
+        RelationshipResolver resolver = new RelationshipResolver(tableMap);
+
+        // 🔍 Execute
+        resolver.resolveRelationshipsForAllTables();
+
+        List<Relationship> relationships = resolver.getRelationships();
+
+        // ✅ Έλεγχος: Πρέπει να έχουμε 2 σχέσεις τύπου MANYTOMANY
+        assertEquals(2, relationships.size(), "Expected 2 pseudo-ManyToMany relationships");
+
+        for (Relationship rel : relationships) {
+            assertEquals(Relationship.RelationshipType.MANYTOMANY, rel.getRelationshipType(), "Expected MANYTOMANY type");
+            assertNull(rel.getMappedBy(), "MappedBy must be null for pseudo-ManyToMany");
+        }
+
+        log.info("🎯 Pseudo-ManyToMany relationships resolved correctly.");
+    }
+
 
 }

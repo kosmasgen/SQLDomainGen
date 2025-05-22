@@ -27,76 +27,15 @@ public class RelationshipResolver {
     public List<Relationship> resolveRelationships(Table sourceTable) {
         log.info("🔵 Resolving relationships for table: {}", sourceTable.getName());
 
-        if (isJoinTable(sourceTable)) {
-            return handleManyToManyJoinTable(sourceTable);
-        }
-
         return handleForeignKeyRelationships(sourceTable);
     }
 
-
-    private List<Relationship> handleManyToManyJoinTable(Table sourceTable) {
-        log.info("🔥 Detected join table '{}' with composite primary key. Treating as ManyToMany.", sourceTable.getName());
-
-        List<Column> foreignKeys = getForeignKeys(sourceTable);
-        if (foreignKeys.size() < 2) {
-            log.warn("⚠️ Join table '{}' does not have at least 2 foreign keys. Skipping ManyToMany handling.", sourceTable.getName());
-            return Collections.emptyList();
-        }
-
-        Column fk1 = foreignKeys.get(0);
-        Column fk2 = foreignKeys.get(1);
-
-        String fk1ReferencedTablePascal = NamingConverter.toPascalCase(fk1.getReferencedTable());
-        String fk2ReferencedTablePascal = NamingConverter.toPascalCase(fk2.getReferencedTable());
-
-        Table table1 = findTargetTable(fk1ReferencedTablePascal);
-        Table table2 = findTargetTable(fk2ReferencedTablePascal);
-
-        if (table1 == null || table2 == null) {
-            log.warn("⚠️ One or both referenced tables not found for join table '{}': {} -> {}, {} -> {}",
-                    sourceTable.getName(),
-                    fk1.getName(), fk1ReferencedTablePascal,
-                    fk2.getName(), fk2ReferencedTablePascal);
-            return Collections.emptyList();
-        }
-
-        // 🚨 Αφαιρούμε τυχόν προηγούμενες σχέσεις ManyToOne που μπορεί να υπήρχαν
-        sourceTable.getRelationships().removeIf(r -> r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE);
-
-        // ✅ Δημιουργούμε ΜΟΝΟ **μια** ManyToMany σχέση
-        Relationship manyToMany = new Relationship(
-                fk1.getReferencedColumn(),
-                fk2.getReferencedColumn(),
-                fk1ReferencedTablePascal,
-                fk2ReferencedTablePascal,
-                null, null,
-                sourceTable.getName(),
-                fk2.getName(),
-                NamingConverter.toCamelCasePlural(fk2ReferencedTablePascal),
-                Relationship.RelationshipType.MANYTOMANY
-        );
-
-        // Owning Side -> JoinTable
-        manyToMany.setJoinTableName(sourceTable.getName());
-        manyToMany.setSourceColumn(fk1.getName());
-        manyToMany.setInverseJoinColumn(fk2.getName());
-
-        table1.addRelationship(manyToMany);
-
-        log.info("🔄 ManyToMany relationship added: {} -> {} via {}",
-                table1.getName(), table2.getName(), sourceTable.getName());
-
-        // ✅ Προσθέτουμε **ΜΟΝΟ μία** σχέση ManyToMany
-        this.relationships.add(manyToMany);
-
-        log.info("✅ ManyToMany relationship created for join table '{}'", sourceTable.getName());
-
-        return List.of(manyToMany);
-    }
-
-
     private void addInverseRelationship(Relationship relationship, Column column) {
+        if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) {
+            log.info("⛔ Skipping inverse for pseudo-ManyToMany on '{}.{}'", relationship.getSourceTable(), relationship.getSourceColumn());
+            return;
+        }
+
         Table targetTable = tableMap.get(relationship.getTargetTable());
         if (targetTable == null) {
             log.warn("⚠️ Target table '{}' not found while adding inverse relationship for '{}'", relationship.getTargetTable(), column.getName());
@@ -121,16 +60,13 @@ public class RelationshipResolver {
         inverseRelationship.setTargetTable(relationship.getSourceTable());
         inverseRelationship.setRelationshipType(inverseType);
 
-        // Εδώ θέλουμε mappedBy μόνο αν ΔΕΝ είναι ManyToMany
-        if (relationship.getRelationshipType() != Relationship.RelationshipType.MANYTOMANY) {
-            String mappedByValue = getMappedByFieldName(relationship, column);
-            inverseRelationship.setMappedBy(mappedByValue);
-            log.info("🔧 Setting mappedBy='{}' for inverse relationship {} -> {}",
-                    mappedByValue,
-                    inverseRelationship.getSourceTable(),
-                    inverseRelationship.getTargetTable());
 
-        }
+        String mappedByValue = getMappedByFieldName(column);
+        inverseRelationship.setMappedBy(mappedByValue);
+        log.info("🔧 Setting mappedBy='{}' for inverse relationship {} -> {}",
+                mappedByValue,
+                inverseRelationship.getSourceTable(),
+                inverseRelationship.getTargetTable());
 
         if (!targetTable.getRelationships().contains(inverseRelationship)) {
             targetTable.addRelationship(inverseRelationship);
@@ -141,7 +77,8 @@ public class RelationshipResolver {
         }
     }
 
-    private String getMappedByFieldName(Relationship relationship, Column column) {
+
+    private String getMappedByFieldName(Column column) {
         String rawName = column.getName();
 
         // Αν η στήλη τελειώνει σε _id, αφαιρούμε το _id
@@ -227,59 +164,21 @@ public class RelationshipResolver {
         relationship.setOnDelete(column.getOnDelete());
         relationship.setOnUpdate(column.getOnUpdate());
 
-        if (relationshipType == Relationship.RelationshipType.MANYTOMANY) {
-            setJoinTableInfo(relationship, sourceTable, column);
-        }
         log.info("✅ Created relationship: {}", relationship);
 
         return relationship;
     }
 
 
-    private void setJoinTableInfo(Relationship relationship, Table sourceTable, Column column) {
-        relationship.setJoinTableName(sourceTable.getName());
-        log.info("🔗 Setting join table name for ManyToMany: {}", sourceTable.getName());
-
-        // ✅ Εύρεση της άλλης foreign key
-        String inverseColumn = findInverseJoinColumn(sourceTable, column);
-
-        if (inverseColumn != null) {
-            relationship.setInverseJoinColumn(inverseColumn); // 🔥 Ενημέρωση του αρχικού relationship
-            log.info("🔗 Setting inverse join column for ManyToMany: {}", inverseColumn);
-        } else {
-            log.warn("⚠️ Inverse join column not found for table '{}'", sourceTable.getName());
-        }
-    }
-
-    private String findInverseJoinColumn(Table joinTable, Column column) {
-        for (Column col : joinTable.getColumns()) {
-            if (!col.getName().equals(column.getName()) && col.isForeignKey()) {
-                log.info("🔎 Found inverse join column: {}", col.getName());
-                return col.getName(); // **Επιστρέφει την άλλη foreign key**
-            }
-        }
-        log.warn("⚠️ No inverse join column found for table '{}'", joinTable.getName());
-        return null;
-    }
-
     /**
      * Καθορίζει αν η σχέση είναι `OneToMany`, `ManyToOne`, `OneToOne` ή `ManyToMany`.
      */
     private Relationship.RelationshipType determineType(Column column, Table sourceTable, Table targetTable) {
-        // ✅ Αν είναι join table και έχει δύο foreign keys, είναι ManyToMany
-        if (isJoinTable(sourceTable)) {
-            // Αν ο πίνακας είναι join table, αλλά ελέγχουμε τη μοναδικότητα των foreign keys
-            log.info("🔥 Table '{}' detected as a join table. Checking uniqueness of foreign keys.", sourceTable.getName());
 
-            // Αν η στήλη δεν είναι μοναδική, θεωρούμε ότι πρόκειται για MANYTOONE
-            if (!column.isUnique()) {
-                log.info("🔥 Column '{}' is NOT unique. Assigning MANYTOONE.", column.getName());
-                return Relationship.RelationshipType.MANYTOONE;
-            } else {
-                // Αν είναι μοναδική, είναι αρκετό για να θεωρηθεί πολλαπλή σχέση ManyToMany
-                log.info("🔥 Column '{}' is unique in join table. Assigning MANYTOMANY.", column.getName());
-                return Relationship.RelationshipType.MANYTOMANY;
-            }
+        // ✅ 1. Αν η στήλη έχει ρητά οριστεί ως ManyToMany μέσω pseudo-constraint
+        if (column.isManyToMany()) {
+            log.info("🎯 Column '{}' has explicit MANYTOMANY pseudo-constraint. Assigning MANYTOMANY.", column.getName());
+            return Relationship.RelationshipType.MANYTOMANY;
         }
 
         // ✅ Αν η σχέση είναι OneToMany (υπάρχουν πολλές αναφορές στον ίδιο πίνακα)
@@ -305,28 +204,6 @@ public class RelationshipResolver {
         return Relationship.RelationshipType.MANYTOONE;
     }
 
-
-    public boolean isJoinTable(Table table) {
-        List<Column> pkColumns = table.getColumns().stream()
-                .filter(Column::isPrimaryKey)
-                .toList();
-
-        List<Column> fkColumns = table.getColumns().stream()
-                .filter(Column::isForeignKey)
-                .toList();
-
-        // Πρέπει να υπάρχουν ακριβώς 2 foreign keys
-        if (fkColumns.size() != 2) return false;
-
-        // Πρέπει να είναι σύνθετο primary key με 2 στήλες
-        boolean pkIsComposite = pkColumns.size() == 2;
-
-        // Πρέπει το primary key να περιέχει και τα δύο foreign keys
-        boolean pkIncludesAllFks = new HashSet<>(pkColumns).containsAll(fkColumns);
-
-        // Αν είναι composite PK με 2 FKs, τότε έστω και με extra στήλες, είναι join table με metadata
-        return pkIsComposite && pkIncludesAllFks;
-    }
 
     /**
      * Ελέγχει αν υπάρχει σχέση `OneToMany` μετρώντας αναφορές στον πίνακα προορισμού.
