@@ -6,19 +6,16 @@ import com.sqldomaingen.model.Column;
 import com.sqldomaingen.util.NamingConverter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
-
 
 import java.util.*;
 
 @Getter
 @NoArgsConstructor
 @Component
+@Log4j2
 public class RelationshipResolver {
-
-    private static final Logger logger = LoggerFactory.getLogger(RelationshipResolver.class);
 
     private final Map<String, Table> tableMap = new HashMap<>();
     private final List<Relationship> relationships = new ArrayList<>();
@@ -28,7 +25,7 @@ public class RelationshipResolver {
     }
 
     public List<Relationship> resolveRelationships(Table sourceTable) {
-        logger.info("🔵 Resolving relationships for table: {}", sourceTable.getName());
+        log.info("🔵 Resolving relationships for table: {}", sourceTable.getName());
 
         if (isJoinTable(sourceTable)) {
             return handleManyToManyJoinTable(sourceTable);
@@ -39,11 +36,11 @@ public class RelationshipResolver {
 
 
     private List<Relationship> handleManyToManyJoinTable(Table sourceTable) {
-        logger.info("🔥 Detected join table '{}' with composite primary key. Treating as ManyToMany.", sourceTable.getName());
+        log.info("🔥 Detected join table '{}' with composite primary key. Treating as ManyToMany.", sourceTable.getName());
 
         List<Column> foreignKeys = getForeignKeys(sourceTable);
         if (foreignKeys.size() < 2) {
-            logger.warn("⚠️ Join table '{}' does not have at least 2 foreign keys. Skipping ManyToMany handling.", sourceTable.getName());
+            log.warn("⚠️ Join table '{}' does not have at least 2 foreign keys. Skipping ManyToMany handling.", sourceTable.getName());
             return Collections.emptyList();
         }
 
@@ -57,7 +54,7 @@ public class RelationshipResolver {
         Table table2 = findTargetTable(fk2ReferencedTablePascal);
 
         if (table1 == null || table2 == null) {
-            logger.warn("⚠️ One or both referenced tables not found for join table '{}': {} -> {}, {} -> {}",
+            log.warn("⚠️ One or both referenced tables not found for join table '{}': {} -> {}, {} -> {}",
                     sourceTable.getName(),
                     fk1.getName(), fk1ReferencedTablePascal,
                     fk2.getName(), fk2ReferencedTablePascal);
@@ -87,13 +84,13 @@ public class RelationshipResolver {
 
         table1.addRelationship(manyToMany);
 
-        logger.info("🔄 ManyToMany relationship added: {} -> {} via {}",
+        log.info("🔄 ManyToMany relationship added: {} -> {} via {}",
                 table1.getName(), table2.getName(), sourceTable.getName());
 
         // ✅ Προσθέτουμε **ΜΟΝΟ μία** σχέση ManyToMany
         this.relationships.add(manyToMany);
 
-        logger.info("✅ ManyToMany relationship created for join table '{}'", sourceTable.getName());
+        log.info("✅ ManyToMany relationship created for join table '{}'", sourceTable.getName());
 
         return List.of(manyToMany);
     }
@@ -102,7 +99,7 @@ public class RelationshipResolver {
     private void addInverseRelationship(Relationship relationship, Column column) {
         Table targetTable = tableMap.get(relationship.getTargetTable());
         if (targetTable == null) {
-            logger.warn("⚠️ Target table '{}' not found while adding inverse relationship for '{}'", relationship.getTargetTable(), column.getName());
+            log.warn("⚠️ Target table '{}' not found while adding inverse relationship for '{}'", relationship.getTargetTable(), column.getName());
             return;
         }
 
@@ -128,7 +125,7 @@ public class RelationshipResolver {
         if (relationship.getRelationshipType() != Relationship.RelationshipType.MANYTOMANY) {
             String mappedByValue = getMappedByFieldName(relationship, column);
             inverseRelationship.setMappedBy(mappedByValue);
-            logger.info("🔧 Setting mappedBy='{}' for inverse relationship {} -> {}",
+            log.info("🔧 Setting mappedBy='{}' for inverse relationship {} -> {}",
                     mappedByValue,
                     inverseRelationship.getSourceTable(),
                     inverseRelationship.getTargetTable());
@@ -137,10 +134,10 @@ public class RelationshipResolver {
 
         if (!targetTable.getRelationships().contains(inverseRelationship)) {
             targetTable.addRelationship(inverseRelationship);
-            logger.info("🔄 Inverse relationship added: {} -> {} ({})",
+            log.info("🔄 Inverse relationship added: {} -> {} ({})",
                     inverseRelationship.getSourceTable(), inverseRelationship.getTargetTable(), inverseRelationship.getRelationshipType());
         } else {
-            logger.debug("⚠️ Inverse relationship already exists in '{}'. Skipping: {}", targetTable.getName(), inverseRelationship);
+            log.debug("⚠️ Inverse relationship already exists in '{}'. Skipping: {}", targetTable.getName(), inverseRelationship);
         }
     }
 
@@ -156,33 +153,30 @@ public class RelationshipResolver {
     }
 
 
-
-
-
     private List<Relationship> handleForeignKeyRelationships(Table sourceTable) {
-        logger.info("🔄 Handling foreign key relationships for table: {}", sourceTable.getName());
+        log.info("🔄 Handling foreign key relationships for table: {}", sourceTable.getName());
 
         List<Relationship> localRelationships = new ArrayList<>();
         List<Column> foreignKeys = getForeignKeys(sourceTable);
 
         for (Column column : foreignKeys) {
-            logger.debug("🔗 Analyzing foreign key: {}", column.getName());
+            log.debug("🔗 Analyzing foreign key: {}", column.getName());
 
             Relationship relationship = createRelationship(column, sourceTable);
             if (relationship != null) {
                 localRelationships.add(relationship);
                 sourceTable.addRelationship(relationship);
                 this.relationships.add(relationship);
-                logger.info("✅ Relationship created: {} -> {} ({})",
+                log.info("✅ Relationship created: {} -> {} ({})",
                         relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType());
 
                 addInverseRelationship(relationship, column);
             } else {
-                logger.warn("❌ No relationship created for foreign key '{}'", column.getName());
+                log.warn("❌ No relationship created for foreign key '{}'", column.getName());
             }
         }
 
-        logger.info("🏁 Finished handling foreign key relationships for table '{}'. Relationships created: {}",
+        log.info("🏁 Finished handling foreign key relationships for table '{}'. Relationships created: {}",
                 sourceTable.getName(), localRelationships.size());
 
         return localRelationships;
@@ -202,25 +196,25 @@ public class RelationshipResolver {
      * Δημιουργεί ένα `Relationship` αντικείμενο, καθορίζοντας τον τύπο του.
      */
     public Relationship createRelationship(Column column, Table sourceTable) {
-        logger.info("🔄 Creating relationship for column '{}' in table '{}', referencing '{}.{}'",
+        log.info("🔄 Creating relationship for column '{}' in table '{}', referencing '{}.{}'",
                 column.getName(), sourceTable.getName(), column.getReferencedTable(), column.getReferencedColumn());
 
         Table targetTable = findTargetTable(NamingConverter.toPascalCase(column.getReferencedTable()));
 
         if (targetTable == null) {
-            logger.warn("⚠️ Target table '{}' not found for column '{}'", column.getReferencedTable(), column.getName());
+            log.warn("⚠️ Target table '{}' not found for column '{}'", column.getReferencedTable(), column.getName());
             return null;
         }
 
         Column targetColumn = findTargetColumn(targetTable, column.getReferencedColumn());
         if (targetColumn == null) {
-            logger.warn("⚠️ Target column '{}' not found in table '{}'", column.getReferencedColumn(), targetTable.getName());
+            log.warn("⚠️ Target column '{}' not found in table '{}'", column.getReferencedColumn(), targetTable.getName());
             return null;
         }
 
         Relationship.RelationshipType relationshipType = determineType(column, sourceTable, targetTable);
         if (relationshipType == null) {
-            logger.warn("⚠️ Unable to determine relationship type for column '{}' in table '{}'", column.getName(), sourceTable.getName());
+            log.warn("⚠️ Unable to determine relationship type for column '{}' in table '{}'", column.getName(), sourceTable.getName());
             return null;
         }
 
@@ -236,36 +230,35 @@ public class RelationshipResolver {
         if (relationshipType == Relationship.RelationshipType.MANYTOMANY) {
             setJoinTableInfo(relationship, sourceTable, column);
         }
-        logger.info("✅ Created relationship: {}", relationship);
+        log.info("✅ Created relationship: {}", relationship);
 
         return relationship;
     }
 
 
-
     private void setJoinTableInfo(Relationship relationship, Table sourceTable, Column column) {
         relationship.setJoinTableName(sourceTable.getName());
-        logger.info("🔗 Setting join table name for ManyToMany: {}", sourceTable.getName());
+        log.info("🔗 Setting join table name for ManyToMany: {}", sourceTable.getName());
 
         // ✅ Εύρεση της άλλης foreign key
         String inverseColumn = findInverseJoinColumn(sourceTable, column);
 
         if (inverseColumn != null) {
             relationship.setInverseJoinColumn(inverseColumn); // 🔥 Ενημέρωση του αρχικού relationship
-            logger.info("🔗 Setting inverse join column for ManyToMany: {}", inverseColumn);
+            log.info("🔗 Setting inverse join column for ManyToMany: {}", inverseColumn);
         } else {
-            logger.warn("⚠️ Inverse join column not found for table '{}'", sourceTable.getName());
+            log.warn("⚠️ Inverse join column not found for table '{}'", sourceTable.getName());
         }
     }
 
     private String findInverseJoinColumn(Table joinTable, Column column) {
         for (Column col : joinTable.getColumns()) {
             if (!col.getName().equals(column.getName()) && col.isForeignKey()) {
-                logger.info("🔎 Found inverse join column: {}", col.getName());
+                log.info("🔎 Found inverse join column: {}", col.getName());
                 return col.getName(); // **Επιστρέφει την άλλη foreign key**
             }
         }
-        logger.warn("⚠️ No inverse join column found for table '{}'", joinTable.getName());
+        log.warn("⚠️ No inverse join column found for table '{}'", joinTable.getName());
         return null;
     }
 
@@ -276,39 +269,39 @@ public class RelationshipResolver {
         // ✅ Αν είναι join table και έχει δύο foreign keys, είναι ManyToMany
         if (isJoinTable(sourceTable)) {
             // Αν ο πίνακας είναι join table, αλλά ελέγχουμε τη μοναδικότητα των foreign keys
-            logger.info("🔥 Table '{}' detected as a join table. Checking uniqueness of foreign keys.", sourceTable.getName());
+            log.info("🔥 Table '{}' detected as a join table. Checking uniqueness of foreign keys.", sourceTable.getName());
 
             // Αν η στήλη δεν είναι μοναδική, θεωρούμε ότι πρόκειται για MANYTOONE
             if (!column.isUnique()) {
-                logger.info("🔥 Column '{}' is NOT unique. Assigning MANYTOONE.", column.getName());
+                log.info("🔥 Column '{}' is NOT unique. Assigning MANYTOONE.", column.getName());
                 return Relationship.RelationshipType.MANYTOONE;
             } else {
                 // Αν είναι μοναδική, είναι αρκετό για να θεωρηθεί πολλαπλή σχέση ManyToMany
-                logger.info("🔥 Column '{}' is unique in join table. Assigning MANYTOMANY.", column.getName());
+                log.info("🔥 Column '{}' is unique in join table. Assigning MANYTOMANY.", column.getName());
                 return Relationship.RelationshipType.MANYTOMANY;
             }
         }
 
         // ✅ Αν η σχέση είναι OneToMany (υπάρχουν πολλές αναφορές στον ίδιο πίνακα)
         if (isOneToMany(targetTable, sourceTable)) {
-            logger.info("🔥 Table '{}' is referenced multiple times from '{}'. Assigning ONETOMANY.", targetTable.getName(), sourceTable.getName());
+            log.info("🔥 Table '{}' is referenced multiple times from '{}'. Assigning ONETOMANY.", targetTable.getName(), sourceTable.getName());
             return Relationship.RelationshipType.ONETOMANY;
         }
 
         // ✅ Αν η foreign key ΔΕΝ είναι unique, είναι σίγουρα MANYTOONE
         if (!column.isUnique()) {
-            logger.info("🔥 Column '{}' is NOT unique. Assigning MANYTOONE.", column.getName());
+            log.info("🔥 Column '{}' is NOT unique. Assigning MANYTOONE.", column.getName());
             return Relationship.RelationshipType.MANYTOONE;
         }
 
         // ✅ Αν υπάρχει μόνο μία αναφορά στον targetTable, είναι OneToOne
         if (hasSingleReference(sourceTable, targetTable)) {
-            logger.info("🔥 Column '{}' is unique AND '{}' has only one reference. Assigning ONETOONE.", column.getName(), targetTable.getName());
+            log.info("🔥 Column '{}' is unique AND '{}' has only one reference. Assigning ONETOONE.", column.getName(), targetTable.getName());
             return Relationship.RelationshipType.ONETOONE;
         }
 
         // ✅ Default περίπτωση (αν δεν ταιριάζει τίποτα άλλο)
-        logger.info("🔥 Default case for '{}'. Assigning MANYTOONE.", column.getName());
+        log.info("🔥 Default case for '{}'. Assigning MANYTOONE.", column.getName());
         return Relationship.RelationshipType.MANYTOONE;
     }
 
@@ -349,16 +342,16 @@ public class RelationshipResolver {
      * Επιστρέφει `true` αν ο πίνακας-στόχος έχει μόνο μία αναφορά.
      */
     private boolean hasSingleReference(Table sourceTable, Table targetTable) {
-        logger.debug("🔍 Entering hasSingleReference: Checking '{}' -> '{}'", sourceTable.getName(), targetTable.getName());
+        log.debug("🔍 Entering hasSingleReference: Checking '{}' -> '{}'", sourceTable.getName(), targetTable.getName());
 
         long referenceCount = sourceTable.getColumns().stream()
                 .filter(col -> col.getReferencedTable() != null && col.getReferencedTable().equalsIgnoreCase(targetTable.getName()))
                 .count();
 
-        logger.debug("📌 Found {} references from '{}' to '{}'", referenceCount, sourceTable.getName(), targetTable.getName());
+        log.debug("📌 Found {} references from '{}' to '{}'", referenceCount, sourceTable.getName(), targetTable.getName());
 
         boolean result = referenceCount == 1;
-        logger.info("🔍 Checking if '{}' has a single reference to '{}'. Found {} references. Result: {}",
+        log.info("🔍 Checking if '{}' has a single reference to '{}'. Found {} references. Result: {}",
                 sourceTable.getName(), targetTable.getName(), referenceCount, result);
 
         return result;
@@ -369,13 +362,13 @@ public class RelationshipResolver {
      */
     private Table findTargetTable(String targetTableName) {
         if (targetTableName == null || targetTableName.isBlank()) {
-            logger.error("❌ Target table name is null or blank.");
+            log.error("❌ Target table name is null or blank.");
             return null;
         }
 
         Table targetTable = tableMap.get(targetTableName); // ✅ Ανακτούμε τον πίνακα από το tableMap
         if (targetTable == null) {
-            logger.error("❌ Table '{}' not found.", targetTableName);
+            log.error("❌ Table '{}' not found.", targetTableName);
         }
         return targetTable;
     }
@@ -385,13 +378,13 @@ public class RelationshipResolver {
      */
     private Column findTargetColumn(Table targetTable, String targetColumnName) {
         if (targetTable == null || targetColumnName == null || targetColumnName.isBlank()) {
-            logger.warn("⚠️ Invalid target column lookup. Table: '{}', Column: '{}'",
+            log.warn("⚠️ Invalid target column lookup. Table: '{}', Column: '{}'",
                     targetTable != null ? targetTable.getName() : "null", targetColumnName);
             return null;
         }
 
         // Προσθήκη print για τις στήλες του πίνακα-στόχου
-        logger.info("🔍 Checking columns in table '{}'. Looking for '{}'. Available columns: {}",
+        log.info("🔍 Checking columns in table '{}'. Looking for '{}'. Available columns: {}",
                 targetTable.getName(), targetColumnName,
                 targetTable.getColumns().stream()
                         .map(Column::getName)
@@ -404,21 +397,21 @@ public class RelationshipResolver {
                 .orElse(null);
 
         if (targetColumn == null) {
-            logger.warn("⚠️ Column '{}' not found in table '{}'", targetColumnName, targetTable.getName());
+            log.warn("⚠️ Column '{}' not found in table '{}'", targetColumnName, targetTable.getName());
         }
 
         return targetColumn;
     }
 
     public void resolveRelationshipsForAllTables() {
-        logger.info("🔍 Starting to resolve relationships for all {} tables...", tableMap.size());
+        log.info("🔍 Starting to resolve relationships for all {} tables...", tableMap.size());
 
         // Εκτύπωση του περιεχομένου του tableMap
-        logger.debug("🗺️ TableMap contents (detailed):");
+        log.debug("🗺️ TableMap contents (detailed):");
         tableMap.forEach((key, table) -> {
-            logger.debug("🔑 Key: '{}', Table Name: '{}'", key, table.getName());
+            log.debug("🔑 Key: '{}', Table Name: '{}'", key, table.getName());
             table.getColumns().forEach(column -> {
-                logger.debug("   🧱 Column: '{}', FK: {}, PK: {}, RefTable: '{}', RefColumn: '{}'",
+                log.debug("   🧱 Column: '{}', FK: {}, PK: {}, RefTable: '{}', RefColumn: '{}'",
                         column.getName(),
                         column.isForeignKey(),
                         column.isPrimaryKey(),
@@ -428,10 +421,10 @@ public class RelationshipResolver {
         });
 
         for (Table table : tableMap.values()) {
-            logger.info("📋 Resolving relationships for table: {}", table.getName());
+            log.info("📋 Resolving relationships for table: {}", table.getName());
 
             for (Column column : table.getColumns()) {
-                logger.info("🔎 Column: {} | Type: {} | PK: {} | FK: {} | RefTable: {} | RefColumn: {}",
+                log.info("🔎 Column: {} | Type: {} | PK: {} | FK: {} | RefTable: {} | RefColumn: {}",
                         column.getName(),
                         column.getSqlType(),
                         column.isPrimaryKey(),
@@ -443,18 +436,14 @@ public class RelationshipResolver {
             List<Relationship> localRelationships = resolveRelationships(table);
 
             for (Relationship relationship : localRelationships) {
-                logger.info("🔗 Relationship created: {} -> {} | Type: {}",
+                log.info("🔗 Relationship created: {} -> {} | Type: {}",
                         relationship.getSourceTable(),
                         relationship.getTargetTable(),
                         relationship.getRelationshipType());
             }
         }
 
-        logger.info("✅ Relationships resolved for all tables.");
+        log.info("✅ Relationships resolved for all tables.");
     }
 
-    private boolean tableHasForeignKey(Table sourceTable, Table targetTable) {
-        return sourceTable.getColumns().stream()
-                .anyMatch(col -> col.isForeignKey() && col.getReferencedTable().equalsIgnoreCase(targetTable.getName()));
-    }
 }

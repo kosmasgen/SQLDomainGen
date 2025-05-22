@@ -2,20 +2,17 @@ package com.sqldomaingen;
 
 import com.sqldomaingen.model.Relationship;
 import com.sqldomaingen.model.Relationship.RelationshipType;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Log4j2
 class RelationshipTest {
-
-    private static final Logger logger = LoggerFactory.getLogger(RelationshipTest.class);
 
     @Test
     void testRelationshipSettersAndGetters() {
-        logger.info("🔵 Running test: testRelationshipSettersAndGetters");
+        log.info("🔵 Running test: testRelationshipSettersAndGetters");
 
         Relationship relationship = new Relationship();
         relationship.setSourceTable("orders");
@@ -28,7 +25,7 @@ class RelationshipTest {
         relationship.setJoinTableName("order_customers");
         relationship.setInverseJoinColumn("customer_id");
 
-        logger.info("✅ Relationship initialized: {}", relationship);
+        log.info("✅ Relationship initialized: {}", relationship);
 
         assertEquals("orders", relationship.getSourceTable());
         assertEquals("customer_id", relationship.getSourceColumn());
@@ -42,10 +39,9 @@ class RelationshipTest {
     }
 
 
-
     @Test
     void testRelationshipToString() {
-        logger.info("🔵 Running test: testRelationshipToString");
+        log.info("🔵 Running test: testRelationshipToString");
 
         Relationship relationship = new Relationship();
         relationship.setSourceTable("orders");
@@ -62,21 +58,20 @@ class RelationshipTest {
                 "mappedBy=null, relationshipType=ONETOMANY)";
 
 
-        logger.info("✅ Expected: {}", expected);
-        logger.info("✅ Actual: {}", relationship.toString());
+        log.info("✅ Expected: {}", expected);
+        log.info("✅ Actual: {}", relationship.toString());
 
         assertEquals(expected, relationship.toString(), "Relationship toString should match the expected format.");
     }
 
 
-
     @Test
     void testDefaultValues() {
-        logger.info("🔵 Running test: testDefaultValues");
+        log.info("🔵 Running test: testDefaultValues");
 
         Relationship relationship = new Relationship();
 
-        logger.info("🔍 Default Relationship object: {}", relationship);
+        log.info("🔍 Default Relationship object: {}", relationship);
 
         assertNull(relationship.getSourceTable(), "Source table should be null.");
         assertNull(relationship.getSourceColumn(), "Source column should be null.");
@@ -91,7 +86,7 @@ class RelationshipTest {
 
     @Test
     void testOneToOneRelationship() {
-        logger.info("🔵 Running test: testOneToOneRelationship");
+        log.info("🔵 Running test: testOneToOneRelationship");
 
         Relationship relationship = new Relationship();
         relationship.setSourceTable("users");
@@ -102,7 +97,7 @@ class RelationshipTest {
         relationship.setOnUpdate("CASCADE");
         relationship.setOnDelete("SET NULL");
 
-        logger.info("✅ Created Relationship: {}", relationship);
+        log.info("✅ Created Relationship: {}", relationship);
 
         assertEquals("users", relationship.getSourceTable());
         assertEquals("id", relationship.getSourceColumn());
@@ -115,7 +110,7 @@ class RelationshipTest {
 
     @Test
     void testManyToOneRelationship() {
-        logger.info("🔵 Running test: testManyToOneRelationship");
+        log.info("🔵 Running test: testManyToOneRelationship");
 
         Relationship relationship = new Relationship();
         relationship.setSourceTable("orders");
@@ -126,7 +121,7 @@ class RelationshipTest {
         relationship.setOnUpdate("RESTRICT");
         relationship.setOnDelete("CASCADE");
 
-        logger.info("✅ Created Relationship: {}", relationship);
+        log.info("✅ Created Relationship: {}", relationship);
 
         assertEquals("orders", relationship.getSourceTable());
         assertEquals("customer_id", relationship.getSourceColumn());
@@ -139,7 +134,7 @@ class RelationshipTest {
 
     @Test
     void testOneToManyRelationship() {
-        logger.info("🔵 Running test: testOneToManyRelationship");
+        log.info("🔵 Running test: testOneToManyRelationship");
 
         Relationship relationship = new Relationship();
         relationship.setSourceTable("customers");
@@ -150,7 +145,7 @@ class RelationshipTest {
         relationship.setOnUpdate("NO ACTION");
         relationship.setOnDelete("SET DEFAULT");
 
-        logger.info("✅ Created Relationship: {}", relationship);
+        log.info("✅ Created Relationship: {}", relationship);
 
         assertEquals("customers", relationship.getSourceTable());
         assertEquals("id", relationship.getSourceColumn());
@@ -163,7 +158,7 @@ class RelationshipTest {
 
     @Test
     void testManyToManyRelationship() {
-        logger.info("🔵 Running test: testManyToManyRelationship");
+        log.info("🔵 Running test: testManyToManyRelationship");
 
         Relationship relationship = new Relationship();
         relationship.setSourceTable("students");
@@ -176,7 +171,7 @@ class RelationshipTest {
         relationship.setOnUpdate("CASCADE");
         relationship.setOnDelete("CASCADE");
 
-        logger.info("✅ Created Relationship: {}", relationship);
+        log.info("✅ Created Relationship: {}", relationship);
 
         assertEquals("students", relationship.getSourceTable());
         assertEquals("id", relationship.getSourceColumn());

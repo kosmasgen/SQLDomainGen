@@ -5,13 +5,13 @@ import com.sqldomaingen.generator.EntityGenerator;
 import com.sqldomaingen.parser.CreateTableDefinition;
 import com.sqldomaingen.model.Table;
 import lombok.NoArgsConstructor;
+import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.TokenStream;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.sqldomaingen.parser.PostgreSQLParser;
+
 import java.util.ArrayList;
 
 import java.io.IOException;
@@ -25,15 +25,15 @@ import java.util.List;
  */
 @NoArgsConstructor
 @ShellComponent
+@Log4j2
 public class GeneratorCommands {
 
-    public static final Logger logger = LoggerFactory.getLogger(GeneratorCommands.class);
     public final EntityGenerator entityGenerator = new EntityGenerator();
 
     /**
      * Δημιουργεί Java domain entities από SQL αρχεία.
      *
-     * @param inputFile  Το μονοπάτι του SQL αρχείου.
+     * @param inputFile   Το μονοπάτι του SQL αρχείου.
      * @param outputDir   Ο κατάλογος όπου θα αποθηκευτούν οι παραγόμενες entities.
      * @param packageName Το όνομα του package για τις παραγόμενες entities.
      * @param overwrite   Αντικατάσταση υπαρχόντων αρχείων.
@@ -54,26 +54,26 @@ public class GeneratorCommands {
             List<Table> tables = processSQLFile(inputFile);
 
             if (tables.isEmpty()) {
-                logger.warn("No tables were generated from the SQL file.");
+                log.warn("No tables were generated from the SQL file.");
                 return "No tables were generated from the SQL file.";
             }
 
-            logger.info("Starting entity generation...");
+            log.info("Starting entity generation...");
             entityGenerator.generate(tables, outputDir, packageName, overwrite, useBuilder);
-            logger.info("Entity generation completed successfully. Output directory: {}", outputDir);
+            log.info("Entity generation completed successfully. Output directory: {}", outputDir);
 
             // Τερματισμός εφαρμογής
             System.exit(0);
 
             return "Entity generation completed successfully.";
         } catch (IOException e) {
-            logger.error("Error during entity generation", e);
+            log.error("Error during entity generation", e);
             return "Error during entity generation: " + e.getMessage();
         }
     }
 
 
-    public void validateOutputDirectory(String outputDirectory)throws IOException {
+    public void validateOutputDirectory(String outputDirectory) throws IOException {
         if (outputDirectory == null || outputDirectory.trim().isEmpty()) {
             throw new IllegalArgumentException("Output directory cannot be null or empty.");
         }
@@ -98,19 +98,19 @@ public class GeneratorCommands {
      */
     public List<Table> processSQLFile(String inputFile) throws IOException {
         if (inputFile == null || inputFile.isEmpty()) {
-            logger.error("Input SQL file is null or empty.");
+            log.error("Input SQL file is null or empty.");
             throw new IllegalArgumentException("Input SQL file cannot be null or empty.");
         }
 
-        logger.info("Processing SQL file: {}", inputFile);
+        log.info("Processing SQL file: {}", inputFile);
         Path filePath = Paths.get(inputFile);
         if (!Files.exists(filePath)) {
-            logger.warn("SQL file does not exist: {}", inputFile);
+            log.warn("SQL file does not exist: {}", inputFile);
             return List.of();
         }
 
         String sqlContent = Files.readString(filePath);
-        logger.debug("SQL content from file '{}': {}", inputFile, sqlContent);
+        log.debug("SQL content from file '{}': {}", inputFile, sqlContent);
 
         return parseSQLToTables(sqlContent);
     }
@@ -147,7 +147,7 @@ public class GeneratorCommands {
             return tables;
 
         } catch (Exception e) {
-            logger.error("Error parsing SQL content", e);
+            log.error("Error parsing SQL content", e);
             return List.of();
         }
     }

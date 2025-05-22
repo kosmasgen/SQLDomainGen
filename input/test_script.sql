@@ -13,7 +13,7 @@ CREATE TABLE student_course (
     student_id INT NOT NULL,
     course_id INT NOT NULL,
     grade DECIMAL(5,2),
-    FOREIGN KEY (student_id) REFERENCES student(student_id),
+    FOREIGN KEY MANTYOMANY (student_id) REFERENCES student(student_id),
     FOREIGN KEY (course_id) REFERENCES course(course_id)
 );
 
@@ -172,5 +172,13 @@ CREATE TABLE audit_log (
     user_id INT,
     details TEXT,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY (user_id) REFERENCES user(user_id)
+);
+
+CREATE TABLE user_profile (
+    profile_id SERIAL PRIMARY KEY,
+    bio TEXT,
+    phone VARCHAR(20),
+    user_id INT MANYTOMANY,
     FOREIGN KEY (user_id) REFERENCES user(user_id)
 );

@@ -2,6 +2,7 @@ package com.sqldomaingen.generator;
 
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.NamingConverter;
+import lombok.extern.log4j.Log4j2;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -11,9 +12,9 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.List;
 
+@Log4j2
 public class ServiceGenerator {
 
-    private static final Logger logger = LoggerFactory.getLogger(ServiceGenerator.class);
     private static final String SERVICE_OUTPUT_PATH = "output/services";
 
     /**
@@ -192,9 +193,9 @@ public class ServiceGenerator {
         Path filePath = Paths.get(SERVICE_OUTPUT_PATH, fileName);
         try {
             Files.write(filePath, content.getBytes());
-            logger.info("✅ Service generated successfully: {}", filePath);
+            log.info("✅ Service generated successfully: {}", filePath);
         } catch (IOException e) {
-            logger.error("❌ Failed to write service file: {}", filePath, e);
+            log.error("❌ Failed to write service file: {}", filePath, e);
         }
     }
 
@@ -206,12 +207,12 @@ public class ServiceGenerator {
         if (!Files.exists(path)) {
             try {
                 Files.createDirectories(path);
-                logger.info("✅ Service output directory created: {}", path);
+                log.info("✅ Service output directory created: {}", path);
             } catch (IOException e) {
-                logger.error("❌ Failed to create service output directory: {}", SERVICE_OUTPUT_PATH, e);
+                log.error("❌ Failed to create service output directory: {}", SERVICE_OUTPUT_PATH, e);
             }
         } else {
-            logger.info("ℹ️ Service output directory already exists: {}", path);
+            log.info("ℹ️ Service output directory already exists: {}", path);
         }
     }
 }

@@ -208,6 +208,7 @@ constraint
     : 'NOT NULL'
     | 'NULL'
     | 'UNIQUE' ('ON CONFLICT' conflictAction)?
+    | MANYTOMANY ('ON CONFLICT' conflictAction)?
     | 'DEFAULT' value
     | 'CHECK' '(' condition ')'
     | 'REFERENCES' (schemaName DOT)? tableName '(' columnName ')' (onAction)?
@@ -433,6 +434,7 @@ relationshipType
     | 'MANYTOMANY'
     ;
 
+MANYTOMANY : 'MANYTOMANY';
 
 
 

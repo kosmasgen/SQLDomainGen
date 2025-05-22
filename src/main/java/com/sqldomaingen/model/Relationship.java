@@ -19,10 +19,9 @@ public class Relationship {
     private String onUpdate;
     private String onDelete;
     private String joinTableName;
-    private String inverseJoinColumn ;
+    private String inverseJoinColumn;
     private String mappedBy;
     private RelationshipType relationshipType;
-
 
 
     public enum RelationshipType {

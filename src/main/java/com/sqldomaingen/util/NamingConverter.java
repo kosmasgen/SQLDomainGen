@@ -1,14 +1,12 @@
 package com.sqldomaingen.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.Arrays;
 import java.util.stream.Collectors;
 
+@Log4j2
 public class NamingConverter {
-
-    private static final Logger logger = LoggerFactory.getLogger(NamingConverter.class);
 
     // Ιδιωτικός constructor για να αποτρέψουμε τη δημιουργία αντικειμένων
     private NamingConverter() {
@@ -24,21 +22,21 @@ public class NamingConverter {
      */
     public static String toCamelCase(String snakeCaseName) {
         if (snakeCaseName == null) {
-            logger.warn("Received null input for toCamelCase.");
+            log.warn("Received null input for toCamelCase.");
             return null;
         }
         snakeCaseName = snakeCaseName.trim();
         if (snakeCaseName.isEmpty()) {
-            logger.info("Received empty input for toCamelCase.");
+            log.info("Received empty input for toCamelCase.");
             return snakeCaseName;
         }
-        logger.debug("Converting '{}' from snake_case to camelCase.", snakeCaseName);
+        log.debug("Converting '{}' from snake_case to camelCase.", snakeCaseName);
         String[] parts = snakeCaseName.split("_");
         String result = parts[0] +
                 Arrays.stream(parts, 1, parts.length)
                         .map(NamingConverter::capitalizeFirstLetter)
                         .collect(Collectors.joining());
-        logger.debug("Converted '{}' to camelCase: '{}'.", snakeCaseName, result);
+        log.debug("Converted '{}' to camelCase: '{}'.", snakeCaseName, result);
         return result;
     }
 
@@ -50,9 +48,9 @@ public class NamingConverter {
      * Input: "snake_case_name", Output: "SnakeCaseName"
      */
     public static String toPascalCase(String snakeCaseName) {
-        logger.debug("Converting '{}' from snake_case to PascalCase.", snakeCaseName);
+        log.debug("Converting '{}' from snake_case to PascalCase.", snakeCaseName);
         String result = capitalizeFirstLetter(toCamelCase(snakeCaseName));
-        logger.debug("Converted '{}' to PascalCase: '{}'.", snakeCaseName, result);
+        log.debug("Converted '{}' to PascalCase: '{}'.", snakeCaseName, result);
         return result;
     }
 
@@ -65,14 +63,14 @@ public class NamingConverter {
      */
     public static String toSnakeCase(String camelCaseName) {
         if (camelCaseName == null || camelCaseName.isEmpty()) {
-            logger.warn("Received null or empty input for toSnakeCase.");
+            log.warn("Received null or empty input for toSnakeCase.");
             return camelCaseName;
         }
-        logger.debug("Converting '{}' from camelCase/PascalCase to snake_case.", camelCaseName);
+        log.debug("Converting '{}' from camelCase/PascalCase to snake_case.", camelCaseName);
         String result = camelCaseName
                 .replaceAll("([a-z])([A-Z])", "$1_$2")
                 .toLowerCase();
-        logger.debug("Converted '{}' to snake_case: '{}'.", camelCaseName, result);
+        log.debug("Converted '{}' to snake_case: '{}'.", camelCaseName, result);
         return result;
     }
 
@@ -85,11 +83,11 @@ public class NamingConverter {
      */
     public static String capitalizeFirstLetter(String name) {
         if (name == null || name.isEmpty()) {
-            logger.warn("Received null or empty input for capitalizeFirstLetter.");
+            log.warn("Received null or empty input for capitalizeFirstLetter.");
             return name;
         }
         String result = Character.toUpperCase(name.charAt(0)) + name.substring(1);
-        logger.debug("Capitalized first letter of '{}': '{}'.", name, result);
+        log.debug("Capitalized first letter of '{}': '{}'.", name, result);
         return result;
     }
 
@@ -102,11 +100,11 @@ public class NamingConverter {
      */
     public static String decapitalizeFirstLetter(String name) {
         if (name == null || name.isEmpty()) {
-            logger.warn("Received null or empty input for decapitalizeFirstLetter.");
+            log.warn("Received null or empty input for decapitalizeFirstLetter.");
             return name;
         }
         String result = Character.toLowerCase(name.charAt(0)) + name.substring(1);
-        logger.debug("Decapitalized first letter of '{}': '{}'.", name, result);
+        log.debug("Decapitalized first letter of '{}': '{}'.", name, result);
         return result;
     }
 
@@ -130,7 +128,4 @@ public class NamingConverter {
         }
         return input.replaceAll("([a-z])([A-Z])", "$1-$2").toLowerCase();
     }
-
-
-
 }

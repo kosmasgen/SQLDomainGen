@@ -6,9 +6,9 @@ import com.sqldomaingen.util.NamingConverter;
 import com.sqldomaingen.model.Column;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -16,49 +16,47 @@ import java.nio.file.Paths;
 import java.util.*;
 import java.util.stream.Collectors;
 
-
+@Log4j2
 @NoArgsConstructor
 @Getter
 @Component
 public class EntityGenerator {
 
-    private static final Logger logger = LoggerFactory.getLogger(EntityGenerator.class);
     private final Map<String, Table> tableMap = new HashMap<>();
 
-
     public void generate(List<Table> tables, String outputDir, String packageName, boolean overwrite, boolean useBuilder) {
-        logger.info("Starting entity generation...");
+        log.info("Starting entity generation...");
 
         // Δημιουργία του tableMap
         Map<String, Table> tablesMap = tables.stream()
                 .collect(Collectors.toMap(Table::getName, t -> t));
-        logger.debug("📄 Created tablesMap with keys: {}", tablesMap.keySet());
+        log.debug("📄 Created tablesMap with keys: {}", tablesMap.keySet());
 
         // Ανάλυση των σχέσεων
         RelationshipResolver resolver = new RelationshipResolver(tablesMap);
         resolver.resolveRelationshipsForAllTables();
-        logger.info("✅ RelationshipResolver initialized and all relationships resolved for tables: {}", tablesMap.keySet());
+        log.info("✅ RelationshipResolver initialized and all relationships resolved for tables: {}", tablesMap.keySet());
 
         // Παραγωγή των entities
         for (Table table : tables) {
-            logger.debug("Processing table: {}", table.getName());
+            log.debug("Processing table: {}", table.getName());
 
             String entityContent = createEntityContent(table, packageName, useBuilder);
             Path outputPath = Paths.get(outputDir, NamingConverter.toPascalCase(table.getName()) + ".java");
 
             if (!overwrite && outputPath.toFile().exists()) {
-                logger.warn("File already exists, skipping: {}", outputPath);
+                log.warn("File already exists, skipping: {}", outputPath);
                 continue;
             }
 
             try {
                 writeToFile(outputPath.toString(), entityContent);
-                logger.info("Generated entity for table: {}", table.getName());
+                log.info("Generated entity for table: {}", table.getName());
             } catch (IOException e) {
-                logger.error("Failed to write entity file for table: {}", table.getName(), e);
+                log.error("Failed to write entity file for table: {}", table.getName(), e);
             }
         }
-        logger.info("✅ Entity generation complete. Output directory: {}", outputDir);
+        log.info("✅ Entity generation complete. Output directory: {}", outputDir);
 
     }
 
@@ -72,7 +70,7 @@ public class EntityGenerator {
 
         entityBuilder.append("}\n");
 
-        logger.debug("Generated entity content for table '{}':\n{}", table.getName(), entityBuilder);
+        log.debug("Generated entity content for table '{}':\n{}", table.getName(), entityBuilder);
         return entityBuilder.toString();
     }
 
@@ -154,12 +152,11 @@ public class EntityGenerator {
     }
 
 
-
     public void generateFields(StringBuilder builder, Table table) {
         Set<String> generatedFieldNames = new HashSet<>();
 
         for (Column column : table.getColumns()) {
-            logger.debug("Processing column: {}", column.getName());
+            log.debug("Processing column: {}", column.getName());
 
             if (column.isPrimaryKey()) {
                 addPrimaryKeyAnnotations(builder, column);
@@ -175,7 +172,7 @@ public class EntityGenerator {
                     relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) &&
                     relationship.getMappedBy() != null) {
 
-                logger.debug("🔄 Adding inverse relationship field for table '{}', target '{}', type: {}, mappedBy: '{}' ",
+                log.debug("🔄 Adding inverse relationship field for table '{}', target '{}', type: {}, mappedBy: '{}' ",
                         relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy());
 
                 addInverseRelationshipField(builder, relationship, generatedFieldNames); // 🔁
@@ -187,7 +184,7 @@ public class EntityGenerator {
                     && relationship.getMappedBy() == null
                     && relationship.getJoinTableName() != null) {
 
-                logger.debug("🔵 Adding ManyToMany Parent Side field for table '{}', target '{}', joinTable '{}'",
+                log.debug("🔵 Adding ManyToMany Parent Side field for table '{}', target '{}', joinTable '{}'",
                         relationship.getSourceTable(), relationship.getTargetTable(), relationship.getJoinTableName());
 
                 addManyToManyParentSide(builder, relationship, generatedFieldNames); // 🔁
@@ -204,12 +201,12 @@ public class EntityGenerator {
                 String mappedBy = relationship.getMappedBy(); // αυτό θα πάει στο mappedBy
 
                 if (generatedFieldNames.contains(fieldName)) {
-                    logger.warn("⚠️ Skipping inverse OneToOne field '{}': already generated", fieldName);
+                    log.warn("⚠️ Skipping inverse OneToOne field '{}': already generated", fieldName);
                     continue;
                 }
                 generatedFieldNames.add(fieldName);
 
-                logger.debug("🔁 Adding inverse @OneToOne for '{}', mappedBy: '{}'", targetEntity, mappedBy);
+                log.debug("🔁 Adding inverse @OneToOne for '{}', mappedBy: '{}'", targetEntity, mappedBy);
 
                 builder.append("    @OneToOne(mappedBy = \"").append(mappedBy).append("\", fetch = FetchType.LAZY)\n");
                 builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
@@ -219,15 +216,14 @@ public class EntityGenerator {
     }
 
 
-
     private void addPrimaryKeyAnnotations(StringBuilder builder, Column column) {
         builder.append("    @Id\n");
 
         String javaType = column.getJavaType();
-        logger.debug("🧪 [PK Generation] Column: {}, JavaType: {}", column.getName(), javaType);
+        log.debug("🧪 [PK Generation] Column: {}, JavaType: {}", column.getName(), javaType);
 
         if (javaType.toLowerCase().endsWith("uuid")) {
-            logger.info("✅ UUID detected for primary key: {}", column.getName());
+            log.info("✅ UUID detected for primary key: {}", column.getName());
 
             builder.append("    @GeneratedValue(generator = \"UUID\")\n");
             builder.append("    @GenericGenerator(name = \"UUID\", strategy = \"org.hibernate.id.UUIDGenerator\")\n");
@@ -241,7 +237,7 @@ public class EntityGenerator {
 
     // parent  Side Table
     public void addRelationshipField(StringBuilder builder, Column column, Table table, Set<String> generatedFieldNames) {
-        logger.debug("🔵 Resolving relationship for column: {} in table: {}", column.getName(), table.getName());
+        log.debug("🔵 Resolving relationship for column: {} in table: {}", column.getName(), table.getName());
 
         Optional<Relationship> relationshipOpt = table.getRelationships().stream()
                 .filter(rel -> rel.getSourceTable().equals(table.getName()) &&
@@ -249,12 +245,12 @@ public class EntityGenerator {
                 .findFirst();
 
         if (relationshipOpt.isEmpty()) {
-            logger.warn("⚠️ Skipping relationship field for column '{}' because no relationship was found.", column.getName());
+            log.warn("⚠️ Skipping relationship field for column '{}' because no relationship was found.", column.getName());
             return;
         }
 
         Relationship relationship = relationshipOpt.get();
-        logger.debug("💬 Relationship details -> Source: {}, Target: {}, Type: {}, MappedBy: {}, JoinTable: {}",
+        log.debug("💬 Relationship details -> Source: {}, Target: {}, Type: {}, MappedBy: {}, JoinTable: {}",
                 relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(),
                 relationship.getMappedBy(), relationship.getJoinTableName());
 
@@ -267,7 +263,7 @@ public class EntityGenerator {
         }
 
         if (generatedFieldNames.contains(fieldName)) {
-            logger.warn("⚠️ Skipping relationship field '{}': already generated (possible duplicate)", fieldName);
+            log.warn("⚠️ Skipping relationship field '{}': already generated (possible duplicate)", fieldName);
             return;
         }
 
@@ -277,7 +273,7 @@ public class EntityGenerator {
             case ONETOONE -> {
                 // Αν υπάρχει mappedBy, σημαίνει ότι είμαστε στην inverse (child) πλευρά — δεν γράφουμε τίποτα εδώ
                 if (relationship.getMappedBy() != null) {
-                    logger.debug("⏭️ Skipping ONETOONE parent field '{}' because it's inverse side (mappedBy = '{}')",
+                    log.debug("⏭️ Skipping ONETOONE parent field '{}' because it's inverse side (mappedBy = '{}')",
                             fieldName, relationship.getMappedBy());
                     return;
                 }
@@ -319,10 +315,10 @@ public class EntityGenerator {
                 }
             }
 
-            default -> logger.warn("⚠️ Relationship type {} is not handled here for column: {}", relationship.getRelationshipType(), column.getName());
+            default ->
+                    log.warn("⚠️ Relationship type {} is not handled here for column: {}", relationship.getRelationshipType(), column.getName());
         }
     }
-
 
 
     public void addManyToManyParentSide(StringBuilder builder, Relationship relationship, Set<String> generatedFieldNames) {
@@ -330,7 +326,7 @@ public class EntityGenerator {
         String fieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
 
         if (generatedFieldNames.contains(fieldName)) {
-            logger.warn("⚠️ Skipping ManyToMany parent field '{}': already generated (likely duplicate)", fieldName);
+            log.warn("⚠️ Skipping ManyToMany parent field '{}': already generated (likely duplicate)", fieldName);
             return;
         }
         generatedFieldNames.add(fieldName);
@@ -359,13 +355,13 @@ public class EntityGenerator {
         }
 
         if (generatedFieldNames.contains(fieldName)) {
-            logger.warn("⚠️ Skipping inverse field '{}': already generated (probably duplicate relationship)", fieldName);
+            log.warn("⚠️ Skipping inverse field '{}': already generated (probably duplicate relationship)", fieldName);
             return;
         }
 
         generatedFieldNames.add(fieldName);
 
-        logger.debug("🔄 Creating inverse relationship field for table '{}' -> '{}', type: {}, mappedBy: '{}' FieldName: '{}'",
+        log.debug("🔄 Creating inverse relationship field for table '{}' -> '{}', type: {}, mappedBy: '{}' FieldName: '{}'",
                 relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy(), fieldName);
 
         switch (relationship.getRelationshipType()) {
@@ -382,10 +378,10 @@ public class EntityGenerator {
                 builder.append("    private List<").append(sourceEntity).append("> ")
                         .append(fieldName).append(" = new ArrayList<>();\n\n");
             }
-            default -> logger.warn("⚠️ Relationship type {} is not handled here for inverse relationships.", relationship.getRelationshipType());
+            default ->
+                    log.warn("⚠️ Relationship type {} is not handled here for inverse relationships.", relationship.getRelationshipType());
         }
     }
-
 
 
     private void addOnDeleteAndOnUpdate(StringBuilder builder, Relationship relationship) {
@@ -437,11 +433,9 @@ public class EntityGenerator {
         String cleanedType = javaType;
         if (javaType.startsWith("java.time.")) {
             cleanedType = javaType.substring("java.time.".length());
-        }
-        else if (javaType.startsWith("java.math.")) {
+        } else if (javaType.startsWith("java.math.")) {
             cleanedType = javaType.substring("java.math.".length());
-        }
-        else if (javaType.startsWith("java.util.")) {
+        } else if (javaType.startsWith("java.util.")) {
             cleanedType = javaType.substring("java.util.".length());
         }
 
@@ -456,7 +450,7 @@ public class EntityGenerator {
             } else if (defVal.equals("false") || defVal.equals("0")) {
                 builder.append(" = false");
             } else {
-                logger.warn("⚠️ Boolean column '{}' έχει μη αναγνωρίσιμη default τιμή: {}", column.getName(), defVal);
+                log.warn("⚠️ Boolean column '{}' έχει μη αναγνωρίσιμη default τιμή: {}", column.getName(), defVal);
             }
         }
 
@@ -472,6 +466,6 @@ public class EntityGenerator {
         Files.createDirectories(path.getParent());
         Files.writeString(path, content);
 
-        logger.debug("File written successfully: {}", filePath);
+        log.debug("File written successfully: {}", filePath);
     }
 }

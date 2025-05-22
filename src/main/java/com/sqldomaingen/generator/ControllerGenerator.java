@@ -2,28 +2,28 @@ package com.sqldomaingen.generator;
 
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.NamingConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
+
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.io.IOException;
 import java.util.List;
 
+@Log4j2
 public class ControllerGenerator {
 
-    private static final Logger logger = LoggerFactory.getLogger(ControllerGenerator.class);
     private static final String OUTPUT_PATH = "output/controllers/";
 
     public void generateControllers(List<Table> tables) {
-        logger.info("🔄 Starting Controller generation...");
+        log.info("🔄 Starting Controller generation...");
 
         for (Table table : tables) {
             String controllerCode = generateControllerCode(table);
             saveToFile(table.getName(), controllerCode);
         }
 
-        logger.info("✅ Controller generation completed!");
+        log.info("✅ Controller generation completed!");
     }
 
     /**
@@ -140,8 +140,6 @@ public class ControllerGenerator {
     }
 
 
-
-
     private void saveToFile(String entityName, String content) {
         try {
             Path outputPath = Paths.get(OUTPUT_PATH);
@@ -150,9 +148,9 @@ public class ControllerGenerator {
             Path filePath = outputPath.resolve(entityName + "Controller.java");
             Files.writeString(filePath, content);
 
-            logger.info("✅ Controller generated: {}", filePath);
+            log.info("✅ Controller generated: {}", filePath);
         } catch (IOException e) {
-            logger.error("❌ Error writing file: {}Controller.java", entityName, e);
+            log.error("❌ Error writing file: {}Controller.java", entityName, e);
         }
     }
 }

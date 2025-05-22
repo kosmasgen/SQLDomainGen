@@ -1,17 +1,16 @@
 package com.sqldomaingen;
 
 import com.sqldomaingen.parser.SQLParser;
+import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Log4j2
 class SQLParserTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(SQLParserTest.class);
     private SQLParser sqlParser;
 
     @BeforeEach
@@ -23,19 +22,19 @@ class SQLParserTest {
     @Test
     void testParseCreateDepartmentTable_PostgreSQL() {
         String sql = """
-        CREATE TABLE department (
-            department_id SERIAL PRIMARY KEY,
-            name VARCHAR(100) NOT NULL,
-            description TEXT,
-            parent_dept_id INT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (parent_dept_id) REFERENCES department(department_id)
-        );
-        """;
+                CREATE TABLE department (
+                    department_id SERIAL PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    description TEXT,
+                    parent_dept_id INT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (parent_dept_id) REFERENCES department(department_id)
+                );
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TABLE for 'department':\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'department':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -58,14 +57,14 @@ class SQLParserTest {
     @Test
     void testParseCreateTriggerStatement_PostgreSQL() {
         String sql = """
-        CREATE TRIGGER trg_department_set_updated_at
-        BEFORE UPDATE ON department
-        FOR EACH ROW
-        EXECUTE FUNCTION set_updated_at();
-        """;
+                CREATE TRIGGER trg_department_set_updated_at
+                BEFORE UPDATE ON department
+                FOR EACH ROW
+                EXECUTE FUNCTION set_updated_at();
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TRIGGER for 'department':\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TRIGGER for 'department':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -88,24 +87,24 @@ class SQLParserTest {
     @Test
     void testParseCreateUserTable_PostgreSQL() {
         String sql = """
-        CREATE TABLE user (
-            user_id SERIAL PRIMARY KEY,
-            username VARCHAR(50) NOT NULL UNIQUE,
-            password VARCHAR(255) NOT NULL,
-            email VARCHAR(100) NOT NULL UNIQUE,
-            full_name VARCHAR(100) NOT NULL,
-            department_id INT,
-            role VARCHAR(50) NOT NULL,
-            supervisor_id INT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (department_id) REFERENCES department(department_id),
-            FOREIGN KEY (supervisor_id) REFERENCES user(user_id)
-        );
-        """;
+                CREATE TABLE user (
+                    user_id SERIAL PRIMARY KEY,
+                    username VARCHAR(50) NOT NULL UNIQUE,
+                    password VARCHAR(255) NOT NULL,
+                    email VARCHAR(100) NOT NULL UNIQUE,
+                    full_name VARCHAR(100) NOT NULL,
+                    department_id INT,
+                    role VARCHAR(50) NOT NULL,
+                    supervisor_id INT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (department_id) REFERENCES department(department_id),
+                    FOREIGN KEY (supervisor_id) REFERENCES user(user_id)
+                );
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TABLE for 'user':\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'user':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -129,22 +128,22 @@ class SQLParserTest {
     @Test
     void testParseCreateRecurringPatternTable_PostgreSQL() {
         String sql = """
-        CREATE TABLE recurring_pattern (
-            pattern_id SERIAL PRIMARY KEY,
-            pattern_type VARCHAR(50) NOT NULL,
-            frequency VARCHAR(50),
-            days_of_week VARCHAR(50),
-            day_of_month INT,
-            month_of_year INT,
-            end_date DATE,
-            end_after_occur INT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
-        );
-        """;
+                CREATE TABLE recurring_pattern (
+                    pattern_id SERIAL PRIMARY KEY,
+                    pattern_type VARCHAR(50) NOT NULL,
+                    frequency VARCHAR(50),
+                    days_of_week VARCHAR(50),
+                    day_of_month INT,
+                    month_of_year INT,
+                    end_date DATE,
+                    end_after_occur INT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+                );
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TABLE for 'recurring_pattern':\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'recurring_pattern':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -166,27 +165,27 @@ class SQLParserTest {
     @Test
     void testParseCreateEventTable_PostgreSQL() {
         String sql = """
-        CREATE TABLE event (
-            event_id SERIAL PRIMARY KEY,
-            title VARCHAR(100) NOT NULL,
-            description TEXT,
-            start_time TIMESTAMP NOT NULL,
-            end_time TIMESTAMP NOT NULL,
-            location VARCHAR(255),
-            event_type VARCHAR(50) NOT NULL,
-            visibility_type VARCHAR(50) NOT NULL,
-            creator_id INT NOT NULL,
-            is_recurring BOOLEAN DEFAULT FALSE,
-            recur_pattern_id INT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (creator_id) REFERENCES user(user_id),
-            FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
-        );
-        """;
+                CREATE TABLE event (
+                    event_id SERIAL PRIMARY KEY,
+                    title VARCHAR(100) NOT NULL,
+                    description TEXT,
+                    start_time TIMESTAMP NOT NULL,
+                    end_time TIMESTAMP NOT NULL,
+                    location VARCHAR(255),
+                    event_type VARCHAR(50) NOT NULL,
+                    visibility_type VARCHAR(50) NOT NULL,
+                    creator_id INT NOT NULL,
+                    is_recurring BOOLEAN DEFAULT FALSE,
+                    recur_pattern_id INT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (creator_id) REFERENCES user(user_id),
+                    FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
+                );
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TABLE for 'event':\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'event':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -211,21 +210,21 @@ class SQLParserTest {
     @Test
     void testParseCreateEventAssignmentTable_PostgreSQL() {
         String sql = """
-        CREATE TABLE event_assignment (
-            assignment_id SERIAL PRIMARY KEY,
-            event_id INT NOT NULL,
-            user_id INT,
-            department_id INT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (event_id) REFERENCES event(event_id),
-            FOREIGN KEY (user_id) REFERENCES user(user_id),
-            FOREIGN KEY (department_id) REFERENCES department(department_id)
-        );
-        """;
+                CREATE TABLE event_assignment (
+                    assignment_id SERIAL PRIMARY KEY,
+                    event_id INT NOT NULL,
+                    user_id INT,
+                    department_id INT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (event_id) REFERENCES event(event_id),
+                    FOREIGN KEY (user_id) REFERENCES user(user_id),
+                    FOREIGN KEY (department_id) REFERENCES department(department_id)
+                );
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TABLE for 'event_assignment':\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'event_assignment':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -250,21 +249,21 @@ class SQLParserTest {
     @Test
     void testParseCreateEventExceptionTable_PostgreSQL() {
         String sql = """
-        CREATE TABLE event_exception (
-            exception_id SERIAL PRIMARY KEY,
-            event_id INT NOT NULL,
-            exception_date DATE NOT NULL,
-            is_rescheduled BOOLEAN DEFAULT FALSE,
-            new_start_time TIMESTAMP,
-            new_end_time TIMESTAMP,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (event_id) REFERENCES event(event_id)
-        );
-        """;
+                CREATE TABLE event_exception (
+                    exception_id SERIAL PRIMARY KEY,
+                    event_id INT NOT NULL,
+                    exception_date DATE NOT NULL,
+                    is_rescheduled BOOLEAN DEFAULT FALSE,
+                    new_start_time TIMESTAMP,
+                    new_end_time TIMESTAMP,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (event_id) REFERENCES event(event_id)
+                );
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TABLE for 'event_exception':\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'event_exception':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -286,25 +285,25 @@ class SQLParserTest {
     @Test
     void testParseCreateTimeOffRequestTable_PostgreSQL() {
         String sql = """
-        CREATE TABLE time_off_request (
-            request_id SERIAL PRIMARY KEY,
-            user_id INT NOT NULL,
-            start_date DATE NOT NULL,
-            end_date DATE NOT NULL,
-            type VARCHAR(50) NOT NULL,
-            status VARCHAR(50) NOT NULL,
-            supervisor_id INT,
-            reason TEXT,
-            comments TEXT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES user(user_id),
-            FOREIGN KEY (supervisor_id) REFERENCES user(user_id)
-        );
-        """;
+                CREATE TABLE time_off_request (
+                    request_id SERIAL PRIMARY KEY,
+                    user_id INT NOT NULL,
+                    start_date DATE NOT NULL,
+                    end_date DATE NOT NULL,
+                    type VARCHAR(50) NOT NULL,
+                    status VARCHAR(50) NOT NULL,
+                    supervisor_id INT,
+                    reason TEXT,
+                    comments TEXT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES user(user_id),
+                    FOREIGN KEY (supervisor_id) REFERENCES user(user_id)
+                );
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TABLE for 'time_off_request':\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'time_off_request':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -332,21 +331,21 @@ class SQLParserTest {
     @Test
     void testParseCreateHolidayTable_PostgreSQL() {
         String sql = """
-        CREATE TABLE holiday (
-            holiday_id SERIAL PRIMARY KEY,
-            name VARCHAR(100) NOT NULL,
-            description TEXT,
-            date DATE NOT NULL,
-            is_recurring BOOLEAN DEFAULT FALSE,
-            recur_pattern_id INT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
-        );
-        """;
+                CREATE TABLE holiday (
+                    holiday_id SERIAL PRIMARY KEY,
+                    name VARCHAR(100) NOT NULL,
+                    description TEXT,
+                    date DATE NOT NULL,
+                    is_recurring BOOLEAN DEFAULT FALSE,
+                    recur_pattern_id INT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
+                );
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TABLE for 'holiday':\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'holiday':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -372,23 +371,23 @@ class SQLParserTest {
     @Test
     void testParseCreateDepartmentDayOffTable_PostgreSQL() {
         String sql = """
-        CREATE TABLE department_day_off (
-            day_off_id SERIAL PRIMARY KEY,
-            department_id INT NOT NULL,
-            name VARCHAR(100) NOT NULL,
-            description TEXT,
-            date DATE NOT NULL,
-            is_recurring BOOLEAN DEFAULT FALSE,
-            recur_pattern_id INT,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (department_id) REFERENCES department(department_id),
-            FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
-        );
-        """;
+                CREATE TABLE department_day_off (
+                    day_off_id SERIAL PRIMARY KEY,
+                    department_id INT NOT NULL,
+                    name VARCHAR(100) NOT NULL,
+                    description TEXT,
+                    date DATE NOT NULL,
+                    is_recurring BOOLEAN DEFAULT FALSE,
+                    recur_pattern_id INT,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (department_id) REFERENCES department(department_id),
+                    FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
+                );
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TABLE for 'department_day_off':\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'department_day_off':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -415,21 +414,21 @@ class SQLParserTest {
     @Test
     void testParseCreateAbsenceTable_PostgreSQL() {
         String sql = """
-        CREATE TABLE absence (
-            absence_id SERIAL PRIMARY KEY,
-            user_id INT NOT NULL,
-            start_time TIMESTAMP NOT NULL,
-            end_time TIMESTAMP NOT NULL,
-            reason TEXT,
-            is_notification BOOLEAN DEFAULT FALSE,
-            created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-            FOREIGN KEY (user_id) REFERENCES user(user_id)
-        );
-        """;
+                CREATE TABLE absence (
+                    absence_id SERIAL PRIMARY KEY,
+                    user_id INT NOT NULL,
+                    start_time TIMESTAMP NOT NULL,
+                    end_time TIMESTAMP NOT NULL,
+                    reason TEXT,
+                    is_notification BOOLEAN DEFAULT FALSE,
+                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    FOREIGN KEY (user_id) REFERENCES user(user_id)
+                );
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TABLE for 'absence':\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'absence':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -455,13 +454,13 @@ class SQLParserTest {
     @Test
     void testParseAlterRecurringPatternAddEventId_PostgreSQL() {
         String sql = """
-        ALTER TABLE recurring_pattern
-        ADD COLUMN event_id INT,
-        ADD FOREIGN KEY (event_id) REFERENCES event(event_id);
-        """;
+                ALTER TABLE recurring_pattern
+                ADD COLUMN event_id INT,
+                ADD FOREIGN KEY (event_id) REFERENCES event(event_id);
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL ALTER TABLE for 'recurring_pattern':\n{}", sql);
+        log.info("Testing PostgreSQL ALTER TABLE for 'recurring_pattern':\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -484,19 +483,19 @@ class SQLParserTest {
     @Test
     void testParseCreateEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs() {
         String sql = """
-    CREATE TABLE employee_department (
-        employee_id INT NOT NULL,
-        department_id INT NOT NULL,
-        assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-        assigned_by VARCHAR(100),
-        PRIMARY KEY (employee_id, department_id),
-        FOREIGN KEY (employee_id) REFERENCES employee(id),
-        FOREIGN KEY (department_id) REFERENCES department(id)
-    );
-    """;
+                CREATE TABLE employee_department (
+                    employee_id INT NOT NULL,
+                    department_id INT NOT NULL,
+                    assigned_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                    assigned_by VARCHAR(100),
+                    PRIMARY KEY (employee_id, department_id),
+                    FOREIGN KEY (employee_id) REFERENCES employee(id),
+                    FOREIGN KEY (department_id) REFERENCES department(id)
+                );
+                """;
 
         sqlParser.setSqlContent(sql);
-        logger.info("Testing PostgreSQL CREATE TABLE with composite primary key and two FKs:\n{}", sql);
+        log.info("Testing PostgreSQL CREATE TABLE with composite primary key and two FKs:\n{}", sql);
 
         assertDoesNotThrow(() -> {
             ParseTree parseTree = sqlParser.parseTreeFromSQL();
@@ -517,6 +516,37 @@ class SQLParserTest {
             assertTrue(tree.contains("CURRENT_TIMESTAMP"), "Expected 'CURRENT_TIMESTAMP' in parse tree.");
         });
     }
+
+    @Test
+    void testParseCreateUserProfileWithManyToMany_PostgreSQL() {
+        String sql = """
+            CREATE TABLE user_profile (
+                profile_id SERIAL PRIMARY KEY,
+                bio TEXT,
+                phone VARCHAR(20),
+                user_id INT MANYTOMANY,
+                FOREIGN KEY (user_id) REFERENCES user(user_id)
+            );
+            """;
+
+        sqlParser.setSqlContent(sql);
+        log.info("Testing PostgreSQL CREATE TABLE with pseudo-constraint MANYTOMANY:\n{}", sql);
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE user_profile.");
+
+            String tree = parseTree.toStringTree().toUpperCase();
+
+            assertTrue(tree.contains("USER_PROFILE"), "Expected 'user_profile' in parse tree.");
+            assertTrue(tree.contains("USER_ID"), "Expected 'user_id' in parse tree.");
+            assertTrue(tree.contains("MANYTOMANY"), "Expected pseudo-constraint 'MANYTOMANY' in parse tree.");
+            assertTrue(tree.contains("FOREIGN KEY"), "Expected 'FOREIGN KEY' in parse tree.");
+            assertTrue(tree.contains("REFERENCES"), "Expected 'REFERENCES' in parse tree.");
+            assertTrue(tree.contains("USER"), "Expected 'user' as referenced table.");
+        });
+    }
+
 
 }
 

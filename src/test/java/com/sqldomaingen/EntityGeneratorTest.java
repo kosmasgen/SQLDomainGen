@@ -4,11 +4,11 @@ import com.sqldomaingen.generator.EntityGenerator;
 import com.sqldomaingen.generator.RelationshipResolver;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.io.TempDir;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -20,9 +20,8 @@ import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Log4j2
 class EntityGeneratorTest {
-
-    private static final Logger logger = LoggerFactory.getLogger(EntityGeneratorTest.class);
 
     private EntityGenerator entityGenerator;
 
@@ -32,12 +31,12 @@ class EntityGeneratorTest {
     @BeforeEach
     void setUp() {
         entityGenerator = new EntityGenerator();
-        logger.info("🔧 Setting up EntityGeneratorTest...");
+        log.info("🔧 Setting up EntityGeneratorTest...");
     }
 
     @Test
     void testGenerateEntityWithManyToOne() throws IOException {
-        logger.info("🟢 Running testGenerateEntityWithManyToOne...");
+        log.info("🟢 Running testGenerateEntityWithManyToOne...");
 
         Table orders = new Table();
         orders.setName("Orders");
@@ -77,7 +76,7 @@ class EntityGeneratorTest {
         assertTrue(Files.exists(generatedFile), "✅ Generated entity file should exist");
 
         String content = Files.readString(generatedFile);
-        logger.debug("📄 Generated content: \n{}", content);
+        log.debug("📄 Generated content: \n{}", content);
 
         System.out.println("---- Orders.java (ManyToOne) ----");
         System.out.println(content);
@@ -93,7 +92,7 @@ class EntityGeneratorTest {
 
     @Test
     void testGenerateEntityWithOneToOne() throws IOException {
-        logger.info("🟢 Running testGenerateEntityWithOneToOne...");
+        log.info("🟢 Running testGenerateEntityWithOneToOne...");
 
         // Ορίζουμε τον σταθερό φάκελο εξόδου (π.χ. Επιφάνεια Εργασίας)
         Path outputDir = Paths.get(System.getProperty("user.home"), "Desktop", "GeneratedEntities");
@@ -140,7 +139,7 @@ class EntityGeneratorTest {
         assertTrue(Files.exists(generatedUserDetailsFile), "✅ Generated UserDetails.java file should exist");
 
         String userDetailsContent = Files.readString(generatedUserDetailsFile);
-        logger.debug("📄 Generated UserDetails.java content: \n{}", userDetailsContent);
+        log.debug("📄 Generated UserDetails.java content: \n{}", userDetailsContent);
         System.out.println("---- UserDetails.java ----");
         System.out.println(userDetailsContent);
         System.out.println("--------------------------");
@@ -149,12 +148,12 @@ class EntityGeneratorTest {
         Path generatedUsersFile = outputDir.resolve("Users.java");
         if (Files.exists(generatedUsersFile)) {
             String usersContent = Files.readString(generatedUsersFile);
-            logger.debug("📄 Generated Users.java content: \n{}", usersContent);
+            log.debug("📄 Generated Users.java content: \n{}", usersContent);
             System.out.println("---- Users.java ----");
             System.out.println(usersContent);
             System.out.println("--------------------");
         } else {
-            logger.warn("❌ Users.java file was not generated.");
+            log.warn("❌ Users.java file was not generated.");
         }
 
         // 🔍 Έλεγχοι περιεχομένου αρχείου UserDetails
@@ -167,13 +166,9 @@ class EntityGeneratorTest {
     }
 
 
-
-
-
-
     @Test
     void testGenerateEntityWithOneToMany() {
-        logger.info("🟢 Running testGenerateEntityWithOneToMany...");
+        log.info("🟢 Running testGenerateEntityWithOneToMany...");
 
         Table customers = new Table();
         customers.setName("Customers");
@@ -217,22 +212,22 @@ class EntityGeneratorTest {
         EntityGenerator generator = new EntityGenerator();
         String content = generator.createEntityContent(customers, "com.example.entities", false);
 
-        logger.debug("📄 Generated content of Customers.java:\n{}", content);
+        log.debug("📄 Generated content of Customers.java:\n{}", content);
 
         boolean hasOneToMany = content.contains("@OneToMany");
         boolean hasCorrectMappedBy = content.contains("mappedBy = \"customer\"");
         boolean hasCorrectListField = content.contains("private List<Orders> orders");
 
         if (!hasOneToMany) {
-            logger.error("❌ @OneToMany annotation is missing!");
+            log.error("❌ @OneToMany annotation is missing!");
         }
 
         if (!hasCorrectMappedBy) {
-            logger.error("❌ mappedBy = \"customer\" is missing or incorrect!");
+            log.error("❌ mappedBy = \"customer\" is missing or incorrect!");
         }
 
         if (!hasCorrectListField) {
-            logger.error("❌ Field 'private List<Orders> orders' is missing or incorrect!");
+            log.error("❌ Field 'private List<Orders> orders' is missing or incorrect!");
         }
 
         System.out.println("---- Customers.java (OneToMany) ----");
@@ -247,7 +242,7 @@ class EntityGeneratorTest {
 
     @Test
     void testGenerateEntityWithUUIDPrimaryKey() throws IOException {
-        logger.info("🟢 Running testGenerateEntityWithUUIDPrimaryKey...");
+        log.info("🟢 Running testGenerateEntityWithUUIDPrimaryKey...");
 
         Table logTable = new Table();
         logTable.setName("AuditLog");
@@ -267,7 +262,7 @@ class EntityGeneratorTest {
         assertTrue(Files.exists(generatedFile), "✅ AuditLog.java should be generated");
 
         String content = Files.readString(generatedFile);
-        logger.debug("📄 Generated content: \n{}", content);
+        log.debug("📄 Generated content: \n{}", content);
 
         System.out.println("---- AuditLog.java ----");
         System.out.println(content);
@@ -281,7 +276,7 @@ class EntityGeneratorTest {
 
     @Test
     void testNoDuplicateRelationshipFields() throws IOException {
-        logger.info("🟢 Running testNoDuplicateRelationshipFields...");
+        log.info("🟢 Running testNoDuplicateRelationshipFields...");
 
         Table department = new Table();
         department.setName("Department");
@@ -323,7 +318,4 @@ class EntityGeneratorTest {
 
         assertEquals(1, fieldCount, "❌ Πρέπει να υπάρχει μόνο ένα πεδίο 'parent' για self-referencing σχέση.");
     }
-
-
-
 }

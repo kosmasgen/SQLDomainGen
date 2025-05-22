@@ -55,30 +55,45 @@
       <scope>test</scope>
     </dependency>
 
-
-
-
-
-
-    <!-- Logback Classic Implementation -->
+    <!-- Log4j2 API και Implementation -->
     <dependency>
-      <groupId>ch.qos.logback</groupId>
-      <artifactId>logback-classic</artifactId>
-      <version>1.4.11</version>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-api</artifactId>
+      <version>2.20.0</version>
     </dependency>
+
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-core</artifactId>
+      <version>2.20.0</version>
+    </dependency>
+
+    <!-- SLF4J Binding for Log4j2 -->
+    <dependency>
+      <groupId>org.apache.logging.log4j</groupId>
+      <artifactId>log4j-slf4j2-impl</artifactId>
+      <version>2.20.0</version>
+    </dependency>
+
 
     <!-- Spring Boot Starter -->
     <dependency>
       <groupId>org.springframework.boot</groupId>
-      <artifactId>spring-boot-starter</artifactId>
-    </dependency>
-
-    <!-- Spring Boot Starter Test -->
-    <dependency>
-      <groupId>org.springframework.boot</groupId>
       <artifactId>spring-boot-starter-test</artifactId>
       <scope>test</scope>
+      <exclusions>
+        <exclusion>
+          <groupId>org.apache.logging.log4j</groupId>
+          <artifactId>log4j-to-slf4j</artifactId>
+        </exclusion>
+        <exclusion>
+          <groupId>ch.qos.logback</groupId>
+          <artifactId>logback-classic</artifactId>
+        </exclusion>
+      </exclusions>
     </dependency>
+
+
 
     <!-- Lombok -->
     <dependency>
@@ -169,21 +184,6 @@
           <outputDirectory>${project.build.directory}/generated-sources/antlr4</outputDirectory>
         </configuration>
       </plugin>
-      <!--
-      <plugin>
-        <groupId>com.github.spotbugs</groupId>
-        <artifactId>spotbugs-maven-plugin</artifactId>
-        <version>4.7.3.0</version>
-        <executions>
-          <execution>
-            <phase>verify</phase>
-            <goals>
-              <goal>check</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-      -->
 
       <!-- JaCoCo Maven Plugin -->
       <plugin>
@@ -198,6 +198,7 @@
               <goal>prepare-agent</goal>
             </goals>
           </execution>
+
           <!-- Create Coverage Report -->
           <execution>
             <id>report</id>

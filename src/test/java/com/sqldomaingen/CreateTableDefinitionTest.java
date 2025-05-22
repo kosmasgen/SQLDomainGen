@@ -3,20 +3,21 @@ package com.sqldomaingen;
 import com.sqldomaingen.parser.CreateTableDefinition;
 import com.sqldomaingen.parser.SQLParser;
 import com.sqldomaingen.parser.ColumnDefinition;
+import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.sqldomaingen.parser.PostgreSQLParser;
 import com.sqldomaingen.model.Table;
+
 import java.util.List;
+
 import static org.junit.jupiter.api.Assertions.*;
+
 import java.util.ArrayList;
 import java.util.Map;
 
-
+@Log4j2
 class CreateTableDefinitionTest {
-    private static final Logger logger = LoggerFactory.getLogger(CreateTableDefinitionTest.class);
 
     /**
      * 🛠️ Βοηθητική μέθοδος για τη δημιουργία SQLParser & ParseTree
@@ -47,7 +48,7 @@ class CreateTableDefinitionTest {
         tableDefinition.extractTableName(ctx);
 
         String tableName = tableDefinition.getTableName();
-        logger.info("Extracted Table Name: {}", tableName);
+        log.info("Extracted Table Name: {}", tableName);
 
         assertNotNull(tableName, "Το όνομα του πίνακα είναι null!");
         assertEquals("orders", tableName, "Το όνομα του πίνακα δεν είναι σωστό!");
@@ -134,7 +135,6 @@ class CreateTableDefinitionTest {
     }
 
 
-
     @Test
     void testParseAllTables() {
         String sql1 = "CREATE TABLE orders (id INT PRIMARY KEY, customer_id INT REFERENCES customers(id));";
@@ -168,29 +168,29 @@ class CreateTableDefinitionTest {
 
     @Test
     void testParseAllTables2() {
-        logger.info("🚀 Ξεκινάει το test: testParseAllTables");
+        log.info("🚀 Ξεκινάει το test: testParseAllTables");
 
         String sql1 = "CREATE TABLE orders (id INT PRIMARY KEY, customer_id INT REFERENCES customers(id));";
         String sql2 = "CREATE TABLE customers (id SERIAL PRIMARY KEY, name VARCHAR(255));";
 
-        logger.info("📄 SQL Scripts:\n1️⃣ {}\n2️⃣ {}", sql1, sql2);
+        log.info("📄 SQL Scripts:\n1️⃣ {}\n2️⃣ {}", sql1, sql2);
 
         // Ανάλυση SQL
         SQLParser sqlParser = new SQLParser();
         sqlParser.setSqlContent(sql1 + " " + sql2);
         ParseTree parseTree = sqlParser.parseTreeFromSQL();
 
-        logger.info("✅ ParseTree δημιουργήθηκε με {} κόμβους.", parseTree.getChildCount());
+        log.info("✅ ParseTree δημιουργήθηκε με {} κόμβους.", parseTree.getChildCount());
 
         List<PostgreSQLParser.CreateTableStatementContext> createTableStatements = new ArrayList<>();
         for (int i = 0; i < parseTree.getChildCount(); i++) {
             if (parseTree.getChild(i) instanceof PostgreSQLParser.CreateTableStatementContext) {
                 createTableStatements.add((PostgreSQLParser.CreateTableStatementContext) parseTree.getChild(i));
-                logger.info("📥 Βρέθηκε CREATE TABLE: {}", parseTree.getChild(i).getText());
+                log.info("📥 Βρέθηκε CREATE TABLE: {}", parseTree.getChild(i).getText());
             }
         }
 
-        logger.info("✅ Συνολικά βρέθηκαν {} εντολές CREATE TABLE.", createTableStatements.size());
+        log.info("✅ Συνολικά βρέθηκαν {} εντολές CREATE TABLE.", createTableStatements.size());
 
         // Ανάλυση Πινάκων
         CreateTableDefinition tableDefinition = new CreateTableDefinition();
@@ -198,44 +198,44 @@ class CreateTableDefinitionTest {
 
         // Έλεγχοι Αποτελεσμάτων
         assertNotNull(tableMap, () -> {
-            logger.error("❌ Ο tableMap είναι null!");
+            log.error("❌ Ο tableMap είναι null!");
             return "Ο tableMap δεν πρέπει να είναι null!";
         });
-        logger.info("✅ Ο tableMap δεν είναι null.");
+        log.info("✅ Ο tableMap δεν είναι null.");
 
         assertEquals(2, tableMap.size(), () -> {
-            logger.error("❌ Λάθος αριθμός πινάκων! Αναμενόμενοι: 2, Βρέθηκαν: {}", tableMap.size());
+            log.error("❌ Λάθος αριθμός πινάκων! Αναμενόμενοι: 2, Βρέθηκαν: {}", tableMap.size());
             return "Δεν εξήχθησαν σωστά οι πίνακες!";
         });
-        logger.info("✅ Ο αριθμός πινάκων είναι σωστός: {}", tableMap.size());
+        log.info("✅ Ο αριθμός πινάκων είναι σωστός: {}", tableMap.size());
 
         assertTrue(tableMap.containsKey("Orders"), () -> {
-            logger.error("❌ Ο πίνακας 'Orders' λείπει!");
+            log.error("❌ Ο πίνακας 'Orders' λείπει!");
             return "Ο πίνακας 'Orders' λείπει!";
         });
-        logger.info("✅ Ο πίνακας 'Orders' βρέθηκε.");
+        log.info("✅ Ο πίνακας 'Orders' βρέθηκε.");
 
         assertTrue(tableMap.containsKey("Customers"), () -> {
-            logger.error("❌ Ο πίνακας 'Customers' λείπει!");
+            log.error("❌ Ο πίνακας 'Customers' λείπει!");
             return "Ο πίνακας 'Customers' λείπει!";
         });
-        logger.info("✅ Ο πίνακας 'Customers' βρέθηκε.");
+        log.info("✅ Ο πίνακας 'Customers' βρέθηκε.");
 
         // Έλεγχος Στηλών στον Πίνακα Orders
         assertEquals(2, tableMap.get("Orders").getColumns().size(), () -> {
-            logger.error("❌ Λάθος αριθμός στηλών στον πίνακα 'Orders'. Αναμενόμενος: 2, Βρέθηκαν: {}", tableMap.get("Orders").getColumns().size());
+            log.error("❌ Λάθος αριθμός στηλών στον πίνακα 'Orders'. Αναμενόμενος: 2, Βρέθηκαν: {}", tableMap.get("Orders").getColumns().size());
             return "Λάθος αριθμός στηλών στον πίνακα 'Orders'!";
         });
-        logger.info("✅ Ο αριθμός στηλών στον πίνακα 'Orders' είναι σωστός.");
+        log.info("✅ Ο αριθμός στηλών στον πίνακα 'Orders' είναι σωστός.");
 
         // Έλεγχος Στηλών στον Πίνακα Customers
         assertEquals(2, tableMap.get("Customers").getColumns().size(), () -> {
-            logger.error("❌ Λάθος αριθμός στηλών στον πίνακα 'Customers'. Αναμενόμενος: 2, Βρέθηκαν: {}", tableMap.get("Customers").getColumns().size());
+            log.error("❌ Λάθος αριθμός στηλών στον πίνακα 'Customers'. Αναμενόμενος: 2, Βρέθηκαν: {}", tableMap.get("Customers").getColumns().size());
             return "Λάθος αριθμός στηλών στον πίνακα 'Customers'!";
         });
-        logger.info("✅ Ο αριθμός στηλών στον πίνακα 'Customers' είναι σωστός.");
+        log.info("✅ Ο αριθμός στηλών στον πίνακα 'Customers' είναι σωστός.");
 
-        logger.info("🎯 Το test ολοκληρώθηκε με επιτυχία!");
+        log.info("🎯 Το test ολοκληρώθηκε με επιτυχία!");
     }
 
 }

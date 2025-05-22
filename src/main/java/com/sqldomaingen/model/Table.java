@@ -5,9 +5,7 @@ import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
 import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
+import lombok.extern.log4j.Log4j2;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -16,9 +14,8 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-
+@Log4j2
 public class Table {
-    private static final Logger logger = LoggerFactory.getLogger(Table.class);
 
     private String name;
     private List<Column> columns = new ArrayList<>();
@@ -60,11 +57,11 @@ public class Table {
         this.relationships.add(relationship);
 
         // 🔍 Debug log για επιβεβαίωση
-        logger.debug("Added relationship: {}.{} -> {}.{}",
+        log.debug("Added relationship: {}.{} -> {}.{}",
                 relationship.getSourceTable(), relationship.getSourceColumn(),
                 relationship.getTargetTable(), relationship.getTargetColumn());
 
-        logger.debug("Current relationship count in Table {}: {}", this.name, this.relationships.size());
+        log.debug("Current relationship count in Table {}: {}", this.name, this.relationships.size());
     }
 
 

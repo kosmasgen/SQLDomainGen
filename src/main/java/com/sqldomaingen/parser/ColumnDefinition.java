@@ -6,17 +6,16 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Log4j2
 public class ColumnDefinition extends PostgreSQLBaseListener {
 
-    private static final Logger logger = LoggerFactory.getLogger(ColumnDefinition.class);
 
     private String columnName;
     private String sqlType;
@@ -35,6 +34,7 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
     private String onUpdate;
     private String onDelete;
     private String mappedBy;
+    private boolean  manyToMany = false;
 
 
     /**
@@ -45,12 +45,12 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
             throw new IllegalArgumentException("ColumnDefContext is null");
         }
 
-        logger.info("Parsing Column Definition -> {}", ctx.getText());
+        log.info("Parsing Column Definition -> {}", ctx.getText());
 
         ColumnDefinition columnDefinition = new ColumnDefinition();
         ParseTreeWalker.DEFAULT.walk(columnDefinition, ctx);
         columnDefinition.javaType = TypeMapper.mapToJavaType(columnDefinition.sqlType);
-        logger.info("Parsed Column -> Name: {}, SQL Type: {}, Java Type: {}, Primary Key: {}",
+        log.info("Parsed Column -> Name: {}, SQL Type: {}, Java Type: {}, Primary Key: {}",
                 columnDefinition.getColumnName(), columnDefinition.getSqlType(), columnDefinition.getJavaType(), columnDefinition.isPrimaryKey());
 
         return columnDefinition;
@@ -62,7 +62,7 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
     @Override
     public void enterColumnDef(PostgreSQLParser.ColumnDefContext ctx) {
         columnName = ctx.columnName().getText();
-        logger.debug("Extracted column name: {}", columnName);
+        log.debug("Extracted column name: {}", columnName);
     }
 
     /**
@@ -78,7 +78,7 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
         }
         length = extractLength(sqlType);
 
-        logger.debug("Extracted SQL type: {}, precision: {}, scale: {}", sqlType, precision, scale);
+        log.debug("Extracted SQL type: {}, precision: {}, scale: {}", sqlType, precision, scale);
     }
 
 
@@ -92,13 +92,16 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
         if (constraintText.contains("PRIMARY KEY")) {
             this.primaryKey = true;
             this.nullable = false; // PRIMARY KEY σημαίνει NOT NULL
-            logger.info("🔑 Column '{}' marked as PRIMARY KEY", this.columnName);
+            log.info("🔑 Column '{}' marked as PRIMARY KEY", this.columnName);
         }
         if (constraintText.contains("NOT NULL")) {
             this.nullable = false;
         }
         if (constraintText.contains("UNIQUE")) {
             this.unique = true;
+        }
+        if (constraintText.contains("MANYTOMANY")) {
+            this.manyToMany = true;
         }
         if (constraintText.contains("DEFAULT")) {
             this.defaultValue = extractDefaultValue(ctx);
@@ -111,8 +114,8 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
             extractForeignKeyDetails(ctx);
         }
 
-        logger.debug("Extracted constraints for column '{}': PK={}, Nullable={}, Unique={}, Default={}, Check={}, FK={}",
-                this.columnName, this.primaryKey, this.nullable, this.unique, this.defaultValue, this.checkConstraint, this.foreignKey);
+        log.debug("Extracted constraints for column '{}': PK={}, Nullable={}, Unique={}, ManyToMany{}, Default={}, Check={}, FK={}",
+                this.columnName, this.primaryKey, this.nullable, this.unique, this.manyToMany, this.defaultValue, this.checkConstraint, this.foreignKey);
     }
 
 
@@ -131,7 +134,7 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
                 String[] parts = insideParentheses.split(",");
                 return Integer.parseInt(parts[0].trim());
             } catch (NumberFormatException e) {
-                logger.warn("Invalid length format in SQL type '{}'. Defaulting to 255.", typeText);
+                log.warn("Invalid length format in SQL type '{}'. Defaulting to 255.", typeText);
             }
         }
         return 255;
@@ -174,30 +177,30 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
      */
 
     private void extractForeignKeyDetails(PostgreSQLParser.ConstraintContext ctx) {
-        logger.debug("Extracting Foreign Key: Context Text -> {}", ctx.getText());
+        log.debug("Extracting Foreign Key: Context Text -> {}", ctx.getText());
 
         if (ctx.tableName() != null) {
             referencedTable = ctx.tableName().getText();
         } else {
-            logger.warn("ForeignKey Extraction: tableName is NULL!");
+            log.warn("ForeignKey Extraction: tableName is NULL!");
         }
 
         if (ctx.columnName() != null) {
             referencedColumn = ctx.columnName().getText();
         } else {
-            logger.warn("ForeignKey Extraction: columnName is NULL!");
+            log.warn("ForeignKey Extraction: columnName is NULL!");
         }
 
-        logger.debug("Foreign Key Check for column: {} -> foreignKey={}, referencedTable={}, referencedColumn={}",
+        log.debug("Foreign Key Check for column: {} -> foreignKey={}, referencedTable={}, referencedColumn={}",
                 this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn);
 
-        logger.info("Extracted Foreign Key -> Referenced Table: {}, Referenced Column: {}", referencedTable, referencedColumn);
+        log.info("Extracted Foreign Key -> Referenced Table: {}, Referenced Column: {}", referencedTable, referencedColumn);
     }
 
 
     public Column toColumn() {
-        logger.info("Converting ColumnDefinition to Column object...");
-        logger.debug("Before Column creation: name={}, foreignKey={}, referencedTable={}, referencedColumn={}, mappedBy={}",
+        log.info("Converting ColumnDefinition to Column object...");
+        log.debug("Before Column creation: name={}, foreignKey={}, referencedTable={}, referencedColumn={}, mappedBy={}",
                 this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn, this.mappedBy);
 
         Column column = new Column();
@@ -211,6 +214,7 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
         column.setNullable(this.nullable);
         column.setDefaultValue(this.defaultValue);
         column.setUnique(this.unique);
+        column.setManyToMany(this.manyToMany);
         column.setCheckConstraint(this.checkConstraint);
         column.setOnDelete(this.onDelete);
         column.setOnUpdate(this.onUpdate);
@@ -221,10 +225,10 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
             column.setReferencedTable(this.referencedTable);
             column.setReferencedColumn(this.referencedColumn);
 
-            logger.debug("\u001B[33mForeign Key Check for column: {}, referencedTable={}, referencedColumn={}, mappedBy={}\u001B[0m",
+            log.debug("\u001B[33mForeign Key Check for column: {}, referencedTable={}, referencedColumn={}, mappedBy={}\u001B[0m",
                     this.columnName, this.referencedTable, this.referencedColumn, this.mappedBy);
 
-            logger.info("\u001B[32m✅ Column is Foreign Key: {} -> {}.{} (mappedBy={})\u001B[0m",
+            log.info("\u001B[32m✅ Column is Foreign Key: {} -> {}.{} (mappedBy={})\u001B[0m",
                     column.getName(), column.getReferencedTable(), column.getReferencedColumn(), column.getMappedBy());
         }
 

@@ -5,104 +5,53 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b0084f3d-faef-4b57-8eff-7f8eb002c2d9" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/mvn-debug-log.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/Absence.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/AuditLog.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/Course.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/Department.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/DepartmentDayOff.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/Event.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/EventAssignment.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/EventException.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/EventResourceBooking.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/Holiday.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/RecurringPattern.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/Student.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/StudentCourse.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/TimeOffRequest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/User.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/output/entities/UserProfile.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/ColumnDefinitionTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/ColumnTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/CreateTableDefinitionTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/RelationshipResolverTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/RelationshipTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/TableTest.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/SQLDomainGen-1.0-SNAPSHOT.jar" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/SQLDomainGen-1.0-SNAPSHOT.jar.original" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/maven-archiver/pom.properties" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/createdFiles.lst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/testCompile/default-testCompile/inputFiles.lst" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.ColumnDefinitionTest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.ColumnTest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.CreateTableDefinitionTest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.EntityGeneratorTest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.GrammarRelationshipTest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.RelationshipResolverTest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.RelationshipTest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.SQLParserTest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.TableParsingTest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.TableTest.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.ColumnDefinitionTest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.ColumnTest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.CreateTableDefinitionTest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.EntityGeneratorTest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.GrammarRelationshipTest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.RelationshipResolverTest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.RelationshipTest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.SQLParserTest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.TableParsingTest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.TableTest.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnDefinitionTest.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnTest.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/CreateTableDefinitionTest.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RelationshipResolverTest.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RelationshipTest.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableTest.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/com.example/OrderProducts.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/com.example/Orders.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/com.example/Products.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/input/test_script.sql" beforeDir="false" afterPath="$PROJECT_DIR$/input/test_script.sql" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/mappers/BaseMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/mappers/CourseMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/mappers/EnrollmentMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/mappers/ProfessorMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/mappers/StudentMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/repository/CourseRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/repository/EnrollmentRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/repository/ProfessorRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/repository/StudentRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/CourseService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/CourseServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/EnrollmentService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/EnrollmentServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/ProfessorService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/ProfessorServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/StudentService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/services/StudentServiceImpl.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/spring-shell.log" beforeDir="false" afterPath="$PROJECT_DIR$/spring-shell.log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/antlr4/com/sqldomaingen/parser/PostgreSQL.g4" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/antlr4/com/sqldomaingen/parser/PostgreSQL.g4" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ControllerGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ControllerGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/DTOGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/DTOGenerator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/EntityGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/EntityGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/MapperGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/MapperGenerator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/RelationshipResolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/RelationshipResolver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/RepositoryGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/RepositoryGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ServiceGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ServiceGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Column.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Column.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Relationship.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Relationship.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Table.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Table.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/ColumnDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/ColumnDefinition.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/CreateTableDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/CreateTableDefinition.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/DTOGeneratorTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/SQLParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/SQLParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parseroutputfiles/EntityParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parseroutputfiles/EntityParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/shell/GeneratorCommands.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/shell/GeneratorCommands.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/NamingConverter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/NamingConverter.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/TypeMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/TypeMapper.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/ColumnDefinitionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/ColumnDefinitionTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/ColumnTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/ColumnTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/CreateTableDefinitionTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/CreateTableDefinitionTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/EntityGeneratorTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/EntityGeneratorTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/GrammarTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/MapperGeneratorTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/RepositoryGeneratorTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/GrammarRelationshipTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/GrammarRelationshipTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/RelationshipResolverTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/RelationshipResolverTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/RelationshipTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/RelationshipTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/SQLParserTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/SQLParserTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/ServiceGeneratorTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/TableParsingTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/TableParsingTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/PostgreSQL.tokens" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/PostgreSQLLexer.tokens" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/TableTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/TableTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/SQLDomainGen-1.0-SNAPSHOT.jar" beforeDir="false" afterPath="$PROJECT_DIR$/target/SQLDomainGen-1.0-SNAPSHOT.jar" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/SQLDomainGen-1.0-SNAPSHOT.jar.original" beforeDir="false" afterPath="$PROJECT_DIR$/target/SQLDomainGen-1.0-SNAPSHOT.jar.original" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ControllerGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ControllerGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/DTOGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/DTOGenerator.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator$1.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/MapperGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/MapperGenerator.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RelationshipResolver.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RelationshipResolver.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RepositoryGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RepositoryGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ServiceGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ServiceGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Column.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Column.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Relationship$RelationshipType.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Relationship$RelationshipType.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Table.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Table.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/ColumnDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/ColumnDefinition.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/CreateTableDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/CreateTableDefinition.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQL.interp" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLLexer.interp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLLexer.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLLexer.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ActionContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterActionContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterColumnActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterColumnActionContext.class" afterDir="false" />
@@ -111,8 +60,6 @@
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ArithmeticOperatorContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ArithmeticOperatorContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ArrayConstructorContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ArrayConstructorContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$BooleanLiteralContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$BooleanLiteralContext.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CollateClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CollateClauseContext.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnDefContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnDefContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameListContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameListContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnTypeModifierContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnTypeModifierContext.class" afterDir="false" />
@@ -126,6 +73,7 @@
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreatePolicyStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreatePolicyStatementContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateRuleStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateRuleStatementContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateSchemaStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateSchemaStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateTableStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateTableStatementContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateViewStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateViewStatementContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DataManipulationStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DataManipulationStatementContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DataTypeContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DataTypeContext.class" afterDir="false" />
@@ -177,18 +125,50 @@
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ValueContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ValueContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$WhereClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$WhereClauseContext.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parseroutputfiles/EntityParser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parseroutputfiles/EntityParser.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/shell/GeneratorCommands.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/shell/GeneratorCommands.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/NamingConverter.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/NamingConverter.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/TypeMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/TypeMapper.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/PostgreSQL.tokens" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/PostgreSQL.tokens" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/PostgreSQLLexer.tokens" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/PostgreSQLLexer.tokens" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQL.interp" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQL.interp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLLexer.interp" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLLexer.interp" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLLexer.java" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLLexer.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/target/generated-sources/antlr4/com/sqldomaingen/parser/PostgreSQLParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/DTOGeneratorTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.ColumnDefinitionTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.ColumnDefinitionTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.ColumnTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.ColumnTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.CreateTableDefinitionTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.CreateTableDefinitionTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.EntityGeneratorTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.EntityGeneratorTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.GrammarRelationshipTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.GrammarRelationshipTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.RelationshipResolverTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.RelationshipResolverTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.RelationshipTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.RelationshipTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.SQLParserTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.SQLParserTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.TableParsingTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.TableParsingTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.TableTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/TEST-com.sqldomaingen.TableTest.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.ColumnDefinitionTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.ColumnDefinitionTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.ColumnTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.ColumnTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.CreateTableDefinitionTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.CreateTableDefinitionTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.EntityGeneratorTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.EntityGeneratorTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.GrammarRelationshipTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.GrammarRelationshipTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.RelationshipResolverTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.RelationshipResolverTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.RelationshipTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.RelationshipTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.SQLParserTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.SQLParserTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.TableParsingTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.TableParsingTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.TableTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/target/surefire-reports/com.sqldomaingen.TableTest.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnDefinitionTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnDefinitionTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/CreateTableDefinitionTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/CreateTableDefinitionTest.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/EntityGeneratorTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/EntityGeneratorTest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/GrammarTest$1.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/GrammarTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/MapperGeneratorTest.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RepositoryGeneratorTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/GrammarRelationshipTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/GrammarRelationshipTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RelationshipResolverTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RelationshipResolverTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RelationshipTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RelationshipTest.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/SQLParserTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/SQLParserTest.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ServiceGeneratorTest.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest$1.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableTest.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -203,6 +183,11 @@
     </option>
   </component>
   <component name="Git.Settings">
+    <option name="RECENT_BRANCH_BY_REPOSITORY">
+      <map>
+        <entry key="$PROJECT_DIR$" value="fix-primary-and-foreign-keys" />
+      </map>
+    </option>
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
   <component name="GitHubPullRequestSearchHistory">{
@@ -237,8 +222,10 @@
     "JUnit.ColumnDefinitionTest.executor": "Run",
     "JUnit.ColumnDefinitionTest.testEmployeeDepartmentTable_PrimaryAndForeignKeys.executor": "Run",
     "JUnit.ColumnDefinitionTest.testFromContext_JoinTableColumnsWithPKAndFK.executor": "Debug",
+    "JUnit.ColumnDefinitionTest.testFromContext_WithManyToManyPseudoConstraint.executor": "Debug",
     "JUnit.ColumnDefinitionTest.testFromContext_WithTextAndTimestampDefault.executor": "Debug",
     "JUnit.ColumnTest.executor": "Debug",
+    "JUnit.ColumnTest.testManyToManyFlag.executor": "Run",
     "JUnit.ControllerGeneratorTest.executor": "Run",
     "JUnit.CreateTableDefinitionTest.executor": "Run",
     "JUnit.CreateTableDefinitionTest.testExtractForeignKeyConstraintAtTableLevel.executor": "Run",
@@ -289,6 +276,7 @@
     "JUnit.SQLParserTest.testParseCreateTimeOffRequestTable.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateTimeOffRequestTable_PostgreSQL.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateTriggerStatement_PostgreSQL.executor": "Debug",
+    "JUnit.SQLParserTest.testParseCreateUserProfileWithManyToMany_PostgreSQL.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateUserTable.executor": "Run",
     "JUnit.SQLParserTest.testParseCreateUserTable_PostgreSQL.executor": "Run",
     "JUnit.ServiceGeneratorTest.executor": "Run",
@@ -300,29 +288,31 @@
     "JUnit.TableParsingTest.testParseDepartmentDayOffTable.executor": "Debug",
     "JUnit.TableParsingTest.testParseDepartmentTable.executor": "Debug",
     "JUnit.TableParsingTest.testParseEmployeeDepartmentTable_WithCompositePrimaryKey.executor": "Run",
-    "JUnit.TableParsingTest.testParseEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs.executor": "Run",
+    "JUnit.TableParsingTest.testParseEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs.executor": "Debug",
     "JUnit.TableParsingTest.testParseEventAssignmentTable.executor": "Run",
     "JUnit.TableParsingTest.testParseEventExceptionTable.executor": "Debug",
     "JUnit.TableParsingTest.testParseEventTable.executor": "Debug",
     "JUnit.TableParsingTest.testParseHolidayTable.executor": "Debug",
     "JUnit.TableParsingTest.testParseRecurringPatternTable.executor": "Debug",
     "JUnit.TableParsingTest.testParseTimeOffRequestTable.executor": "Run",
+    "JUnit.TableParsingTest.testParseUserProfileTable_WithManyToManyConstraint.executor": "Run",
     "JUnit.TableParsingTest.testParseUserTable.executor": "Debug",
     "JUnit.TableParsingTest.testProductCategoryTable.executor": "Run",
     "JUnit.TableParsingTest.testUserCategoryTable.executor": "Run",
-    "JUnit.TableTest.executor": "Run",
+    "JUnit.TableTest.executor": "Debug",
     "JUnit.TableTest.testAddConstraints.executor": "Debug",
     "JUnit.TableTest.testAddDecimalColumnToEventAssignmentTable.executor": "Debug",
     "JUnit.TableTest.testDepartmentTableStructure_UnaffectedByTrigger.executor": "Debug",
     "JUnit.TableTest.testEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs.executor": "Run",
     "JUnit.TableTest.testParseCreateDepartmentTable_ToStringValidation.executor": "Debug",
     "JUnit.TableTest.testRecurringPatternTable_WithForeignKeyColumn.executor": "Debug",
+    "JUnit.TableTest.testUserProfileTable_WithManyToManyConstraint.executor": "Debug",
     "Repository.Attach.Annotations": "false",
     "Repository.Attach.JavaDocs": "false",
     "Repository.Attach.Sources": "false",
     "RunOnceActivity.ShowReadmeOnStart": "true",
     "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "fix-primary-and-foreign-keys",
+    "git-widget-placeholder": "feature/refactor-entities",
     "ignore.virus.scanning.warn.message": "true",
     "kotlin-language-version-configured": "true",
     "last_opened_file_path": "C:/Users/kosma/IdeaProjects/SQLDomainGen/src/test/java/com/sqldomaingen",
@@ -340,20 +330,7 @@
       <recent name="C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.SQLDomainGenApplication">
-    <configuration name="SQLDomainGenApplication" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
-      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.SQLDomainGenApplication" />
-      <module name="SQLDomainGen" />
-      <extension name="coverage">
-        <pattern>
-          <option name="PATTERN" value="com.sqldomaingen.*" />
-          <option name="ENABLED" value="true" />
-        </pattern>
-      </extension>
-      <method v="2">
-        <option name="Make" enabled="true" />
-      </method>
-    </configuration>
+  <component name="RunManager" selected="JUnit.TableTest.testParseCreateDepartmentTable_ToStringValidation">
     <configuration name="SQLGEN" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.SQLDomainGenApplication" />
       <module name="SQLDomainGen" />
@@ -361,7 +338,7 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="EntityGeneratorTest.testGenerateEntityWithOneToMany" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="ColumnDefinitionTest.testFromContext_WithManyToManyPseudoConstraint" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="SQLDomainGen" />
       <extension name="coverage">
         <pattern>
@@ -370,14 +347,14 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="com.sqldomaingen" />
-      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.EntityGeneratorTest" />
-      <option name="METHOD_NAME" value="testGenerateEntityWithOneToMany" />
+      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.ColumnDefinitionTest" />
+      <option name="METHOD_NAME" value="testFromContext_WithManyToManyPseudoConstraint" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="EntityGeneratorTest.testGenerateEntityWithUUIDPrimaryKey" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="ColumnTest.testManyToManyFlag" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="SQLDomainGen" />
       <extension name="coverage">
         <pattern>
@@ -386,14 +363,14 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="com.sqldomaingen" />
-      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.EntityGeneratorTest" />
-      <option name="METHOD_NAME" value="testGenerateEntityWithUUIDPrimaryKey" />
+      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.ColumnTest" />
+      <option name="METHOD_NAME" value="testManyToManyFlag" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="EntityGeneratorTest.testNoDuplicateRelationshipFields" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="TableParsingTest.testParseEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="SQLDomainGen" />
       <extension name="coverage">
         <pattern>
@@ -402,14 +379,14 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="com.sqldomaingen" />
-      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.EntityGeneratorTest" />
-      <option name="METHOD_NAME" value="testNoDuplicateRelationshipFields" />
+      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.TableParsingTest" />
+      <option name="METHOD_NAME" value="testParseEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="RelationshipResolverTest.testJoinTableWithExtraColumnIsManyToMany" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="TableTest.testParseCreateDepartmentTable_ToStringValidation" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="SQLDomainGen" />
       <extension name="coverage">
         <pattern>
@@ -418,8 +395,24 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="com.sqldomaingen" />
-      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.RelationshipResolverTest" />
-      <option name="METHOD_NAME" value="testJoinTableWithExtraColumnIsManyToMany" />
+      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.TableTest" />
+      <option name="METHOD_NAME" value="testParseCreateDepartmentTable_ToStringValidation" />
+      <option name="TEST_OBJECT" value="method" />
+      <method v="2">
+        <option name="Make" enabled="true" />
+      </method>
+    </configuration>
+    <configuration name="TableTest.testUserProfileTable_WithManyToManyConstraint" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+      <module name="SQLDomainGen" />
+      <extension name="coverage">
+        <pattern>
+          <option name="PATTERN" value="com.sqldomaingen.*" />
+          <option name="ENABLED" value="true" />
+        </pattern>
+      </extension>
+      <option name="PACKAGE_NAME" value="com.sqldomaingen" />
+      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.TableTest" />
+      <option name="METHOD_NAME" value="testUserProfileTable_WithManyToManyConstraint" />
       <option name="TEST_OBJECT" value="method" />
       <method v="2">
         <option name="Make" enabled="true" />
@@ -427,19 +420,19 @@
     </configuration>
     <list>
       <item itemvalue="Application.SQLGEN" />
-      <item itemvalue="Application.SQLDomainGenApplication" />
-      <item itemvalue="JUnit.EntityGeneratorTest.testGenerateEntityWithOneToMany" />
-      <item itemvalue="JUnit.EntityGeneratorTest.testNoDuplicateRelationshipFields" />
-      <item itemvalue="JUnit.EntityGeneratorTest.testGenerateEntityWithUUIDPrimaryKey" />
-      <item itemvalue="JUnit.RelationshipResolverTest.testJoinTableWithExtraColumnIsManyToMany" />
+      <item itemvalue="JUnit.ColumnDefinitionTest.testFromContext_WithManyToManyPseudoConstraint" />
+      <item itemvalue="JUnit.ColumnTest.testManyToManyFlag" />
+      <item itemvalue="JUnit.TableParsingTest.testParseEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs" />
+      <item itemvalue="JUnit.TableTest.testParseCreateDepartmentTable_ToStringValidation" />
+      <item itemvalue="JUnit.TableTest.testUserProfileTable_WithManyToManyConstraint" />
     </list>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.SQLDomainGenApplication" />
-        <item itemvalue="JUnit.EntityGeneratorTest.testGenerateEntityWithOneToMany" />
-        <item itemvalue="JUnit.EntityGeneratorTest.testNoDuplicateRelationshipFields" />
-        <item itemvalue="JUnit.EntityGeneratorTest.testGenerateEntityWithUUIDPrimaryKey" />
-        <item itemvalue="JUnit.RelationshipResolverTest.testJoinTableWithExtraColumnIsManyToMany" />
+        <item itemvalue="JUnit.TableTest.testParseCreateDepartmentTable_ToStringValidation" />
+        <item itemvalue="JUnit.ColumnTest.testManyToManyFlag" />
+        <item itemvalue="JUnit.ColumnDefinitionTest.testFromContext_WithManyToManyPseudoConstraint" />
+        <item itemvalue="JUnit.TableTest.testUserProfileTable_WithManyToManyConstraint" />
+        <item itemvalue="JUnit.TableParsingTest.testParseEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs" />
       </list>
     </recent_temporary>
   </component>
@@ -452,6 +445,15 @@
       <option name="presentableId" value="Default" />
       <updated>1740579267256</updated>
     </task>
+    <task id="LOCAL-00001" summary="grammar: sync PostgreSQL.g4 with latest schema changes">
+      <option name="closed" value="true" />
+      <created>1747826925697</created>
+      <option name="number" value="00001" />
+      <option name="presentableId" value="LOCAL-00001" />
+      <option name="project" value="LOCAL" />
+      <updated>1747826925697</updated>
+    </task>
+    <option name="localTasksCounter" value="2" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">
@@ -464,5 +466,9 @@
         </entry>
       </map>
     </option>
+  </component>
+  <component name="VcsManagerConfiguration">
+    <MESSAGE value="grammar: sync PostgreSQL.g4 with latest schema changes" />
+    <option name="LAST_COMMIT_MESSAGE" value="grammar: sync PostgreSQL.g4 with latest schema changes" />
   </component>
 </project>

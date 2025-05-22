@@ -2,14 +2,14 @@ package com.sqldomaingen;
 
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.parser.ColumnDefinition;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
 import static org.junit.jupiter.api.Assertions.*;
 
+@Log4j2
 public class ColumnTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(ColumnTest.class);
 
     @Test
     public void testBasicColumnProperties() {
@@ -25,7 +25,7 @@ public class ColumnTest {
 
         Column column = columnDefinition.toColumn();
 
-        logger.info("Testing 'testBasicColumnProperties'");
+        log.info("Testing 'testBasicColumnProperties'");
         assertEquals("username", column.getName());
         assertEquals("VARCHAR", column.getSqlType());
         assertEquals("String", column.getJavaType());
@@ -47,7 +47,7 @@ public class ColumnTest {
 
         Column column = columnDefinition.toColumn();
 
-        logger.info("Testing 'testPrimaryKeyColumn'");
+        log.info("Testing 'testPrimaryKeyColumn'");
         assertEquals("id", column.getName());
         assertEquals("BIGINT", column.getSqlType());
         assertEquals("Long", column.getJavaType());
@@ -67,7 +67,7 @@ public class ColumnTest {
 
         Column column = columnDefinition.toColumn();
 
-        logger.info("Testing 'testForeignKeyColumn'");
+        log.info("Testing 'testForeignKeyColumn'");
         assertEquals("order_id", column.getName());
         assertEquals("INT", column.getSqlType());
         assertEquals("Integer", column.getJavaType());
@@ -90,7 +90,7 @@ public class ColumnTest {
 
         Column column = columnDefinition.toColumn();
 
-        logger.info("Testing 'testForeignKeyWithCascade'");
+        log.info("Testing 'testForeignKeyWithCascade'");
         assertEquals("customer_id", column.getName());
         assertTrue(column.isForeignKey());
         assertEquals("customers", column.getReferencedTable());
@@ -109,7 +109,7 @@ public class ColumnTest {
 
         Column column = columnDefinition.toColumn();
 
-        logger.info("Testing 'testCheckConstraint'");
+        log.info("Testing 'testCheckConstraint'");
         assertEquals("age", column.getName());
         assertEquals("INTEGER", column.getSqlType());
         assertEquals("Integer", column.getJavaType());
@@ -127,7 +127,7 @@ public class ColumnTest {
 
         Column column = columnDefinition.toColumn();
 
-        logger.info("Testing 'testDecimalColumn'");
+        log.info("Testing 'testDecimalColumn'");
         assertEquals("price", column.getName());
         assertEquals("DECIMAL(10,2)", column.getSqlType());
         assertEquals("BigDecimal", column.getJavaType());
@@ -146,7 +146,7 @@ public class ColumnTest {
 
         Column column = columnDefinition.toColumn();
 
-        logger.info("Testing 'testUniqueAndNotNullColumn'");
+        log.info("Testing 'testUniqueAndNotNullColumn'");
         assertEquals("email", column.getName());
         assertTrue(column.isUnique());
         assertFalse(column.isNullable());
@@ -162,7 +162,7 @@ public class ColumnTest {
 
         Column column = columnDefinition.toColumn();
 
-        logger.info("Testing 'testDefaultValues'");
+        log.info("Testing 'testDefaultValues'");
         assertEquals("status", column.getName());
         assertEquals("ACTIVE", column.getDefaultValue());
     }
@@ -187,7 +187,7 @@ public class ColumnTest {
                 columnDefinition.setOnUpdate(onUpdate);
                 Column column = columnDefinition.toColumn();
 
-                logger.info("Testing 'testForeignKeyWithAllActions' - ON DELETE: {}, ON UPDATE: {}", onDelete, onUpdate);
+                log.info("Testing 'testForeignKeyWithAllActions' - ON DELETE: {}, ON UPDATE: {}", onDelete, onUpdate);
                 assertEquals("order_id", column.getName());
                 assertEquals("orders", column.getReferencedTable());
                 assertEquals("id", column.getReferencedColumn());
@@ -196,4 +196,23 @@ public class ColumnTest {
             }
         }
     }
+
+    @Test
+    public void testManyToManyFlag() {
+        ColumnDefinition columnDefinition = new ColumnDefinition();
+        columnDefinition.setColumnName("tag_id");
+        columnDefinition.setSqlType("BIGINT");
+        columnDefinition.setJavaType("Long");
+        columnDefinition.setManyToMany(true);
+
+        Column column = columnDefinition.toColumn();
+
+        log.info("Testing 'testManyToManyFlag'");
+        assertEquals("tag_id", column.getName());
+        assertEquals("BIGINT", column.getSqlType());
+        assertEquals("Long", column.getJavaType());
+        assertTrue(column.isManyToMany(), "manyToMany should be true");
+    }
+
+
 }

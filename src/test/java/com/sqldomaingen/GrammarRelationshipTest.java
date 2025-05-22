@@ -2,18 +2,17 @@ package com.sqldomaingen;
 
 import com.sqldomaingen.parser.PostgreSQLLexer;
 import com.sqldomaingen.parser.PostgreSQLParser;
+import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Log4j2
 class GrammarRelationshipTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(GrammarRelationshipTest.class);
 
     @Test
     void testRelationshipManyToOneDefault() {
@@ -63,7 +62,7 @@ class GrammarRelationshipTest {
 
         tokens.fill();
         for (Token token : tokens.getTokens()) {
-            logger.info("Token Type: {}, Text: {}", lexer.getVocabulary().getSymbolicName(token.getType()), token.getText());
+            log.info("Token Type: {}, Text: {}", lexer.getVocabulary().getSymbolicName(token.getType()), token.getText());
         }
 
         PostgreSQLParser parser = new PostgreSQLParser(tokens);
@@ -88,6 +87,7 @@ class GrammarRelationshipTest {
         }
         return "ManyToOne"; // Προεπιλογή αν δεν υπάρχει η λέξη RELATIONSHIP
     }
+
     @Test
     void testRelationshipTypeParsing() {
         String sql = "FOREIGN KEY (id) REFERENCES other_table(id) RELATIONSHIP ONETOONE;";
@@ -96,7 +96,6 @@ class GrammarRelationshipTest {
         assertNotNull(ctx.RELATIONSHIP(), "Η λέξη RELATIONSHIP πρέπει να υπάρχει.");
         assertEquals("ONETOONE", ctx.relationshipType().getText(), "Ο τύπος σχέσης πρέπει να είναι ONETOONE.");
     }
-
 
 
 }

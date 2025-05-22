@@ -7,8 +7,8 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
+
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ArrayList;
@@ -18,25 +18,24 @@ import java.util.List;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
+@Log4j2
 public class CreateTableDefinition {
-    private static final Logger logger = LoggerFactory.getLogger(CreateTableDefinition.class);
 
     private String tableName;
     private List<ColumnDefinition> columnDefinitions = new ArrayList<>();
     private List<String> constraints = new ArrayList<>();
 
     public Table processCreateTable(PostgreSQLParser.CreateTableStatementContext ctx) {
-        logger.info("🔍 FULL PARSE TREE: \n{}", ctx.toStringTree());
-        logger.info("➡️ processCreateTable() - START | Context: {}", ctx);
-
+        log.info("🔍 FULL PARSE TREE: \n{}", ctx.toStringTree());
+        log.info("➡️ processCreateTable() - START | Context: {}", ctx);
 
 
         this.tableName = extractTableName(ctx);
-        logger.info("Extracted table name: {}", this.tableName);
+        log.info("Extracted table name: {}", this.tableName);
 
-        logger.info("🛠 BEFORE extractColumnDefinitions: columnDefinitions = {}", this.columnDefinitions);
+        log.info("🛠 BEFORE extractColumnDefinitions: columnDefinitions = {}", this.columnDefinitions);
         this.columnDefinitions = extractColumnDefinitions(ctx);
-        logger.info("🛠 AFTER extractColumnDefinitions: columnDefinitions = {} | Size: {}", this.columnDefinitions, this.columnDefinitions.size());
+        log.info("🛠 AFTER extractColumnDefinitions: columnDefinitions = {} | Size: {}", this.columnDefinitions, this.columnDefinitions.size());
 
         // 🔑 Νέα μέθοδος που ανιχνεύει το PRIMARY KEY!
         if (ctx.tableConstraint() != null) {
@@ -49,7 +48,7 @@ public class CreateTableDefinition {
 
 
         Table table = toTable();
-        logger.info("⬅️ processCreateTable() - END | Generated Table: {}", table.getName());
+        log.info("⬅️ processCreateTable() - END | Generated Table: {}", table.getName());
 
         return table;
     }
@@ -60,7 +59,7 @@ public class CreateTableDefinition {
         }
 
         this.tableName = ctx.tableName().get(0).getText();
-        logger.info("Extracted raw table name: {}", tableName);
+        log.info("Extracted raw table name: {}", tableName);
 
         // ✅ Αφαίρεση του schema αν υπάρχει
         if (tableName.contains(".")) {
@@ -72,7 +71,7 @@ public class CreateTableDefinition {
 
 
     public List<ColumnDefinition> extractColumnDefinitions(PostgreSQLParser.CreateTableStatementContext ctx) {
-        logger.info("➡️ extractColumnDefinitions() - START | Context: {}", ctx);
+        log.info("➡️ extractColumnDefinitions() - START | Context: {}", ctx);
 
         List<ColumnDefinition> extractedColumns = new ArrayList<>();
 
@@ -82,29 +81,29 @@ public class CreateTableDefinition {
                     ColumnDefinition column = ColumnDefinition.fromContext(columnCtx);
                     extractedColumns.add(column);
 
-                    logger.info("✅ Extracted column: {} | SQL Type: {} | Primary Key: {} | Default: {}",
+                    log.info("✅ Extracted column: {} | SQL Type: {} | Primary Key: {} | Default: {}",
                             column.getColumnName(), column.getSqlType(), column.isPrimaryKey(), column.getDefaultValue());
                 } catch (Exception e) {
-                    logger.error("❌ Error extracting column from context: {}", columnCtx.getText(), e);
+                    log.error("❌ Error extracting column from context: {}", columnCtx.getText(), e);
                 }
             }
         } else {
-            logger.warn("⚠️ No columns found in the CREATE TABLE statement.");
+            log.warn("⚠️ No columns found in the CREATE TABLE statement.");
         }
 
-        logger.info("⬅️ extractColumnDefinitions() - END | Extracted {} columns.", extractedColumns.size());
+        log.info("⬅️ extractColumnDefinitions() - END | Extracted {} columns.", extractedColumns.size());
         return extractedColumns;
     }
 
     private void extractPrimaryKeyConstraint(PostgreSQLParser.TableConstraintContext ctx) {
-        logger.info("🔍 extractPrimaryKeyConstraint() - START");
+        log.info("🔍 extractPrimaryKeyConstraint() - START");
 
         if (ctx.PRIMARY_KEY() != null) {
-            logger.debug("🔑 PRIMARY KEY constraint found.");
+            log.debug("🔑 PRIMARY KEY constraint found.");
 
             if (ctx.columnNameList() != null && !ctx.columnNameList().isEmpty()) {
                 String primaryKeyColumns = ctx.columnNameList().get(0).getText(); // Παίρνουμε το πρώτο στοιχείο
-                     // Παίρνουμε όλα τα ονόματα ως string
+                // Παίρνουμε όλα τα ονόματα ως string
                 for (String primaryKeyColumn : primaryKeyColumns.replace("(", "").replace(")", "").split(",")) {
                     primaryKeyColumn = primaryKeyColumn.replace("\"", "").trim();
 
@@ -114,25 +113,25 @@ public class CreateTableDefinition {
                             column.setPrimaryKey(true);
                             column.setNullable(false);
                             found = true;
-                            logger.info("✅ PRIMARY KEY applied to column: {}", column.getColumnName());
+                            log.info("✅ PRIMARY KEY applied to column: {}", column.getColumnName());
                             break;
                         }
                     }
 
                     if (!found) {
-                        logger.warn("⚠️ PRIMARY KEY column '{}' not found in columnDefinitions!", primaryKeyColumn);
+                        log.warn("⚠️ PRIMARY KEY column '{}' not found in columnDefinitions!", primaryKeyColumn);
                     }
                 }
             } else {
-                logger.warn("⚠️ PRIMARY KEY constraint found but no column names detected!");
+                log.warn("⚠️ PRIMARY KEY constraint found but no column names detected!");
             }
         }
 
-        logger.info("⬅️ extractPrimaryKeyConstraint() - END");
+        log.info("⬅️ extractPrimaryKeyConstraint() - END");
     }
 
     public void extractForeignKeyConstraints(PostgreSQLParser.CreateTableStatementContext ctx) {
-        logger.info("➡️ extractForeignKeyConstraints() - START");
+        log.info("➡️ extractForeignKeyConstraints() - START");
 
         if (ctx.tableConstraint() != null) {
             for (PostgreSQLParser.TableConstraintContext constraintCtx : ctx.tableConstraint()) {
@@ -143,7 +142,7 @@ public class CreateTableDefinition {
 
                     List<PostgreSQLParser.ColumnNameListContext> columnLists = constraintCtx.columnNameList();
                     if (columnLists.size() != 2) {
-                        logger.warn("⚠️ FOREIGN KEY constraint does not contain both FK and referenced column lists.");
+                        log.warn("⚠️ FOREIGN KEY constraint does not contain both FK and referenced column lists.");
                         continue;
                     }
 
@@ -161,7 +160,7 @@ public class CreateTableDefinition {
                         String fkColumn = fkColumns.get(0);
                         String refColumn = refColumns.get(0);
 
-                        logger.info("🔗 Found FOREIGN KEY: {} -> {}.{}", fkColumn, referencedTable, refColumn);
+                        log.info("🔗 Found FOREIGN KEY: {} -> {}.{}", fkColumn, referencedTable, refColumn);
 
                         columnDefinitions.stream()
                                 .filter(col -> col.getColumnName().equals(fkColumn))
@@ -170,36 +169,36 @@ public class CreateTableDefinition {
                                     col.setForeignKey(true);
                                     col.setReferencedTable(referencedTable);
                                     col.setReferencedColumn(refColumn);
-                                }, () -> logger.warn("⚠️ FK column '{}' not found in columnDefinitions!", fkColumn));
+                                }, () -> log.warn("⚠️ FK column '{}' not found in columnDefinitions!", fkColumn));
                     } else {
-                        logger.warn("⚠️ Composite FOREIGN KEY not supported yet: {} -> {} ({})",
+                        log.warn("⚠️ Composite FOREIGN KEY not supported yet: {} -> {} ({})",
                                 fkColumns, referencedTable, refColumns);
                     }
                 }
             }
         }
 
-        logger.info("⬅️ extractForeignKeyConstraints() - END");
+        log.info("⬅️ extractForeignKeyConstraints() - END");
     }
 
 
     // Σε αναμονή
     public Map<String, Table> parseAllTables(List<PostgreSQLParser.CreateTableStatementContext> createTableStatements) {
-        logger.info("➡️ parseAllTables() - START");
+        log.info("➡️ parseAllTables() - START");
 
         Map<String, Table> tableMap = new HashMap<>();
         for (PostgreSQLParser.CreateTableStatementContext ctx : createTableStatements) {
             Table table = processCreateTable(ctx);
             tableMap.put(table.getName(), table);
-            logger.info("✅ Added table '{}' to tableMap", table.getName());
+            log.info("✅ Added table '{}' to tableMap", table.getName());
         }
 
-        logger.info("⬅️ parseAllTables() - END | Total tables parsed: {}", tableMap.size());
+        log.info("⬅️ parseAllTables() - END | Total tables parsed: {}", tableMap.size());
         return tableMap;
     }
 
     public Table toTable() {
-        logger.info("➡️ toTable() - START | Table Name: {}", this.tableName);
+        log.info("➡️ toTable() - START | Table Name: {}", this.tableName);
 
         Table table = new Table();
         table.setName(this.tableName);
@@ -210,7 +209,7 @@ public class CreateTableDefinition {
         table.setColumns(columns);
 
         table.addConstraints(this.constraints);
-        logger.info("⬅️ toTable() - END | Converted Table: {} with {} columns.",
+        log.info("⬅️ toTable() - END | Converted Table: {} with {} columns.",
                 table.getName(), columns.size());
 
         return table;

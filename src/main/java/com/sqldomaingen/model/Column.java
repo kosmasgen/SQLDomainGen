@@ -21,6 +21,7 @@ public class Column {
     private String defaultValue;
     private boolean primaryKey;
     private boolean unique;
+    private boolean manyToMany;
     private boolean nullable;
     private boolean isDefaultExpression;
     private String defaultExpression;

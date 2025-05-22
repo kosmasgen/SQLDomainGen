@@ -2,8 +2,7 @@ package com.sqldomaingen.generator;
 
 import com.sqldomaingen.model.Entity;
 import com.sqldomaingen.model.Field;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 
 import java.io.IOException;
 import java.nio.file.Files;
@@ -13,21 +12,21 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+@Log4j2
 public class DTOGenerator {
-    private static final Logger logger = LoggerFactory.getLogger(DTOGenerator.class);
 
     public void generateDTOs(List<Entity> entities, String outputDir) {
         String packageName = "com.sqldomaingen.dto";
 
-        logger.info("Starting DTO generation...");
+        log.info("Starting DTO generation...");
 
         for (Entity entity : entities) {
-            logger.info("Generating DTO for entity: {}", entity.getName());
+            log.info("Generating DTO for entity: {}", entity.getName());
             String dtoContent = createDTOContent(entity, packageName);
             writeDTOToFile(dtoContent, outputDir, entity.getName());
         }
 
-        logger.info("DTO generation complete. Output directory: {}", outputDir);
+        log.info("DTO generation complete. Output directory: {}", outputDir);
     }
 
     private String createDTOContent(Entity entity, String packageName) {
@@ -133,7 +132,6 @@ public class DTOGenerator {
         }
     }
 
-
     private void addClassDefinition(StringBuilder builder, Entity entity) {
         builder.append("@Getter\n@Setter\n@NoArgsConstructor\n@JsonInclude(JsonInclude.Include.NON_NULL)\n");
         builder.append("public class ").append(entity.getName()).append("DTO {\n\n");
@@ -164,16 +162,14 @@ public class DTOGenerator {
         builder.append("}\n\n");
     }
 
-
-
     private void writeDTOToFile(String content, String outputDir, String entityName) {
         Path outputPath = Paths.get(outputDir, entityName + "DTO.java");
         try {
             Files.createDirectories(outputPath.getParent());
             Files.writeString(outputPath, content);
-            logger.info("DTO file generated: {}", outputPath);
+            log.info("DTO file generated: {}", outputPath);
         } catch (IOException e) {
-            logger.error("Failed to write DTO file for entity: {}", entityName, e);
+            log.error("Failed to write DTO file for entity: {}", entityName, e);
         }
     }
 }

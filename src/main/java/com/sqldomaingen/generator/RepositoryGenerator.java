@@ -3,8 +3,8 @@ package com.sqldomaingen.generator;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.NamingConverter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -13,8 +13,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
+@Log4j2
 public class RepositoryGenerator {
-    private static final Logger logger = LoggerFactory.getLogger(RepositoryGenerator.class);
+
     private static final String OUTPUT_PATH = "output/repositories";
 
     public void generateRepositories(List<Table> tables) {
@@ -96,12 +97,11 @@ public class RepositoryGenerator {
         Path filePath = Paths.get(OUTPUT_PATH, entityName + "Repository.java");
         try {
             Files.write(filePath, repositoryCode.getBytes());
-            logger.info("✅ Repository generated successfully: {}", filePath);
+            log.info("✅ Repository generated successfully: {}", filePath);
         } catch (IOException e) {
-            logger.error("❌ Failed to write repository file: {}", filePath, e);
+            log.error("❌ Failed to write repository file: {}", filePath, e);
         }
     }
-
 
 
     private void ensureOutputDirectory() {
@@ -109,12 +109,12 @@ public class RepositoryGenerator {
         if (!Files.exists(path)) {
             try {
                 Files.createDirectories(path);
-                logger.info("✅ Output directory created: {}", path);
+                log.info("✅ Output directory created: {}", path);
             } catch (IOException e) {
-                logger.error("❌ Failed to create output directory: {}", OUTPUT_PATH, e);
+                log.error("❌ Failed to create output directory: {}", OUTPUT_PATH, e);
             }
         } else {
-            logger.info("ℹ️ Output directory already exists: {}", path);
+            log.info("ℹ️ Output directory already exists: {}", path);
         }
     }
 }

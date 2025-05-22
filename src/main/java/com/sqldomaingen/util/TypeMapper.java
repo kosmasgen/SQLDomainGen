@@ -1,14 +1,12 @@
 package com.sqldomaingen.util;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.log4j.Log4j2;
 
 import java.util.HashMap;
 import java.util.Map;
 
+@Log4j2
 public class TypeMapper {
-
-    private static final Logger logger = LoggerFactory.getLogger(TypeMapper.class);
 
     // Σταθερές για Java Types
     private static final String JAVA_BIG_DECIMAL = "java.math.BigDecimal";
@@ -22,8 +20,6 @@ public class TypeMapper {
         // Πετάμε εξαίρεση για να καταστήσουμε σαφές ότι η κλάση δεν επιτρέπεται να δημιουργηθεί.
         throw new AssertionError("Utility class - instantiation not allowed.");
     }
-
-
 
     static {
         sqlToJavaTypeMap.put("BIGINT", "Long");
@@ -82,7 +78,7 @@ public class TypeMapper {
 
     public static String mapToJavaType(String sqlType) {
         if (sqlType == null || sqlType.isEmpty()) {
-            logger.error("SQL type cannot be null or empty");
+            log.error("SQL type cannot be null or empty");
             throw new IllegalArgumentException("SQL type cannot be null or empty");
         }
 
@@ -91,9 +87,9 @@ public class TypeMapper {
 
         if (!sqlToJavaTypeMap.containsKey(baseType)) {
             // Καταγραφή προειδοποίησης μόνο αν το baseType δεν υπάρχει στο mapping
-            logger.warn("No specific mapping found for SQL type '{}'. Defaulting to 'String'.", baseType);
+            log.warn("No specific mapping found for SQL type '{}'. Defaulting to 'String'.", baseType);
         } else {
-            logger.info("Mapping SQL type '{}' to Java type '{}'", baseType, javaType);
+            log.info("Mapping SQL type '{}' to Java type '{}'", baseType, javaType);
         }
 
         return javaType;

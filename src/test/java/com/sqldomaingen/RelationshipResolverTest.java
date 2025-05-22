@@ -3,26 +3,27 @@ package com.sqldomaingen;
 import com.sqldomaingen.model.Relationship;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.model.Column;
+import lombok.extern.log4j.Log4j2;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import com.sqldomaingen.generator.RelationshipResolver;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Log4j2
 class RelationshipResolverTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(RelationshipResolverTest.class);
+
     private RelationshipResolver resolver;
     private Map<String, Table> tableMap;
 
     @BeforeEach
     void setUp() {
-        logger.info("🔵 Setting up tables for RelationshipResolver test...");
+        log.info("🔵 Setting up tables for RelationshipResolver test...");
         tableMap = new HashMap<>();
 
         // Users Table
@@ -45,8 +46,8 @@ class RelationshipResolverTest {
 
         // OrderProducts Table (ManyToMany between Orders and Products)
         Table orderProductsTable = createTable("OrderProducts");
-        orderProductsTable.addColumn(createColumn("order_id", "BIGINT", true, true, "Orders", "id", false,null));
-        orderProductsTable.addColumn(createColumn("product_id", "BIGINT", true, true, "Products", "id", false,null));
+        orderProductsTable.addColumn(createColumn("order_id", "BIGINT", true, true, "Orders", "id", false, null));
+        orderProductsTable.addColumn(createColumn("product_id", "BIGINT", true, true, "Products", "id", false, null));
 
         // Add tables to map
         tableMap.put("Users", usersTable);
@@ -55,7 +56,7 @@ class RelationshipResolverTest {
         tableMap.put("Products", productsTable);
         tableMap.put("OrderProducts", orderProductsTable);
 
-        logger.info("✅ Table map initialized with tables: {}", tableMap.keySet());
+        log.info("✅ Table map initialized with tables: {}", tableMap.keySet());
         resolver = new RelationshipResolver(tableMap);
     }
 
@@ -79,7 +80,7 @@ class RelationshipResolverTest {
         column.setMappedBy(mappedBy); // ✅ Προσθήκη mappedBy
 
         // ✅ Καταγραφή για παρακολούθηση
-        logger.info("📊 Created Column: name={}, sqlType={}, isPrimaryKey={}, isForeignKey={}, referencedTable={}, referencedColumn={}, unique={}, mappedBy={}",
+        log.info("📊 Created Column: name={}, sqlType={}, isPrimaryKey={}, isForeignKey={}, referencedTable={}, referencedColumn={}, unique={}, mappedBy={}",
                 name, sqlType, isPrimaryKey, isForeignKey, referencedTable, referencedColumn, unique, mappedBy);
 
         return column;
@@ -87,21 +88,21 @@ class RelationshipResolverTest {
 
     @Test
     void testResolveOneToOneRelationship() {
-        logger.info("🔵 Running test: testResolveOneToOneRelationship");
+        log.info("🔵 Running test: testResolveOneToOneRelationship");
 
         Table profilesTable = tableMap.get("Profiles");
         Table usersTable = tableMap.get("Users");
 
-        logger.info("📌 Profiles Table: {}", profilesTable);
-        logger.info("📌 Users Table: {}", usersTable);
+        log.info("📌 Profiles Table: {}", profilesTable);
+        log.info("📌 Users Table: {}", usersTable);
 
         List<Relationship> relationships = resolver.resolveRelationships(profilesTable);
-        logger.info("🔍 Found Relationships: {}", relationships);
+        log.info("🔍 Found Relationships: {}", relationships);
 
         assertEquals(1, relationships.size(), "OneToOne should create one relationship.");
 
         Relationship relationship = relationships.get(0);
-        logger.info("✅ OneToOne relationship found: {}", relationship);
+        log.info("✅ OneToOne relationship found: {}", relationship);
 
         // ➤ Βασικά δεδομένα
         assertEquals("Profiles", relationship.getSourceTable());
@@ -130,34 +131,34 @@ class RelationshipResolverTest {
         // ➤ mappedBy πρέπει να είναι "user" στην inverse πλευρά
         assertEquals("user", inverseRelationship.getMappedBy(), "mappedBy should be 'user' on inverse side of OneToOne");
 
-        logger.info("🎉 OneToOne relationship resolved correctly!");
+        log.info("🎉 OneToOne relationship resolved correctly!");
     }
 
     @Test
     void testResolveManyToOneRelationship() {
-        logger.info("🔵 Running test: testResolveManyToOneRelationship");
+        log.info("🔵 Running test: testResolveManyToOneRelationship");
 
         Table ordersTable = tableMap.get("Orders");
         List<Relationship> relationships = resolver.resolveRelationships(ordersTable);
 
-        logger.info("🔍 Found Relationships: {}", relationships);
+        log.info("🔍 Found Relationships: {}", relationships);
 
         assertEquals(1, relationships.size(), "ManyToOne should create one relationship.");
 
         Relationship relationship = relationships.get(0);
-        logger.info("✅ ManyToOne relationship found: {}", relationship);
+        log.info("✅ ManyToOne relationship found: {}", relationship);
         assertEquals("Orders", relationship.getSourceTable());
         assertEquals("user_id", relationship.getSourceColumn());
         assertEquals("Users", relationship.getTargetTable());
         assertEquals("id", relationship.getTargetColumn());
         assertEquals(Relationship.RelationshipType.MANYTOONE, relationship.getRelationshipType());
 
-        logger.info("🎉 ManyToOne relationship resolved correctly!");
+        log.info("🎉 ManyToOne relationship resolved correctly!");
     }
 
     @Test
     void testTableMapInitialization() {
-        logger.info("🔍 Running test: testTableMapInitialization");
+        log.info("🔍 Running test: testTableMapInitialization");
 
         // ✅ Έλεγχος αν το tableMap δεν είναι null και έχει 5 πίνακες
         assertNotNull(tableMap, "❌ Το tableMap δεν πρέπει να είναι null!");
@@ -183,13 +184,13 @@ class RelationshipResolverTest {
         Table ordersTable = tableMap.get("Orders");
         assertTrue(ordersTable.getColumns().stream().anyMatch(c -> c.getName().equals("user_id") && c.isForeignKey()), "❌ Ο πίνακας 'Orders' δεν έχει σωστό foreign key για 'user_id'!");
 
-        logger.info("🎯 Το tableMap έχει ρυθμιστεί σωστά με όλους τους πίνακες και τις στήλες!");
+        log.info("🎯 Το tableMap έχει ρυθμιστεί σωστά με όλους τους πίνακες και τις στήλες!");
     }
 
 
     @Test
     void testResolveOneToManyRelationship() {
-        logger.info("🔵 Running test: testResolveOneToManyRelationship");
+        log.info("🔵 Running test: testResolveOneToManyRelationship");
 
         Table usersTable = tableMap.get("Users");
 
@@ -201,7 +202,7 @@ class RelationshipResolverTest {
                 .filter(rel -> rel.getRelationshipType() == Relationship.RelationshipType.ONETOMANY)
                 .toList();
 
-        logger.info("🔍 Found OneToMany Relationships: {}", relationships);
+        log.info("🔍 Found OneToMany Relationships: {}", relationships);
 
         assertEquals(1, relationships.size(), "Expected one OneToMany relationship.");
 
@@ -215,12 +216,12 @@ class RelationshipResolverTest {
         // ✅ Εδώ προσθέτεις έλεγχο για το mappedBy
         assertEquals("user", relationship.getMappedBy(), "mappedBy should be 'user' for Users -> Orders");
 
-        logger.info("🎉 OneToMany relationship resolved correctly!");
+        log.info("🎉 OneToMany relationship resolved correctly!");
     }
 
     @Test
     void testJoinTableWithExtraColumnIsManyToMany() {
-        logger.info("🔵 Running test: testJoinTableWithExtraColumnIsManyToMany");
+        log.info("🔵 Running test: testJoinTableWithExtraColumnIsManyToMany");
 
         Table order = new Table();
         order.setName("Orders");
@@ -286,12 +287,12 @@ class RelationshipResolverTest {
         assertTrue(relationships.stream().allMatch(rel -> rel.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY),
                 "The relationship should be ManyToMany");
 
-        logger.info("✅ Test testJoinTableWithExtraColumnIsManyToMany completed successfully.");
+        log.info("✅ Test testJoinTableWithExtraColumnIsManyToMany completed successfully.");
     }
 
     @Test
     void testIsJoinTableWithOnlyTwoFKCompositePK() {
-        logger.info("🔵 Running test: testIsJoinTableWithOnlyTwoFKCompositePK");
+        log.info("🔵 Running test: testIsJoinTableWithOnlyTwoFKCompositePK");
 
         Table joinTable = new Table();
         joinTable.setName("employee_department");
@@ -319,13 +320,13 @@ class RelationshipResolverTest {
         RelationshipResolver resolver = new RelationshipResolver(Map.of());
         boolean result = resolver.isJoinTable(joinTable);
 
-        logger.info("📎 isJoinTable(employee_department) = {}", result);
+        log.info("📎 isJoinTable(employee_department) = {}", result);
         assertTrue(result, "Table with 2 composite FKs should be considered join table");
     }
 
     @Test
     void testResolveRelationships_ManyToManyJoinTable() {
-        logger.info("🔵 Running test: testResolveRelationships_ManyToManyJoinTable");
+        log.info("🔵 Running test: testResolveRelationships_ManyToManyJoinTable");
 
         // Πίνακας Employee
         Table employee = new Table();
@@ -389,7 +390,7 @@ class RelationshipResolverTest {
         assertEquals("employee_id", rel.getSourceColumn());
         assertEquals("department_id", rel.getInverseJoinColumn());
 
-        logger.info("✅ ManyToMany relationship verified: {}", rel);
+        log.info("✅ ManyToMany relationship verified: {}", rel);
     }
 
     @Test
@@ -433,7 +434,7 @@ class RelationshipResolverTest {
 
     @Test
     void testSelfReferencingSupervisorRelationshipDetected() {
-        logger.info("🔵 Running test: testSelfReferencingSupervisorRelationshipDetected");
+        log.info("🔵 Running test: testSelfReferencingSupervisorRelationshipDetected");
 
         // Δημιουργία πίνακα User με self-referencing foreign key: supervisor_id → user_id
         Table userTable = new Table();
@@ -462,7 +463,7 @@ class RelationshipResolverTest {
         RelationshipResolver resolver = new RelationshipResolver(map);
         List<Relationship> relationships = resolver.resolveRelationships(userTable);
 
-        logger.info("🔍 Relationships: {}", relationships);
+        log.info("🔍 Relationships: {}", relationships);
 
         // ➤ Αναμένουμε μία ManyToOne σχέση (User → Supervisor)
         assertEquals(1, relationships.size(), "Expected one self-referencing relationship");
@@ -491,7 +492,7 @@ class RelationshipResolverTest {
         // ➤ mappedBy πρέπει να είναι "supervisor"
         assertEquals("supervisor", inverse.getMappedBy(), "mappedBy should be 'supervisor'");
 
-        logger.info("🎯 Self-referencing supervisor relationship resolved successfully!");
+        log.info("🎯 Self-referencing supervisor relationship resolved successfully!");
     }
 
 }

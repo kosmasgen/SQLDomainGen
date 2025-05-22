@@ -2,6 +2,7 @@ package com.sqldomaingen.parser;
 
 import lombok.Getter;
 import lombok.Setter;
+import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.*;
 import org.antlr.v4.runtime.tree.ParseTree;
 import org.slf4j.Logger;
@@ -9,7 +10,9 @@ import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Component;
 import lombok.AllArgsConstructor;
 import lombok.NoArgsConstructor;
+
 import java.util.List;
+
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 
@@ -22,11 +25,10 @@ import org.antlr.v4.runtime.Token;
 @Component
 @AllArgsConstructor
 @NoArgsConstructor
+@Log4j2
 public class SQLParser {
 
     private String sqlContent;
-
-    private static final Logger logger = LoggerFactory.getLogger(SQLParser.class);
 
     // Σταθερό μήνυμα για την επικύρωση του περιεχομένου SQL
     private static final String EMPTY_SQL_ERROR_MESSAGE = "Το περιεχόμενο του SQL είναι κενό ή δεν έχει οριστεί.";
@@ -39,10 +41,10 @@ public class SQLParser {
      */
     public PostgreSQLParser createParser() {
         if (!isSQLContentValid()) {
-            logger.error(EMPTY_SQL_ERROR_MESSAGE);
+            log.error(EMPTY_SQL_ERROR_MESSAGE);
             throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);
         }
-        logger.debug("🔍 Debug mode ενεργοποιημένο: Αναλύουμε τους κανόνες της γραμματικής.");
+        log.debug("🔍 Debug mode ενεργοποιημένο: Αναλύουμε τους κανόνες της γραμματικής.");
 
         PostgreSQLLexer lexer = new PostgreSQLLexer(CharStreams.fromString(sqlContent));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
@@ -67,7 +69,6 @@ public class SQLParser {
     }
 
 
-
     /**
      * Δημιουργεί ένα ParseTree από το SQL script.
      *
@@ -75,7 +76,7 @@ public class SQLParser {
      */
     public ParseTree parseTreeFromSQL() {
         if (!isSQLContentValid()) {
-            logger.error("Cannot generate ParseTree: SQL content is invalid.");
+            log.error("Cannot generate ParseTree: SQL content is invalid.");
             throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);
         }
 
@@ -84,14 +85,14 @@ public class SQLParser {
         // 🔍 Logging tokens πριν το parsing
         CommonTokenStream tokenStream = (CommonTokenStream) parser.getInputStream();
         List<Token> tokens = tokenStream.getTokens();
-        logger.debug("🔍 Tokens extracted: {}", tokens.stream()
+        log.debug("🔍 Tokens extracted: {}", tokens.stream()
                 .map(token -> String.format("[%s -> %s]", token.getText(), parser.getVocabulary().getSymbolicName(token.getType())))
                 .toList());
 
         ParseTree tree = parser.sqlScript();
 
         // Logging για το ParseTree
-        logger.info("ParseTree generated: {}", tree.toStringTree(parser));
+        log.info("ParseTree generated: {}", tree.toStringTree(parser));
 
         return tree;
     }
@@ -105,7 +106,7 @@ public class SQLParser {
      */
     public PostgreSQLParser.ConstraintContext parseConstraint() {
         if (!isSQLContentValid()) {
-            logger.error("Cannot parse constraint: SQL content is invalid.");
+            log.error("Cannot parse constraint: SQL content is invalid.");
             throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);
         }
 
@@ -126,11 +127,11 @@ public class SQLParser {
 
         // Έλεγχος για σφάλματα σύνταξης στο ParseTree
         if (context.exception != null) {
-            logger.error("Σφάλμα: Το ConstraintContext περιέχει σφάλματα.");
+            log.error("Σφάλμα: Το ConstraintContext περιέχει σφάλματα.");
             throw new IllegalArgumentException("Το SQL περιέχει σφάλματα και δεν μπορεί να αναλυθεί.");
         }
 
-        logger.info("Το ConstraintContext δημιουργήθηκε επιτυχώς: {}", context.getText());
+        log.info("Το ConstraintContext δημιουργήθηκε επιτυχώς: {}", context.getText());
         return context;
     }
 
@@ -142,7 +143,7 @@ public class SQLParser {
      */
     public TokenStream parseSQL() {
         if (!isSQLContentValid()) {
-            logger.error("Cannot generate TokenStream: SQL content is invalid.");
+            log.error("Cannot generate TokenStream: SQL content is invalid.");
             throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);
         }
 
@@ -153,12 +154,13 @@ public class SQLParser {
         // Logging για τα tokens
         tokens.fill();
         for (Token token : tokens.getTokens()) {
-            logger.debug("Token: '{}' -> Type: {}", token.getText(), lexer.getVocabulary().getSymbolicName(token.getType()));
+            log.debug("Token: '{}' -> Type: {}", token.getText(), lexer.getVocabulary().getSymbolicName(token.getType()));
         }
 
-        logger.info("TokenStream generated successfully for SQL content.");
+        log.info("TokenStream generated successfully for SQL content.");
         return tokens;
     }
+
     public boolean isSQLContentValid() {
         return sqlContent != null && !sqlContent.isEmpty();
     }
