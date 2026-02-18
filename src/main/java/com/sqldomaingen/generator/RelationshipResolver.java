@@ -129,14 +129,16 @@ public class RelationshipResolver {
                 .toList();
     }
 
+
     /**
-     * Δημιουργεί ένα `Relationship` αντικείμενο, καθορίζοντας τον τύπο του.
+     * Καθορίζει αν η σχέση είναι `OneToMany`, `ManyToOne`, `OneToOne` ή `ManyToMany`.
      */
     public Relationship createRelationship(Column column, Table sourceTable) {
         log.info("🔄 Creating relationship for column '{}' in table '{}', referencing '{}.{}'",
                 column.getName(), sourceTable.getName(), column.getReferencedTable(), column.getReferencedColumn());
 
-        Table targetTable = findTargetTable(NamingConverter.toPascalCase(column.getReferencedTable()));
+        // Use raw referenced table name; do not PascalCase here.
+        Table targetTable = findTargetTable(column.getReferencedTable());
 
         if (targetTable == null) {
             log.warn("⚠️ Target table '{}' not found for column '{}'", column.getReferencedTable(), column.getName());
@@ -165,43 +167,7 @@ public class RelationshipResolver {
         relationship.setOnUpdate(column.getOnUpdate());
 
         log.info("✅ Created relationship: {}", relationship);
-
         return relationship;
-    }
-
-
-    /**
-     * Καθορίζει αν η σχέση είναι `OneToMany`, `ManyToOne`, `OneToOne` ή `ManyToMany`.
-     */
-    private Relationship.RelationshipType determineType(Column column, Table sourceTable, Table targetTable) {
-
-        // ✅ 1. Αν η στήλη έχει ρητά οριστεί ως ManyToMany μέσω pseudo-constraint
-        if (column.isManyToMany()) {
-            log.info("🎯 Column '{}' has explicit MANYTOMANY pseudo-constraint. Assigning MANYTOMANY.", column.getName());
-            return Relationship.RelationshipType.MANYTOMANY;
-        }
-
-        // ✅ Αν η σχέση είναι OneToMany (υπάρχουν πολλές αναφορές στον ίδιο πίνακα)
-        if (isOneToMany(targetTable, sourceTable)) {
-            log.info("🔥 Table '{}' is referenced multiple times from '{}'. Assigning ONETOMANY.", targetTable.getName(), sourceTable.getName());
-            return Relationship.RelationshipType.ONETOMANY;
-        }
-
-        // ✅ Αν η foreign key ΔΕΝ είναι unique, είναι σίγουρα MANYTOONE
-        if (!column.isUnique()) {
-            log.info("🔥 Column '{}' is NOT unique. Assigning MANYTOONE.", column.getName());
-            return Relationship.RelationshipType.MANYTOONE;
-        }
-
-        // ✅ Αν υπάρχει μόνο μία αναφορά στον targetTable, είναι OneToOne
-        if (hasSingleReference(sourceTable, targetTable)) {
-            log.info("🔥 Column '{}' is unique AND '{}' has only one reference. Assigning ONETOONE.", column.getName(), targetTable.getName());
-            return Relationship.RelationshipType.ONETOONE;
-        }
-
-        // ✅ Default περίπτωση (αν δεν ταιριάζει τίποτα άλλο)
-        log.info("🔥 Default case for '{}'. Assigning MANYTOONE.", column.getName());
-        return Relationship.RelationshipType.MANYTOONE;
     }
 
 
@@ -237,18 +203,68 @@ public class RelationshipResolver {
     /**
      * Βρίσκει τον πίνακα-στόχο.
      */
-    private Table findTargetTable(String targetTableName) {
-        if (targetTableName == null || targetTableName.isBlank()) {
-            log.error("❌ Target table name is null or blank.");
+    private Table findTargetTable(String referencedTableRaw) {
+        String raw = referencedTableRaw == null ? "" : referencedTableRaw.trim();
+        if (raw.isBlank()) {
+            log.error("❌ Referenced table name is null or blank.");
             return null;
         }
 
-        Table targetTable = tableMap.get(targetTableName); // ✅ Ανακτούμε τον πίνακα από το tableMap
-        if (targetTable == null) {
-            log.error("❌ Table '{}' not found.", targetTableName);
+        // 1) Direct hit (exact key)
+        Table direct = tableMap.get(raw);
+        if (direct != null) return direct;
+
+        // 2) Try without schema
+        String noSchema = normalizeTableName(raw);
+        Table noSchemaHit = tableMap.get(noSchema);
+        if (noSchemaHit != null) return noSchemaHit;
+
+        // 3) Case-insensitive match on normalized names
+        for (Map.Entry<String, Table> e : tableMap.entrySet()) {
+            String keyNorm = normalizeTableName(e.getKey());
+            if (keyNorm.equalsIgnoreCase(noSchema)) {
+                return e.getValue();
+            }
         }
-        return targetTable;
+
+        log.error("❌ Table '{}' not found in tableMap keys: {}", raw, tableMap.keySet());
+        return null;
     }
+
+    private static String normalizeTableName(String raw) {
+        if (raw == null) return "";
+        String s = raw.trim();
+        int dot = s.lastIndexOf('.');
+        if (dot >= 0 && dot < s.length() - 1) {
+            s = s.substring(dot + 1);
+        }
+        return s;
+    }
+
+    private Relationship.RelationshipType determineType(
+            Column column,
+            Table sourceTable,
+            Table targetTable
+    ) {
+
+        // Explicit pseudo-constraint for ManyToMany
+        if (column.isManyToMany()) {
+            log.info("🎯 Column '{}' has explicit MANYTOMANY pseudo-constraint. Assigning MANYTOMANY.", column.getName());
+            return Relationship.RelationshipType.MANYTOMANY;
+        }
+
+        // Owning side of a foreign key:
+        // FK + UNIQUE => OneToOne
+        if (column.isUnique()) {
+            log.info("🔥 Column '{}' is unique. Assigning ONETOONE.", column.getName());
+            return Relationship.RelationshipType.ONETOONE;
+        }
+
+        // Default for FK columns
+        log.info("🔥 Column '{}' is not unique. Assigning MANYTOONE.", column.getName());
+        return Relationship.RelationshipType.MANYTOONE;
+    }
+
 
     /**
      * Βρίσκει τη στήλη-στόχο στον πίνακα προορισμού.

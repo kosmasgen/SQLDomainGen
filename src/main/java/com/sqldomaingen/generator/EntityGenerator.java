@@ -1,9 +1,8 @@
 package com.sqldomaingen.generator;
 
-import com.sqldomaingen.model.Relationship;
-import com.sqldomaingen.model.Table;
+import com.sqldomaingen.model.*;
 import com.sqldomaingen.util.NamingConverter;
-import com.sqldomaingen.model.Column;
+import com.sqldomaingen.util.PackageResolver;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -24,27 +23,44 @@ public class EntityGenerator {
 
     private final Map<String, Table> tableMap = new HashMap<>();
 
-    public void generate(List<Table> tables, String outputDir, String packageName, boolean overwrite, boolean useBuilder) {
+    public void generate(List<Table> tables,
+                         String outputDir,
+                         String basePackage,
+                         boolean overwrite,
+                         boolean useBuilder) {
+
         log.info("Starting entity generation...");
 
-        // Δημιουργία του tableMap
+        // Resolve target directory: {outputDir}/src/main/java/{basePackagePath}/entities
+        Path entityDir = PackageResolver.resolvePath(outputDir, basePackage, "entity");
+
+        // Build lookup map for relationship resolution
         Map<String, Table> tablesMap = tables.stream()
                 .collect(Collectors.toMap(Table::getName, t -> t));
-        log.debug("📄 Created tablesMap with keys: {}", tablesMap.keySet());
 
-        // Ανάλυση των σχέσεων
+        log.debug("Created tablesMap with keys: {}", tablesMap.keySet());
+
+        // Resolve relationships before generating entity code
         RelationshipResolver resolver = new RelationshipResolver(tablesMap);
         resolver.resolveRelationshipsForAllTables();
-        log.info("✅ RelationshipResolver initialized and all relationships resolved for tables: {}", tablesMap.keySet());
+        log.info("RelationshipResolver initialized and relationships resolved.");
 
-        // Παραγωγή των entities
         for (Table table : tables) {
             log.debug("Processing table: {}", table.getName());
 
-            String entityContent = createEntityContent(table, packageName, useBuilder);
-            Path outputPath = Paths.get(outputDir, NamingConverter.toPascalCase(table.getName()) + ".java");
+            String rawTableName = table.getName();
+            String tableName = rawTableName != null && rawTableName.contains(".")
+                    ? rawTableName.substring(rawTableName.indexOf('.') + 1)
+                    : rawTableName;
 
-            if (!overwrite && outputPath.toFile().exists()) {
+            String entityName = NamingConverter.toPascalCase(tableName);
+
+            String entityPackage = PackageResolver.resolvePackageName(basePackage, "entity");
+            String entityContent = createEntityContent(table, entityPackage, useBuilder);
+
+            Path outputPath = entityDir.resolve(entityName + ".java");
+
+            if (!overwrite && Files.exists(outputPath)) {
                 log.warn("File already exists, skipping: {}", outputPath);
                 continue;
             }
@@ -56,8 +72,8 @@ public class EntityGenerator {
                 log.error("Failed to write entity file for table: {}", table.getName(), e);
             }
         }
-        log.info("✅ Entity generation complete. Output directory: {}", outputDir);
 
+        log.info("Entity generation complete. Output directory: {}", entityDir.toAbsolutePath());
     }
 
 
@@ -469,5 +485,65 @@ public class EntityGenerator {
         log.debug("File written successfully: {}", filePath);
     }
 
+    public List<Entity> toEntities(List<Table> tables) {
+        List<Entity> result = new ArrayList<>();
+
+        for (Table table : tables) {
+            Entity entity = new Entity();
+
+            String rawTableName = table.getName();
+            String tableName = rawTableName.contains(".")
+                    ? rawTableName.substring(rawTableName.indexOf(".") + 1)
+                    : rawTableName;
+
+            entity.setName(NamingConverter.toPascalCase(tableName));
+
+            List<Field> fields = new ArrayList<>();
+
+            for (Column col : table.getColumns()) {
+                Field field = new Field();
+
+                field.setName(NamingConverter.toCamelCase(col.getName()));
+                field.setType(col.getJavaType());
+
+                field.setPrimaryKey(col.isPrimaryKey());
+                field.setForeignKey(col.isForeignKey());
+                field.setUnique(col.isUnique());
+                field.setNullable(col.isNullable());
+
+                field.setLength(col.getLength());
+                field.setColumnName(col.getName());
+
+                // Relationship metadata
+                if (col.isForeignKey()) {
+                    table.getRelationships().stream()
+                            .filter(rel ->
+                                    rel.getSourceTable().equals(table.getName()) &&
+                                            rel.getSourceColumn() != null &&
+                                            rel.getSourceColumn().equals(col.getName())
+                            )
+                            .findFirst()
+                            .ifPresent(rel -> {
+                                field.setReferencedEntity(
+                                        NamingConverter.toPascalCase(rel.getTargetTable())
+                                );
+                                field.setReferencedColumn(rel.getTargetColumn());
+                                field.setMappedBy(rel.getMappedBy());
+                                field.setCascade("ALL");
+                                field.setOrphanRemoval(
+                                        rel.getRelationshipType() == Relationship.RelationshipType.ONETOMANY
+                                );
+                            });
+                }
+
+                fields.add(field);
+            }
+
+            entity.setFields(fields);
+            result.add(entity);
+        }
+
+        return result;
+    }
 
 }

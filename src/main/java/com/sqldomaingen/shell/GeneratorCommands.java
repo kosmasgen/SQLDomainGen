@@ -1,24 +1,26 @@
 package com.sqldomaingen.shell;
 
-import com.sqldomaingen.parser.SQLParser;
-import com.sqldomaingen.generator.EntityGenerator;
-import com.sqldomaingen.parser.CreateTableDefinition;
+import com.sqldomaingen.generator.*;
+import com.sqldomaingen.model.Entity;
 import com.sqldomaingen.model.Table;
+import com.sqldomaingen.parser.CreateTableDefinition;
+import com.sqldomaingen.parser.PostgreSQLParser;
+import com.sqldomaingen.parser.SQLParser;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.TokenStream;
 import org.springframework.shell.standard.ShellComponent;
 import org.springframework.shell.standard.ShellMethod;
 import org.springframework.shell.standard.ShellOption;
-import com.sqldomaingen.parser.PostgreSQLParser;
-
-import java.util.ArrayList;
 
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Κλάση για τη διαχείριση εντολών CLI.
@@ -31,26 +33,30 @@ public class GeneratorCommands {
     public final EntityGenerator entityGenerator = new EntityGenerator();
 
     /**
-     * Δημιουργεί Java domain entities από SQL αρχεία.
+     * Generates a full Spring Boot backend from a SQL file.
+     * The pipeline creates:
+     * entities, DTOs, mappers, repositories, services, and controllers,
+     * under a buildable Maven project scaffold.
      *
-     * @param inputFile   Το μονοπάτι του SQL αρχείου.
-     * @param outputDir   Ο κατάλογος όπου θα αποθηκευτούν οι παραγόμενες entities.
-     * @param packageName Το όνομα του package για τις παραγόμενες entities.
-     * @param overwrite   Αντικατάσταση υπαρχόντων αρχείων.
-     * @param useBuilder  Χρήση builder pattern.
-     * @return Μήνυμα επιτυχίας ή αποτυχίας.
+     * @param inputFile   path to the SQL input file
+     * @param outputDir   target project root directory for generated output
+     * @param packageName base Java package name (e.g. gr.knowledge.schoolmanagement)
+     * @param overwrite   whether to overwrite existing files
+     * @param useBuilder  whether to use builder pattern for generated entities
+     * @return success or error message
      */
-    @ShellMethod("Generate Java domain entities from a SQL file.")
+    @ShellMethod("Generate full Spring backend from a SQL file.")
     public String generateEntity(
-            @ShellOption(value = {"--input-file", "-i"}, help = "Path to the SQL file") String inputFile,
-            @ShellOption(value = {"--output-dir", "-o"}, help = "Output directory for the generated entities") String outputDir,
-            @ShellOption(value = {"--package-name", "-p"}, help = "Package name for the generated entities") String packageName,
-            @ShellOption(value = {"--overwrite", "-w"}, defaultValue = "false", help = "Overwrite existing files") boolean overwrite,
-            @ShellOption(value = {"--use-builder", "-b"}, defaultValue = "false", help = "Enable builder pattern") boolean useBuilder
+            @ShellOption(value = {"--input-file", "-i"}) String inputFile,
+            @ShellOption(value = {"--output-dir", "-o"}) String outputDir,
+            @ShellOption(value = {"--package-name", "-p"}) String packageName,
+            @ShellOption(value = {"--overwrite", "-w"}, defaultValue = "false") boolean overwrite,
+            @ShellOption(value = {"--use-builder", "-b"}, defaultValue = "false") boolean useBuilder
     ) {
         try {
             validateOutputDirectory(outputDir);
 
+            // 1) Parse SQL -> Tables
             List<Table> tables = processSQLFile(inputFile);
 
             if (tables.isEmpty()) {
@@ -58,17 +64,63 @@ public class GeneratorCommands {
                 return "No tables were generated from the SQL file.";
             }
 
-            log.info("Starting entity generation...");
-            entityGenerator.generate(tables, outputDir, packageName, overwrite, useBuilder);
-            log.info("Entity generation completed successfully. Output directory: {}", outputDir);
+            log.info("Starting backend generation pipeline...");
 
-            // Τερματισμός εφαρμογής
+            // 2) Project scaffold (pom.xml, Application, resources)
+            new ProjectScaffoldGenerator().generateScaffold(outputDir, packageName, overwrite);
+
+            // 2.1) Config (ModelMapper bean, etc.)
+            new ConfigGenerator().generateConfigs(outputDir, packageName, overwrite);
+
+            // 3) Exception handling (exception package + handler + error response)
+            new ExceptionGenerator().generateExceptionHandling(outputDir, packageName, overwrite);
+
+            // 4) Entities
+            entityGenerator.generate(
+                    tables,
+                    outputDir,
+                    packageName,
+                    overwrite,
+                    useBuilder
+            );
+
+            // 5) Entity models
+            List<Entity> models = entityGenerator.toEntities(tables);
+
+            // 6) DTOs
+            new DTOGenerator().generateDTOs(models, outputDir, packageName);
+
+            // 7) Mappers
+            Map<String, Table> tableMap = tables.stream()
+                    .collect(Collectors.toMap(Table::getName, t -> t));
+
+            new MapperGenerator(tableMap)
+                    .generateMappers(outputDir, packageName);
+
+            // 8) Repositories
+            new RepositoryGenerator()
+                    .generateRepositories(tables, outputDir, packageName);
+
+            // 9) Services
+            new ServiceGenerator()
+                    .generateAllServices(tables, outputDir, packageName);
+
+            // 10) Controllers
+            new ControllerGenerator()
+                    .generateControllers(tables, outputDir, packageName, overwrite);
+
+            // 11) Tests (controller + service + main)
+            new TestGenerator()
+                    .generateAllTests(tables, outputDir, packageName);
+
+            log.info("✅ Backend generation completed successfully. Output directory: {}", outputDir);
+
             System.exit(0);
+            return "Backend generation completed successfully.";
 
-            return "Entity generation completed successfully.";
         } catch (IOException e) {
-            log.error("Error during entity generation", e);
-            return "Error during entity generation: " + e.getMessage();
+            log.error("Error during generation", e);
+            return "Error during generation: " + e.getMessage();
         }
     }
 
@@ -78,7 +130,7 @@ public class GeneratorCommands {
             throw new IllegalArgumentException("Output directory cannot be null or empty.");
         }
 
-        Path path = Paths.get(outputDirectory); // Εδώ μπορεί να προκληθεί NullPointerException αν το `outputDirectory` είναι null.
+        Path path = Paths.get(outputDirectory);
         if (!Files.exists(path)) {
             try {
                 Files.createDirectories(path);
@@ -87,7 +139,6 @@ public class GeneratorCommands {
             }
         }
     }
-
 
     /**
      * Επεξεργάζεται το SQL αρχείο.
@@ -115,24 +166,20 @@ public class GeneratorCommands {
         return parseSQLToTables(sqlContent);
     }
 
-
     /**
-     * Αναλύει το SQL περιεχόμενο και δημιουργεί αντικείμενο Table.
+     * Αναλύει το SQL περιεχόμενο και δημιουργεί αντικείμενα Table.
      *
      * @param sqlContent Το περιεχόμενο του SQL αρχείου.
-     * @return Το αντικείμενο Table ή null αν δεν μπορεί να αναλυθεί.
+     * @return Λίστα με αντικείμενα Table.
      */
     public List<Table> parseSQLToTables(String sqlContent) {
         try {
             SQLParser sqlParserInstance = new SQLParser(sqlContent);
 
-            // Παράγουμε το TokenStream από τον SQLParser
             TokenStream tokenStream = sqlParserInstance.parseSQL();
 
-            // Δημιουργούμε έναν SQLParser από το TokenStream
             PostgreSQLParser parser = new PostgreSQLParser(tokenStream);
 
-            // Παίρνουμε το SqlScriptContext
             PostgreSQLParser.SqlScriptContext context = parser.sqlScript();
 
             List<Table> tables = new ArrayList<>();
@@ -142,7 +189,6 @@ public class GeneratorCommands {
 
                 Table table = createTableDefinition.toTable();
                 tables.add(table);
-
             }
             return tables;
 
@@ -151,5 +197,4 @@ public class GeneratorCommands {
             return List.of();
         }
     }
-
 }

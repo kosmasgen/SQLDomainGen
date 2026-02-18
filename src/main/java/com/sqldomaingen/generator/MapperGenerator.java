@@ -1,161 +1,202 @@
 package com.sqldomaingen.generator;
 
-import com.sqldomaingen.model.Relationship;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.NamingConverter;
+import com.sqldomaingen.util.PackageResolver;
 import lombok.extern.log4j.Log4j2;
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
 import java.util.Map;
-import java.util.Set;
-import java.util.stream.Collectors;
+import java.util.Objects;
 
 @Log4j2
 @Component
 public class MapperGenerator {
+
     private final Map<String, Table> tableMap;
 
     public MapperGenerator(Map<String, Table> tableMap) {
-        this.tableMap = tableMap;
+        this.tableMap = Objects.requireNonNull(tableMap, "tableMap must not be null");
     }
 
+    /**
+     * Generates BaseMapper + one Mapper per table.
+     *
+     * Output:
+     * {outputDir}/src/main/java/{basePackage path}/mapper/*.java
+     *
+     * @param outputDir   generation root (project root output)
+     * @param basePackage base package (e.g. gr.knowledge.schoolmanagement)
+     */
+    public void generateMappers(String outputDir, String basePackage) {
+        Objects.requireNonNull(outputDir, "outputDir must not be null");
+        Objects.requireNonNull(basePackage, "basePackage must not be null");
 
-    private void generateBaseMapper(Path mappersPath, String packageName) {
-        Path baseMapperPath = mappersPath.resolve("BaseMapper.java");
+        Path mapperDir = ensureDirectory(PackageResolver.resolvePath(outputDir, basePackage, "mapper"));
+        log.info("✅ Mappers output directory: {}", mapperDir.toAbsolutePath());
 
-        if (Files.exists(baseMapperPath)) {
-            log.info("✅ BaseMapper already exists. Skipping generation.");
+        generateBaseMapper(mapperDir, basePackage);
+
+        for (Table table : tableMap.values()) {
+            generateMapper(table, mapperDir, basePackage);
+        }
+
+        log.info("✅ Mapper generation completed under: {}", mapperDir.toAbsolutePath());
+    }
+
+    private void generateBaseMapper(Path mapperDir, String basePackage) {
+        Path file = mapperDir.resolve("BaseMapper.java");
+
+        if (Files.exists(file)) {
+            log.info("ℹ️ BaseMapper already exists. Skipping: {}", file.toAbsolutePath());
             return;
         }
 
-        log.info("🔧 Creating BaseMapper interface...");
+        String mapperPackage = PackageResolver.resolvePackageName(basePackage, "mapper");
 
-        String baseMapperContent = """
-                package %s.mappers;
-                
+        String content = """
+                package %s;
+
                 import org.modelmapper.ModelMapper;
+
                 import java.util.List;
-                import java.util.stream.Collectors;
-                
-                public interface BaseMapper<E, D> {
-                
-                    ModelMapper modelMapper = new ModelMapper();
-                
-                    default D toDTO(E entity) {
-                        return modelMapper.map(entity, getDtoClass());
+
+                /**
+                 * Base mapper for converting between Entity and DTO using {@link ModelMapper}.
+                 *
+                 * @param <E> entity type
+                 * @param <D> dto type
+                 */
+                public abstract class BaseMapper<E, D> {
+
+                    protected final ModelMapper modelMapper;
+                    private final Class<E> entityClass;
+                    private final Class<D> dtoClass;
+
+                    protected BaseMapper(ModelMapper modelMapper, Class<E> entityClass, Class<D> dtoClass) {
+                        this.modelMapper = modelMapper;
+                        this.entityClass = entityClass;
+                        this.dtoClass = dtoClass;
                     }
-                
-                    default E toEntity(D dto) {
-                        return modelMapper.map(dto, getEntityClass());
+
+                    /**
+                     * Converts an entity to a DTO.
+                     *
+                     * @param entity source entity
+                     * @return mapped dto
+                     */
+                    public D toDTO(E entity) {
+                        return modelMapper.map(entity, dtoClass);
                     }
-                
-                    default List<D> toDTOList(List<E> entities) {
-                        return entities.stream().map(this::toDTO).collect(Collectors.toList());
+
+                    /**
+                     * Converts a list of entities to DTOs.
+                     *
+                     * @param entities source entities
+                     * @return mapped dto list
+                     */
+                    public List<D> toDTO(List<E> entities) {
+                        return entities.stream().map(this::toDTO).toList();
                     }
-                
-                    default List<E> toEntityList(List<D> dtos) {
-                        return dtos.stream().map(this::toEntity).collect(Collectors.toList());
+
+                    /**
+                     * Converts a DTO to an entity.
+                     *
+                     * @param dto source dto
+                     * @return mapped entity
+                     */
+                    public E toEntity(D dto) {
+                        return modelMapper.map(dto, entityClass);
                     }
-                
-                    Class<D> getDtoClass();
-                
-                    Class<E> getEntityClass();
+
+                    /**
+                     * Converts a list of DTOs to entities.
+                     *
+                     * @param dtos source dtos
+                     * @return mapped entity list
+                     */
+                    public List<E> toEntity(List<D> dtos) {
+                        return dtos.stream().map(this::toEntity).toList();
+                    }
                 }
-                """.formatted(packageName);
+                """.formatted(mapperPackage);
 
-        try {
-            Files.write(baseMapperPath, baseMapperContent.getBytes());
-            log.info("✅ BaseMapper successfully created: {}", baseMapperPath);
-        } catch (IOException e) {
-            log.error("❌ Error writing BaseMapper file: {}", e.getMessage());
-        }
+        writeFile(file, content, "BaseMapper");
     }
 
+    private void generateMapper(Table table, Path mapperDir, String basePackage) {
+        Objects.requireNonNull(table, "table must not be null");
 
-    public void generateMappers(String packageName) {
-        Path mappersPath = Paths.get("output/mappers");
-
-        try {
-            Files.createDirectories(mappersPath);
-            log.info("✅ Mapper directory created at: {}", mappersPath);
-
-            if (tableMap.isEmpty()) {
-                log.warn("⚠️ No tables found in tableMap. No mappers will be generated!");
-                return;
-            }
-
-            // 🔧 Δημιουργούμε το BaseMapper μία φορά αν δεν υπάρχει
-            generateBaseMapper(mappersPath, packageName);
-
-            for (Table table : tableMap.values()) {
-                log.info("🔍 Generating mapper for table: {}", table.getName());
-                generateMapperFile(table, mappersPath, packageName);
-            }
-        } catch (IOException e) {
-            log.error("❌ Error creating mappers directory: {}", e.getMessage());
-        }
-    }
-
-
-    private void generateMapperFile(Table table, Path mappersPath, String packageName) {
-        String entityName = NamingConverter.toPascalCase(table.getName());
-        String dtoName = entityName + "DTO";
+        String normalizedTableName = normalizeTableName(table.getName());
+        String entityName = NamingConverter.toPascalCase(normalizedTableName);
+        String dtoName = entityName + "Dto";
         String mapperName = entityName + "Mapper";
 
-        log.info("📌 Creating Mapper: {} -> {}.java", table.getName(), mapperName);
+        String mapperPackage = PackageResolver.resolvePackageName(basePackage, "mapper");
+        String entityPackage = PackageResolver.resolvePackageName(basePackage, "entity");
+        String dtoPackage = PackageResolver.resolvePackageName(basePackage, "dto");
 
-        String mapperContent = generateMapperContent(table, entityName, dtoName, mapperName, packageName, tableMap);
+        String content = """
+                package %s;
 
+                import org.modelmapper.ModelMapper;
+                import org.springframework.stereotype.Component;
 
-        Path mapperFilePath = mappersPath.resolve(mapperName + ".java");
-        log.debug("📂 Target file path: {}", mapperFilePath);
+                import %s.%s;
+                import %s.%s;
 
+                /**
+                 * Mapper for {@link %s} and {@link %s}.
+                 */
+                @Component
+                public class %s extends BaseMapper<%s, %s> {
+
+                    public %s(ModelMapper modelMapper) {
+                        super(modelMapper, %s.class, %s.class);
+                    }
+                }
+                """.formatted(
+                mapperPackage,
+                entityPackage, entityName,
+                dtoPackage, dtoName,
+                entityName, dtoName,
+                mapperName, entityName, dtoName,
+                mapperName, entityName, dtoName
+        );
+
+        Path file = mapperDir.resolve(mapperName + ".java");
+        writeFile(file, content, mapperName);
+    }
+
+    private static String normalizeTableName(String raw) {
+        if (raw == null) return "";
+        String s = raw.trim();
+        int dot = s.lastIndexOf('.');
+        if (dot >= 0 && dot < s.length() - 1) {
+            s = s.substring(dot + 1);
+        }
+        return s;
+    }
+
+    private static Path ensureDirectory(Path path) {
         try {
-            log.info("✏️ Writing content to file: {}", mapperFilePath.toAbsolutePath());
-            Files.write(mapperFilePath, mapperContent.getBytes());
-            log.info("✅ File successfully written: {}", mapperFilePath.toAbsolutePath());
+            Files.createDirectories(path);
+            return path;
         } catch (IOException e) {
-            log.error("❌ Error writing mapper file '{}': {}", mapperName, e.getMessage());
+            throw new IllegalStateException("Failed to create directory: " + path, e);
         }
     }
 
-    private String generateMapperContent(Table table, String entityName, String dtoName, String mapperName, String packageName, Map<String, Table> tableMap) {
-        log.info("📌 Generating mapper content for: {}", entityName);
-
-        // ✅ Ανάκτηση των σχέσεων απευθείας από το tableMap
-        Set<String> relatedEntities = tableMap.get(entityName.toLowerCase()).getRelationships().stream()
-                .map(Relationship::getTargetTable)
-                .map(NamingConverter::toPascalCase)
-                .collect(Collectors.toSet());
-
-        log.info("🔍 Found relationships for {}: {}", entityName, relatedEntities);
-
-        StringBuilder content = new StringBuilder();
-        content.append("package ").append(packageName).append(".mappers;\n\n")
-                .append("import org.springframework.stereotype.Component;\n")
-                .append("import ").append(packageName).append(".dto.").append(dtoName).append(";\n")
-                .append("import ").append(packageName).append(".entities.").append(entityName).append(";\n")
-                .append("import ").append(packageName).append(".mappers.BaseMapper;\n") // ✅ Import BaseMapper
-                .append("import java.util.List;\n\n");
-
-        // ✅ Προσθήκη imports για Nested DTOs
-        for (String relatedEntity : relatedEntities) {
-            content.append("import ").append(packageName).append(".dto.").append(relatedEntity).append("DTO;\n");
-            content.append("import ").append(packageName).append(".mappers.").append(relatedEntity).append("Mapper;\n\n");
+    private static void writeFile(Path file, String content, String logicalName) {
+        try {
+            Files.writeString(file, content, StandardCharsets.UTF_8);
+            log.info("✅ Generated {}: {}", logicalName, file.toAbsolutePath());
+        } catch (IOException e) {
+            log.error("❌ Failed to write {} file: {}", logicalName, file.toAbsolutePath(), e);
         }
-
-        content.append("@Component\n")
-                .append("public class ").append(mapperName).append(" implements BaseMapper<").append(entityName).append(", ").append(dtoName).append("> {\n\n");
-
-
-        content.append("}\n");
-
-        log.info("📄 Generated content for {}:\n{}", mapperName, content);
-
-        return content.toString();
     }
 }

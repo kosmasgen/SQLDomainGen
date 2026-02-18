@@ -5,11 +5,56 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="b0084f3d-faef-4b57-8eff-7f8eb002c2d9" name="Changes" comment="Refactoring RelationshipResolver.class">
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ConfigGenerator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ExceptionGenerator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ProjectScaffoldGenerator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/TestGenerator.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/EntityModel.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/PackageResolver.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/input/test_script.sql" beforeDir="false" afterPath="$PROJECT_DIR$/input/test_script.sql" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/Absence.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/AuditLog.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/Course.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/Department.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/DepartmentDayOff.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/Event.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/EventAssignment.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/EventException.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/EventResourceBooking.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/Holiday.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/RecurringPattern.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/Student.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/StudentCourse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/TimeOffRequest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/User.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/entities/UserProfile.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/spring-shell.log" beforeDir="false" afterPath="$PROJECT_DIR$/spring-shell.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ControllerGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ControllerGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/DTOGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/DTOGenerator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/EntityGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/EntityGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/MapperGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/MapperGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/RelationshipResolver.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/RelationshipResolver.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/RepositoryGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/RepositoryGenerator.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ServiceGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ServiceGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Table.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Table.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/SQLParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/SQLParser.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/shell/GeneratorCommands.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/shell/GeneratorCommands.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/PostgreSQL.tokens" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/PostgreSQLLexer.tokens" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ControllerGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ControllerGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/DTOGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/DTOGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/MapperGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/MapperGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RelationshipResolver.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RelationshipResolver.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RepositoryGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RepositoryGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ServiceGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ServiceGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Table.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Table.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQL.interp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLLexer.interp" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$2.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$2.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/shell/GeneratorCommands.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/shell/GeneratorCommands.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -46,6 +91,10 @@
   <component name="MavenRunner">
     <option name="jreName" value="21" />
   </component>
+  <component name="McpProjectServerCommands">
+    <commands />
+    <urls />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
   &quot;associatedIndex&quot;: 2
@@ -55,115 +104,118 @@
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent">{
-  &quot;keyToString&quot;: {
-    &quot;Application.SQLDomainGenApplication.executor&quot;: &quot;Run&quot;,
-    &quot;Application.SQLGEN.executor&quot;: &quot;Run&quot;,
-    &quot;Downloaded.Files.Path.Enabled&quot;: &quot;false&quot;,
-    &quot;JUnit.ColumnDefinitionTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.ColumnDefinitionTest.testEmployeeDepartmentTable_PrimaryAndForeignKeys.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.ColumnDefinitionTest.testFromContext_JoinTableColumnsWithPKAndFK.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.ColumnDefinitionTest.testFromContext_WithManyToManyPseudoConstraint.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.ColumnDefinitionTest.testFromContext_WithTextAndTimestampDefault.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.ColumnTest.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.ColumnTest.testManyToManyFlag.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.ControllerGeneratorTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.CreateTableDefinitionTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.CreateTableDefinitionTest.testExtractForeignKeyConstraintAtTableLevel.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.CreateTableDefinitionTest.testExtractPrimaryKeyConstraintAtTableLevel.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.DTOGeneratorTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.EntityGeneratorTest.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.EntityGeneratorTest.testGenerateEntityWithOneToMany.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.EntityGeneratorTest.testGenerateEntityWithOneToOne.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.EntityGeneratorTest.testGenerateEntityWithUUIDPrimaryKey.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.EntityGeneratorTest.testNoDuplicateRelationshipFields.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.GrammarRelationshipTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.GrammarTest.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.RelationshipResolverTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.RelationshipResolverTest.testIsJoinTableWithOnlyTwoFKCompositePK.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.RelationshipResolverTest.testJoinTableWithExtraColumnIsManyToMany.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.RelationshipResolverTest.testPseudoManyToManyConstraintResolvesCorrectly.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.RelationshipResolverTest.testResolveOneToOneRelationship.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.RelationshipResolverTest.testResolveRelationships_ManyToManyJoinTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.RelationshipResolverTest.testSelfReferencingForeignKeyDetected.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.RelationshipResolverTest.testSelfReferencingSupervisorRelationshipDetected.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.RelationshipTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.RelationshipTest.testRelationshipToString.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.RepositoryGeneratorTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.RepositoryGeneratorTest.testDetectPrimaryKeyType.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.RepositoryGeneratorTest.testGenerateCustomQueriesForRelationships.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testAlterRecurringPatternAddEventIdForeignKey.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseAlterRecurringPatternAddEventId_PostgreSQL.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateAbsenceTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateAbsenceTable_PostgreSQL.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateDepartmentDayOffTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateDepartmentDayOffTable_PostgreSQL.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateDepartmentTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateDepartmentTable_PostgreSQL.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateEventAssignmentTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateEventAssignmentTable_PostgreSQL.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateEventExceptionTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateEventExceptionTable2.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateEventExceptionTable_PostgreSQL.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateEventTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateEventTable_PostgreSQL.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateHolidayTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateHolidayTable_PostgreSQL.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateRecurringPatternTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateRecurringPatternTable_PostgreSQL.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateTableWithMultipleDefaultConstraints.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateTableWithOutOfLineConstraints_PostgreSQL.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateTimeOffRequestTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateTimeOffRequestTable_PostgreSQL.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateTriggerStatement_PostgreSQL.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateUserProfileWithManyToMany_PostgreSQL.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateUserTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.SQLParserTest.testParseCreateUserTable_PostgreSQL.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.ServiceGeneratorTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TableParsingTest.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TableParsingTest.testAnnouncementsThemeTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TableParsingTest.testParseAbsenceTable.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableParsingTest.testParseAlterRecurringPatternAddEventId.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableParsingTest.testParseCreateTriggerStatement.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TableParsingTest.testParseDepartmentDayOffTable.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableParsingTest.testParseDepartmentTable.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableParsingTest.testParseEmployeeDepartmentTable_WithCompositePrimaryKey.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TableParsingTest.testParseEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableParsingTest.testParseEventAssignmentTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TableParsingTest.testParseEventExceptionTable.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableParsingTest.testParseEventTable.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableParsingTest.testParseHolidayTable.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableParsingTest.testParseRecurringPatternTable.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableParsingTest.testParseTimeOffRequestTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TableParsingTest.testParseUserProfileTable_WithManyToManyConstraint.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TableParsingTest.testParseUserTable.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableParsingTest.testProductCategoryTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TableParsingTest.testUserCategoryTable.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TableTest.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableTest.testAddConstraints.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableTest.testAddDecimalColumnToEventAssignmentTable.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableTest.testDepartmentTableStructure_UnaffectedByTrigger.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableTest.testEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs.executor&quot;: &quot;Run&quot;,
-    &quot;JUnit.TableTest.testParseCreateDepartmentTable_ToStringValidation.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableTest.testRecurringPatternTable_WithForeignKeyColumn.executor&quot;: &quot;Debug&quot;,
-    &quot;JUnit.TableTest.testUserProfileTable_WithManyToManyConstraint.executor&quot;: &quot;Debug&quot;,
-    &quot;Repository.Attach.Annotations&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.JavaDocs&quot;: &quot;false&quot;,
-    &quot;Repository.Attach.Sources&quot;: &quot;false&quot;,
-    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
-    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature/refactor-relationshipResolver&quot;,
-    &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
-    &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
-    &quot;last_opened_file_path&quot;: &quot;C:/Users/kosma/IdeaProjects/SQLDomainGen/src/test/java/com/sqldomaingen&quot;,
-    &quot;project.structure.last.edited&quot;: &quot;Modules&quot;,
-    &quot;project.structure.proportion&quot;: &quot;0.15&quot;,
-    &quot;project.structure.side.proportion&quot;: &quot;0.1724138&quot;,
-    &quot;settings.editor.selected.configurable&quot;: &quot;reference.settings.project.maven.runner&quot;
+  <component name="PropertiesComponent"><![CDATA[{
+  "keyToString": {
+    "Application.SQLDomainGenApplication.executor": "Run",
+    "Application.SQLGEN.executor": "Run",
+    "Downloaded.Files.Path.Enabled": "false",
+    "JUnit.ColumnDefinitionTest.executor": "Run",
+    "JUnit.ColumnDefinitionTest.testEmployeeDepartmentTable_PrimaryAndForeignKeys.executor": "Run",
+    "JUnit.ColumnDefinitionTest.testFromContext_JoinTableColumnsWithPKAndFK.executor": "Debug",
+    "JUnit.ColumnDefinitionTest.testFromContext_WithManyToManyPseudoConstraint.executor": "Debug",
+    "JUnit.ColumnDefinitionTest.testFromContext_WithTextAndTimestampDefault.executor": "Debug",
+    "JUnit.ColumnTest.executor": "Debug",
+    "JUnit.ColumnTest.testManyToManyFlag.executor": "Run",
+    "JUnit.ControllerGeneratorTest.executor": "Run",
+    "JUnit.CreateTableDefinitionTest.executor": "Run",
+    "JUnit.CreateTableDefinitionTest.testExtractForeignKeyConstraintAtTableLevel.executor": "Run",
+    "JUnit.CreateTableDefinitionTest.testExtractPrimaryKeyConstraintAtTableLevel.executor": "Run",
+    "JUnit.DTOGeneratorTest.executor": "Run",
+    "JUnit.EntityGeneratorTest.executor": "Debug",
+    "JUnit.EntityGeneratorTest.testGenerateEntityWithOneToMany.executor": "Debug",
+    "JUnit.EntityGeneratorTest.testGenerateEntityWithOneToOne.executor": "Run",
+    "JUnit.EntityGeneratorTest.testGenerateEntityWithUUIDPrimaryKey.executor": "Run",
+    "JUnit.EntityGeneratorTest.testNoDuplicateRelationshipFields.executor": "Run",
+    "JUnit.GrammarRelationshipTest.executor": "Run",
+    "JUnit.GrammarTest.executor": "Debug",
+    "JUnit.RelationshipResolverTest.executor": "Run",
+    "JUnit.RelationshipResolverTest.testIsJoinTableWithOnlyTwoFKCompositePK.executor": "Run",
+    "JUnit.RelationshipResolverTest.testJoinTableWithExtraColumnIsManyToMany.executor": "Debug",
+    "JUnit.RelationshipResolverTest.testPseudoManyToManyConstraintResolvesCorrectly.executor": "Run",
+    "JUnit.RelationshipResolverTest.testResolveOneToOneRelationship.executor": "Run",
+    "JUnit.RelationshipResolverTest.testResolveRelationships_ManyToManyJoinTable.executor": "Run",
+    "JUnit.RelationshipResolverTest.testSelfReferencingForeignKeyDetected.executor": "Run",
+    "JUnit.RelationshipResolverTest.testSelfReferencingSupervisorRelationshipDetected.executor": "Debug",
+    "JUnit.RelationshipTest.executor": "Run",
+    "JUnit.RelationshipTest.testRelationshipToString.executor": "Run",
+    "JUnit.RepositoryGeneratorTest.executor": "Run",
+    "JUnit.RepositoryGeneratorTest.testDetectPrimaryKeyType.executor": "Run",
+    "JUnit.RepositoryGeneratorTest.testGenerateCustomQueriesForRelationships.executor": "Run",
+    "JUnit.SQLParserTest.executor": "Run",
+    "JUnit.SQLParserTest.testAlterRecurringPatternAddEventIdForeignKey.executor": "Run",
+    "JUnit.SQLParserTest.testParseAlterRecurringPatternAddEventId_PostgreSQL.executor": "Debug",
+    "JUnit.SQLParserTest.testParseCreateAbsenceTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateAbsenceTable_PostgreSQL.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateDepartmentDayOffTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateDepartmentDayOffTable_PostgreSQL.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateDepartmentTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateDepartmentTable_PostgreSQL.executor": "Debug",
+    "JUnit.SQLParserTest.testParseCreateEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateEventAssignmentTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateEventAssignmentTable_PostgreSQL.executor": "Debug",
+    "JUnit.SQLParserTest.testParseCreateEventExceptionTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateEventExceptionTable2.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateEventExceptionTable_PostgreSQL.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateEventTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateEventTable_PostgreSQL.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateHolidayTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateHolidayTable_PostgreSQL.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateRecurringPatternTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateRecurringPatternTable_PostgreSQL.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateTableWithMultipleDefaultConstraints.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateTableWithOutOfLineConstraints_PostgreSQL.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateTimeOffRequestTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateTimeOffRequestTable_PostgreSQL.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateTriggerStatement_PostgreSQL.executor": "Debug",
+    "JUnit.SQLParserTest.testParseCreateUserProfileWithManyToMany_PostgreSQL.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateUserTable.executor": "Run",
+    "JUnit.SQLParserTest.testParseCreateUserTable_PostgreSQL.executor": "Run",
+    "JUnit.ServiceGeneratorTest.executor": "Run",
+    "JUnit.TableParsingTest.executor": "Run",
+    "JUnit.TableParsingTest.testAnnouncementsThemeTable.executor": "Run",
+    "JUnit.TableParsingTest.testParseAbsenceTable.executor": "Debug",
+    "JUnit.TableParsingTest.testParseAlterRecurringPatternAddEventId.executor": "Debug",
+    "JUnit.TableParsingTest.testParseCreateTriggerStatement.executor": "Run",
+    "JUnit.TableParsingTest.testParseDepartmentDayOffTable.executor": "Debug",
+    "JUnit.TableParsingTest.testParseDepartmentTable.executor": "Debug",
+    "JUnit.TableParsingTest.testParseEmployeeDepartmentTable_WithCompositePrimaryKey.executor": "Run",
+    "JUnit.TableParsingTest.testParseEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs.executor": "Debug",
+    "JUnit.TableParsingTest.testParseEventAssignmentTable.executor": "Run",
+    "JUnit.TableParsingTest.testParseEventExceptionTable.executor": "Debug",
+    "JUnit.TableParsingTest.testParseEventTable.executor": "Debug",
+    "JUnit.TableParsingTest.testParseHolidayTable.executor": "Debug",
+    "JUnit.TableParsingTest.testParseRecurringPatternTable.executor": "Debug",
+    "JUnit.TableParsingTest.testParseTimeOffRequestTable.executor": "Run",
+    "JUnit.TableParsingTest.testParseUserProfileTable_WithManyToManyConstraint.executor": "Run",
+    "JUnit.TableParsingTest.testParseUserTable.executor": "Debug",
+    "JUnit.TableParsingTest.testProductCategoryTable.executor": "Run",
+    "JUnit.TableParsingTest.testUserCategoryTable.executor": "Run",
+    "JUnit.TableTest.executor": "Debug",
+    "JUnit.TableTest.testAddConstraints.executor": "Debug",
+    "JUnit.TableTest.testAddDecimalColumnToEventAssignmentTable.executor": "Debug",
+    "JUnit.TableTest.testDepartmentTableStructure_UnaffectedByTrigger.executor": "Debug",
+    "JUnit.TableTest.testEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs.executor": "Run",
+    "JUnit.TableTest.testParseCreateDepartmentTable_ToStringValidation.executor": "Debug",
+    "JUnit.TableTest.testRecurringPatternTable_WithForeignKeyColumn.executor": "Debug",
+    "JUnit.TableTest.testUserProfileTable_WithManyToManyConstraint.executor": "Debug",
+    "Repository.Attach.Annotations": "false",
+    "Repository.Attach.JavaDocs": "false",
+    "Repository.Attach.Sources": "false",
+    "RunOnceActivity.MCP Project settings loaded": "true",
+    "RunOnceActivity.ShowReadmeOnStart": "true",
+    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
+    "RunOnceActivity.git.unshallow": "true",
+    "Spring Boot.SQLDomainGenApplication.executor": "Run",
+    "git-widget-placeholder": "feature/refactor-relationshipResolver",
+    "ignore.virus.scanning.warn.message": "true",
+    "kotlin-language-version-configured": "true",
+    "last_opened_file_path": "C:/Users/kosma/IdeaProjects/SQLDomainGen/src/test/java/com/sqldomaingen",
+    "project.structure.last.edited": "Modules",
+    "project.structure.proportion": "0.15",
+    "project.structure.side.proportion": "0.1724138",
+    "settings.editor.selected.configurable": "reference.settings.project.maven.runner"
   }
-}</component>
+}]]></component>
   <component name="RecentsManager">
     <key name="CopyFile.RECENT_KEYS">
       <recent name="C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen" />
@@ -172,7 +224,7 @@
       <recent name="C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen" />
     </key>
   </component>
-  <component name="RunManager" selected="Application.SQLGEN">
+  <component name="RunManager">
     <configuration name="SQLGEN" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.SQLDomainGenApplication" />
       <module name="SQLDomainGen" />
@@ -244,7 +296,7 @@
         <option name="Make" enabled="true" />
       </method>
     </configuration>
-    <configuration name="TableTest.testParseCreateDepartmentTable_ToStringValidation" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
+    <configuration name="RelationshipTest" type="JUnit" factoryName="JUnit" temporary="true" nameIsGenerated="true">
       <module name="SQLDomainGen" />
       <extension name="coverage">
         <pattern>
@@ -253,30 +305,36 @@
         </pattern>
       </extension>
       <option name="PACKAGE_NAME" value="com.sqldomaingen" />
-      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.TableTest" />
-      <option name="METHOD_NAME" value="testParseCreateDepartmentTable_ToStringValidation" />
-      <option name="TEST_OBJECT" value="method" />
+      <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.RelationshipTest" />
+      <option name="TEST_OBJECT" value="class" />
       <method v="2">
         <option name="Make" enabled="true" />
       </method>
     </configuration>
     <list>
       <item itemvalue="Application.SQLGEN" />
+      <item itemvalue="JUnit.RelationshipTest" />
       <item itemvalue="JUnit.RelationshipResolverTest.testJoinTableWithExtraColumnIsManyToMany" />
       <item itemvalue="JUnit.RelationshipResolverTest.testPseudoManyToManyConstraintResolvesCorrectly" />
       <item itemvalue="JUnit.RelationshipResolverTest.testResolveOneToOneRelationship" />
       <item itemvalue="JUnit.RelationshipResolverTest.testSelfReferencingSupervisorRelationshipDetected" />
-      <item itemvalue="JUnit.TableTest.testParseCreateDepartmentTable_ToStringValidation" />
     </list>
     <recent_temporary>
       <list>
+        <item itemvalue="JUnit.RelationshipTest" />
         <item itemvalue="JUnit.RelationshipResolverTest.testJoinTableWithExtraColumnIsManyToMany" />
         <item itemvalue="JUnit.RelationshipResolverTest.testSelfReferencingSupervisorRelationshipDetected" />
         <item itemvalue="JUnit.RelationshipResolverTest.testPseudoManyToManyConstraintResolvesCorrectly" />
         <item itemvalue="JUnit.RelationshipResolverTest.testResolveOneToOneRelationship" />
-        <item itemvalue="JUnit.TableTest.testParseCreateDepartmentTable_ToStringValidation" />
       </list>
     </recent_temporary>
+  </component>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.30387.90" />
+      </set>
+    </attachedChunks>
   </component>
   <component name="SpellCheckerSettings" RuntimeDictionaries="0" Folders="0" CustomDictionaries="0" DefaultDictionary="application-level" UseSingleDictionary="true" transferred="true" />
   <component name="TaskManager">
@@ -311,7 +369,15 @@
       <option name="project" value="LOCAL" />
       <updated>1747908818317</updated>
     </task>
-    <option name="localTasksCounter" value="4" />
+    <task id="LOCAL-00004" summary="Refactoring RelationshipResolver.class">
+      <option name="closed" value="true" />
+      <created>1755802803959</created>
+      <option name="number" value="00004" />
+      <option name="presentableId" value="LOCAL-00004" />
+      <option name="project" value="LOCAL" />
+      <updated>1755802803959</updated>
+    </task>
+    <option name="localTasksCounter" value="5" />
     <servers />
   </component>
   <component name="Vcs.Log.Tabs.Properties">

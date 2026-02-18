@@ -1,156 +1,254 @@
 package com.sqldomaingen.generator;
 
+import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.NamingConverter;
+import com.sqldomaingen.util.PackageResolver;
 import lombok.extern.log4j.Log4j2;
 
+import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.io.IOException;
 import java.util.List;
+import java.util.Objects;
 
 @Log4j2
 public class ControllerGenerator {
 
-    private static final String OUTPUT_PATH = "output/controllers/";
+    /**
+     * Generates REST controllers for all tables.
+     *
+     * Output directory:
+     * {outputDir}/src/main/java/{basePackagePath}/controller
+     *
+     * Package:
+     * {basePackage}.controller
+     */
+    public void generateControllers(List<Table> tables, String outputDir, String basePackage, boolean overwrite) {
+        Objects.requireNonNull(tables, "tables must not be null");
+        Objects.requireNonNull(outputDir, "outputDir must not be null");
+        Objects.requireNonNull(basePackage, "basePackage must not be null");
 
-    public void generateControllers(List<Table> tables) {
-        log.info("🔄 Starting Controller generation...");
+        Path controllerDir = ensureDirectory(PackageResolver.resolvePath(outputDir, basePackage, "controller"));
+        String controllerPackage = PackageResolver.resolvePackageName(basePackage, "controller");
 
         for (Table table : tables) {
-            String controllerCode = generateControllerCode(table);
-            saveToFile(table.getName(), controllerCode);
+            String entityName = NamingConverter.toPascalCase(normalizeTableName(table.getName()));
+            String code = generateControllerCode(table, controllerPackage, basePackage);
+
+            Path filePath = controllerDir.resolve(entityName + "Controller.java");
+            writeFile(filePath, code, overwrite);
         }
 
-        log.info("✅ Controller generation completed!");
+        log.info("✅ Controllers generated under: {}", controllerDir.toAbsolutePath());
     }
 
     /**
-     * Generates the code for a REST controller for the given table.
-     * The controller will include basic CRUD operations and logging functionality.
-     *
-     * @param table The table object containing metadata for the entity.
-     * @return A string representing the generated controller code.
+     * Generates controller code for a single table.
+     * Uses Lombok constructor injection and Swagger/OpenAPI annotations.
      */
-    private String generateControllerCode(Table table) {
+    public String generateControllerCode(Table table, String controllerPackage, String basePackage) {
+        Objects.requireNonNull(table, "table must not be null");
+        Objects.requireNonNull(controllerPackage, "controllerPackage must not be null");
+        Objects.requireNonNull(basePackage, "basePackage must not be null");
 
-        String entityName = NamingConverter.toPascalCase(table.getName());
-        String dtoName = entityName + "DTO";
+        String entityName = NamingConverter.toPascalCase(normalizeTableName(table.getName()));
+        String dtoName = entityName + "Dto";
         String serviceName = entityName + "Service";
-        String serviceInstance = NamingConverter.decapitalizeFirstLetter(entityName) + "Service";
-        String primaryKeyType = RepositoryGenerator.detectPrimaryKeyType(table);
+        String serviceVar = NamingConverter.decapitalizeFirstLetter(entityName) + "Service";
 
-        return "package com.sqldomaingen.controller;\n\n"
-                + "import com.sqldomaingen.dto." + dtoName + ";\n"
-                + "import com.sqldomaingen.service." + serviceName + ";\n"
-                + "import org.slf4j.Logger;\n"
-                + "import org.slf4j.LoggerFactory;\n"
-                + "import org.springframework.http.ResponseEntity;\n"
-                + "import org.springframework.web.bind.annotation.*;\n"
-                + "import java.util.List;\n\n"
-                + "/**\n"
-                + " * Controller for managing " + entityName + " entities.\n"
-                + " * Provides CRUD operations for the " + entityName + " entity.\n"
-                + " */\n"
-                + "@RestController\n"
-                + "@RequestMapping(\"/api/" + NamingConverter.toKebabCase(entityName) + "s\")\n"
-                + "public class " + entityName + "Controller {\n\n"
-                + "    private static final Logger logger = LoggerFactory.getLogger(" + entityName + "Controller.class);\n"
-                + "    private final " + serviceName + " " + serviceInstance + ";\n\n"
-                + "    /**\n"
-                + "     * Constructor for injecting the " + serviceName + " service.\n"
-                + "     * @param " + serviceInstance + " The service for the " + entityName + " entity.\n"
-                + "     */\n"
-                + "    public " + entityName + "Controller(" + serviceName + " " + serviceInstance + ") {\n"
-                + "        this." + serviceInstance + " = " + serviceInstance + ";\n"
-                + "    }\n\n"
-                + "    /**\n"
-                + "     * Fetches all " + entityName + " records.\n"
-                + "     * @return A list of " + dtoName + " objects.\n"
-                + "     */\n"
-                + "    @GetMapping\n"
-                + "    public ResponseEntity<List<" + dtoName + ">> getAll() {\n"
-                + "        logger.info(\"Fetching all " + entityName + " records\");\n"
-                + "        return ResponseEntity.ok(" + serviceInstance + ".getAll());\n"
-                + "    }\n\n"
-                + "    /**\n"
-                + "     * Fetches a specific " + entityName + " by its ID.\n"
-                + "     * @param id The ID of the " + entityName + " entity.\n"
-                + "     * @return The " + dtoName + " object corresponding to the ID.\n"
-                + "     */\n"
-                + "    @GetMapping(\"/{id}\")\n"
-                + "    public ResponseEntity<" + dtoName + "> getById(@PathVariable " + primaryKeyType + " id) {\n"
-                + "        logger.info(\"Fetching " + entityName + " with ID: {}\", id);\n"
-                + "        return ResponseEntity.ok(" + serviceInstance + ".getById(id));\n"
-                + "    }\n\n"
-                + "    /**\n"
-                + "     * Creates a new " + entityName + " record.\n"
-                + "     * @param dto The " + dtoName + " object to be created.\n"
-                + "     * @return The created " + dtoName + " object.\n"
-                + "     */\n"
-                + "    @PostMapping\n"
-                + "    public ResponseEntity<" + dtoName + "> create(@RequestBody " + dtoName + " dto) {\n"
-                + "        logger.info(\"Creating new " + entityName + ": {}\", dto);\n"
-                + "        return ResponseEntity.ok(" + serviceInstance + ".create(dto));\n"
-                + "    }\n\n"
-                + "    /**\n"
-                + "     * Updates an existing " + entityName + " record.\n"
-                + "     * @param id The ID of the " + entityName + " to be updated.\n"
-                + "     * @param dto The new data for the " + entityName + " entity.\n"
-                + "     * @return The updated " + dtoName + " object.\n"
-                + "     */\n"
-                + "    @PutMapping(\"/{id}\")\n"
-                + "    public ResponseEntity<" + dtoName + "> update(@PathVariable " + primaryKeyType + " id, @RequestBody " + dtoName + " dto) {\n"
-                + "        logger.info(\"Updating " + entityName + " with ID: {}\", id);\n"
-                + "        return ResponseEntity.ok(" + serviceInstance + ".update(id, dto));\n"
-                + "    }\n\n"
-                + "    /**\n"
-                + "     * Deletes an existing " + entityName + " record by its ID.\n"
-                + "     * @param id The ID of the " + entityName + " to be deleted.\n"
-                + "     * @return A response with no content indicating the deletion is successful.\n"
-                + "     */\n"
-                + "    @DeleteMapping(\"/{id}\")\n"
-                + "    public ResponseEntity<Void> deleteById(@PathVariable " + primaryKeyType + " id) {\n"
-                + "        logger.info(\"Deleting " + entityName + " with ID: {}\", id);\n"
-                + "        " + serviceInstance + ".deleteById(id);\n"
-                + "        return ResponseEntity.noContent().build();\n"
-                + "    }\n\n"
-                + "    /**\n"
-                + "     * Checks if the " + entityName + " exists by its ID.\n"
-                + "     * @param id The ID of the " + entityName + " entity.\n"
-                + "     * @return `true` if the entity exists, otherwise `false`.\n"
-                + "     */\n"
-                + "    @GetMapping(\"/exists/{id}\")\n"
-                + "    public ResponseEntity<Boolean> existsById(@PathVariable " + primaryKeyType + " id) {\n"
-                + "        logger.info(\"Checking if " + entityName + " exists with ID: {}\", id);\n"
-                + "        boolean exists = " + serviceInstance + ".existsById(id);\n"
-                + "        return ResponseEntity.ok(exists);\n"
-                + "    }\n"
-                + "    /**\n"
-                + "     * Counts the number of " + entityName + " records.\n"
-                + "     * @return The count of " + entityName + " records.\n"
-                + "     */\n"
-                + "    @GetMapping(\"/count\")\n"
-                + "    public ResponseEntity<Long> count() {\n"
-                + "        logger.info(\"Counting " + entityName + " records\");\n"
-                + "        return ResponseEntity.ok(" + serviceInstance + ".count());\n"
-                + "    }\n\n"
-                + "}\n";
+        String pkType = RepositoryGenerator.detectPrimaryKeyType(table);
+        boolean needsUuidImport = needsUuidImport(table);
+
+        String apiPath = "/api/" + NamingConverter.toKebabCase(entityName) + "s";
+
+        String dtoPackage = PackageResolver.resolvePackageName(basePackage, "dto");
+        String servicePackage = PackageResolver.resolvePackageName(basePackage, "service");
+
+        StringBuilder sb = new StringBuilder();
+
+        sb.append("package ").append(controllerPackage).append(";\n\n");
+
+        sb.append("import ").append(dtoPackage).append(".").append(dtoName).append(";\n");
+        sb.append("import ").append(servicePackage).append(".").append(serviceName).append(";\n\n");
+
+        sb.append("import io.swagger.v3.oas.annotations.Operation;\n");
+        sb.append("import io.swagger.v3.oas.annotations.Parameter;\n");
+        sb.append("import io.swagger.v3.oas.annotations.responses.ApiResponse;\n");
+        sb.append("import io.swagger.v3.oas.annotations.responses.ApiResponses;\n");
+        sb.append("import io.swagger.v3.oas.annotations.tags.Tag;\n\n");
+
+        sb.append("import lombok.RequiredArgsConstructor;\n");
+        sb.append("import lombok.extern.log4j.Log4j2;\n\n");
+
+        sb.append("import org.springframework.http.HttpStatus;\n");
+        sb.append("import org.springframework.http.ResponseEntity;\n");
+        sb.append("import org.springframework.web.bind.annotation.*;\n\n");
+
+        if (needsUuidImport) {
+            sb.append("import java.util.UUID;\n");
+        }
+        sb.append("import java.util.List;\n\n");
+
+        sb.append("/**\n");
+        sb.append(" * REST controller for managing ").append(entityName).append(" resources.\n");
+        sb.append(" * Generated automatically by SQLDomainGen.\n");
+        sb.append(" */\n");
+        sb.append("@RestController\n");
+        sb.append("@RequiredArgsConstructor\n");
+        sb.append("@Log4j2\n");
+        sb.append("@Tag(name = \"").append(entityName).append("\", description = \"").append(entityName).append(" API\")\n");
+        sb.append("@RequestMapping(\"").append(apiPath).append("\")\n");
+        sb.append("public class ").append(entityName).append("Controller {\n\n");
+
+        sb.append("    private final ").append(serviceName).append(" ").append(serviceVar).append(";\n\n");
+
+        sb.append("    /**\n");
+        sb.append("     * Retrieves all records.\n");
+        sb.append("     *\n");
+        sb.append("     * @return list of ").append(dtoName).append("\n");
+        sb.append("     */\n");
+        sb.append("    @Operation(summary = \"Get all ").append(entityName).append("\")\n");
+        sb.append("    @ApiResponses({\n");
+        sb.append("            @ApiResponse(responseCode = \"200\", description = \"Success\")\n");
+        sb.append("    })\n");
+        sb.append("    @GetMapping\n");
+        sb.append("    public ResponseEntity<List<").append(dtoName).append(">> getAll() {\n");
+        sb.append("        log.info(\"Fetching all ").append(entityName.toLowerCase()).append(" records.\");\n");
+        sb.append("        return ResponseEntity.ok(").append(serviceVar).append(".getAll").append(entityName).append("());\n");
+        sb.append("    }\n\n");
+
+        sb.append("    /**\n");
+        sb.append("     * Retrieves a record by id.\n");
+        sb.append("     *\n");
+        sb.append("     * @param id record id\n");
+        sb.append("     * @return ").append(dtoName).append("\n");
+        sb.append("     */\n");
+        sb.append("    @Operation(summary = \"Get ").append(entityName).append(" by id\")\n");
+        sb.append("    @ApiResponses({\n");
+        sb.append("            @ApiResponse(responseCode = \"200\", description = \"Success\"),\n");
+        sb.append("            @ApiResponse(responseCode = \"404\", description = \"Not found\")\n");
+        sb.append("    })\n");
+        sb.append("    @GetMapping(\"/{id}\")\n");
+        sb.append("    public ResponseEntity<").append(dtoName).append("> getById(\n");
+        sb.append("            @Parameter(description = \"").append(entityName).append(" id\", required = true)\n");
+        sb.append("            @PathVariable ").append(pkType).append(" id) {\n");
+        sb.append("        log.info(\"Fetching ").append(entityName.toLowerCase()).append(" with id: {}\", id);\n");
+        sb.append("        return ResponseEntity.ok(").append(serviceVar).append(".get").append(entityName).append("ById(id));\n");
+        sb.append("    }\n\n");
+
+        sb.append("    /**\n");
+        sb.append("     * Creates a new record.\n");
+        sb.append("     *\n");
+        sb.append("     * @param dto payload\n");
+        sb.append("     * @return created ").append(dtoName).append("\n");
+        sb.append("     */\n");
+        sb.append("    @Operation(summary = \"Create ").append(entityName).append("\")\n");
+        sb.append("    @ApiResponses({\n");
+        sb.append("            @ApiResponse(responseCode = \"201\", description = \"Created\")\n");
+        sb.append("    })\n");
+        sb.append("    @PostMapping\n");
+        sb.append("    public ResponseEntity<").append(dtoName).append("> create(@RequestBody ").append(dtoName).append(" dto) {\n");
+        sb.append("        log.info(\"Creating ").append(entityName.toLowerCase()).append(".\");\n");
+        sb.append("        ").append(dtoName).append(" created = ").append(serviceVar).append(".create").append(entityName).append("(dto);\n");
+        sb.append("        return ResponseEntity.status(HttpStatus.CREATED).body(created);\n");
+        sb.append("    }\n\n");
+
+        sb.append("    /**\n");
+        sb.append("     * Updates an existing record (PUT-style).\n");
+        sb.append("     *\n");
+        sb.append("     * @param id record id\n");
+        sb.append("     * @param dto payload\n");
+        sb.append("     * @return updated ").append(dtoName).append("\n");
+        sb.append("     */\n");
+        sb.append("    @Operation(summary = \"Update ").append(entityName).append("\")\n");
+        sb.append("    @ApiResponses({\n");
+        sb.append("            @ApiResponse(responseCode = \"200\", description = \"Success\"),\n");
+        sb.append("            @ApiResponse(responseCode = \"404\", description = \"Not found\")\n");
+        sb.append("    })\n");
+        sb.append("    @PutMapping(\"/{id}\")\n");
+        sb.append("    public ResponseEntity<").append(dtoName).append("> update(\n");
+        sb.append("            @Parameter(description = \"").append(entityName).append(" id\", required = true)\n");
+        sb.append("            @PathVariable ").append(pkType).append(" id,\n");
+        sb.append("            @RequestBody ").append(dtoName).append(" dto) {\n");
+        sb.append("        log.info(\"Updating ").append(entityName.toLowerCase()).append(" with id: {}\", id);\n");
+        sb.append("        return ResponseEntity.ok(").append(serviceVar).append(".update").append(entityName).append("(id, dto));\n");
+        sb.append("    }\n\n");
+
+        sb.append("    /**\n");
+        sb.append("     * Deletes a record by id.\n");
+        sb.append("     *\n");
+        sb.append("     * @param id record id\n");
+        sb.append("     */\n");
+        sb.append("    @Operation(summary = \"Delete ").append(entityName).append("\")\n");
+        sb.append("    @ApiResponses({\n");
+        sb.append("            @ApiResponse(responseCode = \"204\", description = \"No content\"),\n");
+        sb.append("            @ApiResponse(responseCode = \"404\", description = \"Not found\")\n");
+        sb.append("    })\n");
+        sb.append("    @DeleteMapping(\"/{id}\")\n");
+        sb.append("    public ResponseEntity<Void> deleteById(\n");
+        sb.append("            @Parameter(description = \"").append(entityName).append(" id\", required = true)\n");
+        sb.append("            @PathVariable ").append(pkType).append(" id) {\n");
+        sb.append("        log.info(\"Deleting ").append(entityName.toLowerCase()).append(" with id: {}\", id);\n");
+        sb.append("        ").append(serviceVar).append(".delete").append(entityName).append("(id);\n");
+        sb.append("        return ResponseEntity.noContent().build();\n");
+        sb.append("    }\n");
+
+        sb.append("}\n");
+
+        return sb.toString();
+    }
+
+    private static boolean needsUuidImport(Table table) {
+        Column pk = table.getColumns().stream()
+                .filter(Objects::nonNull)
+                .filter(Column::isPrimaryKey)
+                .findFirst()
+                .orElse(null);
+
+        if (pk == null) return false;
+
+        String raw = pk.getJavaType();
+        if (raw == null) return false;
+
+        String t = raw.trim();
+        return t.equalsIgnoreCase("UUID")
+                || t.equals("java.util.UUID")
+                || t.endsWith(".UUID");
     }
 
 
-    private void saveToFile(String entityName, String content) {
+
+    private static String normalizeTableName(String raw) {
+        if (raw == null) return "";
+        String s = raw.trim();
+        int dot = s.lastIndexOf('.');
+        if (dot >= 0 && dot < s.length() - 1) {
+            s = s.substring(dot + 1);
+        }
+        return s;
+    }
+
+    private static Path ensureDirectory(Path path) {
         try {
-            Path outputPath = Paths.get(OUTPUT_PATH);
-            Files.createDirectories(outputPath);
-
-            Path filePath = outputPath.resolve(entityName + "Controller.java");
-            Files.writeString(filePath, content);
-
-            log.info("✅ Controller generated: {}", filePath);
+            Files.createDirectories(path);
+            return path;
         } catch (IOException e) {
-            log.error("❌ Error writing file: {}Controller.java", entityName, e);
+            throw new IllegalStateException("Failed to create directory: " + path, e);
+        }
+    }
+
+    private static void writeFile(Path filePath, String content, boolean overwrite) {
+        try {
+            if (!overwrite && Files.exists(filePath)) {
+                log.info("ℹ️ Skipping existing file: {}", filePath.toAbsolutePath());
+                return;
+            }
+            Files.writeString(filePath, content, StandardCharsets.UTF_8);
+            log.info("✅ Controller generated: {}", filePath.toAbsolutePath());
+        } catch (IOException e) {
+            throw new IllegalStateException("Failed to write file: " + filePath, e);
         }
     }
 }

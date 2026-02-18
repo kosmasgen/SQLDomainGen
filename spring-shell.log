@@ -94,3 +94,18 @@
 1747820768124:);
 1747820768126:CREATE TABLE user_profile (
 1747820817526:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
+1771336199924:generate-entity --input-file "C:\\temp\\schema.sql" --output-dir "C:\\temp\\out" --package-name "gr.kosmas.schoolmanagement.model" --overwrite true --use-builder true
+1771336244193:generate-entity --input-file "C:\\\\temp\\\\schema.sql" --output-dir "C:\\\\temp\\\\out" --package-name "gr.kosmas.schoolmanagement.model" --overwrite true --use-builder true
+1771336252546:generate-entity --input-file "C:/temp/schema.sql" --output-dir "C:/temp/out" --package-name "gr.kosmas.schoolmanagement.model" --overwrite true --use-builder true
+1771336296186:generate-entity --input-file "C:\\\\temp\\\\schema.sql" --output-dir "C:\\\\temp\\\\out"  --overwrite true --use-builder true
+1771336308457:generate-entity --input-file "C:/temp/schema.sql" --output-dir "C:/temp/out" --package-name "gr.kosmas.schoolmanagement.model" --overwrite true --use-builder true
+1771336419510:generate-entity --input-file "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" --output-dir "C:/Users/kosma/IdeaProjects/SQLDomainGen/target/generated-sources/entities" --package-name "gr.kosmas.schoolmanagement.model" --overwrite true --use-builder true
+1771336878644:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/target/generated-sources/entities" -p "gr.kosmas.schoolmanagement.model" -w true -b true
+1771337069013:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output/entities" -p "gr.kosmas.schoolmanagement.model" -w true -b tr
+1771337136531:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output/entities" -p "gr.kosmas.schoolmanagement.model" - overwrite true - use-builder true
+1771401291872:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output/entities" -p "gr.knowledge.schoolmanagement" - overwrite true - use-builder true
+1771401587375:2026-02-18T09:58:11.424+02:00  INFO 11316 --- [           main] c.s.SQLDomainGenApplication              : No active profile set, falling back to 1 default profile: "default"
+1771401587389:Φεβ 18, 2026 9:58:12 Π.Μ. org.jline.utils.Log logr
+1771401587397:WARNING: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
+1771401587410:2026-02-18T09:58:12.698+02:00  INFO 11316 --- [           main] c.s.SQLDomainGenApplication              : Started SQLDomainGenApplication in 1.917 seconds (process running for 2.821)
+1771401628864:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output" -p "gr.knowledge.schoolmanagement" -w true -b true
