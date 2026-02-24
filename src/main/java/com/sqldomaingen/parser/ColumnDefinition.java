@@ -16,7 +16,6 @@ import org.antlr.v4.runtime.tree.ParseTreeWalker;
 @Log4j2
 public class ColumnDefinition extends PostgreSQLBaseListener {
 
-
     private String columnName;
     private String sqlType;
     private String javaType;
@@ -34,39 +33,61 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
     private String onUpdate;
     private String onDelete;
     private String mappedBy;
-    private boolean  manyToMany = false;
-
+    private boolean manyToMany = false;
 
     /**
-     * Factory method που δημιουργεί `ColumnDefinition` χρησιμοποιώντας `Listener`
+     * Builds a {@link ColumnDefinition} by walking the ANTLR parse context with this listener.
+     * <p>
+     * The resulting object contains:
+     * <ul>
+     *   <li>column name</li>
+     *   <li>raw SQL type + extracted attributes (length/precision/scale)</li>
+     *   <li>basic column constraints (PK/nullable/unique/default/check)</li>
+     *   <li>FK metadata if the column contains REFERENCES</li>
+     * </ul>
+     *
+     * @param ctx ANTLR column definition context
+     * @return populated {@link ColumnDefinition}
      */
     public static ColumnDefinition fromContext(PostgreSQLParser.ColumnDefContext ctx) {
         if (ctx == null) {
             throw new IllegalArgumentException("ColumnDefContext is null");
         }
 
-        log.info("Parsing Column Definition -> {}", ctx.getText());
+        log.info("Parsing column definition: {}", ctx.getText());
 
         ColumnDefinition columnDefinition = new ColumnDefinition();
         ParseTreeWalker.DEFAULT.walk(columnDefinition, ctx);
+
+        // Map SQL type to Java type after the listener collected sqlType.
         columnDefinition.javaType = TypeMapper.mapToJavaType(columnDefinition.sqlType);
-        log.info("Parsed Column -> Name: {}, SQL Type: {}, Java Type: {}, Primary Key: {}",
-                columnDefinition.getColumnName(), columnDefinition.getSqlType(), columnDefinition.getJavaType(), columnDefinition.isPrimaryKey());
+
+        log.info("Parsed column -> name='{}', sqlType='{}', javaType='{}', pk={}",
+                columnDefinition.getColumnName(),
+                columnDefinition.getSqlType(),
+                columnDefinition.getJavaType(),
+                columnDefinition.isPrimaryKey());
 
         return columnDefinition;
     }
 
     /**
-     * Listener για την εξαγωγή του ονόματος της στήλης
+     * Captures the column name when entering a column definition.
      */
     @Override
     public void enterColumnDef(PostgreSQLParser.ColumnDefContext ctx) {
         columnName = ctx.columnName().getText();
-        log.debug("Extracted column name: {}", columnName);
+        log.debug("Column name extracted: {}", columnName);
     }
 
     /**
-     * Listener για την εξαγωγή του τύπου δεδομένων SQL και των παραμέτρων του (π.χ., DECIMAL(precision, scale))
+     * Captures the SQL data type and extracts size attributes.
+     * <p>
+     * Examples:
+     * <ul>
+     *   <li>VARCHAR(100) -> length=100</li>
+     *   <li>DECIMAL(12,2) -> precision=12, scale=2</li>
+     * </ul>
      */
     @Override
     public void enterDataType(PostgreSQLParser.DataTypeContext ctx) {
@@ -76,14 +97,24 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
             precision = ctx.decimalType().precision != null ? Integer.parseInt(ctx.decimalType().precision.getText()) : 0;
             scale = ctx.decimalType().scale != null ? Integer.parseInt(ctx.decimalType().scale.getText()) : 0;
         }
+
         length = extractLength(sqlType);
 
-        log.debug("Extracted SQL type: {}, precision: {}, scale: {}", sqlType, precision, scale);
+        log.debug("SQL type extracted: '{}' | precision={} | scale={} | length={}", sqlType, precision, scale, length);
     }
 
-
     /**
-     * Listener για `PRIMARY KEY`, `UNIQUE`, `NOT NULL`, και άλλα constraints
+     * Handles column-level constraints and updates the flags/metadata accordingly.
+     * <p>
+     * Supports:
+     * <ul>
+     *   <li>PRIMARY KEY</li>
+     *   <li>NOT NULL</li>
+     *   <li>UNIQUE</li>
+     *   <li>DEFAULT ...</li>
+     *   <li>CHECK (...)</li>
+     *   <li>REFERENCES ...</li>
+     * </ul>
      */
     @Override
     public void enterConstraint(PostgreSQLParser.ConstraintContext ctx) {
@@ -91,41 +122,50 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
 
         if (constraintText.contains("PRIMARY KEY")) {
             this.primaryKey = true;
-            this.nullable = false; // PRIMARY KEY σημαίνει NOT NULL
-            log.info("🔑 Column '{}' marked as PRIMARY KEY", this.columnName);
+            this.nullable = false; // PRIMARY KEY implies NOT NULL
+            log.info("Column '{}' marked as PRIMARY KEY", this.columnName);
         }
+
         if (constraintText.contains("NOT NULL")) {
             this.nullable = false;
         }
+
         if (constraintText.contains("UNIQUE")) {
             this.unique = true;
         }
+
+        // Note: This is not a standard SQL keyword. Keep it only if your grammar emits it intentionally.
         if (constraintText.contains("MANYTOMANY")) {
             this.manyToMany = true;
         }
+
         if (constraintText.contains("DEFAULT")) {
             this.defaultValue = extractDefaultValue(ctx);
         }
+
         if (constraintText.contains("CHECK")) {
             this.checkConstraint = extractCheckConstraint(ctx);
         }
+
         if (constraintText.contains("REFERENCES")) {
             this.foreignKey = true;
             extractForeignKeyDetails(ctx);
         }
 
-        log.debug("Extracted constraints for column '{}': PK={}, Nullable={}, Unique={}, ManyToMany{}, Default={}, Check={}, FK={}",
+        log.debug("Constraints extracted for '{}' -> pk={}, nullable={}, unique={}, manyToMany={}, default={}, check={}, fk={}",
                 this.columnName, this.primaryKey, this.nullable, this.unique, this.manyToMany, this.defaultValue, this.checkConstraint, this.foreignKey);
     }
 
-
+    /**
+     * Returns the SQL base type without parameters (e.g. VARCHAR(20) -> VARCHAR).
+     */
     public String getBaseSqlType() {
         return sqlType.contains("(") ? sqlType.substring(0, sqlType.indexOf("(")) : sqlType;
     }
 
-
     /**
-     * Υπολογίζει το μήκος του πεδίου αν υπάρχει (π.χ., VARCHAR(255))
+     * Extracts the "length" argument from SQL types that include size (e.g. VARCHAR(255)).
+     * Returns a default value when not available or not parseable.
      */
     private int extractLength(String typeText) {
         if (typeText.contains("(") && typeText.contains(")")) {
@@ -141,7 +181,7 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
     }
 
     /**
-     * Εξάγει την προεπιλεγμένη τιμή (`DEFAULT `)
+     * Extracts the DEFAULT value from the constraint context.
      */
     private String extractDefaultValue(PostgreSQLParser.ConstraintContext ctx) {
         if (ctx.value() != null) {
@@ -150,9 +190,8 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
         return null;
     }
 
-
     /**
-     * Εξάγει το `CHECK ()` constraint αν υπάρχει και διατηρεί σωστή μορφοποίηση.
+     * Extracts the CHECK constraint expression and normalizes basic operator spacing.
      */
     private String extractCheckConstraint(PostgreSQLParser.ConstraintContext ctx) {
         if (ctx.getText().contains("CHECK")) {
@@ -163,45 +202,41 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
             if (openParen != -1 && closeParen != -1 && closeParen > openParen) {
                 String constraint = ctx.getText().substring(openParen + 1, closeParen).trim();
 
-                // Διαχωρίζουμε σωστά τους τελεστές με κενά
+                // Add spaces around common operators to make the expression readable.
                 constraint = constraint.replaceAll("\\s*(>=|<=|>|<|=|AND|OR|BETWEEN)\\s*", " $1 ");
 
-                return "(" + constraint + ")"; // Προσθέτουμε ξανά τις παρενθέσεις
+                return "(" + constraint + ")";
             }
         }
         return null;
     }
 
     /**
-     * Εξάγει τις πληροφορίες του Foreign Key (`REFERENCES ...`)
+     * Extracts FK target table/column from a REFERENCES clause.
      */
-
     private void extractForeignKeyDetails(PostgreSQLParser.ConstraintContext ctx) {
-        log.debug("Extracting Foreign Key: Context Text -> {}", ctx.getText());
+        log.debug("Extracting FOREIGN KEY details from: {}", ctx.getText());
 
         if (ctx.tableName() != null) {
             referencedTable = ctx.tableName().getText();
         } else {
-            log.warn("ForeignKey Extraction: tableName is NULL!");
+            log.warn("FK extraction: tableName is null.");
         }
 
         if (ctx.columnName() != null) {
             referencedColumn = ctx.columnName().getText();
         } else {
-            log.warn("ForeignKey Extraction: columnName is NULL!");
+            log.warn("FK extraction: columnName is null.");
         }
 
-        log.debug("Foreign Key Check for column: {} -> foreignKey={}, referencedTable={}, referencedColumn={}",
-                this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn);
-
-        log.info("Extracted Foreign Key -> Referenced Table: {}, Referenced Column: {}", referencedTable, referencedColumn);
+        log.info("FK extracted -> referencedTable='{}', referencedColumn='{}'", referencedTable, referencedColumn);
     }
 
-
+    /**
+     * Converts this definition to the internal {@link Column} model used by the generator.
+     */
     public Column toColumn() {
-        log.info("Converting ColumnDefinition to Column object...");
-        log.debug("Before Column creation: name={}, foreignKey={}, referencedTable={}, referencedColumn={}, mappedBy={}",
-                this.columnName, this.foreignKey, this.referencedTable, this.referencedColumn, this.mappedBy);
+        log.info("Converting ColumnDefinition -> Column | name='{}'", this.columnName);
 
         Column column = new Column();
         column.setName(this.columnName);
@@ -225,11 +260,11 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
             column.setReferencedTable(this.referencedTable);
             column.setReferencedColumn(this.referencedColumn);
 
-            log.debug("\u001B[33mForeign Key Check for column: {}, referencedTable={}, referencedColumn={}, mappedBy={}\u001B[0m",
+            log.debug("FK column mapped: '{}' -> {}.{} (mappedBy={})",
                     this.columnName, this.referencedTable, this.referencedColumn, this.mappedBy);
 
-            log.info("\u001B[32m✅ Column is Foreign Key: {} -> {}.{} (mappedBy={})\u001B[0m",
-                    column.getName(), column.getReferencedTable(), column.getReferencedColumn(), column.getMappedBy());
+            log.info("Column is a FOREIGN KEY: {} -> {}.{}",
+                    column.getName(), column.getReferencedTable(), column.getReferencedColumn());
         }
 
         return column;

@@ -162,6 +162,7 @@ dataType
     | 'DATE'
     | 'TIME' ('WITHOUT' 'TIME' 'ZONE' | 'WITH' 'TIME' 'ZONE')?
     | 'TIMESTAMP' ('WITHOUT' 'TIME' 'ZONE' | 'WITH' 'TIME' 'ZONE')?
+    | 'TIMESTAMP'
     | 'INTERVAL'
     | 'UUID'
     | 'ARRAY'
@@ -179,6 +180,8 @@ dataType
     | 'TRIGGER'
     | IDENTIFIER
     ;
+
+
 
 
 // Ενέργειες ON DELETE
@@ -496,10 +499,28 @@ expression
     ;
 
 
+    valueAtom
+        : STRING
+        | numericLiteral
+        | booleanLiteral
+        | 'CURRENT_TIMESTAMP'
+        | NULL
+        | (IDENTIFIER | 'now') ('(' valueList? ')')?
+        ;
+
+    typeCast
+        : DOUBLE_COLON IDENTIFIER (IDENTIFIER)?
+        ;
+
+    valueList
+        : value (',' value)*
+        ;
+
 // Τιμές για στήλες, εκφράσεις, και DEFAULT
 value
     : STRING
     | NUMBER
+    | valueAtom typeCast?
     | 'TRUE'
     | 'FALSE'
     | 'NULL'

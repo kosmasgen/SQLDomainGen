@@ -70,10 +70,11 @@ public class ServiceGenerator {
         String entityName = NamingConverter.toPascalCase(normalizeTableName(table.getName()));
         String dtoName = entityName + DTO_SUFFIX;
 
-        TypeRef pkType = detectPrimaryKeyType(table);
-
         String servicePackage = PackageResolver.resolvePackageName(basePackage, "service");
         String dtoPackage = PackageResolver.resolvePackageName(basePackage, "dto");
+        String modelPackage = PackageResolver.resolvePackageName(basePackage, "entity");
+
+        TypeRef pkType = detectPrimaryKeyType(table, entityName, modelPackage);
 
         StringBuilder sb = new StringBuilder();
 
@@ -102,7 +103,8 @@ public class ServiceGenerator {
         sb.append("     * @param id the record id\n");
         sb.append("     * @return the matching {@link ").append(dtoName).append("}\n");
         sb.append("     */\n");
-        sb.append("    ").append(dtoName).append(" get").append(entityName).append("ById(").append(pkType.simpleName).append(" id);\n\n");
+        sb.append("    ").append(dtoName).append(" get").append(entityName).append("ById(")
+                .append(pkType.simpleName).append(" id);\n\n");
 
         sb.append("    /**\n");
         sb.append("     * Creates a new record.\n");
@@ -110,7 +112,8 @@ public class ServiceGenerator {
         sb.append("     * @param dto input payload\n");
         sb.append("     * @return created {@link ").append(dtoName).append("}\n");
         sb.append("     */\n");
-        sb.append("    ").append(dtoName).append(" create").append(entityName).append("(").append(dtoName).append(" dto);\n\n");
+        sb.append("    ").append(dtoName).append(" create").append(entityName).append("(")
+                .append(dtoName).append(" dto);\n\n");
 
         sb.append("    /**\n");
         sb.append("     * Updates an existing record.\n");
@@ -122,7 +125,8 @@ public class ServiceGenerator {
         sb.append("     * @param dto input payload\n");
         sb.append("     * @return updated {@link ").append(dtoName).append("}\n");
         sb.append("     */\n");
-        sb.append("    ").append(dtoName).append(" update").append(entityName).append("(").append(pkType.simpleName).append(" id, ").append(dtoName).append(" dto);\n\n");
+        sb.append("    ").append(dtoName).append(" update").append(entityName).append("(")
+                .append(pkType.simpleName).append(" id, ").append(dtoName).append(" dto);\n\n");
 
         sb.append("    /**\n");
         sb.append("     * Deletes a record by id.\n");
@@ -156,17 +160,18 @@ public class ServiceGenerator {
         String repositoryVar = NamingConverter.decapitalizeFirstLetter(entityName) + "Repository";
         String mapperVar = NamingConverter.decapitalizeFirstLetter(entityName) + "Mapper";
 
-        TypeRef pkType = detectPrimaryKeyType(table);
-
-        String pkFieldName = detectPrimaryKeyFieldName(table);
-        String pkSetterMethod = "set" + toPascalCase(pkFieldName);
-
         String serviceImplPackage = PackageResolver.resolvePackageName(basePackage, "serviceImpl");
         String dtoPackage = PackageResolver.resolvePackageName(basePackage, "dto");
         String mapperPackage = PackageResolver.resolvePackageName(basePackage, "mapper");
         String modelPackage = PackageResolver.resolvePackageName(basePackage, "entity");
         String repositoryPackage = PackageResolver.resolvePackageName(basePackage, "repository");
         String servicePackage = PackageResolver.resolvePackageName(basePackage, "service");
+
+        TypeRef pkType = detectPrimaryKeyType(table, entityName, modelPackage);
+        boolean compositePk = hasCompositePrimaryKey(table);
+
+        String pkFieldName = compositePk ? "id" : detectPrimaryKeyFieldName(table);
+        String pkSetterMethod = compositePk ? "setId" : "set" + toPascalCase(pkFieldName);
 
         StringBuilder sb = new StringBuilder();
 
@@ -220,7 +225,8 @@ public class ServiceGenerator {
         sb.append("     * @return the matching {@link ").append(dtoName).append("}\n");
         sb.append("     */\n");
         sb.append("    @Override\n");
-        sb.append("    public ").append(dtoName).append(" get").append(entityName).append("ById(").append(pkType.simpleName).append(" id) {\n");
+        sb.append("    public ").append(dtoName).append(" get").append(entityName).append("ById(")
+                .append(pkType.simpleName).append(" id) {\n");
         sb.append("        log.info(\"Fetching ").append(NamingConverter.toKebabCase(entityName)).append(" with id: {}\", id);\n");
         sb.append("        ").append(entityName).append(" entity = ").append(repositoryVar).append(".findById(id)\n");
         sb.append("                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, \"")
@@ -235,7 +241,8 @@ public class ServiceGenerator {
         sb.append("     * @return created {@link ").append(dtoName).append("}\n");
         sb.append("     */\n");
         sb.append("    @Override\n");
-        sb.append("    public ").append(dtoName).append(" create").append(entityName).append("(").append(dtoName).append(" dto) {\n");
+        sb.append("    public ").append(dtoName).append(" create").append(entityName).append("(")
+                .append(dtoName).append(" dto) {\n");
         sb.append("        log.info(\"Creating ").append(NamingConverter.toKebabCase(entityName)).append(".\");\n");
         sb.append("        ").append(entityName).append(" entity = ").append(mapperVar).append(".toEntity(dto);\n");
         sb.append("        ").append(entityName).append(" saved = ").append(repositoryVar).append(".save(entity);\n");
@@ -253,13 +260,20 @@ public class ServiceGenerator {
         sb.append("     * @return updated {@link ").append(dtoName).append("}\n");
         sb.append("     */\n");
         sb.append("    @Override\n");
-        sb.append("    public ").append(dtoName).append(" update").append(entityName).append("(").append(pkType.simpleName).append(" id, ").append(dtoName).append(" dto) {\n");
+        sb.append("    public ").append(dtoName).append(" update").append(entityName).append("(")
+                .append(pkType.simpleName).append(" id, ").append(dtoName).append(" dto) {\n");
         sb.append("        log.info(\"Updating ").append(NamingConverter.toKebabCase(entityName)).append(" with id: {}\", id);\n");
         sb.append("        ").append(repositoryVar).append(".findById(id)\n");
         sb.append("                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, \"")
                 .append(entityName).append(" not found with id: \" + id));\n");
         sb.append("        ").append(entityName).append(" entity = ").append(mapperVar).append(".toEntity(dto);\n");
-        sb.append("        entity.").append(pkSetterMethod).append("(id);\n");
+
+        if (compositePk) {
+            sb.append("        entity.setId(id);\n");
+        } else {
+            sb.append("        entity.").append(pkSetterMethod).append("(id);\n");
+        }
+
         sb.append("        ").append(entityName).append(" saved = ").append(repositoryVar).append(".save(entity);\n");
         sb.append("        return ").append(mapperVar).append(".toDTO(saved);\n");
         sb.append("    }\n\n");
@@ -283,7 +297,12 @@ public class ServiceGenerator {
         return sb.toString();
     }
 
-    private static TypeRef detectPrimaryKeyType(Table table) {
+    private static TypeRef detectPrimaryKeyType(Table table, String entityName, String modelPackage) {
+        if (hasCompositePrimaryKey(table)) {
+            String pkClassName = entityName + "PK";
+            return new TypeRef(pkClassName, "import " + modelPackage + "." + pkClassName + ";");
+        }
+
         Column pk = table.getColumns().stream()
                 .filter(Objects::nonNull)
                 .filter(Column::isPrimaryKey)
@@ -299,6 +318,11 @@ public class ServiceGenerator {
 
         if ("UUID".equalsIgnoreCase(t) || "java.util.UUID".equals(t)) {
             return new TypeRef("UUID", "import java.util.UUID;");
+        }
+
+        if ("BigDecimal".equals(t) || "java.math.BigDecimal".equals(t)) {
+            // For PKs coming from numeric(...) prefer Long (as you requested)
+            return new TypeRef("Long", null);
         }
 
         if (t.contains(".")) {
@@ -398,5 +422,13 @@ public class ServiceGenerator {
             this.simpleName = simpleName;
             this.importLine = importLine;
         }
+    }
+
+    private static boolean hasCompositePrimaryKey(Table table) {
+        long pkCount = table.getColumns().stream()
+                .filter(Objects::nonNull)
+                .filter(Column::isPrimaryKey)
+                .count();
+        return pkCount > 1;
     }
 }

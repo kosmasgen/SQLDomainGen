@@ -23,7 +23,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
- * Κλάση για τη διαχείριση εντολών CLI.
+ * Spring Shell commands for generating a full Spring Boot backend from a SQL schema.
  */
 @NoArgsConstructor
 @ShellComponent
@@ -33,10 +33,15 @@ public class GeneratorCommands {
     public final EntityGenerator entityGenerator = new EntityGenerator();
 
     /**
-     * Generates a full Spring Boot backend from a SQL file.
-     * The pipeline creates:
-     * entities, DTOs, mappers, repositories, services, and controllers,
-     * under a buildable Maven project scaffold.
+     * Runs the full generation pipeline using a SQL file as input.
+     * <p>
+     * Pipeline:
+     * <ol>
+     *   <li>Parse SQL into {@link Table} models</li>
+     *   <li>Generate Maven project scaffold</li>
+     *   <li>Generate config + exception handling</li>
+     *   <li>Generate entities, DTOs, mappers, repositories, services, controllers, tests</li>
+     * </ol>
      *
      * @param inputFile   path to the SQL input file
      * @param outputDir   target project root directory for generated output
@@ -56,75 +61,66 @@ public class GeneratorCommands {
         try {
             validateOutputDirectory(outputDir);
 
-            // 1) Parse SQL -> Tables
+            // 1) SQL -> Table models
             List<Table> tables = processSQLFile(inputFile);
-
             if (tables.isEmpty()) {
-                log.warn("No tables were generated from the SQL file.");
-                return "No tables were generated from the SQL file.";
+                log.warn("No tables were produced from the SQL file.");
+                return "No tables were produced from the SQL file.";
             }
 
-            log.info("Starting backend generation pipeline...");
+            log.info("Starting generation pipeline...");
 
-            // 2) Project scaffold (pom.xml, Application, resources)
+            // 2) Project scaffold (pom.xml, application class, resources)
             new ProjectScaffoldGenerator().generateScaffold(outputDir, packageName, overwrite);
 
-            // 2.1) Config (ModelMapper bean, etc.)
+            // 3) Configs (beans, etc.)
             new ConfigGenerator().generateConfigs(outputDir, packageName, overwrite);
 
-            // 3) Exception handling (exception package + handler + error response)
+            // 4) Exception handling (handler + response)
             new ExceptionGenerator().generateExceptionHandling(outputDir, packageName, overwrite);
 
-            // 4) Entities
-            entityGenerator.generate(
-                    tables,
-                    outputDir,
-                    packageName,
-                    overwrite,
-                    useBuilder
-            );
+            // 5) Entities
+            entityGenerator.generate(tables, outputDir, packageName, overwrite, useBuilder);
 
-            // 5) Entity models
+            // 6) Entity models derived from tables (used by DTO generator)
             List<Entity> models = entityGenerator.toEntities(tables);
 
-            // 6) DTOs
+            // 7) DTOs
             new DTOGenerator().generateDTOs(models, outputDir, packageName);
 
-            // 7) Mappers
+            // 8) Mappers need access to table definitions by name
             Map<String, Table> tableMap = tables.stream()
                     .collect(Collectors.toMap(Table::getName, t -> t));
 
-            new MapperGenerator(tableMap)
-                    .generateMappers(outputDir, packageName);
+            new MapperGenerator(tableMap).generateMappers(outputDir, packageName);
 
-            // 8) Repositories
-            new RepositoryGenerator()
-                    .generateRepositories(tables, outputDir, packageName);
+            // 9) Repositories
+            new RepositoryGenerator().generateRepositories(tables, outputDir, packageName);
 
-            // 9) Services
-            new ServiceGenerator()
-                    .generateAllServices(tables, outputDir, packageName);
+            // 10) Services
+            new ServiceGenerator().generateAllServices(tables, outputDir, packageName);
 
-            // 10) Controllers
-            new ControllerGenerator()
-                    .generateControllers(tables, outputDir, packageName, overwrite);
+            // 11) Controllers
+            new ControllerGenerator().generateControllers(tables, outputDir, packageName, overwrite);
 
-            // 11) Tests (controller + service + main)
-            new TestGenerator()
-                    .generateAllTests(tables, outputDir, packageName);
+            // 12) Tests (controller + service + main)
+            new TestGenerator().generateAllTests(tables, outputDir, packageName);
 
-            log.info("✅ Backend generation completed successfully. Output directory: {}", outputDir);
+            log.info("Backend generation completed successfully. Output dir: {}", outputDir);
 
             System.exit(0);
             return "Backend generation completed successfully.";
 
         } catch (IOException e) {
-            log.error("Error during generation", e);
-            return "Error during generation: " + e.getMessage();
+            log.error("Generation failed", e);
+            return "Generation failed: " + e.getMessage();
         }
     }
 
-
+    /**
+     * Ensures the output directory exists and is usable.
+     * Creates it if missing.
+     */
     public void validateOutputDirectory(String outputDirectory) throws IOException {
         if (outputDirectory == null || outputDirectory.trim().isEmpty()) {
             throw new IllegalArgumentException("Output directory cannot be null or empty.");
@@ -141,11 +137,11 @@ public class GeneratorCommands {
     }
 
     /**
-     * Επεξεργάζεται το SQL αρχείο.
+     * Reads a SQL file and converts its CREATE TABLE statements into {@link Table} objects.
      *
-     * @param inputFile Το μονοπάτι του SQL αρχείου.
-     * @return Λίστα με αντικείμενα Table.
-     * @throws IOException Αν αποτύχει η επεξεργασία.
+     * @param inputFile SQL file path
+     * @return list of parsed tables (empty list if file is missing or parsing fails)
+     * @throws IOException if the file exists but cannot be read
      */
     public List<Table> processSQLFile(String inputFile) throws IOException {
         if (inputFile == null || inputFile.isEmpty()) {
@@ -154,6 +150,7 @@ public class GeneratorCommands {
         }
 
         log.info("Processing SQL file: {}", inputFile);
+
         Path filePath = Paths.get(inputFile);
         if (!Files.exists(filePath)) {
             log.warn("SQL file does not exist: {}", inputFile);
@@ -161,27 +158,28 @@ public class GeneratorCommands {
         }
 
         String sqlContent = Files.readString(filePath);
-        log.debug("SQL content from file '{}': {}", inputFile, sqlContent);
+        log.debug("SQL content loaded from '{}'", inputFile);
 
         return parseSQLToTables(sqlContent);
     }
 
     /**
-     * Αναλύει το SQL περιεχόμενο και δημιουργεί αντικείμενα Table.
+     * Parses SQL content using the ANTLR PostgreSQL grammar and returns table models.
      *
-     * @param sqlContent Το περιεχόμενο του SQL αρχείου.
-     * @return Λίστα με αντικείμενα Table.
+     * @param sqlContent raw SQL string
+     * @return list of tables parsed from the SQL content
      */
     public List<Table> parseSQLToTables(String sqlContent) {
         try {
+            // 1) Tokenize SQL with the lexer
             SQLParser sqlParserInstance = new SQLParser(sqlContent);
-
             TokenStream tokenStream = sqlParserInstance.parseSQL();
 
+            // 2) Parse tokens into an AST (ParseTree)
             PostgreSQLParser parser = new PostgreSQLParser(tokenStream);
-
             PostgreSQLParser.SqlScriptContext context = parser.sqlScript();
 
+            // 3) Walk CREATE TABLE statements and build Table models
             List<Table> tables = new ArrayList<>();
             for (PostgreSQLParser.CreateTableStatementContext createContext : context.createTableStatement()) {
                 CreateTableDefinition createTableDefinition = new CreateTableDefinition();
@@ -190,6 +188,7 @@ public class GeneratorCommands {
                 Table table = createTableDefinition.toTable();
                 tables.add(table);
             }
+
             return tables;
 
         } catch (Exception e) {

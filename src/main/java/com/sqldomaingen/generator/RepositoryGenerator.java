@@ -60,12 +60,12 @@ public class RepositoryGenerator {
 
     /**
      * Generates repository code for a single table.
-     *
      * Output:
      * package {basePackage}.repository;
      * import {basePackage}.entity.{Entity};
      * public interface {Entity}Repository extends JpaRepository<{Entity}, {PK}> {}
      */
+
     public String generateRepositoryForTable(Table table, String basePackage) {
         Objects.requireNonNull(table, "table must not be null");
         Objects.requireNonNull(basePackage, "basePackage must not be null");
@@ -73,11 +73,10 @@ public class RepositoryGenerator {
         String entityName = NamingConverter.toPascalCase(normalizeTableName(table.getName()));
         String repositoryName = entityName + "Repository";
 
-        String pkType = detectPrimaryKeyType(table);
-        boolean needsUuidImport = needsUuidImport(table);
-
         String repositoryPackage = PackageResolver.resolvePackageName(basePackage, "repository");
         String entityPackage = PackageResolver.resolvePackageName(basePackage, "entity");
+
+        TypeRef pkTypeRef = detectPrimaryKeyTypeRef(table, entityName, entityPackage);
 
         StringBuilder sb = new StringBuilder();
 
@@ -85,32 +84,44 @@ public class RepositoryGenerator {
         sb.append("import ").append(entityPackage).append(".").append(entityName).append(";\n");
         sb.append("import org.springframework.data.jpa.repository.JpaRepository;\n");
         sb.append("import org.springframework.stereotype.Repository;\n");
-        if (needsUuidImport) {
-            sb.append("import java.util.UUID;\n");
+
+        if (pkTypeRef.importLine != null) {
+            sb.append(pkTypeRef.importLine).append("\n");
         }
+
         sb.append("\n");
 
         sb.append("@Repository\n");
         sb.append("public interface ").append(repositoryName)
                 .append(" extends JpaRepository<")
-                .append(entityName).append(", ").append(pkType).append("> {\n");
+                .append(entityName).append(", ").append(pkTypeRef.simpleName).append("> {\n");
         sb.append("}\n");
 
         return sb.toString();
     }
-
     /**
      * Detects primary key type as a simple class name (Long, Integer, UUID, etc).
      *
      * @param table table metadata
      * @return simple type name for PK
      */
+
     public static String detectPrimaryKeyType(Table table) {
-        Column pk = table.getColumns().stream()
-                .filter(Objects::nonNull)
-                .filter(Column::isPrimaryKey)
-                .findFirst()
-                .orElseThrow(() -> new IllegalStateException("No Primary Key found for table: " + table.getName()));
+        Objects.requireNonNull(table, "table must not be null");
+
+        List<Column> pkColumns = getPrimaryKeyColumns(table);
+
+        if (pkColumns.isEmpty()) {
+            throw new IllegalStateException("No Primary Key found for table: " + table.getName());
+        }
+
+        // Backward-compatible behavior:
+        // For composite PK, return generic "Object" (other generators should use composite-aware methods)
+        if (pkColumns.size() > 1) {
+            return "Object";
+        }
+
+        Column pk = pkColumns.get(0);
 
         String raw = pk.getJavaType();
         if (raw == null || raw.isBlank()) {
@@ -119,9 +130,23 @@ public class RepositoryGenerator {
 
         String t = raw.trim();
 
-        if (t.equals("long") || t.equals("java.lang.Long")) return "Long";
-        if (t.equals("int") || t.equals("java.lang.Integer")) return "Integer";
+        // UUID
+        if ("UUID".equalsIgnoreCase(t) || "java.util.UUID".equals(t) || t.endsWith(".UUID")) {
+            return "UUID";
+        }
 
+        // numeric(...) PKs often mapped by parser to BigDecimal -> prefer Long (your rule)
+        if ("BigDecimal".equals(t) || "java.math.BigDecimal".equals(t)) {
+            return "Long";
+        }
+
+        // primitives / boxed
+        if ("long".equalsIgnoreCase(t) || "java.lang.Long".equals(t)) return "Long";
+        if ("int".equalsIgnoreCase(t) || "java.lang.Integer".equals(t)) return "Integer";
+        if ("short".equalsIgnoreCase(t) || "java.lang.Short".equals(t)) return "Short";
+        if ("byte".equalsIgnoreCase(t) || "java.lang.Byte".equals(t)) return "Byte";
+
+        // FQCN -> simple name
         if (t.contains(".")) {
             return t.substring(t.lastIndexOf('.') + 1);
         }
@@ -130,20 +155,92 @@ public class RepositoryGenerator {
     }
 
     private static boolean needsUuidImport(Table table) {
-        Column pk = table.getColumns().stream()
-                .filter(Objects::nonNull)
-                .filter(Column::isPrimaryKey)
-                .findFirst()
-                .orElse(null);
+        List<Column> pkColumns = getPrimaryKeyColumns(table);
 
-        if (pk == null) return false;
+        // Composite PK uses PK class import, not UUID directly in repository generic type
+        if (pkColumns.size() != 1) {
+            return false;
+        }
 
-        String raw = pk.getJavaType();
+        String raw = pkColumns.get(0).getJavaType();
         if (raw == null) return false;
 
         String t = raw.trim();
-        return t.equals("UUID") || t.equalsIgnoreCase("java.util.UUID") || t.endsWith(".UUID");
+        return t.equalsIgnoreCase("UUID")
+                || t.equals("java.util.UUID")
+                || t.endsWith(".UUID");
     }
+
+    private static List<Column> getPrimaryKeyColumns(Table table) {
+        Objects.requireNonNull(table, "table must not be null");
+
+        return table.getColumns().stream()
+                .filter(Objects::nonNull)
+                .filter(Column::isPrimaryKey)
+                .toList();
+    }
+
+    private static boolean hasCompositePrimaryKey(Table table) {
+        return getPrimaryKeyColumns(table).size() > 1;
+    }
+
+    private static TypeRef detectPrimaryKeyTypeRef(Table table, String entityName, String entityPackage) {
+        Objects.requireNonNull(table, "table must not be null");
+        Objects.requireNonNull(entityName, "entityName must not be null");
+        Objects.requireNonNull(entityPackage, "entityPackage must not be null");
+
+        if (hasCompositePrimaryKey(table)) {
+            String pkClassName = entityName + "PK";
+            return new TypeRef(pkClassName, "import " + entityPackage + "." + pkClassName + ";");
+        }
+
+        List<Column> pkColumns = getPrimaryKeyColumns(table);
+        if (pkColumns.isEmpty()) {
+            throw new IllegalStateException("No Primary Key found for table: " + table.getName());
+        }
+
+        Column pk = pkColumns.get(0);
+
+        String raw = pk.getJavaType();
+        if (raw == null || raw.isBlank()) {
+            return new TypeRef("Long", null);
+        }
+
+        String t = raw.trim();
+
+        if ("UUID".equalsIgnoreCase(t) || "java.util.UUID".equals(t) || t.endsWith(".UUID")) {
+            return new TypeRef("UUID", "import java.util.UUID;");
+        }
+
+        // numeric(...) PKs -> Long
+        if ("BigDecimal".equals(t) || "java.math.BigDecimal".equals(t)) {
+            return new TypeRef("Long", null);
+        }
+
+        if ("long".equalsIgnoreCase(t) || "java.lang.Long".equals(t)) return new TypeRef("Long", null);
+        if ("int".equalsIgnoreCase(t) || "java.lang.Integer".equals(t)) return new TypeRef("Integer", null);
+        if ("short".equalsIgnoreCase(t) || "java.lang.Short".equals(t)) return new TypeRef("Short", null);
+        if ("byte".equalsIgnoreCase(t) || "java.lang.Byte".equals(t)) return new TypeRef("Byte", null);
+
+        if (t.contains(".")) {
+            String simple = t.substring(t.lastIndexOf('.') + 1);
+            return new TypeRef(simple, "import " + t + ";");
+        }
+
+        return new TypeRef(t, null);
+    }
+
+
+    private static final class TypeRef {
+        private final String simpleName;
+        private final String importLine;
+
+        private TypeRef(String simpleName, String importLine) {
+            this.simpleName = simpleName;
+            this.importLine = importLine;
+        }
+    }
+
 
     private static String normalizeTableName(String raw) {
         if (raw == null) return "";

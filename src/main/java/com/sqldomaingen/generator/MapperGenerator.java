@@ -25,7 +25,6 @@ public class MapperGenerator {
 
     /**
      * Generates BaseMapper + one Mapper per table.
-     *
      * Output:
      * {outputDir}/src/main/java/{basePackage path}/mapper/*.java
      *

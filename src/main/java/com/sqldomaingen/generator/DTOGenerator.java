@@ -71,6 +71,7 @@ public class DTOGenerator {
         builder.append("\n");
     }
 
+
     private Set<String> collectConditionalImports(Entity entity) {
         Set<String> imports = new TreeSet<>();
 
@@ -91,6 +92,11 @@ public class DTOGenerator {
                 imports.add("com.fasterxml.jackson.annotation.JsonFormat");
             }
 
+            if (containsType(rawType, "LocalTime")) {
+                imports.add("java.time.LocalTime");
+                imports.add("com.fasterxml.jackson.annotation.JsonFormat");
+            }
+
             if (containsType(rawType, "BigDecimal")) {
                 imports.add("java.math.BigDecimal");
             }
@@ -103,22 +109,21 @@ public class DTOGenerator {
                 imports.add("jakarta.validation.constraints.NotNull");
             }
 
-            if (!field.isRelationship() && field.getLength() != null) {
+            if (!field.isRelationship() && field.getLength() != null && isStringType(rawType)) {
                 imports.add("jakarta.validation.constraints.Size");
             }
 
-            if (!field.isRelationship() && isPositiveCandidate(field)) {
+            if (!field.isRelationship() && isPositiveCandidate(field, rawType)) {
                 imports.add("jakarta.validation.constraints.Positive");
             }
 
-            if (!field.isRelationship() && isPatternCandidate(field)) {
+            if (!field.isRelationship() && isPatternCandidate(field, rawType)) {
                 imports.add("jakarta.validation.constraints.Pattern");
             }
         }
 
         return imports;
     }
-
     private static boolean needsListImport(Field field, String rawType) {
         if (!field.isRelationship()) return false;
         String t = safeType(rawType);
@@ -132,9 +137,16 @@ public class DTOGenerator {
         return t.contains("<") && t.contains(typeSimpleName);
     }
 
-    private boolean isPositiveCandidate(Field field) {
+    private boolean isPositiveCandidate(Field field, String rawType) {
         String fieldName = safeType(field.getName()).toLowerCase();
-        return fieldName.contains("price") || fieldName.contains("amount") || fieldName.contains("quantity");
+        return isNumericType(rawType)
+                && (fieldName.contains("price") || fieldName.contains("amount") || fieldName.contains("quantity"));
+    }
+
+    private boolean isPatternCandidate(Field field, String rawType) {
+        String fieldName = safeType(field.getName()).toLowerCase();
+        return isStringType(rawType)
+                && (fieldName.contains("email") || fieldName.contains("phone"));
     }
 
     private boolean isPatternCandidate(Field field) {
@@ -142,37 +154,41 @@ public class DTOGenerator {
         return fieldName.contains("email") || fieldName.contains("phone");
     }
 
-    private void addFieldAnnotations(StringBuilder builder, Field field, String entityName) {
+    private void addFieldAnnotations(StringBuilder builder, Field field) {
         if (field.isRelationship()) {
             return;
         }
 
-        String validationPrefix = "validation." + entityName.toLowerCase() + "." + field.getName() + ".";
-
         if (!field.isNullable()) {
-            builder.append("    @NotNull(message = \"{").append(validationPrefix).append("notnull}\")\n");
+            builder.append("    @NotNull\n");
         }
 
         String rawType = safeType(field.getType());
+
         if (containsType(rawType, "LocalDateTime")) {
             builder.append("    @JsonFormat(pattern = \"yyyy-MM-dd HH:mm:ss\")\n");
         } else if (containsType(rawType, "LocalDate")) {
             builder.append("    @JsonFormat(pattern = \"yyyy-MM-dd\")\n");
+        } else if (containsType(rawType, "LocalTime")) {
+            builder.append("    @JsonFormat(pattern = \"HH:mm:ss\")\n");
         }
 
-        if (field.getLength() != null) {
-            builder.append("    @Size(max = ").append(field.getLength())
-                    .append(", message = \"{").append(validationPrefix).append("size}\")\n");
+        if (field.getLength() != null && isStringType(rawType)) {
+            builder.append("    @Size(max = ").append(field.getLength()).append(")\n");
         }
 
-        if (isPositiveCandidate(field)) {
-            builder.append("    @Positive(message = \"{").append(validationPrefix).append("positive}\")\n");
+        if (isPositiveCandidate(field, rawType)) {
+            builder.append("    @Positive\n");
         }
 
-        if (isPatternCandidate(field)) {
-            builder.append("    @Pattern(regexp = \".*\", message = \"{")
-                    .append(validationPrefix).append("pattern}\")\n");
+        if (isPatternCandidate(field, rawType)) {
+            builder.append("    @Pattern(regexp = \".*\")\n");
         }
+    }
+
+    private static boolean isStringType(String rawType) {
+        String t = safeType(rawType);
+        return "String".equals(t) || "java.lang.String".equals(t);
     }
 
     private void addClassDefinition(StringBuilder builder, Entity entity) {
@@ -186,12 +202,21 @@ public class DTOGenerator {
         builder.append("@JsonInclude(JsonInclude.Include.NON_NULL)\n");
         builder.append("public class ").append(entity.getName()).append("Dto {\n\n");
 
-        // Primitive fields
+        // Primitive / non-relationship fields
         for (Field field : entity.getFields()) {
             if (!field.isRelationship()) {
-                addFieldAnnotations(builder, field, entity.getName());
+                addFieldAnnotations(builder, field);
+
+                String rawType = safeType(field.getType());
+                String simpleType = simplifyType(rawType);
+
+                // Special case: EmbeddedId object on entity DTO should point to PK DTO
+                if (isCompositeKeyObjectField(field, simpleType)) {
+                    simpleType = resolveRelationshipDtoType(simpleType); // -> XxxPKDto / XxxKeyDto
+                }
+
                 builder.append("    private ")
-                        .append(simplifyType(safeType(field.getType())))
+                        .append(simpleType)
                         .append(" ")
                         .append(field.getName())
                         .append(";\n\n");
@@ -227,6 +252,25 @@ public class DTOGenerator {
         builder.append("}\n");
     }
 
+    private static boolean isCompositeKeyObjectField(Field field, String simpleType) {
+        if (field == null) {
+            return false;
+        }
+
+        String fieldName = safeType(field.getName());
+        String type = safeType(simpleType);
+
+        if (!"id".equals(fieldName)) {
+            return false;
+        }
+
+        if (isScalarType(type)) {
+            return false;
+        }
+
+        return type.endsWith("PK") || type.endsWith("Key");
+    }
+
     private static String resolveRelationshipDtoType(String relatedSimpleType) {
         String t = safeType(relatedSimpleType);
         if (t.isEmpty()) return "Object";
@@ -255,6 +299,7 @@ public class DTOGenerator {
                 || t.equals("UUID")
                 || t.equals("BigDecimal")
                 || t.equals("LocalDate")
+                || t.equals("LocalTime")
                 || t.equals("LocalDateTime");
     }
 
@@ -309,5 +354,95 @@ public class DTOGenerator {
             return t.substring(lt + 1, gt).trim();
         }
         return "Object";
+    }
+
+    private static final Set<String> JAVA_KEYWORDS = Set.of(
+            "abstract","assert","boolean","break","byte","case","catch","char","class","const","continue",
+            "default","do","double","else","enum","extends","final","finally","float","for","goto","if",
+            "implements","import","instanceof","int","interface","long","native","new","package","private",
+            "protected","public","return","short","static","strictfp","super","switch","synchronized","this",
+            "throw","throws","transient","try","void","volatile","while","true","false","null","record","sealed","permits"
+    );
+
+    private static String sanitizeJavaFieldName(String rawName) {
+        String name = rawName == null ? "" : rawName.trim();
+
+        // Remove SQL identifier quotes if present: "version"
+        if (name.length() >= 2 && name.startsWith("\"") && name.endsWith("\"")) {
+            name = name.substring(1, name.length() - 1);
+        }
+
+        // Fallback
+        if (name.isBlank()) {
+            return "field";
+        }
+
+        // Replace invalid chars with underscore
+        StringBuilder sb = new StringBuilder();
+        for (int i = 0; i < name.length(); i++) {
+            char ch = name.charAt(i);
+
+            if (i == 0) {
+                if (Character.isJavaIdentifierStart(ch)) {
+                    sb.append(ch);
+                } else if (Character.isJavaIdentifierPart(ch)) {
+                    sb.append('_').append(ch);
+                } else {
+                    sb.append('_');
+                }
+            } else {
+                sb.append(Character.isJavaIdentifierPart(ch) ? ch : '_');
+            }
+        }
+
+        String result = sb.toString();
+
+        // If starts with digit after cleanup (extra safety)
+        if (!result.isEmpty() && Character.isDigit(result.charAt(0))) {
+            result = "field" + result;
+        }
+
+        // Optional camelCase normalization for snake_case names
+        result = toCamelCasePreservingSimple(result);
+
+        // Avoid Java keywords
+        if (JAVA_KEYWORDS.contains(result)) {
+            result = result + "Field";
+        }
+
+        return result;
+    }
+
+    private static String toCamelCasePreservingSimple(String value) {
+        if (value == null || value.isBlank()) return "field";
+
+        if (!value.contains("_")) {
+            return value;
+        }
+
+        String[] parts = value.split("_+");
+        StringBuilder sb = new StringBuilder();
+
+        for (int i = 0; i < parts.length; i++) {
+            String p = parts[i];
+            if (p.isBlank()) continue;
+
+            if (i == 0) {
+                sb.append(p.substring(0, 1).toLowerCase()).append(p.substring(1));
+            } else {
+                sb.append(p.substring(0, 1).toUpperCase()).append(p.substring(1));
+            }
+        }
+
+        return sb.isEmpty() ? "field" : sb.toString();
+    }
+
+    private static boolean isNumericType(String rawType) {
+        String t = simplifyType(safeType(rawType));
+        return t.equals("BigDecimal")
+                || t.equals("Long") || t.equals("Integer") || t.equals("Short") || t.equals("Byte")
+                || t.equals("Double") || t.equals("Float")
+                || t.equals("long") || t.equals("int") || t.equals("short") || t.equals("byte")
+                || t.equals("double") || t.equals("float");
     }
 }

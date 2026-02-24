@@ -109,3 +109,6 @@
 1771401587397:WARNING: Unable to create a system terminal, creating a dumb terminal (enable debug logging for more information)
 1771401587410:2026-02-18T09:58:12.698+02:00  INFO 11316 --- [           main] c.s.SQLDomainGenApplication              : Started SQLDomainGenApplication in 1.917 seconds (process running for 2.821)
 1771401628864:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output" -p "gr.knowledge.schoolmanagement" -w true -b true
+1771584901806:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output" -p "gr.knowledge.pep" -w true -b true
+1771600627315:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output" -p "gr.knowledge." -w true -b true
+1771921186861:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output/PepTest" -p "gr.knowledge.pepTest" -w true -b true

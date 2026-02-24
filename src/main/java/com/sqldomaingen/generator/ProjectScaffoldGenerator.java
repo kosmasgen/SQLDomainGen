@@ -245,19 +245,28 @@ public class ProjectScaffoldGenerator {
         String props = """
 spring.application.name=%s
 
-spring.datasource.url=jdbc:postgresql://localhost:5432/schooldb
-spring.datasource.username=schooluser
-spring.datasource.password=Strong_Pass_123!
-spring.datasource.driver-class-name=org.postgresql.Driver
+############################
+# PostgreSQL (example)
+############################
+# spring.datasource.url=jdbc:postgresql://localhost:5432/schooldb
+# spring.datasource.username=schooluser
+# spring.datasource.password=Strong_Pass_123!
+# spring.datasource.driver-class-name=org.postgresql.Driver
+# spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+
+############################
+# Database
+############################
+spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
+# Remove the line above and uncomment the PostgreSQL settings to enable DB connectivity.
 
 spring.jpa.hibernate.ddl-auto=none
 spring.jpa.open-in-view=false
-spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
 
 server.port=8081
 
 #########################
-#  Swagger   #
+# Swagger
 #########################
 springdoc.default-produces-media-type=application/json
 springdoc.api-docs.enabled=true

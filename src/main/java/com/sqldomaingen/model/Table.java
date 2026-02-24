@@ -1,6 +1,5 @@
 package com.sqldomaingen.model;
 
-
 import lombok.Getter;
 import lombok.Setter;
 import lombok.NoArgsConstructor;
@@ -23,9 +22,9 @@ public class Table {
     private List<Relationship> relationships = new ArrayList<>();
 
     /**
-     * Προσθέτει constraints στον πίνακα.
+     * Adds table-level constraints (if provided) to this table.
      *
-     * @param constraints η λίστα των constraints που θα προστεθούν.
+     * @param constraints constraints to append (ignored if null)
      */
     public void addConstraints(List<String> constraints) {
         if (constraints != null) {
@@ -34,9 +33,9 @@ public class Table {
     }
 
     /**
-     * Προσθέτει μία στήλη στον πίνακα.
+     * Adds a column to this table.
      *
-     * @param column το αντικείμενο Column που θα προστεθεί.
+     * @param column column to add (ignored if null)
      */
     public void addColumn(Column column) {
         if (column != null) {
@@ -45,27 +44,31 @@ public class Table {
     }
 
     /**
-     * Προσθέτει μία σχέση Foreign Key στον πίνακα.
+     * Adds a relationship (typically derived from a FOREIGN KEY) to this table.
+     * Ensures the relationships list is initialized before insertion.
      *
-     * @param relationship το αντικείμενο Relationship που θα προστεθεί.
+     * @param relationship relationship to add (ignored if null)
      */
     public void addRelationship(Relationship relationship) {
-        if (this.relationships == null) {
-            this.relationships = new ArrayList<>(); // 🔥 Εξασφαλίζουμε ότι η λίστα είναι αρχικοποιημένη
+        if (relationship == null) {
+            return;
         }
+
+        if (this.relationships == null) {
+            this.relationships = new ArrayList<>();
+        }
+
         this.relationships.add(relationship);
 
-        // 🔍 Debug log για επιβεβαίωση
-        log.debug("Added relationship: {}.{} -> {}.{}",
+        log.debug("Relationship added: {}.{} -> {}.{}",
                 relationship.getSourceTable(), relationship.getSourceColumn(),
                 relationship.getTargetTable(), relationship.getTargetColumn());
 
-        log.debug("Current relationship count in Table {}: {}", this.name, this.relationships.size());
+        log.debug("Table '{}' relationship count: {}", this.name, this.relationships.size());
     }
 
-
     /**
-     * Επιστρέφει μια περιγραφή του πίνακα με τις στήλες, τα constraints και τις σχέσεις.
+     * Returns a readable representation of the table model for debugging.
      */
     @Override
     public String toString() {

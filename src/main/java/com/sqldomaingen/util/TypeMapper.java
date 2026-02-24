@@ -24,10 +24,18 @@ public class TypeMapper {
     static {
         sqlToJavaTypeMap.put("BIGINT", "Long");
         sqlToJavaTypeMap.put("LONG", "Long");
-        sqlToJavaTypeMap.put("INT", "Long");
-        sqlToJavaTypeMap.put("INTEGER", "Long");
+        sqlToJavaTypeMap.put("INT", "Integer");
+        sqlToJavaTypeMap.put("INTEGER", "Integer");
         sqlToJavaTypeMap.put("SMALLINT", "Short");
         sqlToJavaTypeMap.put("TINYINT", "Byte");
+
+        sqlToJavaTypeMap.put("INT4", "Integer");
+        sqlToJavaTypeMap.put("INT8", "Long");
+        sqlToJavaTypeMap.put("INT2", "Short");
+
+        sqlToJavaTypeMap.put("SERIAL", "Integer");
+        sqlToJavaTypeMap.put("BIGSERIAL", "Long");
+        sqlToJavaTypeMap.put("SMALLSERIAL", "Short");
 
         sqlToJavaTypeMap.put("DECIMAL", JAVA_BIG_DECIMAL);
         sqlToJavaTypeMap.put("NUMERIC", JAVA_BIG_DECIMAL);
@@ -54,25 +62,23 @@ public class TypeMapper {
         sqlToJavaTypeMap.put("BLOB", "byte[]");
         sqlToJavaTypeMap.put("BYTEA", "byte[]");
 
+        sqlToJavaTypeMap.put("BOOL", "Boolean");
         sqlToJavaTypeMap.put("BOOLEAN", "Boolean");
         sqlToJavaTypeMap.put("BIT", "Boolean");
 
         sqlToJavaTypeMap.put("UUID", "java.util.UUID");
         sqlToJavaTypeMap.put("ARRAY", "java.util.List<?>");
         sqlToJavaTypeMap.put("MONEY", JAVA_BIG_DECIMAL);
-        sqlToJavaTypeMap.put("SERIAL", "Long");
-        sqlToJavaTypeMap.put("BIGSERIAL", "Long");
-        sqlToJavaTypeMap.put("SMALLSERIAL", "Short");
         sqlToJavaTypeMap.put("ENUM", JAVA_STRING);
-        sqlToJavaTypeMap.put("CITEXT", JAVA_STRING); // Κείμενο χωρίς διάκριση πεζών/κεφαλαίων
-        sqlToJavaTypeMap.put("TSVECTOR", JAVA_STRING); // Full-text search
-        sqlToJavaTypeMap.put("INET", JAVA_STRING); // Διεύθυνση IP
-        sqlToJavaTypeMap.put("CIDR", JAVA_STRING); // Διεύθυνση IP
-        sqlToJavaTypeMap.put("MACADDR", JAVA_STRING); // Διεύθυνση MAC
-        sqlToJavaTypeMap.put("XML", JAVA_STRING); // XML δεδομένα
-        sqlToJavaTypeMap.put("PG_LSN", JAVA_STRING); // Log sequence number
-        sqlToJavaTypeMap.put("VARBIT", JAVA_STRING); // Δυαδική τιμή μεταβλητού μήκους
-        sqlToJavaTypeMap.put("TRIGGER", JAVA_STRING); // Placeholder για triggers
+        sqlToJavaTypeMap.put("CITEXT", JAVA_STRING);
+        sqlToJavaTypeMap.put("TSVECTOR", JAVA_STRING);
+        sqlToJavaTypeMap.put("INET", JAVA_STRING);
+        sqlToJavaTypeMap.put("CIDR", JAVA_STRING);
+        sqlToJavaTypeMap.put("MACADDR", JAVA_STRING);
+        sqlToJavaTypeMap.put("XML", JAVA_STRING);
+        sqlToJavaTypeMap.put("PG_LSN", JAVA_STRING);
+        sqlToJavaTypeMap.put("VARBIT", JAVA_STRING);
+        sqlToJavaTypeMap.put("TRIGGER", JAVA_STRING);
         sqlToJavaTypeMap.put("INTERVAL", JAVA_STRING);
     }
 

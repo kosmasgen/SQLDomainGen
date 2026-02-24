@@ -8,6 +8,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import com.sqldomaingen.generator.RelationshipResolver;
 
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -20,6 +21,124 @@ class RelationshipResolverTest {
 
     private RelationshipResolver resolver;
     private Map<String, Table> tableMap;
+
+    @Test
+    void testResolveRelationships_BusinessLocationI18nCompositePkJoinTable_CreatesTwoManyToOneAndInverseSides() {
+        // Target table: pep_schema.business_location
+        Table businessLocation = new Table();
+        businessLocation.setName("pep_schema.business_location");
+
+        Column businessLocationPk = new Column();
+        businessLocationPk.setName("id");
+        businessLocationPk.setSqlType("uuid");
+        businessLocationPk.setJavaType("java.util.UUID");
+        businessLocationPk.setPrimaryKey(true);
+        businessLocationPk.setNullable(false);
+
+        businessLocation.setColumns(new ArrayList<>(List.of(businessLocationPk)));
+
+        // Target table: pep_schema.languages
+        Table languages = new Table();
+        languages.setName("pep_schema.languages");
+
+        Column languagesPk = new Column();
+        languagesPk.setName("id");
+        languagesPk.setSqlType("uuid");
+        languagesPk.setJavaType("java.util.UUID");
+        languagesPk.setPrimaryKey(true);
+        languagesPk.setNullable(false);
+
+        languages.setColumns(new ArrayList<>(List.of(languagesPk)));
+
+        // Join entity table: pep_schema.business_location_i18n
+        Table businessLocationI18n = new Table();
+        businessLocationI18n.setName("pep_schema.business_location_i18n");
+
+        Column description = new Column();
+        description.setName("description");
+        description.setSqlType("varchar");
+        description.setJavaType("java.lang.String");
+        description.setNullable(false);
+        description.setLength(255);
+
+        Column code = new Column();
+        code.setName("code");
+        code.setSqlType("varchar");
+        code.setJavaType("java.lang.String");
+        code.setNullable(false);
+        code.setLength(255);
+
+        Column businessLocationId = new Column();
+        businessLocationId.setName("business_location_id");
+        businessLocationId.setSqlType("uuid");
+        businessLocationId.setJavaType("java.util.UUID");
+        businessLocationId.setPrimaryKey(true);
+        businessLocationId.setForeignKey(true);
+        businessLocationId.setNullable(false);
+        businessLocationId.setReferencedTable("pep_schema.business_location");
+        businessLocationId.setReferencedColumn("id");
+
+        Column languageId = new Column();
+        languageId.setName("language_id");
+        languageId.setSqlType("uuid");
+        languageId.setJavaType("java.util.UUID");
+        languageId.setPrimaryKey(true);
+        languageId.setForeignKey(true);
+        languageId.setNullable(false);
+        languageId.setReferencedTable("pep_schema.languages");
+        languageId.setReferencedColumn("id");
+
+        businessLocationI18n.setColumns(new ArrayList<>(List.of(
+                description, code, businessLocationId, languageId
+        )));
+
+        resolver = new RelationshipResolver(Map.of(
+                businessLocation.getName(), businessLocation,
+                languages.getName(), languages,
+                businessLocationI18n.getName(), businessLocationI18n
+        ));
+
+        List<Relationship> localRelationships = resolver.resolveRelationships(businessLocationI18n);
+
+        assertNotNull(localRelationships);
+        assertEquals(2, localRelationships.size(), "Join table should create exactly 2 owning relationships.");
+
+        // owning side checks
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.business_location_i18n".equals(r.getSourceTable()) &&
+                                "business_location_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.business_location".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship business_location_i18n.business_location_id -> business_location.id");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.business_location_i18n".equals(r.getSourceTable()) &&
+                                "language_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.languages".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship business_location_i18n.language_id -> languages.id");
+
+        // inverse side checks on target tables
+        assertTrue(businessLocation.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.business_location".equals(r.getSourceTable()) &&
+                                "pep_schema.business_location_i18n".equals(r.getTargetTable()) &&
+                                "businessLocation".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on business_location mappedBy='businessLocation'");
+
+        assertTrue(languages.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.languages".equals(r.getSourceTable()) &&
+                                "pep_schema.business_location_i18n".equals(r.getTargetTable()) &&
+                                "language".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on languages mappedBy='language'");
+    }
 
     @BeforeEach
     void setUp() {

@@ -24,21 +24,40 @@ public class RelationshipResolver {
         this.tableMap.putAll(tableMap);
     }
 
+    /**
+     * Resolves and attaches relationships for a given table based on its FK columns.
+     *
+     * @param sourceTable the table to analyze
+     * @return list of relationships created for the source table (owning side)
+     */
     public List<Relationship> resolveRelationships(Table sourceTable) {
         log.info("🔵 Resolving relationships for table: {}", sourceTable.getName());
-
         return handleForeignKeyRelationships(sourceTable);
     }
 
+    /**
+     * Adds the inverse (non-owning) relationship to the referenced/target table.
+     * <p>
+     * For MANYTOONE:
+     * - if FK column is UNIQUE -> inverse becomes ONETOONE
+     * - otherwise -> inverse becomes ONETOMANY
+     * <p>
+     * For ONETOONE:
+     * - inverse is ONETOONE
+     * <p>
+     * Note: MANYTOMANY is skipped here because it is treated as a pseudo-constraint in this resolver.
+     */
     private void addInverseRelationship(Relationship relationship, Column column) {
         if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) {
-            log.info("⛔ Skipping inverse for pseudo-ManyToMany on '{}.{}'", relationship.getSourceTable(), relationship.getSourceColumn());
+            log.info("⛔ Skipping inverse for pseudo-ManyToMany on '{}.{}'",
+                    relationship.getSourceTable(), relationship.getSourceColumn());
             return;
         }
 
         Table targetTable = tableMap.get(relationship.getTargetTable());
         if (targetTable == null) {
-            log.warn("⚠️ Target table '{}' not found while adding inverse relationship for '{}'", relationship.getTargetTable(), column.getName());
+            log.warn("⚠️ Target table '{}' not found while adding inverse relationship for '{}'",
+                    relationship.getTargetTable(), column.getName());
             return;
         }
 
@@ -60,28 +79,36 @@ public class RelationshipResolver {
         inverseRelationship.setTargetTable(relationship.getSourceTable());
         inverseRelationship.setRelationshipType(inverseType);
 
-
+        // mappedBy must match the owning-side field name inside the owning entity
         String mappedByValue = getMappedByFieldName(column);
         inverseRelationship.setMappedBy(mappedByValue);
+
         log.info("🔧 Setting mappedBy='{}' for inverse relationship {} -> {}",
                 mappedByValue,
                 inverseRelationship.getSourceTable(),
                 inverseRelationship.getTargetTable());
 
+        // NOTE: This relies on Relationship.equals/hashCode. If not implemented, this may allow duplicates.
         if (!targetTable.getRelationships().contains(inverseRelationship)) {
             targetTable.addRelationship(inverseRelationship);
             log.info("🔄 Inverse relationship added: {} -> {} ({})",
-                    inverseRelationship.getSourceTable(), inverseRelationship.getTargetTable(), inverseRelationship.getRelationshipType());
+                    inverseRelationship.getSourceTable(),
+                    inverseRelationship.getTargetTable(),
+                    inverseRelationship.getRelationshipType());
         } else {
-            log.debug("⚠️ Inverse relationship already exists in '{}'. Skipping: {}", targetTable.getName(), inverseRelationship);
+            log.debug("⚠️ Inverse relationship already exists in '{}'. Skipping: {}",
+                    targetTable.getName(), inverseRelationship);
         }
     }
 
-
+    /**
+     * Derives the owning-side field name that the inverse relationship should reference via mappedBy.
+     * Example: teacher_id -> teacher
+     */
     private String getMappedByFieldName(Column column) {
         String rawName = column.getName();
 
-        // Αν η στήλη τελειώνει σε _id, αφαιρούμε το _id
+        // If the column ends with "_id", strip it (e.g. teacher_id -> teacher)
         if (rawName.toLowerCase().endsWith("_id")) {
             rawName = rawName.substring(0, rawName.length() - 3);
         }
@@ -89,7 +116,13 @@ public class RelationshipResolver {
         return NamingConverter.toCamelCase(rawName);
     }
 
-
+    /**
+     * Creates relationships for all FK columns of the source table.
+     * Also attaches the created relationships to:
+     * - source table (owning side)
+     * - internal resolver list
+     * - target table (inverse side)
+     */
     private List<Relationship> handleForeignKeyRelationships(Table sourceTable) {
         log.info("🔄 Handling foreign key relationships for table: {}", sourceTable.getName());
 
@@ -104,8 +137,11 @@ public class RelationshipResolver {
                 localRelationships.add(relationship);
                 sourceTable.addRelationship(relationship);
                 this.relationships.add(relationship);
+
                 log.info("✅ Relationship created: {} -> {} ({})",
-                        relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType());
+                        relationship.getSourceTable(),
+                        relationship.getTargetTable(),
+                        relationship.getRelationshipType());
 
                 addInverseRelationship(relationship, column);
             } else {
@@ -119,9 +155,8 @@ public class RelationshipResolver {
         return localRelationships;
     }
 
-
     /**
-     * Επιστρέφει όλες τις foreign key στήλες του πίνακα.
+     * Returns all FK columns of the given table.
      */
     private List<Column> getForeignKeys(Table table) {
         return table.getColumns().stream()
@@ -129,17 +164,23 @@ public class RelationshipResolver {
                 .toList();
     }
 
-
     /**
-     * Καθορίζει αν η σχέση είναι `OneToMany`, `ManyToOne`, `OneToOne` ή `ManyToMany`.
+     * Builds a {@link Relationship} object for a given FK column.
+     * <p>
+     * Steps:
+     * 1) Find the referenced/target table
+     * 2) Find the referenced/target column
+     * 3) Determine relationship type (MANYTOONE / ONETOONE / MANYTOMANY pseudo)
+     *
+     * @param column FK column
+     * @param sourceTable owning table
+     * @return relationship or null if target table/column cannot be resolved
      */
     public Relationship createRelationship(Column column, Table sourceTable) {
         log.info("🔄 Creating relationship for column '{}' in table '{}', referencing '{}.{}'",
                 column.getName(), sourceTable.getName(), column.getReferencedTable(), column.getReferencedColumn());
 
-        // Use raw referenced table name; do not PascalCase here.
         Table targetTable = findTargetTable(column.getReferencedTable());
-
         if (targetTable == null) {
             log.warn("⚠️ Target table '{}' not found for column '{}'", column.getReferencedTable(), column.getName());
             return null;
@@ -147,13 +188,15 @@ public class RelationshipResolver {
 
         Column targetColumn = findTargetColumn(targetTable, column.getReferencedColumn());
         if (targetColumn == null) {
-            log.warn("⚠️ Target column '{}' not found in table '{}'", column.getReferencedColumn(), targetTable.getName());
+            log.warn("⚠️ Target column '{}' not found in table '{}'",
+                    column.getReferencedColumn(), targetTable.getName());
             return null;
         }
 
         Relationship.RelationshipType relationshipType = determineType(column, sourceTable, targetTable);
         if (relationshipType == null) {
-            log.warn("⚠️ Unable to determine relationship type for column '{}' in table '{}'", column.getName(), sourceTable.getName());
+            log.warn("⚠️ Unable to determine relationship type for column '{}' in table '{}'",
+                    column.getName(), sourceTable.getName());
             return null;
         }
 
@@ -170,38 +213,46 @@ public class RelationshipResolver {
         return relationship;
     }
 
-
     /**
-     * Ελέγχει αν υπάρχει σχέση `OneToMany` μετρώντας αναφορές στον πίνακα προορισμού.
+     * Checks whether a source table contains more than one FK pointing to the same target table.
+     * Note: currently unused, but kept for future relationship type heuristics.
      */
     private boolean isOneToMany(Table targetTable, Table sourceTable) {
         long referenceCount = sourceTable.getColumns().stream()
-                .filter(col -> col.getReferencedTable() != null && col.getReferencedTable().equalsIgnoreCase(targetTable.getName()))
+                .filter(col -> col.getReferencedTable() != null
+                        && col.getReferencedTable().equalsIgnoreCase(targetTable.getName()))
                 .count();
         return referenceCount > 1;
     }
 
     /**
-     * Επιστρέφει `true` αν ο πίνακας-στόχος έχει μόνο μία αναφορά.
+     * Checks whether the source table has exactly one FK pointing to the target table.
+     * Note: currently unused, but kept for future relationship type heuristics.
      */
     private boolean hasSingleReference(Table sourceTable, Table targetTable) {
-        log.debug("🔍 Entering hasSingleReference: Checking '{}' -> '{}'", sourceTable.getName(), targetTable.getName());
+        log.debug("🔍 Entering hasSingleReference: Checking '{}' -> '{}'",
+                sourceTable.getName(), targetTable.getName());
 
         long referenceCount = sourceTable.getColumns().stream()
-                .filter(col -> col.getReferencedTable() != null && col.getReferencedTable().equalsIgnoreCase(targetTable.getName()))
+                .filter(col -> col.getReferencedTable() != null
+                        && col.getReferencedTable().equalsIgnoreCase(targetTable.getName()))
                 .count();
 
-        log.debug("📌 Found {} references from '{}' to '{}'", referenceCount, sourceTable.getName(), targetTable.getName());
+        log.debug("📌 Found {} references from '{}' to '{}'",
+                referenceCount, sourceTable.getName(), targetTable.getName());
 
         boolean result = referenceCount == 1;
-        log.info("🔍 Checking if '{}' has a single reference to '{}'. Found {} references. Result: {}",
+        log.info("🔍 Single reference check '{}' -> '{}': {} (result={})",
                 sourceTable.getName(), targetTable.getName(), referenceCount, result);
 
         return result;
     }
 
     /**
-     * Βρίσκει τον πίνακα-στόχο.
+     * Finds a target table by trying multiple matching strategies:
+     * - exact match
+     * - schema-stripped match
+     * - case-insensitive normalized match
      */
     private Table findTargetTable(String referencedTableRaw) {
         String raw = referencedTableRaw == null ? "" : referencedTableRaw.trim();
@@ -210,16 +261,16 @@ public class RelationshipResolver {
             return null;
         }
 
-        // 1) Direct hit (exact key)
+        // 1) Exact key match
         Table direct = tableMap.get(raw);
         if (direct != null) return direct;
 
-        // 2) Try without schema
+        // 2) Strip schema and retry
         String noSchema = normalizeTableName(raw);
         Table noSchemaHit = tableMap.get(noSchema);
         if (noSchemaHit != null) return noSchemaHit;
 
-        // 3) Case-insensitive match on normalized names
+        // 3) Case-insensitive match on normalized keys
         for (Map.Entry<String, Table> e : tableMap.entrySet()) {
             String keyNorm = normalizeTableName(e.getKey());
             if (keyNorm.equalsIgnoreCase(noSchema)) {
@@ -231,6 +282,9 @@ public class RelationshipResolver {
         return null;
     }
 
+    /**
+     * Strips schema prefix from a table name (e.g. public.school -> school).
+     */
     private static String normalizeTableName(String raw) {
         if (raw == null) return "";
         String s = raw.trim();
@@ -241,6 +295,13 @@ public class RelationshipResolver {
         return s;
     }
 
+    /**
+     * Determines relationship type for an FK column.
+     * Rules:
+     * - if column is marked as MANYTOMANY pseudo-constraint -> MANYTOMANY
+     * - else if FK column is UNIQUE -> ONETOONE
+     * - else -> MANYTOONE
+     */
     private Relationship.RelationshipType determineType(
             Column column,
             Table sourceTable,
@@ -253,7 +314,6 @@ public class RelationshipResolver {
             return Relationship.RelationshipType.MANYTOMANY;
         }
 
-        // Owning side of a foreign key:
         // FK + UNIQUE => OneToOne
         if (column.isUnique()) {
             log.info("🔥 Column '{}' is unique. Assigning ONETOONE.", column.getName());
@@ -265,9 +325,8 @@ public class RelationshipResolver {
         return Relationship.RelationshipType.MANYTOONE;
     }
 
-
     /**
-     * Βρίσκει τη στήλη-στόχο στον πίνακα προορισμού.
+     * Finds the referenced column in the target table (case-insensitive).
      */
     private Column findTargetColumn(Table targetTable, String targetColumnName) {
         if (targetTable == null || targetColumnName == null || targetColumnName.isBlank()) {
@@ -276,7 +335,6 @@ public class RelationshipResolver {
             return null;
         }
 
-        // Προσθήκη print για τις στήλες του πίνακα-στόχου
         log.info("🔍 Checking columns in table '{}'. Looking for '{}'. Available columns: {}",
                 targetTable.getName(), targetColumnName,
                 targetTable.getColumns().stream()
@@ -296,11 +354,14 @@ public class RelationshipResolver {
         return targetColumn;
     }
 
+    /**
+     * Resolves relationships for every table currently present in tableMap.
+     * Mainly useful for debugging and verifying relationship detection.
+     */
     public void resolveRelationshipsForAllTables() {
         log.info("🔍 Starting to resolve relationships for all {} tables...", tableMap.size());
 
-        // Εκτύπωση του περιεχομένου του tableMap
-        log.debug("🗺️ TableMap contents (detailed):");
+        log.debug("🗺️ TableMap contents:");
         tableMap.forEach((key, table) -> {
             log.debug("🔑 Key: '{}', Table Name: '{}'", key, table.getName());
             table.getColumns().forEach(column -> {
@@ -338,5 +399,4 @@ public class RelationshipResolver {
 
         log.info("✅ Relationships resolved for all tables.");
     }
-
 }

@@ -1,0 +1,55 @@
+package gr.knowledge.pepTest.dto;
+
+import com.fasterxml.jackson.annotation.JsonInclude;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
+/**
+ * Data transfer object for CompanyProfileI18n.
+ */
+@Data
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
+public class CompanyProfileI18nDto {
+
+    @NotNull
+    private UUID companyProfileId;
+
+    @NotNull
+    private UUID languageId;
+
+    @NotNull
+    private Boolean recDeleted;
+
+    @Size(max = 255)
+    private String name;
+
+    @Size(max = 255)
+    private String addressCity;
+
+    @Size(max = 255)
+    private String addressRegion;
+
+    @Size(max = 255)
+    private String addressStreet;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime dateCreated;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime lastUpdated;
+
+    @Size(max = 255)
+    private String objective;
+
+}

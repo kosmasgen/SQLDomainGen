@@ -14,9 +14,15 @@ import java.util.List;
 import org.antlr.v4.runtime.CommonTokenStream;
 import org.antlr.v4.runtime.Token;
 
-
 /**
- * Κλάση για την ανάλυση SQL scripts.
+ * SQL parser wrapper around the ANTLR PostgreSQL grammar.
+ * <p>
+ * Responsibilities:
+ * <ul>
+ *   <li>Validate that SQL input exists</li>
+ *   <li>Create and configure the ANTLR lexer/parser</li>
+ *   <li>Expose helper methods to parse full scripts, constraints, or just tokens</li>
+ * </ul>
  */
 @Getter
 @Setter
@@ -28,49 +34,57 @@ public class SQLParser {
 
     private String sqlContent;
 
-    // Σταθερό μήνυμα για την επικύρωση του περιεχομένου SQL
-    private static final String EMPTY_SQL_ERROR_MESSAGE = "Το περιεχόμενο του SQL είναι κενό ή δεν έχει οριστεί.";
+    /** Error message used when SQL input is missing. */
+    private static final String EMPTY_SQL_ERROR_MESSAGE = "SQL content is empty or not set.";
 
     /**
-     * Δημιουργεί έναν SQLParser.
+     * Creates a configured {@link PostgreSQLParser} for the current {@code sqlContent}.
+     * <p>
+     * Configuration includes:
+     * <ul>
+     *   <li>Custom {@link BaseErrorListener} that throws {@link IllegalArgumentException} on syntax errors</li>
+     *   <li>ANTLR trace enabled (useful while developing/debugging grammar issues)</li>
+     * </ul>
      *
-     * @return Ένας έτοιμος parser για το SQL περιεχόμενο.
-     * @throws IllegalArgumentException Αν το SQL περιεχόμενο είναι κενό ή null.
+     * @return a ready-to-use ANTLR PostgreSQL parser
+     * @throws IllegalArgumentException if {@code sqlContent} is null or blank
      */
     public PostgreSQLParser createParser() {
         if (!isSQLContentValid()) {
             log.error(EMPTY_SQL_ERROR_MESSAGE);
             throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);
         }
-        log.debug("🔍 Debug mode ενεργοποιημένο: Αναλύουμε τους κανόνες της γραμματικής.");
+
+        log.debug("ANTLR trace is enabled (grammar rule tracing).");
 
         PostgreSQLLexer lexer = new PostgreSQLLexer(CharStreams.fromString(sqlContent));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
-
         PostgreSQLParser parser = new PostgreSQLParser(tokens);
 
-        // Προσθήκη custom ErrorListener
+        // Replace default listeners to fail fast on syntax errors.
         parser.removeErrorListeners();
         parser.addErrorListener(new BaseErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
                                     int line, int charPositionInLine, String msg,
                                     RecognitionException e) {
-                throw new IllegalArgumentException("Syntax error at line " + line + ", position " + charPositionInLine + ": " + msg);
+                throw new IllegalArgumentException(
+                        "Syntax error at line " + line + ", position " + charPositionInLine + ": " + msg
+                );
             }
         });
 
-        // 🔍 Ενεργοποίηση debugging στους κανόνες της γραμματικής
+        // Enable tracing for debugging (consider disabling for production use).
         parser.setTrace(true);
 
         return parser;
     }
 
-
     /**
-     * Δημιουργεί ένα ParseTree από το SQL script.
+     * Parses the current SQL script and returns the produced {@link ParseTree}.
      *
-     * @return Το ParseTree που παράγεται από τον ANTLR parser.
+     * @return the parse tree created by the ANTLR parser
+     * @throws IllegalArgumentException if {@code sqlContent} is invalid or contains syntax errors
      */
     public ParseTree parseTreeFromSQL() {
         if (!isSQLContentValid()) {
@@ -80,27 +94,27 @@ public class SQLParser {
 
         PostgreSQLParser parser = createParser();
 
-        // 🔍 Logging tokens πριν το parsing
+        // Debug: log extracted tokens before running the grammar entry rule.
         CommonTokenStream tokenStream = (CommonTokenStream) parser.getInputStream();
         List<Token> tokens = tokenStream.getTokens();
-        log.debug("🔍 Tokens extracted: {}", tokens.stream()
+        log.debug("Tokens extracted: {}", tokens.stream()
                 .map(token -> String.format("[%s -> %s]", token.getText(), parser.getVocabulary().getSymbolicName(token.getType())))
                 .toList());
 
         ParseTree tree = parser.sqlScript();
 
-        // Logging για το ParseTree
         log.info("ParseTree generated: {}", tree.toStringTree(parser));
-
         return tree;
     }
 
     /**
-     * Αναλύει το SQL script και επιστρέφει ένα ConstraintContext.
-     * Ελέγχει αν υπάρχει λάθος σύνταξης στο δέντρο και διακόπτει αν εντοπιστεί.
+     * Parses a standalone constraint rule using the grammar {@code constraint} entry.
+     * <p>
+     * This is useful for isolated constraint parsing, tests, or when the input is known
+     * to contain only a constraint clause.
      *
-     * @return Το ConstraintContext από τον ANTLR parser.
-     * @throws IllegalArgumentException Αν το SQL περιέχει σφάλματα σύνταξης.
+     * @return the {@link PostgreSQLParser.ConstraintContext}
+     * @throws IllegalArgumentException if {@code sqlContent} is invalid or contains syntax errors
      */
     public PostgreSQLParser.ConstraintContext parseConstraint() {
         if (!isSQLContentValid()) {
@@ -110,34 +124,38 @@ public class SQLParser {
 
         PostgreSQLParser parser = createParser();
 
-        // Προσθήκη Custom Error Listener
+        // createParser() already installs a fail-fast listener,
+        // but we keep this here to ensure constraint parsing also fails fast explicitly.
         parser.removeErrorListeners();
         parser.addErrorListener(new BaseErrorListener() {
             @Override
             public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
                                     int line, int charPositionInLine, String msg,
                                     RecognitionException e) {
-                throw new IllegalArgumentException("Σφάλμα σύνταξης στη γραμμή " + line + ", θέση " + charPositionInLine + ": " + msg);
+                throw new IllegalArgumentException(
+                        "Syntax error at line " + line + ", position " + charPositionInLine + ": " + msg
+                );
             }
         });
 
         PostgreSQLParser.ConstraintContext context = parser.constraint();
 
-        // Έλεγχος για σφάλματα σύνταξης στο ParseTree
+        // Defensive check: if ANTLR recorded an exception, reject the result.
         if (context.exception != null) {
-            log.error("Σφάλμα: Το ConstraintContext περιέχει σφάλματα.");
-            throw new IllegalArgumentException("Το SQL περιέχει σφάλματα και δεν μπορεί να αναλυθεί.");
+            log.error("ConstraintContext contains parsing errors.");
+            throw new IllegalArgumentException("SQL contains errors and cannot be parsed.");
         }
 
-        log.info("Το ConstraintContext δημιουργήθηκε επιτυχώς: {}", context.getText());
+        log.info("ConstraintContext created successfully: {}", context.getText());
         return context;
     }
 
     /**
-     * Αναλύει το περιεχόμενο του SQL script και επιστρέφει το TokenStream.
+     * Tokenizes the current SQL input and returns the {@link TokenStream}.
+     * Useful for debugging lexer behavior without executing grammar rules.
      *
-     * @return Το TokenStream που παράγεται από τον ANTLR parser.
-     * @throws IllegalArgumentException Αν το SQL περιεχόμενο είναι κενό ή null.
+     * @return a token stream produced by the lexer
+     * @throws IllegalArgumentException if {@code sqlContent} is invalid
      */
     public TokenStream parseSQL() {
         if (!isSQLContentValid()) {
@@ -145,11 +163,10 @@ public class SQLParser {
             throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);
         }
 
-        // Δημιουργία lexer και token stream
         PostgreSQLLexer lexer = new PostgreSQLLexer(CharStreams.fromString(sqlContent));
         CommonTokenStream tokens = new CommonTokenStream(lexer);
 
-        // Logging για τα tokens
+        // Debug: dump all tokens with their symbolic types.
         tokens.fill();
         for (Token token : tokens.getTokens()) {
             log.debug("Token: '{}' -> Type: {}", token.getText(), lexer.getVocabulary().getSymbolicName(token.getType()));
@@ -159,6 +176,11 @@ public class SQLParser {
         return tokens;
     }
 
+    /**
+     * Validates that {@code sqlContent} is present.
+     *
+     * @return true if SQL content is not null and not empty
+     */
     public boolean isSQLContentValid() {
         return sqlContent != null && !sqlContent.isEmpty();
     }

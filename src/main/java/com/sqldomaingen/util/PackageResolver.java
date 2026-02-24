@@ -15,7 +15,6 @@ public final class PackageResolver {
     /**
      * Builds a target folder like:
      * {outputDir}/src/main/java/{basePackage as path}/{subPackage as path}
-     *
      * subPackage may include dots, e.g. "service.impl".
      */
     public static Path resolvePath(String outputDir, String basePackage, String subPackage) {
@@ -46,7 +45,6 @@ public final class PackageResolver {
     /**
      * Builds a target folder like:
      * {outputDir}/src/{main|test}/java/{basePackage as path}/{subPackage as path}
-     *
      * If subPackage is blank, returns the base package folder.
      */
     public static Path resolvePath(String outputDir, String basePackage, String subPackage, boolean testSources) {

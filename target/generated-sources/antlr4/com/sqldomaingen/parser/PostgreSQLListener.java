@@ -568,6 +568,36 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 */
 	void exitExpression(PostgreSQLParser.ExpressionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#valueAtom}.
+	 * @param ctx the parse tree
+	 */
+	void enterValueAtom(PostgreSQLParser.ValueAtomContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#valueAtom}.
+	 * @param ctx the parse tree
+	 */
+	void exitValueAtom(PostgreSQLParser.ValueAtomContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#typeCast}.
+	 * @param ctx the parse tree
+	 */
+	void enterTypeCast(PostgreSQLParser.TypeCastContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#typeCast}.
+	 * @param ctx the parse tree
+	 */
+	void exitTypeCast(PostgreSQLParser.TypeCastContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#valueList}.
+	 * @param ctx the parse tree
+	 */
+	void enterValueList(PostgreSQLParser.ValueListContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#valueList}.
+	 * @param ctx the parse tree
+	 */
+	void exitValueList(PostgreSQLParser.ValueListContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#value}.
 	 * @param ctx the parse tree
 	 */
