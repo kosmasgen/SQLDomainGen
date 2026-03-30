@@ -512,4 +512,807 @@ class RelationshipResolverTest {
     }
 
 
+
+    @Test
+    void testResolveRelationships_CompanyTable_CreatesFkToStatusAndSelfReference() {
+        Table companyStatus = new Table();
+        companyStatus.setName("pep_schema.company_status");
+
+        Column companyStatusId = new Column();
+        companyStatusId.setName("id");
+        companyStatusId.setSqlType("uuid");
+        companyStatusId.setJavaType("java.util.UUID");
+        companyStatusId.setPrimaryKey(true);
+        companyStatusId.setNullable(false);
+        companyStatus.setColumns(new ArrayList<>(List.of(companyStatusId)));
+
+        Table company = new Table();
+        company.setName("pep_schema.company");
+
+        Column companyId = new Column();
+        companyId.setName("id");
+        companyId.setSqlType("uuid");
+        companyId.setJavaType("java.util.UUID");
+        companyId.setPrimaryKey(true);
+        companyId.setNullable(false);
+
+        Column companyStatusFk = new Column();
+        companyStatusFk.setName("company_status_id");
+        companyStatusFk.setSqlType("uuid");
+        companyStatusFk.setJavaType("java.util.UUID");
+        companyStatusFk.setForeignKey(true);
+        companyStatusFk.setNullable(true);
+        companyStatusFk.setReferencedTable("pep_schema.company_status");
+        companyStatusFk.setReferencedColumn("id");
+
+        Column parentCompanyFk = new Column();
+        parentCompanyFk.setName("parent_company_id");
+        parentCompanyFk.setSqlType("uuid");
+        parentCompanyFk.setJavaType("java.util.UUID");
+        parentCompanyFk.setForeignKey(true);
+        parentCompanyFk.setNullable(true);
+        parentCompanyFk.setReferencedTable("pep_schema.company");
+        parentCompanyFk.setReferencedColumn("id");
+
+        company.setColumns(new ArrayList<>(List.of(
+                companyId,
+                companyStatusFk,
+                parentCompanyFk
+        )));
+
+        resolver = new RelationshipResolver(Map.of(
+                companyStatus.getName(), companyStatus,
+                company.getName(), company
+        ));
+
+        List<Relationship> localRelationships = resolver.resolveRelationships(company);
+
+        assertNotNull(localRelationships);
+        assertEquals(2, localRelationships.size(),
+                "Expected exactly 2 owning MANYTOONE relationships for company.");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company".equals(r.getSourceTable()) &&
+                                "company_status_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.company_status".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company.company_status_id -> company_status.id");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company".equals(r.getSourceTable()) &&
+                                "parent_company_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.company".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected self-referencing MANYTOONE relationship company.parent_company_id -> company.id");
+
+        assertTrue(companyStatus.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.company_status".equals(r.getSourceTable()) &&
+                                "pep_schema.company".equals(r.getTargetTable()) &&
+                                "companyStatus".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on company_status mappedBy='companyStatus'");
+
+        assertTrue(company.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.company".equals(r.getSourceTable()) &&
+                                "pep_schema.company".equals(r.getTargetTable()) &&
+                                "parentCompany".equals(r.getMappedBy())
+                ),
+                "Expected inverse self ONETOMANY on company mappedBy='parentCompany'");
+    }
+
+
+    @Test
+    void testResolveRelationships_CompanyProfileI18nTable_CreatesTwoManyToOneAndInverseOneToMany() {
+        Table companyProfile = new Table();
+        companyProfile.setName("pep_schema.company_profile");
+
+        Column companyProfileId = new Column();
+        companyProfileId.setName("id");
+        companyProfileId.setSqlType("uuid");
+        companyProfileId.setJavaType("java.util.UUID");
+        companyProfileId.setPrimaryKey(true);
+        companyProfileId.setNullable(false);
+        companyProfile.setColumns(new ArrayList<>(List.of(companyProfileId)));
+
+        Table language = new Table();
+        language.setName("pep_schema.languages");
+
+        Column languageId = new Column();
+        languageId.setName("id");
+        languageId.setSqlType("uuid");
+        languageId.setJavaType("java.util.UUID");
+        languageId.setPrimaryKey(true);
+        languageId.setNullable(false);
+        language.setColumns(new ArrayList<>(List.of(languageId)));
+
+        Table companyProfileI18n = new Table();
+        companyProfileI18n.setName("pep_schema.company_profile_i18n");
+
+        Column companyProfileFk = new Column();
+        companyProfileFk.setName("company_profile_id");
+        companyProfileFk.setSqlType("uuid");
+        companyProfileFk.setJavaType("java.util.UUID");
+        companyProfileFk.setPrimaryKey(true);
+        companyProfileFk.setForeignKey(true);
+        companyProfileFk.setNullable(false);
+        companyProfileFk.setReferencedTable("pep_schema.company_profile");
+        companyProfileFk.setReferencedColumn("id");
+
+        Column languageFk = new Column();
+        languageFk.setName("language_id");
+        languageFk.setSqlType("uuid");
+        languageFk.setJavaType("java.util.UUID");
+        languageFk.setPrimaryKey(true);
+        languageFk.setForeignKey(true);
+        languageFk.setNullable(false);
+        languageFk.setReferencedTable("pep_schema.languages");
+        languageFk.setReferencedColumn("id");
+
+        companyProfileI18n.setColumns(new ArrayList<>(List.of(companyProfileFk, languageFk)));
+
+        resolver = new RelationshipResolver(Map.of(
+                companyProfile.getName(), companyProfile,
+                language.getName(), language,
+                companyProfileI18n.getName(), companyProfileI18n
+        ));
+
+        List<Relationship> localRelationships = resolver.resolveRelationships(companyProfileI18n);
+
+        assertNotNull(localRelationships);
+        assertEquals(2, localRelationships.size(),
+                "Expected exactly 2 owning MANYTOONE relationships for company_profile_i18n.");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_profile_i18n".equals(r.getSourceTable()) &&
+                                "company_profile_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.company_profile".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_profile_i18n.company_profile_id -> company_profile.id");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_profile_i18n".equals(r.getSourceTable()) &&
+                                "language_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.languages".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_profile_i18n.language_id -> languages.id");
+
+        assertTrue(companyProfile.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.company_profile".equals(r.getSourceTable()) &&
+                                "pep_schema.company_profile_i18n".equals(r.getTargetTable()) &&
+                                "companyProfile".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on company_profile mappedBy='companyProfile'");
+
+        assertTrue(language.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.languages".equals(r.getSourceTable()) &&
+                                "pep_schema.company_profile_i18n".equals(r.getTargetTable()) &&
+                                "language".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on languages mappedBy='language'");
+    }
+
+    @Test
+    void testResolveRelationships_CompanyProfessionTable_CreatesTwoManyToOneAndInverseOneToMany() {
+        Table company = new Table();
+        company.setName("pep_schema.company");
+
+        Column companyId = new Column();
+        companyId.setName("id");
+        companyId.setSqlType("uuid");
+        companyId.setJavaType("java.util.UUID");
+        companyId.setPrimaryKey(true);
+        companyId.setNullable(false);
+        company.setColumns(new ArrayList<>(List.of(companyId)));
+
+        Table profession = new Table();
+        profession.setName("pep_schema.profession");
+
+        Column professionId = new Column();
+        professionId.setName("id");
+        professionId.setSqlType("uuid");
+        professionId.setJavaType("java.util.UUID");
+        professionId.setPrimaryKey(true);
+        professionId.setNullable(false);
+        profession.setColumns(new ArrayList<>(List.of(professionId)));
+
+        Table companyProfession = new Table();
+        companyProfession.setName("pep_schema.company_profession");
+
+        Column id = new Column();
+        id.setName("id");
+        id.setSqlType("uuid");
+        id.setJavaType("java.util.UUID");
+        id.setPrimaryKey(true);
+        id.setNullable(false);
+
+        Column companyFk = new Column();
+        companyFk.setName("company_id");
+        companyFk.setSqlType("uuid");
+        companyFk.setJavaType("java.util.UUID");
+        companyFk.setForeignKey(true);
+        companyFk.setNullable(false);
+        companyFk.setReferencedTable("pep_schema.company");
+        companyFk.setReferencedColumn("id");
+
+        Column professionFk = new Column();
+        professionFk.setName("profession_id");
+        professionFk.setSqlType("uuid");
+        professionFk.setJavaType("java.util.UUID");
+        professionFk.setForeignKey(true);
+        professionFk.setNullable(false);
+        professionFk.setReferencedTable("pep_schema.profession");
+        professionFk.setReferencedColumn("id");
+
+        Column fromDate = new Column();
+        fromDate.setName("from_date");
+        fromDate.setSqlType("timestamp");
+        fromDate.setJavaType("java.time.LocalDateTime");
+        fromDate.setNullable(true);
+
+        Column toDate = new Column();
+        toDate.setName("to_date");
+        toDate.setSqlType("timestamp");
+        toDate.setJavaType("java.time.LocalDateTime");
+        toDate.setNullable(true);
+
+        Column notes = new Column();
+        notes.setName("notes");
+        notes.setSqlType("varchar");
+        notes.setJavaType("String");
+        notes.setNullable(true);
+
+        companyProfession.setColumns(new ArrayList<>(List.of(
+                id,
+                companyFk,
+                professionFk,
+                fromDate,
+                toDate,
+                notes
+        )));
+
+        resolver = new RelationshipResolver(Map.of(
+                company.getName(), company,
+                profession.getName(), profession,
+                companyProfession.getName(), companyProfession
+        ));
+
+        List<Relationship> localRelationships = resolver.resolveRelationships(companyProfession);
+
+        assertNotNull(localRelationships);
+        assertEquals(2, localRelationships.size(),
+                "Expected exactly 2 owning MANYTOONE relationships for company_profession.");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_profession".equals(r.getSourceTable()) &&
+                                "company_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.company".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_profession.company_id -> company.id");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_profession".equals(r.getSourceTable()) &&
+                                "profession_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.profession".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_profession.profession_id -> profession.id");
+
+        assertTrue(company.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.company".equals(r.getSourceTable()) &&
+                                "pep_schema.company_profession".equals(r.getTargetTable()) &&
+                                "company".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on company mappedBy='company'");
+
+        assertTrue(profession.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.profession".equals(r.getSourceTable()) &&
+                                "pep_schema.company_profession".equals(r.getTargetTable()) &&
+                                "profession".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on profession mappedBy='profession'");
+
+        assertFalse(localRelationships.stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY
+                ),
+                "company_profession should remain a join entity with 2 MANYTOONE relations, not MANYTOMANY.");
+    }
+
+    @Test
+    void testResolveRelationships_CompanyStatusViewRulesTable_CreatesTwoManyToOneAndInverseOneToMany() {
+        Table companyStatus = new Table();
+        companyStatus.setName("pep_schema.company_status");
+
+        Column companyStatusId = new Column();
+        companyStatusId.setName("id");
+        companyStatusId.setSqlType("uuid");
+        companyStatusId.setJavaType("java.util.UUID");
+        companyStatusId.setPrimaryKey(true);
+        companyStatusId.setNullable(false);
+        companyStatus.setColumns(new ArrayList<>(List.of(companyStatusId)));
+
+        Table companyViewRules = new Table();
+        companyViewRules.setName("pep_schema.company_view_rules");
+
+        Column companyViewRulesId = new Column();
+        companyViewRulesId.setName("id");
+        companyViewRulesId.setSqlType("uuid");
+        companyViewRulesId.setJavaType("java.util.UUID");
+        companyViewRulesId.setPrimaryKey(true);
+        companyViewRulesId.setNullable(false);
+        companyViewRules.setColumns(new ArrayList<>(List.of(companyViewRulesId)));
+
+        Table companyStatusViewRules = new Table();
+        companyStatusViewRules.setName("pep_schema.company_status_view_rules");
+
+        Column companyStatusFk = new Column();
+        companyStatusFk.setName("company_status_id");
+        companyStatusFk.setSqlType("uuid");
+        companyStatusFk.setJavaType("java.util.UUID");
+        companyStatusFk.setPrimaryKey(true);
+        companyStatusFk.setForeignKey(true);
+        companyStatusFk.setNullable(false);
+        companyStatusFk.setReferencedTable("pep_schema.company_status");
+        companyStatusFk.setReferencedColumn("id");
+
+        Column companyViewRulesFk = new Column();
+        companyViewRulesFk.setName("company_view_rules_id");
+        companyViewRulesFk.setSqlType("uuid");
+        companyViewRulesFk.setJavaType("java.util.UUID");
+        companyViewRulesFk.setPrimaryKey(true);
+        companyViewRulesFk.setForeignKey(true);
+        companyViewRulesFk.setNullable(false);
+        companyViewRulesFk.setReferencedTable("pep_schema.company_view_rules");
+        companyViewRulesFk.setReferencedColumn("id");
+
+        Column excludeCompanies = new Column();
+        excludeCompanies.setName("exclude_companies");
+        excludeCompanies.setSqlType("bool");
+        excludeCompanies.setJavaType("Boolean");
+        excludeCompanies.setNullable(true);
+
+        companyStatusViewRules.setColumns(new ArrayList<>(List.of(
+                companyStatusFk,
+                companyViewRulesFk,
+                excludeCompanies
+        )));
+
+        resolver = new RelationshipResolver(Map.of(
+                companyStatus.getName(), companyStatus,
+                companyViewRules.getName(), companyViewRules,
+                companyStatusViewRules.getName(), companyStatusViewRules
+        ));
+
+        List<Relationship> localRelationships = resolver.resolveRelationships(companyStatusViewRules);
+
+        assertNotNull(localRelationships);
+        assertEquals(2, localRelationships.size(),
+                "Expected exactly 2 owning MANYTOONE relationships for company_status_view_rules.");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_status_view_rules".equals(r.getSourceTable()) &&
+                                "company_status_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.company_status".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_status_view_rules.company_status_id -> company_status.id");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_status_view_rules".equals(r.getSourceTable()) &&
+                                "company_view_rules_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.company_view_rules".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_status_view_rules.company_view_rules_id -> company_view_rules.id");
+
+        assertTrue(companyStatus.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.company_status".equals(r.getSourceTable()) &&
+                                "pep_schema.company_status_view_rules".equals(r.getTargetTable()) &&
+                                "companyStatus".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on company_status mappedBy='companyStatus'");
+
+        assertTrue(companyViewRules.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.company_view_rules".equals(r.getSourceTable()) &&
+                                "pep_schema.company_status_view_rules".equals(r.getTargetTable()) &&
+                                "companyViewRules".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on company_view_rules mappedBy='companyViewRules'");
+    }
+
+
+    @Test
+    void testResolveRelationships_CompanyStatusViewRulesTable_CreatesTwoManyToOneAndInverseOneToMany2() {
+        Table companyStatus = new Table();
+        companyStatus.setName("pep_schema.company_status");
+
+        Column companyStatusId = new Column();
+        companyStatusId.setName("id");
+        companyStatusId.setSqlType("uuid");
+        companyStatusId.setJavaType("java.util.UUID");
+        companyStatusId.setPrimaryKey(true);
+        companyStatusId.setNullable(false);
+        companyStatus.setColumns(new ArrayList<>(List.of(companyStatusId)));
+
+        Table companyViewRules = new Table();
+        companyViewRules.setName("pep_schema.company_view_rules");
+
+        Column companyViewRulesId = new Column();
+        companyViewRulesId.setName("id");
+        companyViewRulesId.setSqlType("uuid");
+        companyViewRulesId.setJavaType("java.util.UUID");
+        companyViewRulesId.setPrimaryKey(true);
+        companyViewRulesId.setNullable(false);
+        companyViewRules.setColumns(new ArrayList<>(List.of(companyViewRulesId)));
+
+        Table companyStatusViewRules = new Table();
+        companyStatusViewRules.setName("pep_schema.company_status_view_rules");
+
+        Column companyStatusFk = new Column();
+        companyStatusFk.setName("company_status_id");
+        companyStatusFk.setSqlType("uuid");
+        companyStatusFk.setJavaType("java.util.UUID");
+        companyStatusFk.setPrimaryKey(true);
+        companyStatusFk.setForeignKey(true);
+        companyStatusFk.setNullable(false);
+        companyStatusFk.setReferencedTable("pep_schema.company_status");
+        companyStatusFk.setReferencedColumn("id");
+
+        Column companyViewRulesFk = new Column();
+        companyViewRulesFk.setName("company_view_rules_id");
+        companyViewRulesFk.setSqlType("uuid");
+        companyViewRulesFk.setJavaType("java.util.UUID");
+        companyViewRulesFk.setPrimaryKey(true);
+        companyViewRulesFk.setForeignKey(true);
+        companyViewRulesFk.setNullable(false);
+        companyViewRulesFk.setReferencedTable("pep_schema.company_view_rules");
+        companyViewRulesFk.setReferencedColumn("id");
+
+        Column excludeCompanies = new Column();
+        excludeCompanies.setName("exclude_companies");
+        excludeCompanies.setSqlType("bool");
+        excludeCompanies.setJavaType("Boolean");
+        excludeCompanies.setNullable(true);
+
+        companyStatusViewRules.setColumns(new ArrayList<>(List.of(
+                companyStatusFk,
+                companyViewRulesFk,
+                excludeCompanies
+        )));
+
+        resolver = new RelationshipResolver(Map.of(
+                companyStatus.getName(), companyStatus,
+                companyViewRules.getName(), companyViewRules,
+                companyStatusViewRules.getName(), companyStatusViewRules
+        ));
+
+        List<Relationship> localRelationships = resolver.resolveRelationships(companyStatusViewRules);
+
+        assertNotNull(localRelationships);
+        assertEquals(2, localRelationships.size(),
+                "Expected exactly 2 owning MANYTOONE relationships for company_status_view_rules.");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_status_view_rules".equals(r.getSourceTable()) &&
+                                "company_status_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.company_status".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_status_view_rules.company_status_id -> company_status.id");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_status_view_rules".equals(r.getSourceTable()) &&
+                                "company_view_rules_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.company_view_rules".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_status_view_rules.company_view_rules_id -> company_view_rules.id");
+
+        assertTrue(companyStatus.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.company_status".equals(r.getSourceTable()) &&
+                                "pep_schema.company_status_view_rules".equals(r.getTargetTable()) &&
+                                "companyStatus".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on company_status mappedBy='companyStatus'");
+
+        assertTrue(companyViewRules.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.company_view_rules".equals(r.getSourceTable()) &&
+                                "pep_schema.company_status_view_rules".equals(r.getTargetTable()) &&
+                                "companyViewRules".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on company_view_rules mappedBy='companyViewRules'");
+    }
+
+    @Test
+    void testResolveRelationships_CompanyStatusViewRulesTable_CreatesTwoManyToOneAndInverseOneToMany3() {
+        Table companyStatus = new Table();
+        companyStatus.setName("pep_schema.company_status");
+
+        Column companyStatusId = new Column();
+        companyStatusId.setName("id");
+        companyStatusId.setSqlType("uuid");
+        companyStatusId.setJavaType("java.util.UUID");
+        companyStatusId.setPrimaryKey(true);
+        companyStatusId.setNullable(false);
+        companyStatus.setColumns(new ArrayList<>(List.of(companyStatusId)));
+
+        Table companyViewRules = new Table();
+        companyViewRules.setName("pep_schema.company_view_rules");
+
+        Column companyViewRulesId = new Column();
+        companyViewRulesId.setName("id");
+        companyViewRulesId.setSqlType("uuid");
+        companyViewRulesId.setJavaType("java.util.UUID");
+        companyViewRulesId.setPrimaryKey(true);
+        companyViewRulesId.setNullable(false);
+        companyViewRules.setColumns(new ArrayList<>(List.of(companyViewRulesId)));
+
+        Table companyStatusViewRules = new Table();
+        companyStatusViewRules.setName("pep_schema.company_status_view_rules");
+
+        Column companyStatusFk = new Column();
+        companyStatusFk.setName("company_status_id");
+        companyStatusFk.setSqlType("uuid");
+        companyStatusFk.setJavaType("java.util.UUID");
+        companyStatusFk.setPrimaryKey(true);
+        companyStatusFk.setForeignKey(true);
+        companyStatusFk.setNullable(false);
+        companyStatusFk.setReferencedTable("pep_schema.company_status");
+        companyStatusFk.setReferencedColumn("id");
+
+        Column companyViewRulesFk = new Column();
+        companyViewRulesFk.setName("company_view_rules_id");
+        companyViewRulesFk.setSqlType("uuid");
+        companyViewRulesFk.setJavaType("java.util.UUID");
+        companyViewRulesFk.setPrimaryKey(true);
+        companyViewRulesFk.setForeignKey(true);
+        companyViewRulesFk.setNullable(false);
+        companyViewRulesFk.setReferencedTable("pep_schema.company_view_rules");
+        companyViewRulesFk.setReferencedColumn("id");
+
+        Column excludeCompanies = new Column();
+        excludeCompanies.setName("exclude_companies");
+        excludeCompanies.setSqlType("bool");
+        excludeCompanies.setJavaType("Boolean");
+        excludeCompanies.setNullable(true);
+
+        companyStatusViewRules.setColumns(new ArrayList<>(List.of(
+                companyStatusFk,
+                companyViewRulesFk,
+                excludeCompanies
+        )));
+
+        resolver = new RelationshipResolver(Map.of(
+                companyStatus.getName(), companyStatus,
+                companyViewRules.getName(), companyViewRules,
+                companyStatusViewRules.getName(), companyStatusViewRules
+        ));
+
+        List<Relationship> localRelationships = resolver.resolveRelationships(companyStatusViewRules);
+
+        assertNotNull(localRelationships);
+        assertEquals(2, localRelationships.size(),
+                "Expected exactly 2 owning MANYTOONE relationships for company_status_view_rules.");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_status_view_rules".equals(r.getSourceTable()) &&
+                                "company_status_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.company_status".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_status_view_rules.company_status_id -> company_status.id");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_status_view_rules".equals(r.getSourceTable()) &&
+                                "company_view_rules_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.company_view_rules".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_status_view_rules.company_view_rules_id -> company_view_rules.id");
+
+        assertTrue(companyStatus.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.company_status".equals(r.getSourceTable()) &&
+                                "pep_schema.company_status_view_rules".equals(r.getTargetTable()) &&
+                                "companyStatus".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on company_status mappedBy='companyStatus'");
+
+        assertTrue(companyViewRules.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.company_view_rules".equals(r.getSourceTable()) &&
+                                "pep_schema.company_status_view_rules".equals(r.getTargetTable()) &&
+                                "companyViewRules".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on company_view_rules mappedBy='companyViewRules'");
+    }
+
+    @Test
+    void testResolveRelationships_CompanyProfessionSystemLinkTable_CreatesTwoManyToOneAndInverseOneToMany() {
+        Table company = new Table();
+        company.setName("pep_schema.company");
+
+        Column companyId = new Column();
+        companyId.setName("id");
+        companyId.setSqlType("uuid");
+        companyId.setJavaType("java.util.UUID");
+        companyId.setPrimaryKey(true);
+        companyId.setNullable(false);
+        company.setColumns(new ArrayList<>(List.of(companyId)));
+
+        Table professionSystem = new Table();
+        professionSystem.setName("pep_schema.profession_system");
+
+        Column professionSystemId = new Column();
+        professionSystemId.setName("id");
+        professionSystemId.setSqlType("uuid");
+        professionSystemId.setJavaType("java.util.UUID");
+        professionSystemId.setPrimaryKey(true);
+        professionSystemId.setNullable(false);
+        professionSystem.setColumns(new ArrayList<>(List.of(professionSystemId)));
+
+        Table companyProfessionSystemLink = new Table();
+        companyProfessionSystemLink.setName("pep_schema.company_profession_system_link");
+
+        Column companyFk = new Column();
+        companyFk.setName("company_id");
+        companyFk.setSqlType("uuid");
+        companyFk.setJavaType("java.util.UUID");
+        companyFk.setPrimaryKey(true);
+        companyFk.setForeignKey(true);
+        companyFk.setNullable(false);
+        companyFk.setReferencedTable("pep_schema.company");
+        companyFk.setReferencedColumn("id");
+
+        Column professionSystemFk = new Column();
+        professionSystemFk.setName("profession_system_id");
+        professionSystemFk.setSqlType("uuid");
+        professionSystemFk.setJavaType("java.util.UUID");
+        professionSystemFk.setPrimaryKey(true);
+        professionSystemFk.setForeignKey(true);
+        professionSystemFk.setNullable(false);
+        professionSystemFk.setReferencedTable("pep_schema.profession_system");
+        professionSystemFk.setReferencedColumn("id");
+
+        companyProfessionSystemLink.setColumns(new ArrayList<>(List.of(companyFk, professionSystemFk)));
+
+        resolver = new RelationshipResolver(Map.of(
+                company.getName(), company,
+                professionSystem.getName(), professionSystem,
+                companyProfessionSystemLink.getName(), companyProfessionSystemLink
+        ));
+
+        List<Relationship> localRelationships = resolver.resolveRelationships(companyProfessionSystemLink);
+
+        assertNotNull(localRelationships);
+        assertEquals(2, localRelationships.size(),
+                "Expected exactly 2 owning MANYTOONE relationships for company_profession_system_link.");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_profession_system_link".equals(r.getSourceTable()) &&
+                                "company_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.company".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_profession_system_link.company_id -> company.id");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "pep_schema.company_profession_system_link".equals(r.getSourceTable()) &&
+                                "profession_system_id".equals(r.getSourceColumn()) &&
+                                "pep_schema.profession_system".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                ),
+                "Expected MANYTOONE relationship company_profession_system_link.profession_system_id -> profession_system.id");
+
+        assertTrue(company.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.company".equals(r.getSourceTable()) &&
+                                "pep_schema.company_profession_system_link".equals(r.getTargetTable()) &&
+                                "company".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on company mappedBy='company'");
+
+        assertTrue(professionSystem.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOMANY &&
+                                "pep_schema.profession_system".equals(r.getSourceTable()) &&
+                                "pep_schema.company_profession_system_link".equals(r.getTargetTable()) &&
+                                "professionSystem".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOMANY on profession_system mappedBy='professionSystem'");
+    }
+
+
+    @Test
+    void testResolveRelationships_ProfileTable_CreatesOneToOneAndInverseOneToOne() {
+        Table users = new Table();
+        users.setName("Users");
+
+        Column userId = new Column();
+        userId.setName("id");
+        userId.setSqlType("BIGINT");
+        userId.setJavaType("java.lang.Long");
+        userId.setPrimaryKey(true);
+        userId.setNullable(false);
+        users.setColumns(new ArrayList<>(List.of(userId)));
+
+        Table profiles = new Table();
+        profiles.setName("Profiles");
+
+        Column profileId = new Column();
+        profileId.setName("id");
+        profileId.setSqlType("BIGINT");
+        profileId.setJavaType("java.lang.Long");
+        profileId.setPrimaryKey(true);
+        profileId.setNullable(false);
+
+        Column userFk = new Column();
+        userFk.setName("user_id");
+        userFk.setSqlType("BIGINT");
+        userFk.setJavaType("java.lang.Long");
+        userFk.setForeignKey(true);
+        userFk.setNullable(false);
+        userFk.setUnique(true);
+        userFk.setReferencedTable("Users");
+        userFk.setReferencedColumn("id");
+
+        profiles.setColumns(new ArrayList<>(List.of(profileId, userFk)));
+
+        resolver = new RelationshipResolver(Map.of(
+                users.getName(), users,
+                profiles.getName(), profiles
+        ));
+
+        List<Relationship> localRelationships = resolver.resolveRelationships(profiles);
+
+        assertNotNull(localRelationships);
+        assertEquals(1, localRelationships.size(),
+                "Expected exactly 1 owning ONETOONE relationship for Profiles.");
+
+        assertTrue(localRelationships.stream().anyMatch(r ->
+                        "Profiles".equals(r.getSourceTable()) &&
+                                "user_id".equals(r.getSourceColumn()) &&
+                                "Users".equals(r.getTargetTable()) &&
+                                "id".equals(r.getTargetColumn()) &&
+                                r.getRelationshipType() == Relationship.RelationshipType.ONETOONE
+                ),
+                "Expected ONETOONE relationship Profiles.user_id -> Users.id");
+
+        assertTrue(users.getRelationships().stream().anyMatch(r ->
+                        r.getRelationshipType() == Relationship.RelationshipType.ONETOONE &&
+                                "Users".equals(r.getSourceTable()) &&
+                                "Profiles".equals(r.getTargetTable()) &&
+                                "user".equals(r.getMappedBy())
+                ),
+                "Expected inverse ONETOONE on Users mappedBy='user'");
+    }
+
+
 }

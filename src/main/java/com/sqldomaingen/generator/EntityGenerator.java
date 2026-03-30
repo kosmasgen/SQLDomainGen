@@ -1,8 +1,10 @@
 package com.sqldomaingen.generator;
 
 import com.sqldomaingen.model.*;
+import com.sqldomaingen.util.GeneratorSupport;
 import com.sqldomaingen.util.NamingConverter;
 import com.sqldomaingen.util.PackageResolver;
+import com.sqldomaingen.util.TypeMapper;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
@@ -23,6 +25,18 @@ public class EntityGenerator {
 
     private final Map<String, Table> tableMap = new HashMap<>();
 
+    /**
+     * Generates entity classes for all non-pure-join tables.
+     * <p>
+     * Pure join tables are skipped because they are represented as synthetic
+     * many-to-many metadata on their parent entities.
+     *
+     * @param tables the parsed tables
+     * @param outputDir the root output directory
+     * @param basePackage the base package name
+     * @param overwrite whether existing files should be overwritten
+     * @param useBuilder whether Lombok builder should be generated
+     */
     public void generate(List<Table> tables,
                          String outputDir,
                          String basePackage,
@@ -31,33 +45,58 @@ public class EntityGenerator {
 
         log.info("Starting entity generation...");
 
+        if (tables == null || tables.isEmpty()) {
+            log.warn("No tables provided for entity generation.");
+            return;
+        }
+
         Path entityDir = PackageResolver.resolvePath(outputDir, basePackage, "entity");
 
+        try {
+            Files.createDirectories(entityDir);
+        } catch (IOException exception) {
+            log.error("Failed to create entity output directory: {}", entityDir, exception);
+            return;
+        }
+
         Map<String, Table> tablesMap = tables.stream()
-                .collect(Collectors.toMap(Table::getName, t -> t));
+                .collect(Collectors.toMap(Table::getName, table -> table, (existing, replacement) -> existing, LinkedHashMap::new));
 
         this.tableMap.clear();
         this.tableMap.putAll(tablesMap);
 
         log.debug("Created tablesMap with keys: {}", tablesMap.keySet());
 
-        RelationshipResolver resolver = new RelationshipResolver(tablesMap);
+        for (Table table : this.tableMap.values()) {
+            table.setRelationships(new ArrayList<>());
+            table.setManyToManyRelations(new ArrayList<>());
+            table.setPureJoinTable(false);
+        }
+
+        RelationshipResolver resolver = new RelationshipResolver(this.tableMap);
         resolver.resolveRelationshipsForAllTables();
         log.info("RelationshipResolver initialized and relationships resolved.");
 
         String entityPackage = PackageResolver.resolvePackageName(basePackage, "entity");
 
-        for (Table table : tables) {
-            log.debug("Processing table: {}", table.getName());
+        for (Table originalTable : tables) {
+            Table resolvedTable = this.tableMap.getOrDefault(originalTable.getName(), originalTable);
 
-            String rawTableName = table.getName();
+            log.debug("Processing table: {}", resolvedTable.getName());
+
+            if (resolvedTable.isPureJoinTable()) {
+                log.info("Skipping pure join table entity generation for table: {}", resolvedTable.getName());
+                continue;
+            }
+
+            String rawTableName = resolvedTable.getName();
             String tableName = rawTableName != null && rawTableName.contains(".")
                     ? rawTableName.substring(rawTableName.indexOf('.') + 1)
                     : rawTableName;
 
             String entityName = NamingConverter.toPascalCase(tableName);
 
-            String entityContent = createEntityContent(table, entityPackage, useBuilder);
+            String entityContent = createEntityContent(resolvedTable, entityPackage, useBuilder);
             Path entityOutputPath = entityDir.resolve(entityName + ".java");
 
             if (!overwrite && Files.exists(entityOutputPath)) {
@@ -65,16 +104,15 @@ public class EntityGenerator {
             } else {
                 try {
                     writeToFile(entityOutputPath.toString(), entityContent);
-                    log.info("Generated entity for table: {}", table.getName());
-                } catch (IOException e) {
-                    log.error("Failed to write entity file for table: {}", table.getName(), e);
+                    log.info("Generated entity for table: {}", resolvedTable.getName());
+                } catch (IOException exception) {
+                    log.error("Failed to write entity file for table: {}", resolvedTable.getName(), exception);
                 }
             }
 
-            // Generate external @Embeddable PK class for composite primary keys
-            if (hasCompositePrimaryKey(table)) {
-                String pkClassName = getEmbeddedIdTypeName(table);
-                String pkContent = createEmbeddedIdClassContent(table, entityPackage);
+            if (hasCompositePrimaryKey(resolvedTable)) {
+                String pkClassName = getEmbeddedIdTypeName(resolvedTable);
+                String pkContent = createEmbeddedIdClassContent(resolvedTable, entityPackage);
                 Path pkOutputPath = entityDir.resolve(pkClassName + ".java");
 
                 if (!overwrite && Files.exists(pkOutputPath)) {
@@ -82,9 +120,9 @@ public class EntityGenerator {
                 } else {
                     try {
                         writeToFile(pkOutputPath.toString(), pkContent);
-                        log.info("Generated composite PK class '{}' for table: {}", pkClassName, table.getName());
-                    } catch (IOException e) {
-                        log.error("Failed to write composite PK file '{}' for table: {}", pkClassName, table.getName(), e);
+                        log.info("Generated composite PK class '{}' for table: {}", pkClassName, resolvedTable.getName());
+                    } catch (IOException exception) {
+                        log.error("Failed to write composite PK file '{}' for table: {}", pkClassName, resolvedTable.getName(), exception);
                     }
                 }
             }
@@ -93,6 +131,15 @@ public class EntityGenerator {
         log.info("Entity generation complete. Output directory: {}", entityDir.toAbsolutePath());
     }
 
+
+
+    /**
+     * Creates the embedded id class content for a table with a composite primary key.
+     *
+     * @param table the source table
+     * @param packageName the target package name
+     * @return the generated embedded id class content
+     */
     private String createEmbeddedIdClassContent(Table table, String packageName) {
         StringBuilder builder = new StringBuilder();
 
@@ -110,7 +157,7 @@ public class EntityGenerator {
                 continue;
             }
 
-            String javaType = column.getJavaType();
+            String javaType = resolveJavaType(column);
             if (javaType == null || javaType.isBlank()) {
                 continue;
             }
@@ -125,8 +172,8 @@ public class EntityGenerator {
         }
 
         if (!imports.isEmpty()) {
-            for (String imp : imports) {
-                builder.append(imp).append("\n");
+            for (String currentImport : imports) {
+                builder.append(currentImport).append("\n");
             }
         }
 
@@ -144,16 +191,18 @@ public class EntityGenerator {
                 continue;
             }
 
-            builder.append("    @Column(name = \"").append(column.getName()).append("\"");
+            String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
+
+            builder.append("    @Column(name = \"").append(columnName).append("\"");
             if (!column.isNullable()) {
                 builder.append(", nullable = false");
             }
             builder.append(")\n");
 
             builder.append("    private ")
-                    .append(toSimpleJavaType(column.getJavaType()))
+                    .append(toSimpleJavaType(resolveJavaType(column)))
                     .append(" ")
-                    .append(NamingConverter.toCamelCase(column.getName()))
+                    .append(NamingConverter.toCamelCase(columnName))
                     .append(";\n\n");
         }
 
@@ -168,7 +217,7 @@ public class EntityGenerator {
 
         generatePackageAndImports(entityBuilder, packageName, table);
         generateClassAnnotations(entityBuilder, table, useBuilder);
-        generateFields(entityBuilder, table);
+        generateFields(entityBuilder, table, useBuilder);
 
         entityBuilder.append("}\n");
 
@@ -178,6 +227,13 @@ public class EntityGenerator {
 
 
 
+    /**
+     * Generates the package declaration and required imports for an entity class.
+     *
+     * @param builder the string builder receiving the generated content
+     * @param packageName the target package name
+     * @param table the source table metadata
+     */
     public void generatePackageAndImports(StringBuilder builder, String packageName, Table table) {
         builder.append("package ").append(packageName).append(";\n\n");
         builder.append("import jakarta.persistence.*;\n");
@@ -188,81 +244,60 @@ public class EntityGenerator {
         boolean needsCreationTimestamp = false;
         boolean needsUpdateTimestamp = false;
         boolean needsUuidImport = false;
-        boolean needsGenericGenerator = false;
+        boolean needsJsonImports = false;
 
         boolean compositePrimaryKey = hasCompositePrimaryKey(table);
 
-        // Collect imports needed for entity fields only (not for EmbeddedId PK fields)
+        imports.add("import org.hibernate.envers.Audited;");
+
         for (Column column : table.getColumns()) {
             if (column == null) {
                 continue;
             }
 
-            // In composite PK entities, PK columns live in the external PK class, not in the entity fields
             if (compositePrimaryKey && column.isPrimaryKey()) {
                 continue;
             }
 
-            String javaType = column.getJavaType();
-            if (javaType == null || javaType.isBlank()) {
-                continue;
-            }
+            String javaType = resolveJavaType(column);
 
-            // Import fully qualified java.* types used by entity fields
-            if (javaType.startsWith("java.")) {
+            if (javaType != null && !javaType.isBlank() && javaType.startsWith("java.")) {
                 imports.add("import " + javaType + ";");
             }
 
-            // UUID import only if entity has an actual UUID field (non-EmbeddedId PK columns in composite case are skipped above)
-            if (isUuidType(javaType)) {
+            if (javaType != null && !javaType.isBlank() && isUuidType(javaType)) {
                 needsUuidImport = true;
             }
 
-            String columnName = column.getName() == null ? "" : column.getName().toLowerCase(Locale.ROOT);
-
-            // Support both created_at / updated_at and date_created / last_updated
-            if ((columnName.equals("created_at") || columnName.equals("date_created"))
-                    && "java.time.LocalDateTime".equals(javaType)) {
+            if (shouldUseCreationTimestamp(column)) {
                 needsCreationTimestamp = true;
             }
 
-            if ((columnName.equals("updated_at") || columnName.equals("last_updated"))
-                    && "java.time.LocalDateTime".equals(javaType)) {
+            if (shouldUseUpdateTimestamp(column)) {
                 needsUpdateTimestamp = true;
             }
-        }
 
-        // GenericGenerator only for standalone UUID primary key entities (never for composite @EmbeddedId entities)
-        if (!compositePrimaryKey) {
-            for (Column column : table.getColumns()) {
-                if (column == null) {
-                    continue;
-                }
-
-                String javaType = column.getJavaType();
-                if (column.isPrimaryKey() && javaType != null && isUuidType(javaType)) {
-                    needsGenericGenerator = true;
-                    break;
-                }
+            if (TypeMapper.isJsonType(column)) {
+                needsJsonImports = true;
             }
         }
 
-        // Collections are needed if any relationship produces List/ArrayList fields
-        for (Relationship relationship : table.getRelationships()) {
-            if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY
-                    || relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) {
-                imports.add("import java.util.List;");
-                imports.add("import java.util.ArrayList;");
-                break;
-            }
+        boolean needsCollectionImports = table.getRelationships().stream()
+                .anyMatch(relationship ->
+                        relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY
+                                || relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY);
+
+        if (!needsCollectionImports) {
+            needsCollectionImports = hasSyntheticManyToManyRelations(table);
+        }
+
+        if (needsCollectionImports) {
+            imports.add("import java.util.List;");
+            imports.add("import java.util.ArrayList;");
         }
 
         if (needsUuidImport) {
             imports.add("import java.util.UUID;");
-        }
-
-        if (needsGenericGenerator) {
-            imports.add("import org.hibernate.annotations.GenericGenerator;");
         }
 
         if (needsCreationTimestamp) {
@@ -273,12 +308,19 @@ public class EntityGenerator {
             imports.add("import org.hibernate.annotations.UpdateTimestamp;");
         }
 
-        for (String imp : imports) {
-            builder.append(imp).append("\n");
+        if (needsJsonImports) {
+            imports.add("import org.hibernate.annotations.JdbcTypeCode;");
+            imports.add("import org.hibernate.type.SqlTypes;");
+        }
+
+        for (String currentImport : imports) {
+            builder.append(currentImport).append("\n");
         }
 
         builder.append("\n");
     }
+
+
     private boolean isUuidType(String javaType) {
         String t = javaType.trim();
         return t.equalsIgnoreCase("UUID") || t.equals("java.util.UUID") || t.endsWith(".UUID");
@@ -287,13 +329,42 @@ public class EntityGenerator {
 
     public void generateClassAnnotations(StringBuilder builder, Table table, boolean useBuilder) {
         builder.append("@Entity\n");
+        builder.append("@Audited\n");
 
-        // Strip schema prefix (e.g., "public.") if present
         String rawTableName = table.getName();
         int lastDot = rawTableName.lastIndexOf('.');
         String tableName = (lastDot >= 0) ? rawTableName.substring(lastDot + 1) : rawTableName;
 
-        builder.append("@Table(name = \"").append(NamingConverter.toSnakeCase(tableName)).append("\")\n");
+        builder.append("@Table(name = \"")
+                .append(NamingConverter.toSnakeCase(tableName))
+                .append("\"");
+
+        List<UniqueConstraint> uniqueConstraints = table.getUniqueConstraints();
+
+        if (uniqueConstraints != null && !uniqueConstraints.isEmpty()) {
+            List<UniqueConstraint> composite = uniqueConstraints.stream()
+                    .filter(uc -> uc.getColumns() != null && uc.getColumns().size() > 1)
+                    .toList();
+
+            if (!composite.isEmpty()) {
+                builder.append(", uniqueConstraints = ");
+
+                if (composite.size() == 1) {
+                    appendUniqueConstraint(builder, composite.get(0));
+                } else {
+                    builder.append("{");
+
+                    for (int i = 0; i < composite.size(); i++) {
+                        if (i > 0) builder.append(", ");
+                        appendUniqueConstraint(builder, composite.get(i));
+                    }
+
+                    builder.append("}");
+                }
+            }
+        }
+
+        builder.append(")\n");
         builder.append("@Getter\n");
         builder.append("@Setter\n");
 
@@ -304,14 +375,43 @@ public class EntityGenerator {
         builder.append("@NoArgsConstructor\n");
         builder.append("@AllArgsConstructor\n");
 
-        // Convert table name to PascalCase for the class name
         String className = NamingConverter.toPascalCase(tableName);
         builder.append("public class ").append(className).append(" {\n\n");
     }
 
+    private void appendUniqueConstraint(StringBuilder builder, UniqueConstraint uc) {
+        builder.append("@UniqueConstraint(columnNames = {");
+
+        List<String> columns = uc.getColumns();
+
+        for (int i = 0; i < columns.size(); i++) {
+            if (i > 0) builder.append(", ");
+
+            builder.append("\"")
+                    .append(GeneratorSupport.unquoteIdentifier(columns.get(i)))
+                    .append("\"");
+        }
+
+        builder.append("})");
+    }
 
 
-    public void generateFields(StringBuilder builder, Table table) {
+
+    /**
+     * Generates all entity fields including:
+     * <ul>
+     *     <li>basic columns</li>
+     *     <li>primary keys</li>
+     *     <li>standard FK relationships</li>
+     *     <li>inverse collections</li>
+     *     <li>synthetic many-to-many fields from pure join tables</li>
+     * </ul>
+     *
+     * @param builder the builder receiving field content
+     * @param table the source table metadata
+     * @param useBuilder true when Lombok builder is enabled for the entity
+     */
+    public void generateFields(StringBuilder builder, Table table, boolean useBuilder) {
         Set<String> generatedFieldNames = new HashSet<>();
 
         boolean compositePrimaryKey = hasCompositePrimaryKey(table);
@@ -328,12 +428,9 @@ public class EntityGenerator {
             builder.append("    private ").append(embeddedIdTypeName).append(" id;\n\n");
         }
 
-        // Pass 1: Generate fields from columns
         for (Column column : table.getColumns()) {
             log.debug("Processing column: {}", column.getName());
 
-            // Composite PK columns are represented in EmbeddedId.
-            // If this is a classic join-table composite PK, generate @MapsId + relationship fields.
             if (compositePrimaryKey && isCompositeKeyColumn(column, primaryKeyColumns)) {
                 if (compositeJoinTable) {
                     addCompositeKeyRelationshipField(builder, column, table, generatedFieldNames);
@@ -342,12 +439,10 @@ public class EntityGenerator {
             }
 
             if (column.isPrimaryKey()) {
-                addPrimaryKeyAnnotations(builder, column);
+                addPrimaryKeyAnnotations(builder, column, useBuilder);
                 continue;
             }
 
-            // Be slightly more robust: if relationship exists, generate relationship field
-            // even if column.isForeignKey() is not properly set by upstream parsing/model mapping.
             boolean hasResolvedRelationship = findRelationshipForColumn(table, column).isPresent();
 
             if (column.isForeignKey() || hasResolvedRelationship) {
@@ -355,14 +450,11 @@ public class EntityGenerator {
                 continue;
             }
 
-            addColumnField(builder, column);
+            addColumnField(builder, column, useBuilder);
         }
 
-        // For classic composite join-table entities, skip inverse collection / synthetic many-to-many generation.
-        // The join entity should expose parent references (+ extra columns), not collection navigation fields.
         if (!compositeJoinTable) {
 
-            // Pass 2: Generate inverse relationship fields (mappedBy side) for OneToMany and ManyToMany
             for (Relationship relationship : table.getRelationships()) {
                 boolean isInverseCollectionSide =
                         (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY
@@ -379,10 +471,9 @@ public class EntityGenerator {
                         relationship.getRelationshipType(),
                         relationship.getMappedBy());
 
-                addInverseRelationshipField(builder, relationship, generatedFieldNames);
+                addInverseRelationshipField(builder, relationship, generatedFieldNames, useBuilder);
             }
 
-            // Pass 3: Generate owning side for ManyToMany (JoinTable side)
             for (Relationship relationship : table.getRelationships()) {
                 boolean isManyToManyOwnerSide =
                         relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY
@@ -400,14 +491,17 @@ public class EntityGenerator {
 
                 String expectedFieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
                 if (generatedFieldNames.contains(expectedFieldName)) {
-                    log.warn("⚠️ Skipping ManyToMany owning-side field '{}': already generated", expectedFieldName);
+                    log.warn("Skipping ManyToMany owning-side field '{}': already generated", expectedFieldName);
                     continue;
                 }
 
-                addManyToManyParentSide(builder, relationship, generatedFieldNames);
+                addManyToManyParentSide(builder, relationship, generatedFieldNames, useBuilder);
             }
 
-            // Pass 4: Generate inverse side for OneToOne when mappedBy is present
+            for (ManyToManyRelation manyToManyRelation : table.getManyToManyRelations()) {
+                addSyntheticManyToManyField(builder, manyToManyRelation, generatedFieldNames, useBuilder);
+            }
+
             for (Relationship relationship : table.getRelationships()) {
                 boolean isInverseOneToOne =
                         relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE
@@ -419,11 +513,11 @@ public class EntityGenerator {
                 }
 
                 String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
-                String fieldName = NamingConverter.toCamelCase(stripSchema(relationship.getTargetTable()));
+                String fieldName = java.beans.Introspector.decapitalize(targetEntity);
                 String mappedBy = relationship.getMappedBy();
 
                 if (generatedFieldNames.contains(fieldName)) {
-                    log.warn("⚠️ Skipping inverse OneToOne field '{}': already generated", fieldName);
+                    log.warn("Skipping inverse OneToOne field '{}': already generated", fieldName);
                     continue;
                 }
                 generatedFieldNames.add(fieldName);
@@ -434,8 +528,76 @@ public class EntityGenerator {
                 builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
             }
         }
-
     }
+
+    /**
+     * Generates a synthetic pure many-to-many field using metadata registered on the table.
+     *
+     * @param builder the builder receiving generated content
+     * @param manyToManyRelation the synthetic many-to-many metadata
+     * @param generatedFieldNames already generated field names for duplicate protection
+     * @param useBuilder true when Lombok builder is enabled for the entity
+     */
+    public void addSyntheticManyToManyField(StringBuilder builder,
+                                            ManyToManyRelation manyToManyRelation,
+                                            Set<String> generatedFieldNames,
+                                            boolean useBuilder) {
+        if (manyToManyRelation == null) {
+            return;
+        }
+
+        String fieldName = manyToManyRelation.getFieldName();
+        if (fieldName == null || fieldName.isBlank()) {
+            log.warn("Skipping synthetic ManyToMany field because fieldName is blank.");
+            return;
+        }
+
+        if (generatedFieldNames.contains(fieldName)) {
+            log.warn("Skipping synthetic ManyToMany field '{}': already generated", fieldName);
+            return;
+        }
+
+        generatedFieldNames.add(fieldName);
+
+        String targetEntity = manyToManyRelation.getTargetEntityName();
+
+        if (manyToManyRelation.isOwningSide()) {
+            builder.append("    @ManyToMany(fetch = FetchType.LAZY)\n");
+            builder.append("    @JoinTable(name = \"")
+                    .append(stripSchema(manyToManyRelation.getJoinTableName()))
+                    .append("\", joinColumns = @JoinColumn(name = \"")
+                    .append(manyToManyRelation.getJoinColumnName())
+                    .append("\"), inverseJoinColumns = @JoinColumn(name = \"")
+                    .append(manyToManyRelation.getInverseJoinColumnName())
+                    .append("\"))\n");
+        } else {
+            builder.append("    @ManyToMany(mappedBy = \"")
+                    .append(manyToManyRelation.getMappedBy())
+                    .append("\", fetch = FetchType.LAZY)\n");
+        }
+
+        addBuilderDefaultAnnotation(builder, useBuilder, true);
+
+        builder.append("    private List<")
+                .append(targetEntity)
+                .append("> ")
+                .append(fieldName)
+                .append(" = new ArrayList<>();\n\n");
+    }
+
+    /**
+     * Checks whether the table contains synthetic many-to-many metadata.
+     *
+     * @param table the table to inspect
+     * @return true when synthetic many-to-many relations exist
+     */
+    private boolean hasSyntheticManyToManyRelations(Table table) {
+        return table != null
+                && table.getManyToManyRelations() != null
+                && !table.getManyToManyRelations().isEmpty();
+    }
+
+
 
     private String getEmbeddedIdTypeName(Table table) {
         String rawTableName = table != null ? table.getName() : null;
@@ -552,7 +714,7 @@ public class EntityGenerator {
         }
 
         return table.getRelationships().stream()
-                .filter(rel -> Objects.equals(rel.getSourceTable(), table.getName()))
+                .filter(rel -> Objects.equals(stripSchema(rel.getSourceTable()), stripSchema(table.getName())))
                 .filter(rel -> Objects.equals(rel.getSourceColumn(), column.getName()))
                 .findFirst();
     }
@@ -760,8 +922,6 @@ public class EntityGenerator {
         }
 
         String v = unquoteIdentifier(value).trim().toLowerCase(Locale.ROOT);
-
-        // Compare "business_location" with "businesslocation"
         return v.replaceAll("[^a-z0-9]", "");
     }
 
@@ -840,41 +1000,60 @@ public class EntityGenerator {
 
 
 
-    private void addPrimaryKeyAnnotations(StringBuilder builder, Column column) {
+    /**
+     * Adds primary key annotations and generates the primary key field.
+     *
+     * @param builder the builder receiving generated content
+     * @param column the primary key column metadata
+     * @param useBuilder true when Lombok builder is enabled for the entity
+     */
+    private void addPrimaryKeyAnnotations(StringBuilder builder, Column column, boolean useBuilder) {
         builder.append("    @Id\n");
 
-        String javaType = column.getJavaType() == null ? "" : column.getJavaType();
-        String simpleType = toSimpleJavaType(javaType);
-
-        log.debug("🧪 [PK Generation] Column: {}, JavaType: {}, simpleType: {}, isForeignKey: {}",
-                column.getName(), javaType, simpleType, column.isForeignKey());
-
-        // Never auto-generate FK primary keys (common in composite PK / join tables)
         if (!column.isForeignKey()) {
-            if (isUuidType(javaType)) {
-                log.info("✅ UUID detected for standalone primary key: {}", column.getName());
-                builder.append("    @GeneratedValue(generator = \"UUID\")\n");
-                builder.append("    @GenericGenerator(name = \"UUID\", strategy = \"org.hibernate.id.UUIDGenerator\")\n");
-            } else if ("Long".equalsIgnoreCase(simpleType) || "Integer".equalsIgnoreCase(simpleType)) {
+            if (column.isIdentity()) {
                 builder.append("    @GeneratedValue(strategy = GenerationType.IDENTITY)\n");
+            } else if (shouldUseUuidGeneration(column)) {
+                builder.append("    @GeneratedValue(strategy = GenerationType.UUID)\n");
             }
         }
 
-        addColumnField(builder, column);
+        addColumnField(builder, column, useBuilder);
     }
+
+    private boolean shouldUseUuidGeneration(Column column) {
+        if (column == null) {
+            return false;
+        }
+
+        if (!isUuidType(column.getJavaType())) {
+            return false;
+        }
+
+        String defaultValue = column.getDefaultValue();
+        if (defaultValue == null || defaultValue.isBlank()) {
+            return false;
+        }
+
+        String normalizedDefaultValue = defaultValue.trim().toLowerCase(Locale.ROOT);
+        return normalizedDefaultValue.contains("gen_random_uuid()");
+    }
+
 
 
     // parent  Side Table
     public void addRelationshipField(StringBuilder builder, Column column, Table table, Set<String> generatedFieldNames) {
         log.debug("🔵 Resolving relationship for column: {} in table: {}", column.getName(), table.getName());
 
+        // 3. addRelationshipField()
         Optional<Relationship> relationshipOpt = table.getRelationships().stream()
-                .filter(rel -> rel.getSourceTable().equals(table.getName()) &&
-                        (rel.getSourceColumn() == null || rel.getSourceColumn().equals(column.getName())))
+                .filter(rel -> Objects.equals(stripSchema(rel.getSourceTable()), stripSchema(table.getName())))
+                .filter(rel -> Objects.equals(rel.getSourceColumn(), column.getName()))
                 .findFirst();
 
         if (relationshipOpt.isEmpty()) {
-            log.warn("⚠️ Skipping relationship field for column '{}' because no relationship was found.", column.getName());
+            log.warn("⚠️ No relationship found for FK column '{}'. Falling back to scalar field.", column.getName());
+            addUnresolvedForeignKeyScalarField(builder, column);
             return;
         }
 
@@ -1003,7 +1182,18 @@ public class EntityGenerator {
     }
 
 
-    public void addManyToManyParentSide(StringBuilder builder, Relationship relationship, Set<String> generatedFieldNames) {
+    /**
+     * Generates the owning side of a many-to-many relationship.
+     *
+     * @param builder the builder receiving generated content
+     * @param relationship the many-to-many relationship metadata
+     * @param generatedFieldNames already generated field names for duplicate protection
+     * @param useBuilder true when Lombok builder is enabled for the entity
+     */
+    public void addManyToManyParentSide(StringBuilder builder,
+                                        Relationship relationship,
+                                        Set<String> generatedFieldNames,
+                                        boolean useBuilder) {
         String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
         String fieldName = NamingConverter.toCamelCasePlural(stripSchema(relationship.getTargetTable()));
 
@@ -1020,13 +1210,26 @@ public class EntityGenerator {
                 .append("        name = \"").append(joinTableName).append("\",\n")
                 .append("        joinColumns = @JoinColumn(name = \"").append(relationship.getSourceColumn()).append("\", nullable = false),\n")
                 .append("        inverseJoinColumns = @JoinColumn(name = \"").append(relationship.getInverseJoinColumn()).append("\", nullable = false)\n")
-                .append("    )\n")
-                .append("    private List<").append(targetEntity).append("> ")
+                .append("    )\n");
+
+        addBuilderDefaultAnnotation(builder, useBuilder, true);
+
+        builder.append("    private List<").append(targetEntity).append("> ")
                 .append(fieldName).append(" = new ArrayList<>();\n\n");
     }
 
-    // Inverse side (mappedBy) for OneToMany / ManyToMany
-    public void addInverseRelationshipField(StringBuilder builder, Relationship relationship, Set<String> generatedFieldNames) {
+    /**
+     * Generates inverse-side collection fields for one-to-many and many-to-many relationships.
+     *
+     * @param builder the builder receiving generated content
+     * @param relationship the inverse relationship metadata
+     * @param generatedFieldNames already generated field names for duplicate protection
+     * @param useBuilder true when Lombok builder is enabled for the entity
+     */
+    public void addInverseRelationshipField(StringBuilder builder,
+                                            Relationship relationship,
+                                            Set<String> generatedFieldNames,
+                                            boolean useBuilder) {
         String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
         String fieldName = NamingConverter.toCamelCasePlural(stripSchema(relationship.getTargetTable()));
 
@@ -1051,6 +1254,9 @@ public class EntityGenerator {
                 builder.append("    @OneToMany(mappedBy = \"")
                         .append(relationship.getMappedBy())
                         .append("\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)\n");
+
+                addBuilderDefaultAnnotation(builder, useBuilder, true);
+
                 builder.append("    private List<").append(targetEntity).append("> ")
                         .append(fieldName).append(" = new ArrayList<>();\n\n");
             }
@@ -1063,6 +1269,9 @@ public class EntityGenerator {
 
                 builder.append("    @ManyToMany(mappedBy = \"").append(relationship.getMappedBy())
                         .append("\", fetch = FetchType.LAZY)\n");
+
+                addBuilderDefaultAnnotation(builder, useBuilder, true);
+
                 builder.append("    private List<").append(targetEntity).append("> ")
                         .append(fieldName).append(" = new ArrayList<>();\n\n");
             }
@@ -1070,15 +1279,6 @@ public class EntityGenerator {
             default -> log.warn("⚠️ Relationship type {} is not handled here for inverse relationships.", relationship.getRelationshipType());
         }
     }
-
-    private String stripSchema(String rawName) {
-        if (rawName == null) {
-            return null;
-        }
-        int lastDot = rawName.lastIndexOf('.');
-        return (lastDot >= 0) ? rawName.substring(lastDot + 1) : rawName;
-    }
-
 
     private void addOnDeleteAndOnUpdate(StringBuilder builder, Relationship relationship) {
         if (relationship == null) {
@@ -1107,75 +1307,112 @@ public class EntityGenerator {
 
 
 
-    private void addColumnField(StringBuilder builder, Column column) {
+    /**
+     * Generates a simple column field with JPA annotations.
+     * Handles JSON/JSONB columns explicitly for Hibernate.
+     *
+     * @param builder the builder receiving generated content
+     * @param column the column metadata
+     * @param useBuilder whether Lombok builder is enabled
+     */
+    private void addColumnField(StringBuilder builder, Column column, boolean useBuilder) {
         boolean isForeignKey = column.isForeignKey();
-        String columnName = column.getName() == null ? "" : column.getName();
-        String javaType = column.getJavaType() == null ? "" : column.getJavaType();
+        String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
+        String javaType = resolveJavaType(column);
+        String sqlType = normalizeSqlType(column.getSqlType());
 
-        if (isTemporalAuditColumn(javaType, columnName)) {
-            if (isCreationTimestampColumnName(columnName)) {
-                builder.append("    @CreationTimestamp\n");
-            } else if (isUpdateTimestampColumnName(columnName)) {
-                builder.append("    @UpdateTimestamp\n");
-            }
+        boolean isJsonColumn = TypeMapper.isJsonType(column);
+        boolean isNumeric19LongColumn = isNumeric19LongColumn(column, javaType);
+        boolean isGeneratedStoredColumn = column.getGeneratedAs() != null && !column.getGeneratedAs().isBlank();
+
+        if (shouldUseCreationTimestamp(column)) {
+            builder.append("    @CreationTimestamp\n");
+        } else if (shouldUseUpdateTimestamp(column)) {
+            builder.append("    @UpdateTimestamp\n");
         }
 
         if (!isForeignKey) {
-            builder.append("    @Column(name = \"").append(column.getName()).append("\"");
+            if (isJsonColumn) {
+                builder.append("    @JdbcTypeCode(SqlTypes.JSON)\n");
 
-            String sqlType = normalizeSqlType(column.getSqlType());
+                builder.append("    @Column(name = \"")
+                        .append(columnName)
+                        .append("\", columnDefinition = \"")
+                        .append(TypeMapper.getJsonColumnDefinition(column))
+                        .append("\"");
 
-            if ((sqlType.startsWith("VARCHAR") || sqlType.startsWith("CHAR")) && column.getLength() > 0) {
-                builder.append(", length = ").append(column.getLength());
-            }
-
-            if ((sqlType.startsWith("DECIMAL") || sqlType.startsWith("NUMERIC")) && column.getPrecision() > 0) {
-                builder.append(", precision = ").append(column.getPrecision());
-
-                if (column.getScale() >= 0) {
-                    builder.append(", scale = ").append(column.getScale());
+                if (column.isUnique()) {
+                    builder.append(", unique = true");
                 }
-            }
 
-            if (column.isUnique()) {
-                builder.append(", unique = true");
-            }
+                if (!column.isNullable()) {
+                    builder.append(", nullable = false");
+                }
 
-            if (!column.isNullable()) {
-                builder.append(", nullable = false");
-            }
+                builder.append(")\n");
+            } else {
+                builder.append("    @Column(name = \"").append(columnName).append("\"");
 
-            if (isCreationTimestampColumnName(columnName)) {
-                builder.append(", updatable = false");
-            }
+                int length = column.getLength();
+                boolean isCharLike = sqlType.startsWith("VARCHAR") || sqlType.startsWith("CHAR");
 
-            builder.append(")");
+                if ("TEXT".equals(sqlType)) {
+                    builder.append(", columnDefinition = \"text\"");
+                }
+
+                if (isCharLike && length > 0 && length != 255) {
+                    builder.append(", length = ").append(length);
+                }
+
+                if (!isNumeric19LongColumn
+                        && (sqlType.startsWith("DECIMAL") || sqlType.startsWith("NUMERIC"))
+                        && column.getPrecision() > 0) {
+                    builder.append(", precision = ").append(column.getPrecision());
+
+                    if (column.getScale() > 0) {
+                        builder.append(", scale = ").append(column.getScale());
+                    }
+                }
+
+                if (column.isUnique()) {
+                    builder.append(", unique = true");
+                }
+
+                if (!column.isNullable()) {
+                    builder.append(", nullable = false");
+                }
+
+                if (isCreationTimestampColumnName(columnName)) {
+                    builder.append(", updatable = false");
+                }
+
+                if (isGeneratedStoredColumn) {
+                    builder.append(", insertable = false, updatable = false");
+                }
+
+                builder.append(")\n");
+            }
         }
 
         String cleanedType = toSimpleJavaType(javaType);
+        String booleanDefaultInitializer = resolveBooleanDefaultInitializer(column, columnName);
+        boolean hasInitializer = booleanDefaultInitializer != null;
 
-        builder.append("\n    private ").append(cleanedType).append(" ")
-                .append(NamingConverter.toCamelCase(column.getName()));
+        addBuilderDefaultAnnotation(builder, useBuilder, hasInitializer);
 
-        if ("Boolean".equals(cleanedType) && column.getDefaultValue() != null) {
-            String defVal = column.getDefaultValue().trim().toLowerCase();
+        builder.append("    private ")
+                .append(cleanedType)
+                .append(" ")
+                .append(column.getFieldName());
 
-            if (defVal.equals("true") || defVal.equals("1")) {
-                builder.append(" = true");
-            } else if (defVal.equals("false") || defVal.equals("0")) {
-                builder.append(" = false");
-            } else {
-                log.warn("⚠️ Boolean column '{}' has an unsupported default value: {}", column.getName(), defVal);
-            }
+        if (hasInitializer) {
+            builder.append(" = ").append(booleanDefaultInitializer);
         }
 
         builder.append(";\n\n");
     }
 
-    private boolean isTemporalAuditColumn(String javaType, String columnName) {
-        return isLocalDateTimeType(javaType)
-                && (isCreationTimestampColumnName(columnName) || isUpdateTimestampColumnName(columnName));
-    }
+
 
     private boolean isLocalDateTimeType(String javaType) {
         return "java.time.LocalDateTime".equals(javaType) || "LocalDateTime".equals(javaType);
@@ -1216,59 +1453,37 @@ public class EntityGenerator {
         log.debug("File written successfully: {}", filePath);
     }
 
+    /**
+     * Converts parsed tables into generator entity metadata.
+     * <p>
+     * This method creates:
+     * <ul>
+     *     <li>scalar fields for normal columns</li>
+     *     <li>owning-side relation fields for resolved FK relationships</li>
+     *     <li>inverse relation fields for ONETOMANY and inverse ONETOONE</li>
+     *     <li>synthetic MANYTOMANY collection fields from pure join tables</li>
+     * </ul>
+     *
+     * @param tables the parsed tables
+     * @return the generated entity metadata list
+     */
     public List<Entity> toEntities(List<Table> tables) {
         List<Entity> result = new ArrayList<>();
 
         for (Table table : tables) {
+            if (table.isPureJoinTable()) {
+                continue;
+            }
+
             Entity entity = new Entity();
-
-            String rawTableName = table.getName();
-            String tableName = rawTableName.contains(".")
-                    ? rawTableName.substring(rawTableName.indexOf(".") + 1)
-                    : rawTableName;
-
-            entity.setName(NamingConverter.toPascalCase(tableName));
+            entity.setName(resolveEntityName(table));
 
             List<Field> fields = new ArrayList<>();
+            Set<String> generatedFieldNames = new HashSet<>();
 
-            for (Column col : table.getColumns()) {
-                Field field = new Field();
-
-                field.setName(NamingConverter.toCamelCase(col.getName()));
-                field.setType(col.getJavaType());
-
-                field.setPrimaryKey(col.isPrimaryKey());
-                field.setForeignKey(col.isForeignKey());
-                field.setUnique(col.isUnique());
-                field.setNullable(col.isNullable());
-
-                field.setLength(col.getLength());
-                field.setColumnName(col.getName());
-
-                // Relationship metadata
-                if (col.isForeignKey()) {
-                    table.getRelationships().stream()
-                            .filter(rel ->
-                                    rel.getSourceTable().equals(table.getName()) &&
-                                            rel.getSourceColumn() != null &&
-                                            rel.getSourceColumn().equals(col.getName())
-                            )
-                            .findFirst()
-                            .ifPresent(rel -> {
-                                field.setReferencedEntity(
-                                        NamingConverter.toPascalCase(rel.getTargetTable())
-                                );
-                                field.setReferencedColumn(rel.getTargetColumn());
-                                field.setMappedBy(rel.getMappedBy());
-                                field.setCascade("ALL");
-                                field.setOrphanRemoval(
-                                        rel.getRelationshipType() == Relationship.RelationshipType.ONETOMANY
-                                );
-                            });
-                }
-
-                fields.add(field);
-            }
+            addColumnAndOwningRelationFields(table, fields, generatedFieldNames);
+            addInverseRelationshipFields(table, fields, generatedFieldNames);
+            addSyntheticManyToManyFields(table, fields, generatedFieldNames);
 
             entity.setFields(fields);
             result.add(entity);
@@ -1276,5 +1491,493 @@ public class EntityGenerator {
 
         return result;
     }
+
+    /**
+     * Resolves the entity class name for the given table.
+     *
+     * @param table the source table
+     * @return the generated entity name
+     */
+    private String resolveEntityName(Table table) {
+        String rawTableName = table.getName();
+        String tableName = rawTableName != null && rawTableName.contains(".")
+                ? rawTableName.substring(rawTableName.indexOf('.') + 1)
+                : rawTableName;
+
+        return NamingConverter.toPascalCase(tableName);
+    }
+
+    /**
+     * Adds scalar fields and owning-side relation fields to the target field list.
+     *
+     * @param table the source table
+     * @param fields the generated fields
+     * @param generatedFieldNames already generated field names
+     */
+    private void addColumnAndOwningRelationFields(Table table,
+                                                  List<Field> fields,
+                                                  Set<String> generatedFieldNames) {
+        for (Column column : table.getColumns()) {
+            Optional<Relationship> relationship = findOwningRelationship(table, column);
+
+            if (relationship.isPresent()) {
+                Field relationField = createOwningRelationField(column, relationship.get());
+
+                if (generatedFieldNames.add(relationField.getName())) {
+                    fields.add(relationField);
+                }
+                continue;
+            }
+
+            Field scalarField = createScalarField(column);
+
+            if (generatedFieldNames.add(scalarField.getName())) {
+                fields.add(scalarField);
+            }
+        }
+    }
+
+
+    /**
+     * Finds the owning-side relationship for the given foreign key column.
+     *
+     * @param table the source table
+     * @param column the source column
+     * @return the resolved owning-side relationship if present
+     */
+    private Optional<Relationship> findOwningRelationship(Table table, Column column) {
+        if (column == null || !column.isForeignKey()) {
+            return Optional.empty();
+        }
+
+        return table.getRelationships().stream()
+                .filter(relationship ->
+                        relationship.getSourceTable().equals(table.getName())
+                                && relationship.getSourceColumn() != null
+                                && relationship.getSourceColumn().equals(column.getName())
+                                && relationship.getMappedBy() == null
+                                && (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                                || relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE))
+                .findFirst();
+    }
+
+    /**
+     * Creates a scalar non-relationship field from a database column.
+     *
+     * @param column the source column
+     * @return the generated scalar field
+     */
+    private Field createScalarField(Column column) {
+        String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
+
+        return Field.builder()
+                .name(column.getFieldName())
+                .type(resolveJavaType(column))
+                .primaryKey(column.isPrimaryKey())
+                .foreignKey(column.isForeignKey())
+                .unique(column.isUnique())
+                .nullable(column.isNullable())
+                .length(column.getLength())
+                .columnName(columnName)
+                .build();
+    }
+
+
+    /**
+     * Creates an owning-side relation field from a foreign key column and a resolved relationship.
+     *
+     * @param column the FK column
+     * @param relationship the resolved relationship
+     * @return the generated relation field
+     */
+    private Field createOwningRelationField(Column column, Relationship relationship) {
+        String relationFieldName = resolveRelationFieldName(column.getName());
+        String referencedEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
+
+        return Field.builder()
+                .name(relationFieldName)
+                .type(referencedEntity)
+                .primaryKey(column.isPrimaryKey())
+                .foreignKey(true)
+                .unique(column.isUnique())
+                .nullable(column.isNullable())
+                .length(column.getLength())
+                .columnName(column.getName())
+                .referencedEntity(referencedEntity)
+                .referencedColumn(relationship.getTargetColumn())
+                .mappedBy(null)
+                .cascade("ALL")
+                .orphanRemoval(false)
+                .relationKind(toRelationKind(relationship.getRelationshipType()))
+                .collection(false)
+                .owningSide(true)
+                .build();
+    }
+
+
+    /**
+     * Resolves a relation field name from a foreign key column name.
+     * Example:
+     * company_status_id -> companyStatus
+     * parent_company_id -> parentCompany
+     *
+     * @param columnName the physical FK column name
+     * @return the generated relation field name
+     */
+    private String resolveRelationFieldName(String columnName) {
+        if (columnName == null || columnName.isBlank()) {
+            return columnName;
+        }
+
+        String normalizedName = columnName.endsWith("_id")
+                ? columnName.substring(0, columnName.length() - 3)
+                : columnName;
+
+        return NamingConverter.toCamelCase(normalizedName);
+    }
+
+
+    /**
+     * Adds inverse-side fields derived from resolved relationships.
+     *
+     * @param table the source table
+     * @param fields the generated fields
+     * @param generatedFieldNames already generated field names
+     */
+    private void addInverseRelationshipFields(Table table,
+                                              List<Field> fields,
+                                              Set<String> generatedFieldNames) {
+        for (Relationship relationship : table.getRelationships()) {
+            if (relationship.getMappedBy() == null || relationship.getMappedBy().isBlank()) {
+                continue;
+            }
+
+            if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY) {
+                Field inverseCollectionField = createInverseCollectionField(relationship);
+
+                if (generatedFieldNames.add(inverseCollectionField.getName())) {
+                    fields.add(inverseCollectionField);
+                }
+            }
+
+            if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE) {
+                Field inverseOneToOneField = createInverseOneToOneField(relationship);
+
+                if (generatedFieldNames.add(inverseOneToOneField.getName())) {
+                    fields.add(inverseOneToOneField);
+                }
+            }
+        }
+    }
+
+    /**
+     * Creates an inverse one-to-many collection field.
+     *
+     * @param relationship the inverse relationship metadata
+     * @return the generated collection field
+     */
+    private Field createInverseCollectionField(Relationship relationship) {
+        String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
+        String fieldName = NamingConverter.toCamelCasePlural(stripSchema(relationship.getTargetTable()));
+
+        return Field.builder()
+                .name(fieldName)
+                .type("List<" + targetEntity + ">")
+                .foreignKey(false)
+                .referencedEntity(targetEntity)
+                .mappedBy(relationship.getMappedBy())
+                .cascade("ALL")
+                .orphanRemoval(true)
+                .relationKind(Field.RelationKind.ONE_TO_MANY)
+                .collection(true)
+                .owningSide(false)
+                .build();
+    }
+
+    /**
+     * Creates an inverse one-to-one field.
+     *
+     * @param relationship the inverse relationship metadata
+     * @return the generated inverse reference field
+     */
+    private Field createInverseOneToOneField(Relationship relationship) {
+        String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
+        String fieldName = Character.toLowerCase(targetEntity.charAt(0)) + targetEntity.substring(1);
+
+        return Field.builder()
+                .name(fieldName)
+                .type(targetEntity)
+                .foreignKey(false)
+                .referencedEntity(targetEntity)
+                .mappedBy(relationship.getMappedBy())
+                .cascade("ALL")
+                .orphanRemoval(false)
+                .relationKind(Field.RelationKind.ONE_TO_ONE)
+                .collection(false)
+                .owningSide(false)
+                .build();
+    }
+
+
+    /**
+     * Adds synthetic many-to-many fields defined on the table metadata.
+     *
+     * @param table the source table
+     * @param fields the generated fields
+     * @param generatedFieldNames already generated field names
+     */
+    private void addSyntheticManyToManyFields(Table table,
+                                              List<Field> fields,
+                                              Set<String> generatedFieldNames) {
+        if (table.getManyToManyRelations() == null || table.getManyToManyRelations().isEmpty()) {
+            return;
+        }
+
+        for (ManyToManyRelation relation : table.getManyToManyRelations()) {
+            Field field = Field.builder()
+                    .name(relation.getFieldName())
+                    .type("List<" + relation.getTargetEntityName() + ">")
+                    .foreignKey(false)
+                    .referencedEntity(relation.getTargetEntityName())
+                    .mappedBy(relation.getMappedBy())
+                    .cascade("ALL")
+                    .orphanRemoval(false)
+                    .relationKind(Field.RelationKind.MANY_TO_MANY)
+                    .collection(true)
+                    .owningSide(relation.isOwningSide())
+                    .joinTableName(relation.getJoinTableName())
+                    .joinColumnName(relation.getJoinColumnName())
+                    .inverseJoinColumnName(relation.getInverseJoinColumnName())
+                    .build();
+
+            if (generatedFieldNames.add(field.getName())) {
+                fields.add(field);
+            }
+        }
+    }
+
+    /**
+     * Converts the relationship model type to the field relation kind.
+     *
+     * @param relationshipType the relationship type from the resolver
+     * @return the mapped field relation kind
+     */
+    private Field.RelationKind toRelationKind(Relationship.RelationshipType relationshipType) {
+        return switch (relationshipType) {
+            case ONETOONE -> Field.RelationKind.ONE_TO_ONE;
+            case MANYTOONE -> Field.RelationKind.MANY_TO_ONE;
+            case ONETOMANY -> Field.RelationKind.ONE_TO_MANY;
+            case MANYTOMANY -> Field.RelationKind.MANY_TO_MANY;
+        };
+    }
+
+
+    /**
+     * Removes a schema prefix from a table name.
+     *
+     * @param tableName the raw table name
+     * @return the schema-free table name
+     */
+    private String stripSchema(String tableName) {
+        if (tableName == null) {
+            return null;
+        }
+
+        return tableName.contains(".")
+                ? tableName.substring(tableName.indexOf('.') + 1)
+                : tableName;
+    }
+
+    /**
+     * Generates a scalar field for a foreign key column when no relationship
+     * could be resolved to a generated entity.
+     *
+     * @param builder the builder receiving the generated content
+     * @param column the unresolved foreign key column
+     */
+    private void addUnresolvedForeignKeyScalarField(StringBuilder builder, Column column) {
+        String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
+        String javaType = resolveJavaType(column);
+        String cleanedType = toSimpleJavaType(javaType);
+        String sqlType = normalizeSqlType(column.getSqlType());
+        boolean isNumeric19LongColumn = isNumeric19LongColumn(column, javaType);
+
+        builder.append("    // TODO: Foreign key '")
+                .append(columnName)
+                .append("' was not resolved to a generated entity relationship. ")
+                .append("Convert to @ManyToOne when the target entity becomes available.\n");
+
+        builder.append("    @Column(name = \"").append(columnName).append("\"");
+
+        int length = column.getLength();
+        boolean isCharLike = sqlType.startsWith("VARCHAR") || sqlType.startsWith("CHAR");
+
+        if (isCharLike && length > 0 && length != 255) {
+            builder.append(", length = ").append(length);
+        }
+
+        if (!isNumeric19LongColumn
+                && (sqlType.startsWith("DECIMAL") || sqlType.startsWith("NUMERIC"))
+                && column.getPrecision() > 0) {
+            builder.append(", precision = ").append(column.getPrecision());
+
+            if (column.getScale() > 0) {
+                builder.append(", scale = ").append(column.getScale());
+            }
+        }
+
+        if (column.isUnique()) {
+            builder.append(", unique = true");
+        }
+
+        if (!column.isNullable()) {
+            builder.append(", nullable = false");
+        }
+
+        builder.append(")\n");
+
+        builder.append("    private ")
+                .append(cleanedType)
+                .append(" ")
+                .append(column.getFieldName())
+                .append(";\n\n");
+    }
+
+
+    /**
+     * Adds Lombok builder default annotation when builder generation is enabled
+     * and the field is initialized inline.
+     *
+     * @param builder the target builder
+     * @param useBuilder true when Lombok builder is enabled for the entity
+     * @param hasInitializer true when the field will be generated with an inline initializer
+     */
+    private void addBuilderDefaultAnnotation(StringBuilder builder,
+                                             boolean useBuilder,
+                                             boolean hasInitializer) {
+        if (!useBuilder || !hasInitializer) {
+            return;
+        }
+
+        builder.append("    @Builder.Default\n");
+    }
+
+    /**
+     * Resolves the inline boolean default initializer for a column.
+     *
+     * @param column the source column metadata
+     * @param columnName the physical column name used for logging
+     * @return {@code "true"} or {@code "false"} when a supported boolean default exists, otherwise {@code null}
+     */
+    private String resolveBooleanDefaultInitializer(Column column, String columnName) {
+        if (column == null) {
+            return null;
+        }
+
+        String javaType = toSimpleJavaType(column.getJavaType());
+        if (!"Boolean".equals(javaType) || column.getDefaultValue() == null) {
+            return null;
+        }
+
+        String defaultValue = column.getDefaultValue().trim().toLowerCase(Locale.ROOT);
+
+        if (defaultValue.equals("true") || defaultValue.equals("1")) {
+            return "true";
+        }
+
+        if (defaultValue.equals("false") || defaultValue.equals("0")) {
+            return "false";
+        }
+
+        log.warn("Boolean column '{}' has an unsupported default value: {}", columnName, defaultValue);
+        return null;
+    }
+
+
+    private boolean shouldUseCreationTimestamp(Column column) {
+        if (column == null) {
+            return false;
+        }
+
+        String javaType = column.getJavaType();
+        if (!isLocalDateTimeType(javaType)) {
+            return false;
+        }
+
+        String columnName = column.getName();
+        if (!isCreationTimestampColumnName(columnName)) {
+            return false;
+        }
+
+        String defaultValue = column.getDefaultValue();
+        if (defaultValue == null || defaultValue.isBlank()) {
+            return false;
+        }
+
+        String normalizedDefaultValue = defaultValue.trim().toLowerCase(Locale.ROOT);
+        return normalizedDefaultValue.contains("now()")
+                || normalizedDefaultValue.equals("current_timestamp")
+                || normalizedDefaultValue.equals("localtimestamp");
+    }
+
+    private boolean shouldUseUpdateTimestamp(Column column) {
+        if (column == null) {
+            return false;
+        }
+
+        String javaType = column.getJavaType();
+        if (!isLocalDateTimeType(javaType)) {
+            return false;
+        }
+
+        String columnName = column.getName();
+        if (!isUpdateTimestampColumnName(columnName)) {
+            return false;
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Checks whether a column is mapped as Long from a numeric(19) or decimal(19) SQL type.
+     *
+     * @param column the source column
+     * @param resolvedJavaType the resolved Java type
+     * @return true when the column is a numeric(19) long mapping
+     */
+    private boolean isNumeric19LongColumn(Column column, String resolvedJavaType) {
+        if (column == null || resolvedJavaType == null || !"Long".equals(resolvedJavaType)) {
+            return false;
+        }
+
+        String sqlType = column.getSqlType() == null ? "" : column.getSqlType().trim().toLowerCase(Locale.ROOT);
+
+        return (sqlType.equals("numeric(19)") || sqlType.equals("decimal(19)"))
+                && column.getScale() == 0;
+    }
+
+
+    /**
+     * Resolves the effective Java type for a column, overriding numeric(19) to Long.
+     *
+     * @param column the source column
+     * @return the effective Java type
+     */
+    private String resolveJavaType(Column column) {
+        if (column == null) {
+            return "";
+        }
+
+        String sqlType = column.getSqlType() == null ? "" : column.getSqlType().trim().toLowerCase(Locale.ROOT);
+
+        if ((sqlType.equals("numeric(19)") || sqlType.equals("decimal(19)"))
+                && column.getScale() == 0) {
+            return "Long";
+        }
+
+        return column.getJavaType() == null ? "" : column.getJavaType();
+    }
+
 
 }

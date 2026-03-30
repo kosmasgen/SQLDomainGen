@@ -24,6 +24,7 @@ class RelationshipTest {
         relationship.setOnDelete("SET NULL");
         relationship.setJoinTableName("order_customers");
         relationship.setInverseJoinColumn("customer_id");
+        relationship.setMappedBy("customer");
 
         log.info("✅ Relationship initialized: {}", relationship);
 
@@ -36,8 +37,8 @@ class RelationshipTest {
         assertEquals("SET NULL", relationship.getOnDelete());
         assertEquals("order_customers", relationship.getJoinTableName());
         assertEquals("customer_id", relationship.getInverseJoinColumn());
+        assertEquals("customer", relationship.getMappedBy());
     }
-
 
     @Test
     void testRelationshipToString() {
@@ -48,22 +49,22 @@ class RelationshipTest {
         relationship.setSourceColumn("customer_id");
         relationship.setTargetTable("customers");
         relationship.setTargetColumn("id");
-        relationship.setRelationshipType(Relationship.RelationshipType.ONETOMANY);
+        relationship.setRelationshipType(RelationshipType.ONETOMANY);
         relationship.setOnUpdate("RESTRICT");
         relationship.setOnDelete("CASCADE");
+        relationship.setJoinTableName("order_customers");
+        relationship.setInverseJoinColumn("customer_id");
+        relationship.setMappedBy("customer");
 
-        // Ανανέωση του expected για να ταιριάζει με το πραγματικό αποτέλεσμα (null αντί για κενό)
         String expected = "Relationship(sourceColumn=customer_id, targetColumn=id, sourceTable=orders, " +
-                "targetTable=customers, onUpdate=RESTRICT, onDelete=CASCADE, joinTableName=null, inverseJoinColumn=null, " +
-                "mappedBy=null, relationshipType=ONETOMANY)";
-
+                "targetTable=customers, onUpdate=RESTRICT, onDelete=CASCADE, joinTableName=order_customers, " +
+                "inverseJoinColumn=customer_id, mappedBy=customer, relationshipType=ONETOMANY)";
 
         log.info("✅ Expected: {}", expected);
-        log.info("✅ Actual: {}", relationship.toString());
+        log.info("✅ Actual: {}", relationship);
 
         assertEquals(expected, relationship.toString(), "Relationship toString should match the expected format.");
     }
-
 
     @Test
     void testDefaultValues() {
@@ -80,8 +81,9 @@ class RelationshipTest {
         assertNull(relationship.getRelationshipType(), "Relationship type should be null.");
         assertNull(relationship.getOnUpdate(), "OnUpdate action should be null.");
         assertNull(relationship.getOnDelete(), "OnDelete action should be null.");
-
-
+        assertNull(relationship.getJoinTableName(), "Join table name should be null.");
+        assertNull(relationship.getInverseJoinColumn(), "Inverse join column should be null.");
+        assertNull(relationship.getMappedBy(), "MappedBy should be null.");
     }
 
     @Test
@@ -106,6 +108,9 @@ class RelationshipTest {
         assertEquals(RelationshipType.ONETOONE, relationship.getRelationshipType());
         assertEquals("CASCADE", relationship.getOnUpdate());
         assertEquals("SET NULL", relationship.getOnDelete());
+        assertNull(relationship.getJoinTableName(), "Join table name should be null for one-to-one.");
+        assertNull(relationship.getInverseJoinColumn(), "Inverse join column should be null for one-to-one.");
+        assertNull(relationship.getMappedBy(), "MappedBy should be null for one-to-one.");
     }
 
     @Test
@@ -130,6 +135,9 @@ class RelationshipTest {
         assertEquals(RelationshipType.MANYTOONE, relationship.getRelationshipType());
         assertEquals("RESTRICT", relationship.getOnUpdate());
         assertEquals("CASCADE", relationship.getOnDelete());
+        assertNull(relationship.getJoinTableName(), "Join table name should be null for many-to-one.");
+        assertNull(relationship.getInverseJoinColumn(), "Inverse join column should be null for many-to-one.");
+        assertNull(relationship.getMappedBy(), "MappedBy should be null for many-to-one.");
     }
 
     @Test
@@ -144,6 +152,7 @@ class RelationshipTest {
         relationship.setRelationshipType(RelationshipType.ONETOMANY);
         relationship.setOnUpdate("NO ACTION");
         relationship.setOnDelete("SET DEFAULT");
+        relationship.setMappedBy("customer");
 
         log.info("✅ Created Relationship: {}", relationship);
 
@@ -154,6 +163,9 @@ class RelationshipTest {
         assertEquals(RelationshipType.ONETOMANY, relationship.getRelationshipType());
         assertEquals("NO ACTION", relationship.getOnUpdate());
         assertEquals("SET DEFAULT", relationship.getOnDelete());
+        assertEquals("customer", relationship.getMappedBy());
+        assertNull(relationship.getJoinTableName(), "Join table name should be null for one-to-many.");
+        assertNull(relationship.getInverseJoinColumn(), "Inverse join column should be null for one-to-many.");
     }
 
     @Test
@@ -180,6 +192,37 @@ class RelationshipTest {
         assertEquals(RelationshipType.MANYTOMANY, relationship.getRelationshipType());
         assertEquals("student_courses", relationship.getJoinTableName());
         assertEquals("course_id", relationship.getInverseJoinColumn());
+        assertEquals("CASCADE", relationship.getOnUpdate());
+        assertEquals("CASCADE", relationship.getOnDelete());
+        assertNull(relationship.getMappedBy(), "MappedBy should be null for owning many-to-many.");
+    }
+
+    @Test
+    void testManyToManyRelationshipWithMappedBy() {
+        log.info("🔵 Running test: testManyToManyRelationshipWithMappedBy");
+
+        Relationship relationship = new Relationship();
+        relationship.setSourceTable("courses");
+        relationship.setSourceColumn("id");
+        relationship.setTargetTable("students");
+        relationship.setTargetColumn("id");
+        relationship.setRelationshipType(RelationshipType.MANYTOMANY);
+        relationship.setJoinTableName("student_courses");
+        relationship.setInverseJoinColumn("student_id");
+        relationship.setMappedBy("courses");
+        relationship.setOnUpdate("CASCADE");
+        relationship.setOnDelete("CASCADE");
+
+        log.info("✅ Created inverse many-to-many Relationship: {}", relationship);
+
+        assertEquals("courses", relationship.getSourceTable());
+        assertEquals("id", relationship.getSourceColumn());
+        assertEquals("students", relationship.getTargetTable());
+        assertEquals("id", relationship.getTargetColumn());
+        assertEquals(RelationshipType.MANYTOMANY, relationship.getRelationshipType());
+        assertEquals("student_courses", relationship.getJoinTableName());
+        assertEquals("student_id", relationship.getInverseJoinColumn());
+        assertEquals("courses", relationship.getMappedBy());
         assertEquals("CASCADE", relationship.getOnUpdate());
         assertEquals("CASCADE", relationship.getOnDelete());
     }

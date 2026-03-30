@@ -2,6 +2,7 @@ package com.sqldomaingen.parser;
 
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
+import com.sqldomaingen.model.UniqueConstraint;
 import com.sqldomaingen.util.NamingConverter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -21,10 +22,16 @@ public class CreateTableDefinition {
     private String tableName;
     private List<ColumnDefinition> columnDefinitions = new ArrayList<>();
     private List<String> constraints = new ArrayList<>();
+    private List<UniqueConstraint> compositeUniqueConstraints = new ArrayList<>();
 
     public Table processCreateTable(PostgreSQLParser.CreateTableStatementContext ctx) {
         log.info("Parse tree (CreateTableStatement): \n{}", ctx.toStringTree());
         log.info("processCreateTable() - START | ctx: {}", ctx);
+
+        this.tableName = null;
+        this.columnDefinitions = new ArrayList<>();
+        this.constraints = new ArrayList<>();
+        this.compositeUniqueConstraints = new ArrayList<>();
 
         this.tableName = extractTableName(ctx);
         log.info("Extracted table name: {}", this.tableName);
@@ -40,6 +47,9 @@ public class CreateTableDefinition {
             }
         }
 
+        // Apply table-level UNIQUE constraints before resolving FK relationships.
+        extractUniqueConstraints(ctx);
+
         // Extract table-level FOREIGN KEY constraints and mark FK columns accordingly.
         extractForeignKeyConstraints(ctx);
 
@@ -49,21 +59,24 @@ public class CreateTableDefinition {
         return table;
     }
 
+    /**
+     * Extracts the physical table name from a CREATE TABLE statement.
+     * <p>
+     * The parser layer must keep the SQL table name as-is so that downstream
+     * relationship resolution works with real database identifiers.
+     *
+     * @param ctx the CREATE TABLE parse context
+     * @return the physical table name, including schema when present
+     */
     public String extractTableName(PostgreSQLParser.CreateTableStatementContext ctx) {
         if (ctx == null || ctx.tableName() == null || ctx.tableName().isEmpty()) {
             throw new IllegalArgumentException("Table name not found in CREATE TABLE statement.");
         }
 
-        this.tableName = ctx.tableName().get(0).getText();
-        log.info("Extracted raw table name: {}", tableName);
+        this.tableName = ctx.tableName().get(0).getText().replace("\"", "").trim();
+        log.info("Extracted physical table name: {}", this.tableName);
 
-        // Remove schema prefix if present (e.g. public.department -> department).
-        if (tableName.contains(".")) {
-            tableName = tableName.substring(tableName.indexOf(".") + 1);
-        }
-
-        // The internal Table model uses PascalCase entity/table naming.
-        return NamingConverter.toPascalCase(tableName);
+        return this.tableName;
     }
 
     public List<ColumnDefinition> extractColumnDefinitions(PostgreSQLParser.CreateTableStatementContext ctx) {
@@ -140,6 +153,12 @@ public class CreateTableDefinition {
         log.info("extractPrimaryKeyConstraint() - END");
     }
 
+    /**
+     * Extracts table-level foreign key constraints and applies them
+     * to the corresponding column definitions.
+     *
+     * @param ctx the CREATE TABLE parse context
+     */
     public void extractForeignKeyConstraints(PostgreSQLParser.CreateTableStatementContext ctx) {
         log.info("extractForeignKeyConstraints() - START");
 
@@ -148,109 +167,144 @@ public class CreateTableDefinition {
             return;
         }
 
-        for (PostgreSQLParser.TableConstraintContext constraintCtx : ctx.tableConstraint()) {
-            if (constraintCtx == null) continue;
-
-            // ANTLR getText() returns tokens concatenated WITHOUT whitespace.
-            // So we must look for "FOREIGNKEY" not "FOREIGN KEY".
-            String constraintText = constraintCtx.getText();
-            if (constraintText == null) continue;
-
-            String upper = constraintText.toUpperCase(Locale.ROOT);
-            boolean isFk = upper.contains("FOREIGNKEY") && upper.contains("REFERENCES");
-            if (!isFk) {
+        for (PostgreSQLParser.TableConstraintContext tableConstraintContext : ctx.tableConstraint()) {
+            if (tableConstraintContext == null) {
                 continue;
             }
 
-            List<PostgreSQLParser.ColumnNameListContext> columnLists = constraintCtx.columnNameList();
-            if (columnLists == null || columnLists.isEmpty()) {
-                log.warn("FOREIGN KEY constraint found but no column lists present: {}", constraintText);
+            String constraintText = tableConstraintContext.getText();
+            if (constraintText == null || constraintText.isBlank()) {
                 continue;
             }
 
-            // 1st list = FK columns
-            List<String> fkColumns = columnLists.get(0).columnName().stream()
-                    .map(c -> c.getText().replace("\"", "").trim())
-                    .filter(s -> !s.isBlank())
+            String normalizedConstraintText = constraintText
+                    .replace("\"", "")
+                    .replaceAll("\\s+", "")
+                    .toUpperCase(java.util.Locale.ROOT);
+
+            boolean foreignKeyConstraint =
+                    normalizedConstraintText.contains("FOREIGNKEY")
+                            && normalizedConstraintText.contains("REFERENCES");
+
+            if (!foreignKeyConstraint) {
+                continue;
+            }
+
+            List<PostgreSQLParser.ColumnNameListContext> columnNameLists = tableConstraintContext.columnNameList();
+            if (columnNameLists == null || columnNameLists.isEmpty()) {
+                log.warn("Foreign key constraint found but no columnNameList was parsed: {}", constraintText);
+                continue;
+            }
+
+            List<String> sourceColumns = columnNameLists.get(0).columnName().stream()
+                    .map(columnNameContext -> columnNameContext.getText().replace("\"", "").trim())
+                    .filter(columnName -> !columnName.isBlank())
                     .toList();
 
-            // 2nd list (optional) = referenced columns (can be omitted in Postgres)
-            List<String> refColumns = Collections.emptyList();
-            if (columnLists.size() >= 2) {
-                refColumns = columnLists.get(1).columnName().stream()
-                        .map(c -> c.getText().replace("\"", "").trim())
-                        .filter(s -> !s.isBlank())
+            List<String> referencedColumns = java.util.Collections.emptyList();
+            if (columnNameLists.size() > 1) {
+                referencedColumns = columnNameLists.get(1).columnName().stream()
+                        .map(columnNameContext -> columnNameContext.getText().replace("\"", "").trim())
+                        .filter(columnName -> !columnName.isBlank())
                         .toList();
             }
 
-            String tableOnly = (constraintCtx.tableName() != null)
-                    ? constraintCtx.tableName().getText().replace("\"", "").trim()
+            String referencedTableName = tableConstraintContext.tableName() != null
+                    ? tableConstraintContext.tableName().getText().replace("\"", "").trim()
                     : null;
 
-            String schemaOnly = (constraintCtx.schemaName() != null)
-                    ? constraintCtx.schemaName().getText().replace("\"", "").trim()
+            String referencedSchemaName = tableConstraintContext.schemaName() != null
+                    ? tableConstraintContext.schemaName().getText().replace("\"", "").trim()
                     : null;
 
-            if (tableOnly == null || tableOnly.isBlank()) {
-                log.warn("FOREIGN KEY constraint found but referenced table name is missing: {}", constraintText);
+            if (referencedTableName == null || referencedTableName.isBlank()) {
+                log.warn("Foreign key constraint found but referenced table is missing: {}", constraintText);
                 continue;
             }
 
-            String referencedTable = (schemaOnly != null && !schemaOnly.isBlank())
-                    ? (schemaOnly + "." + tableOnly)
-                    : tableOnly;
+            String referencedTable = referencedSchemaName != null && !referencedSchemaName.isBlank()
+                    ? referencedSchemaName + "." + referencedTableName
+                    : referencedTableName;
 
-            if (fkColumns.isEmpty()) {
-                log.warn("FOREIGN KEY constraint has empty FK column list: {}", constraintText);
-                continue;
-            }
+            String onDeleteAction = extractReferentialAction(normalizedConstraintText, "ONDELETE");
+            String onUpdateAction = extractReferentialAction(normalizedConstraintText, "ONUPDATE");
 
-            // If referenced columns are present and sizes match, map pairs.
-            // Otherwise, mark FK columns with referencedTable and leave referencedColumn null.
-            if (!refColumns.isEmpty() && fkColumns.size() == refColumns.size()) {
-                for (int i = 0; i < fkColumns.size(); i++) {
-                    String fkColumn = fkColumns.get(i);
-                    String refColumn = refColumns.get(i);
+            for (int index = 0; index < sourceColumns.size(); index++) {
+                String sourceColumn = sourceColumns.get(index);
 
-                    log.info("Foreign key detected: {} -> {}.{}", fkColumn, referencedTable, refColumn);
-
-                    final String fkColFinal = fkColumn;
-                    final String refColFinal = refColumn;
-
-                    columnDefinitions.stream()
-                            .filter(col -> col.getColumnName().equals(fkColFinal))
-                            .findFirst()
-                            .ifPresentOrElse(col -> {
-                                col.setForeignKey(true);
-                                col.setReferencedTable(referencedTable);
-                                col.setReferencedColumn(refColFinal);
-                            }, () -> log.warn("FK column '{}' not found in extracted column definitions.", fkColFinal));
-                }
-            } else {
-                if (refColumns.isEmpty()) {
-                    log.warn("FK referenced column list is missing (PostgreSQL allows this). Will set referencedTable only. Constraint: {}", constraintText);
+                String referencedColumn;
+                if (!referencedColumns.isEmpty() && referencedColumns.size() == sourceColumns.size()) {
+                    referencedColumn = referencedColumns.get(index);
+                } else if (sourceColumns.size() == 1) {
+                    referencedColumn = "id";
                 } else {
-                    log.warn("Composite FOREIGN KEY columns mismatch (FK cols: {}, REF cols: {}). Constraint: {}",
-                            fkColumns.size(), refColumns.size(), constraintText);
+                    referencedColumn = null;
                 }
 
-                for (String fkColumn : fkColumns) {
-                    log.info("Foreign key detected: {} -> {} (referenced column unspecified)", fkColumn, referencedTable);
+                columnDefinitions.stream()
+                        .filter(columnDefinition -> columnDefinition.getColumnName().equalsIgnoreCase(sourceColumn))
+                        .findFirst()
+                        .ifPresentOrElse(columnDefinition -> {
+                            columnDefinition.setForeignKey(true);
+                            columnDefinition.setReferencedTable(referencedTable);
+                            columnDefinition.setReferencedColumn(referencedColumn);
+                            columnDefinition.setOnDelete(onDeleteAction);
+                            columnDefinition.setOnUpdate(onUpdateAction);
 
-                    final String fkColFinal = fkColumn;
-                    columnDefinitions.stream()
-                            .filter(col -> col.getColumnName().equals(fkColFinal))
-                            .findFirst()
-                            .ifPresentOrElse(col -> {
-                                col.setForeignKey(true);
-                                col.setReferencedTable(referencedTable);
-                                col.setReferencedColumn(null);
-                            }, () -> log.warn("FK column '{}' not found in extracted column definitions.", fkColFinal));
-                }
+                            log.info("Foreign key applied: {} -> {}.{}",
+                                    sourceColumn,
+                                    referencedTable,
+                                    referencedColumn);
+
+                            if (onDeleteAction != null) {
+                                log.info("ON DELETE applied to column '{}': {}", sourceColumn, onDeleteAction);
+                            }
+
+                            if (onUpdateAction != null) {
+                                log.info("ON UPDATE applied to column '{}': {}", sourceColumn, onUpdateAction);
+                            }
+                        }, () -> log.warn("Could not find source column '{}' for FK constraint '{}'",
+                                sourceColumn,
+                                constraintText));
             }
         }
 
         log.info("extractForeignKeyConstraints() - END");
+    }
+
+
+    /**
+     * Extracts a referential action from a normalized constraint text.
+     *
+     * @param constraintText the uppercase constraint text without guaranteed whitespace
+     * @param keyword the keyword to search for, e.g. ONDELETE or ONUPDATE
+     * @return the extracted action or null when not found
+     */
+    private String extractReferentialAction(String constraintText, String keyword) {
+        int keywordIndex = constraintText.indexOf(keyword);
+        if (keywordIndex < 0) {
+            return null;
+        }
+
+        String tail = constraintText.substring(keywordIndex + keyword.length());
+
+        if (tail.startsWith("CASCADE")) {
+            return "CASCADE";
+        }
+        if (tail.startsWith("SETNULL")) {
+            return "SET NULL";
+        }
+        if (tail.startsWith("SETDEFAULT")) {
+            return "SET DEFAULT";
+        }
+        if (tail.startsWith("RESTRICT")) {
+            return "RESTRICT";
+        }
+        if (tail.startsWith("NOACTION")) {
+            return "NO ACTION";
+        }
+
+        return null;
     }
 
     /**
@@ -271,7 +325,146 @@ public class CreateTableDefinition {
     }
 
     /**
+     * Extracts table-level UNIQUE constraints and applies them to matching columns.
+     * <p>
+     * Single-column UNIQUE constraints are promoted to column uniqueness.
+     * Multi-column UNIQUE constraints are stored as table-level unique constraints.
+     *
+     * @param ctx the CREATE TABLE parse context
+     */
+    public void extractUniqueConstraints(PostgreSQLParser.CreateTableStatementContext ctx) {
+        log.info("extractUniqueConstraints() - START");
+
+        if (ctx == null || ctx.tableConstraint() == null || ctx.tableConstraint().isEmpty()) {
+            log.info("extractUniqueConstraints() - END (no table constraints)");
+            return;
+        }
+
+        for (PostgreSQLParser.TableConstraintContext tableConstraintContext : ctx.tableConstraint()) {
+            if (tableConstraintContext == null) {
+                continue;
+            }
+
+            String constraintText = tableConstraintContext.getText();
+            if (constraintText == null || constraintText.isBlank()) {
+                continue;
+            }
+
+            String normalizedConstraintText = constraintText
+                    .replace("\"", "")
+                    .replaceAll("\\s+", "")
+                    .toUpperCase(java.util.Locale.ROOT);
+
+            if (!normalizedConstraintText.contains("UNIQUE")) {
+                continue;
+            }
+
+            List<PostgreSQLParser.ColumnNameListContext> columnNameLists = tableConstraintContext.columnNameList();
+            if (columnNameLists == null || columnNameLists.isEmpty()) {
+                continue;
+            }
+
+            List<String> uniqueColumns = columnNameLists.get(0).columnName().stream()
+                    .map(columnNameContext -> columnNameContext.getText().replace("\"", "").trim())
+                    .filter(columnName -> !columnName.isBlank())
+                    .toList();
+
+            String constraintName = extractConstraintName(constraintText);
+
+            if (uniqueColumns.size() == 1) {
+                String uniqueColumnName = uniqueColumns.get(0);
+
+                columnDefinitions.stream()
+                        .filter(columnDefinition -> columnDefinition.getColumnName().equalsIgnoreCase(uniqueColumnName))
+                        .findFirst()
+                        .ifPresentOrElse(columnDefinition -> {
+                            columnDefinition.setUnique(true);
+                            log.info("UNIQUE applied to column: {}", uniqueColumnName);
+                        }, () -> log.warn("Could not find column '{}' for UNIQUE constraint '{}'",
+                                uniqueColumnName,
+                                constraintText));
+
+                continue;
+            }
+
+            UniqueConstraint uniqueConstraint = new UniqueConstraint(
+                    constraintName,
+                    new ArrayList<>(uniqueColumns)
+            );
+
+            this.compositeUniqueConstraints.add(uniqueConstraint);
+
+            log.info("Composite UNIQUE detected: {} -> {}", constraintName, uniqueColumns);
+        }
+
+        log.info("extractUniqueConstraints() - END");
+    }
+
+
+    /**
+     * Extracts the constraint name from a table constraint text.
+     * <p>
+     * Examples:
+     * <ul>
+     *     <li>CONSTRAINT uk_chamber_department UNIQUE (chamber_id, chamber_department_id)
+     *     -> uk_chamber_department</li>
+     *     <li>UNIQUE (email) -> generated fallback name</li>
+     * </ul>
+     *
+     * @param constraintText raw constraint text
+     * @return extracted constraint name or generated fallback name
+     */
+    private String extractConstraintName(String constraintText) {
+        if (constraintText == null || constraintText.isBlank()) {
+            return "uk_unknown";
+        }
+
+        String trimmedConstraintText = constraintText.replace("\"", "").trim();
+
+        String upperConstraintText = trimmedConstraintText.toUpperCase(java.util.Locale.ROOT);
+        int constraintIndex = upperConstraintText.indexOf("CONSTRAINT");
+        int uniqueIndex = upperConstraintText.indexOf("UNIQUE");
+
+        if (constraintIndex >= 0 && uniqueIndex > constraintIndex) {
+            String extractedName = trimmedConstraintText
+                    .substring(constraintIndex + "CONSTRAINT".length(), uniqueIndex)
+                    .trim();
+
+            if (!extractedName.isBlank()) {
+                return extractedName;
+            }
+        }
+
+        return "uk_" + normalizeTableName(this.tableName);
+    }
+
+
+    /**
+     * Removes schema prefix from a physical table name.
+     *
+     * @param tableName raw table name
+     * @return schema-free table name
+     */
+    private String normalizeTableName(String tableName) {
+        if (tableName == null || tableName.isBlank()) {
+            return "";
+        }
+
+        String trimmedTableName = tableName.trim();
+        int dotIndex = trimmedTableName.lastIndexOf('.');
+
+        if (dotIndex >= 0 && dotIndex < trimmedTableName.length() - 1) {
+            return trimmedTableName.substring(dotIndex + 1);
+        }
+
+        return trimmedTableName;
+    }
+
+
+    /**
      * Converts this parser result into the internal {@link Table} model.
+     *
+     * @return populated table model
      */
     public Table toTable() {
         log.info("toTable() - START | tableName={}", this.tableName);
@@ -285,8 +478,13 @@ public class CreateTableDefinition {
         table.setColumns(columns);
 
         table.addConstraints(this.constraints);
+        table.setUniqueConstraints(new ArrayList<>(this.compositeUniqueConstraints));
 
-        log.info("toTable() - END | Table '{}' with {} columns.", table.getName(), columns.size());
+        log.info("toTable() - END | Table '{}' with {} columns and {} composite unique constraints.",
+                table.getName(),
+                columns.size(),
+                table.getUniqueConstraints().size());
+
         return table;
     }
 }

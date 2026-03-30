@@ -2,18 +2,18 @@ package com.sqldomaingen.generator;
 
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
+import com.sqldomaingen.util.GeneratorSupport;
 import com.sqldomaingen.util.NamingConverter;
 import com.sqldomaingen.util.PackageResolver;
 import lombok.extern.log4j.Log4j2;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.List;
 import java.util.Objects;
 
-
+/**
+ * Generates REST controller classes for parsed database tables.
+ */
 @Log4j2
 public class ControllerGenerator {
 
@@ -23,36 +23,51 @@ public class ControllerGenerator {
      * {outputDir}/src/main/java/{basePackagePath}/controller
      * Package:
      * {basePackage}.controller
+     *
+     * @param tables source table metadata
+     * @param outputDir target project root directory
+     * @param basePackage base package for generated classes
+     * @param overwrite overwrite existing files when true
      */
     public void generateControllers(List<Table> tables, String outputDir, String basePackage, boolean overwrite) {
         Objects.requireNonNull(tables, "tables must not be null");
         Objects.requireNonNull(outputDir, "outputDir must not be null");
         Objects.requireNonNull(basePackage, "basePackage must not be null");
 
-        Path controllerDir = ensureDirectory(PackageResolver.resolvePath(outputDir, basePackage, "controller"));
+        Path controllerDir = GeneratorSupport.ensureDirectory(
+                PackageResolver.resolvePath(outputDir, basePackage, "controller")
+        );
         String controllerPackage = PackageResolver.resolvePackageName(basePackage, "controller");
 
         for (Table table : tables) {
-            String entityName = NamingConverter.toPascalCase(normalizeTableName(table.getName()));
+            String entityName = NamingConverter.toPascalCase(
+                    GeneratorSupport.normalizeTableName(table.getName())
+            );
             String code = generateControllerCode(table, controllerPackage, basePackage);
 
             Path filePath = controllerDir.resolve(entityName + "Controller.java");
-            writeFile(filePath, code, overwrite);
+            GeneratorSupport.writeFile(filePath, code, overwrite);
         }
 
         log.info("✅ Controllers generated under: {}", controllerDir.toAbsolutePath());
     }
 
     /**
-     * Generates controller code for a single table.
-     * Uses Lombok constructor injection and Swagger/OpenAPI annotations.
+     * Generates controller source code for a single table.
+     *
+     * @param table source table metadata
+     * @param controllerPackage package of the generated controller
+     * @param basePackage base package for generated classes
+     * @return generated Java source code
      */
     public String generateControllerCode(Table table, String controllerPackage, String basePackage) {
         Objects.requireNonNull(table, "table must not be null");
         Objects.requireNonNull(controllerPackage, "controllerPackage must not be null");
         Objects.requireNonNull(basePackage, "basePackage must not be null");
 
-        String entityName = NamingConverter.toPascalCase(normalizeTableName(table.getName()));
+        String entityName = NamingConverter.toPascalCase(
+                GeneratorSupport.normalizeTableName(table.getName())
+        );
         String dtoName = entityName + "Dto";
         String serviceName = entityName + "Service";
         String serviceVar = NamingConverter.decapitalizeFirstLetter(entityName) + "Service";
@@ -60,6 +75,30 @@ public class ControllerGenerator {
         String modelPackage = PackageResolver.resolvePackageName(basePackage, "entity");
         String dtoPackage = PackageResolver.resolvePackageName(basePackage, "dto");
         String servicePackage = PackageResolver.resolvePackageName(basePackage, "service");
+
+        String lowerDisplayLabel = NamingConverter.toLogLabel(entityName);
+        if (lowerDisplayLabel.isBlank()) {
+            lowerDisplayLabel = entityName;
+        }
+
+        String[] displayParts = lowerDisplayLabel.split("\\s+");
+        StringBuilder displayLabelBuilder = new StringBuilder();
+        for (int i = 0; i < displayParts.length; i++) {
+            String part = displayParts[i];
+            if (part.isBlank()) {
+                continue;
+            }
+
+            displayLabelBuilder.append(Character.toUpperCase(part.charAt(0)));
+            if (part.length() > 1) {
+                displayLabelBuilder.append(part.substring(1));
+            }
+
+            if (i < displayParts.length - 1) {
+                displayLabelBuilder.append(" ");
+            }
+        }
+        String displayLabel = displayLabelBuilder.isEmpty() ? entityName : displayLabelBuilder.toString();
 
         boolean compositePk = hasCompositePrimaryKey(table);
         List<Column> pkColumns = getPrimaryKeyColumns(table);
@@ -75,6 +114,8 @@ public class ControllerGenerator {
         }
 
         boolean needsUuidImport = needsUuidImport(table);
+        boolean needsBigDecimalImport = needsBigDecimalImport(table);
+        boolean needsBigIntegerImport = needsBigIntegerImport(table);
 
         String apiPath = "/api/" + NamingConverter.toKebabCase(entityName) + "s";
 
@@ -95,6 +136,8 @@ public class ControllerGenerator {
         sb.append("import io.swagger.v3.oas.annotations.responses.ApiResponses;\n");
         sb.append("import io.swagger.v3.oas.annotations.tags.Tag;\n\n");
 
+        sb.append("import jakarta.validation.Valid;\n\n");
+
         sb.append("import lombok.RequiredArgsConstructor;\n");
         sb.append("import lombok.extern.log4j.Log4j2;\n\n");
 
@@ -105,44 +148,117 @@ public class ControllerGenerator {
         if (needsUuidImport) {
             sb.append("import java.util.UUID;\n");
         }
+        if (needsBigDecimalImport) {
+            sb.append("import java.math.BigDecimal;\n");
+        }
+        if (needsBigIntegerImport) {
+            sb.append("import java.math.BigInteger;\n");
+        }
         sb.append("import java.util.List;\n\n");
 
         sb.append("/**\n");
-        sb.append(" * REST controller for managing ").append(entityName).append(" resources.\n");
+        sb.append(" * REST controller for managing ").append(displayLabel).append(" resources.\n");
         sb.append(" * Generated automatically by SQLDomainGen.\n");
         sb.append(" */\n");
         sb.append("@RestController\n");
         sb.append("@RequiredArgsConstructor\n");
         sb.append("@Log4j2\n");
-        sb.append("@Tag(name = \"").append(entityName).append("\", description = \"").append(entityName).append(" API\")\n");
+        sb.append("@Tag(name = \"").append(displayLabel).append("\", description = \"").append(displayLabel).append(" API\")\n");
         sb.append("@RequestMapping(\"").append(apiPath).append("\")\n");
         sb.append("public class ").append(entityName).append("Controller {\n\n");
 
         sb.append("    private final ").append(serviceName).append(" ").append(serviceVar).append(";\n\n");
 
-        // GET ALL
+        appendGetAllMethod(sb, entityName, dtoName, displayLabel, lowerDisplayLabel, serviceVar);
+        appendGetByIdMethod(sb, entityName, dtoName, displayLabel, lowerDisplayLabel, serviceVar, pkType, pkColumns, compositePk);
+        appendCreateMethod(sb, entityName, dtoName, displayLabel, lowerDisplayLabel, serviceVar);
+        appendPatchMethod(sb, entityName, dtoName, displayLabel, lowerDisplayLabel, serviceVar, pkType, pkColumns, compositePk);
+        appendDeleteMethod(sb, entityName, dtoName, displayLabel, lowerDisplayLabel, serviceVar, pkType, pkColumns, compositePk);
+
+        if (compositePk) {
+            appendBuildCompositeIdMethod(sb, entityName, displayLabel, pkType, pkColumns);
+        }
+
+        sb.append("}\n");
+
+        return sb.toString();
+    }
+
+    /**
+     * Appends the get-all controller method.
+     *
+     * @param sb target builder
+     * @param entityName entity simple name
+     * @param dtoName dto simple name
+     * @param displayLabel human-readable display label
+     * @param lowerDisplayLabel lowercase display label
+     * @param serviceVar injected service variable name
+     */
+    private void appendGetAllMethod(
+            StringBuilder sb,
+            String entityName,
+            String dtoName,
+            String displayLabel,
+            String lowerDisplayLabel,
+            String serviceVar
+    ) {
         sb.append("    /**\n");
-        sb.append("     * Retrieves all records.\n");
+        sb.append("     * Retrieves all ").append(displayLabel).append(" records.\n");
         sb.append("     *\n");
         sb.append("     * @return list of ").append(dtoName).append("\n");
         sb.append("     */\n");
-        sb.append("    @Operation(summary = \"Get all ").append(entityName).append("\")\n");
+        sb.append("    @Operation(summary = \"Get all ").append(displayLabel).append("\")\n");
         sb.append("    @ApiResponses({\n");
         sb.append("            @ApiResponse(responseCode = \"200\", description = \"Success\")\n");
         sb.append("    })\n");
         sb.append("    @GetMapping\n");
         sb.append("    public ResponseEntity<List<").append(dtoName).append(">> getAll() {\n");
-        sb.append("        log.info(\"Fetching all ").append(entityName.toLowerCase()).append(" records.\");\n");
+        sb.append("        log.info(\"Fetching all ").append(lowerDisplayLabel).append(" records.\");\n");
         sb.append("        return ResponseEntity.ok(").append(serviceVar).append(".getAll").append(entityName).append("());\n");
         sb.append("    }\n\n");
+    }
 
-        // GET BY ID
+    /**
+     * Appends the get-by-id controller method.
+     *
+     * @param sb target builder
+     * @param entityName entity simple name
+     * @param dtoName dto simple name
+     * @param displayLabel human-readable display label
+     * @param lowerDisplayLabel lowercase display label
+     * @param serviceVar injected service variable name
+     * @param pkType primary key type
+     * @param pkColumns primary key columns
+     * @param compositePk true when the entity uses a composite primary key
+     */
+    private void appendGetByIdMethod(
+            StringBuilder sb,
+            String entityName,
+            String dtoName,
+            String displayLabel,
+            String lowerDisplayLabel,
+            String serviceVar,
+            String pkType,
+            List<Column> pkColumns,
+            boolean compositePk
+    ) {
         sb.append("    /**\n");
-        sb.append("     * Retrieves a record by id.\n");
+        sb.append("     * Retrieves a ").append(lowerDisplayLabel).append(" record by id.\n");
         sb.append("     *\n");
+
+        if (compositePk) {
+            for (Column pkCol : pkColumns) {
+                String columnName = GeneratorSupport.unquoteIdentifier(pkCol.getName());
+                String paramName = toCamelCase(columnName);
+                sb.append("     * @param ").append(paramName).append(" ").append(columnName).append(" value\n");
+            }
+        } else {
+            sb.append("     * @param id ").append(lowerDisplayLabel).append(" identifier\n");
+        }
+
         sb.append("     * @return ").append(dtoName).append("\n");
         sb.append("     */\n");
-        sb.append("    @Operation(summary = \"Get ").append(entityName).append(" by id\")\n");
+        sb.append("    @Operation(summary = \"Get ").append(displayLabel).append(" by id\")\n");
         sb.append("    @ApiResponses({\n");
         sb.append("            @ApiResponse(responseCode = \"200\", description = \"Success\"),\n");
         sb.append("            @ApiResponse(responseCode = \"404\", description = \"Not found\")\n");
@@ -154,12 +270,13 @@ public class ControllerGenerator {
 
             for (int i = 0; i < pkColumns.size(); i++) {
                 Column pkCol = pkColumns.get(i);
-                String colName = safe(pkCol.getName());
-                String paramName = toCamelCase(colName);
+                String columnName = GeneratorSupport.unquoteIdentifier(pkCol.getName());
+                String paramName = toCamelCase(columnName);
                 String paramType = detectJavaTypeForPkColumn(pkCol);
 
-                sb.append("            @Parameter(description = \"").append(colName).append("\", required = true)\n");
-                sb.append("            @RequestParam(name = \"").append(colName).append("\") ").append(paramType).append(" ").append(paramName);
+                sb.append("            @Parameter(description = \"").append(columnName).append("\", required = true)\n");
+                sb.append("            @RequestParam(name = \"").append(columnName).append("\") ")
+                        .append(paramType).append(" ").append(paramName);
 
                 if (i < pkColumns.size() - 1) {
                     sb.append(",\n");
@@ -169,104 +286,183 @@ public class ControllerGenerator {
             }
 
             sb.append("        ").append(pkType).append(" id = build").append(entityName).append("Id(");
-            for (int i = 0; i < pkColumns.size(); i++) {
-                sb.append(toCamelCase(pkColumns.get(i).getName()));
-                if (i < pkColumns.size() - 1) {
-                    sb.append(", ");
-                }
-            }
+            appendCompositeIdArguments(sb, pkColumns);
             sb.append(");\n");
-
-            sb.append("        log.info(\"Fetching ").append(entityName.toLowerCase()).append(" with composite id: {}\", id);\n");
+            sb.append("        log.info(\"Fetching ").append(lowerDisplayLabel).append(" with composite id: {}\", id);\n");
             sb.append("        return ResponseEntity.ok(").append(serviceVar).append(".get").append(entityName).append("ById(id));\n");
             sb.append("    }\n\n");
-        } else {
-            sb.append("    @GetMapping(\"/{id}\")\n");
-            sb.append("    public ResponseEntity<").append(dtoName).append("> getById(\n");
-            sb.append("            @Parameter(description = \"").append(entityName).append(" id\", required = true)\n");
-            sb.append("            @PathVariable ").append(pkType).append(" id) {\n");
-            sb.append("        log.info(\"Fetching ").append(entityName.toLowerCase()).append(" with id: {}\", id);\n");
-            sb.append("        return ResponseEntity.ok(").append(serviceVar).append(".get").append(entityName).append("ById(id));\n");
-            sb.append("    }\n\n");
+            return;
         }
 
-        // CREATE
+        sb.append("    @GetMapping(\"/{id}\")\n");
+        sb.append("    public ResponseEntity<").append(dtoName).append("> getById(\n");
+        sb.append("            @Parameter(description = \"").append(lowerDisplayLabel).append(" id\", required = true)\n");
+        sb.append("            @PathVariable ").append(pkType).append(" id) {\n");
+        sb.append("        log.info(\"Fetching ").append(lowerDisplayLabel).append(" with id: {}\", id);\n");
+        sb.append("        return ResponseEntity.ok(").append(serviceVar).append(".get").append(entityName).append("ById(id));\n");
+        sb.append("    }\n\n");
+    }
+
+    /**
+     * Appends the create controller method.
+     *
+     * @param sb target builder
+     * @param entityName entity simple name
+     * @param dtoName dto simple name
+     * @param displayLabel human-readable display label
+     * @param lowerDisplayLabel lowercase display label
+     * @param serviceVar injected service variable name
+     */
+    private void appendCreateMethod(
+            StringBuilder sb,
+            String entityName,
+            String dtoName,
+            String displayLabel,
+            String lowerDisplayLabel,
+            String serviceVar
+    ) {
         sb.append("    /**\n");
-        sb.append("     * Creates a new record.\n");
+        sb.append("     * Creates a new ").append(lowerDisplayLabel).append(" record.\n");
         sb.append("     *\n");
-        sb.append("     * @param dto payload\n");
+        sb.append("     * @param dto ").append(lowerDisplayLabel).append(" payload\n");
         sb.append("     * @return created ").append(dtoName).append("\n");
         sb.append("     */\n");
-        sb.append("    @Operation(summary = \"Create ").append(entityName).append("\")\n");
+        sb.append("    @Operation(summary = \"Create ").append(displayLabel).append("\")\n");
         sb.append("    @ApiResponses({\n");
         sb.append("            @ApiResponse(responseCode = \"201\", description = \"Created\")\n");
         sb.append("    })\n");
         sb.append("    @PostMapping\n");
-        sb.append("    public ResponseEntity<").append(dtoName).append("> create(@RequestBody ").append(dtoName).append(" dto) {\n");
-        sb.append("        log.info(\"Creating ").append(entityName.toLowerCase()).append(".\");\n");
+        sb.append("    public ResponseEntity<").append(dtoName).append("> create(@Valid @RequestBody ").append(dtoName).append(" dto) {\n");
+        sb.append("        log.info(\"Creating ").append(lowerDisplayLabel).append(".\");\n");
         sb.append("        ").append(dtoName).append(" created = ").append(serviceVar).append(".create").append(entityName).append("(dto);\n");
         sb.append("        return ResponseEntity.status(HttpStatus.CREATED).body(created);\n");
         sb.append("    }\n\n");
+    }
 
-        // UPDATE
+    /**
+     * Appends the PATCH controller method.
+     *
+     * @param sb target builder
+     * @param entityName entity simple name
+     * @param dtoName dto simple name
+     * @param displayLabel human-readable display label
+     * @param lowerDisplayLabel lowercase display label
+     * @param serviceVar injected service variable name
+     * @param pkType primary key type
+     * @param pkColumns primary key columns
+     * @param compositePk true when the entity uses a composite primary key
+     */
+    private void appendPatchMethod(
+            StringBuilder sb,
+            String entityName,
+            String dtoName,
+            String displayLabel,
+            String lowerDisplayLabel,
+            String serviceVar,
+            String pkType,
+            List<Column> pkColumns,
+            boolean compositePk
+    ) {
         sb.append("    /**\n");
-        sb.append("     * Updates an existing record (PUT-style).\n");
+        sb.append("     * Partially updates an existing ").append(lowerDisplayLabel).append(" record.\n");
+        sb.append("     * Only non-null fields are updated.\n");
         sb.append("     *\n");
-        sb.append("     * @param dto payload\n");
+
+        if (compositePk) {
+            for (Column pkCol : pkColumns) {
+                String columnName = GeneratorSupport.unquoteIdentifier(pkCol.getName());
+                String paramName = toCamelCase(columnName);
+                sb.append("     * @param ").append(paramName).append(" ").append(columnName).append(" value\n");
+            }
+        } else {
+            sb.append("     * @param id ").append(lowerDisplayLabel).append(" identifier\n");
+        }
+
+        sb.append("     * @param dto partial ").append(lowerDisplayLabel).append(" payload\n");
         sb.append("     * @return updated ").append(dtoName).append("\n");
         sb.append("     */\n");
-        sb.append("    @Operation(summary = \"Update ").append(entityName).append("\")\n");
+        sb.append("    @Operation(summary = \"Patch ").append(displayLabel).append("\")\n");
         sb.append("    @ApiResponses({\n");
         sb.append("            @ApiResponse(responseCode = \"200\", description = \"Success\"),\n");
         sb.append("            @ApiResponse(responseCode = \"404\", description = \"Not found\")\n");
         sb.append("    })\n");
 
         if (compositePk) {
-            sb.append("    @PutMapping(\"/by-id\")\n");
-            sb.append("    public ResponseEntity<").append(dtoName).append("> update(\n");
+            sb.append("    @PatchMapping(\"/by-id\")\n");
+            sb.append("    public ResponseEntity<").append(dtoName).append("> patch(\n");
 
             for (int i = 0; i < pkColumns.size(); i++) {
                 Column pkCol = pkColumns.get(i);
-                String colName = safe(pkCol.getName());
-                String paramName = toCamelCase(colName);
+                String columnName = GeneratorSupport.unquoteIdentifier(pkCol.getName());
+                String paramName = toCamelCase(columnName);
                 String paramType = detectJavaTypeForPkColumn(pkCol);
 
-                sb.append("            @Parameter(description = \"").append(colName).append("\", required = true)\n");
-                sb.append("            @RequestParam(name = \"").append(colName).append("\") ").append(paramType).append(" ").append(paramName).append(",\n");
+                sb.append("            @Parameter(description = \"").append(columnName).append("\", required = true)\n");
+                sb.append("            @RequestParam(name = \"").append(columnName).append("\") ")
+                        .append(paramType).append(" ").append(paramName).append(",\n");
             }
 
             sb.append("            @RequestBody ").append(dtoName).append(" dto) {\n");
-
             sb.append("        ").append(pkType).append(" id = build").append(entityName).append("Id(");
-            for (int i = 0; i < pkColumns.size(); i++) {
-                sb.append(toCamelCase(pkColumns.get(i).getName()));
-                if (i < pkColumns.size() - 1) {
-                    sb.append(", ");
-                }
-            }
+            appendCompositeIdArguments(sb, pkColumns);
             sb.append(");\n");
-
-            sb.append("        log.info(\"Updating ").append(entityName.toLowerCase()).append(" with composite id: {}\", id);\n");
-            sb.append("        return ResponseEntity.ok(").append(serviceVar).append(".update").append(entityName).append("(id, dto));\n");
+            sb.append("        log.info(\"Patching ").append(lowerDisplayLabel).append(" with composite id: {}\", id);\n");
+            sb.append("        return ResponseEntity.ok(").append(serviceVar).append(".patch").append(entityName).append("(id, dto));\n");
             sb.append("    }\n\n");
-        } else {
-            sb.append("    @PutMapping(\"/{id}\")\n");
-            sb.append("    public ResponseEntity<").append(dtoName).append("> update(\n");
-            sb.append("            @Parameter(description = \"").append(entityName).append(" id\", required = true)\n");
-            sb.append("            @PathVariable ").append(pkType).append(" id,\n");
-            sb.append("            @RequestBody ").append(dtoName).append(" dto) {\n");
-            sb.append("        log.info(\"Updating ").append(entityName.toLowerCase()).append(" with id: {}\", id);\n");
-            sb.append("        return ResponseEntity.ok(").append(serviceVar).append(".update").append(entityName).append("(id, dto));\n");
-            sb.append("    }\n\n");
+            return;
         }
 
-        // DELETE
+        sb.append("    @PatchMapping(\"/{id}\")\n");
+        sb.append("    public ResponseEntity<").append(dtoName).append("> patch(\n");
+        sb.append("            @Parameter(description = \"").append(lowerDisplayLabel).append(" id\", required = true)\n");
+        sb.append("            @PathVariable ").append(pkType).append(" id,\n");
+        sb.append("            @RequestBody ").append(dtoName).append(" dto) {\n");
+        sb.append("        log.info(\"Patching ").append(lowerDisplayLabel).append(" with id: {}\", id);\n");
+        sb.append("        return ResponseEntity.ok(").append(serviceVar).append(".patch").append(entityName).append("(id, dto));\n");
+        sb.append("    }\n\n");
+    }
+
+    /**
+     * Appends the delete controller method.
+     *
+     * @param sb target builder
+     * @param entityName entity simple name
+     * @param dtoName dto simple name
+     * @param displayLabel human-readable display label
+     * @param lowerDisplayLabel lowercase display label
+     * @param serviceVar injected service variable name
+     * @param pkType primary key type
+     * @param pkColumns primary key columns
+     * @param compositePk true when the entity uses a composite primary key
+     */
+    private void appendDeleteMethod(
+            StringBuilder sb,
+            String entityName,
+            String dtoName,
+            String displayLabel,
+            String lowerDisplayLabel,
+            String serviceVar,
+            String pkType,
+            List<Column> pkColumns,
+            boolean compositePk
+    ) {
         sb.append("    /**\n");
-        sb.append("     * Deletes a record by id.\n");
+        sb.append("     * Deletes a ").append(lowerDisplayLabel).append(" record by id.\n");
         sb.append("     *\n");
+
+        if (compositePk) {
+            for (Column pkCol : pkColumns) {
+                String columnName = GeneratorSupport.unquoteIdentifier(pkCol.getName());
+                String paramName = toCamelCase(columnName);
+                sb.append("     * @param ").append(paramName).append(" ").append(columnName).append(" value\n");
+            }
+        } else {
+            sb.append("     * @param id ").append(lowerDisplayLabel).append(" identifier\n");
+        }
+
         sb.append("     * @return no content\n");
         sb.append("     */\n");
-        sb.append("    @Operation(summary = \"Delete ").append(entityName).append("\")\n");
+        sb.append("    @Operation(summary = \"Delete ").append(displayLabel).append("\")\n");
         sb.append("    @ApiResponses({\n");
         sb.append("            @ApiResponse(responseCode = \"204\", description = \"No content\"),\n");
         sb.append("            @ApiResponse(responseCode = \"404\", description = \"Not found\")\n");
@@ -278,12 +474,13 @@ public class ControllerGenerator {
 
             for (int i = 0; i < pkColumns.size(); i++) {
                 Column pkCol = pkColumns.get(i);
-                String colName = safe(pkCol.getName());
-                String paramName = toCamelCase(colName);
+                String columnName = GeneratorSupport.unquoteIdentifier(pkCol.getName());
+                String paramName = toCamelCase(columnName);
                 String paramType = detectJavaTypeForPkColumn(pkCol);
 
-                sb.append("            @Parameter(description = \"").append(colName).append("\", required = true)\n");
-                sb.append("            @RequestParam(name = \"").append(colName).append("\") ").append(paramType).append(" ").append(paramName);
+                sb.append("            @Parameter(description = \"").append(columnName).append("\", required = true)\n");
+                sb.append("            @RequestParam(name = \"").append(columnName).append("\") ")
+                        .append(paramType).append(" ").append(paramName);
 
                 if (i < pkColumns.size() - 1) {
                     sb.append(",\n");
@@ -293,60 +490,99 @@ public class ControllerGenerator {
             }
 
             sb.append("        ").append(pkType).append(" id = build").append(entityName).append("Id(");
-            for (int i = 0; i < pkColumns.size(); i++) {
-                sb.append(toCamelCase(pkColumns.get(i).getName()));
-                if (i < pkColumns.size() - 1) {
-                    sb.append(", ");
-                }
-            }
+            appendCompositeIdArguments(sb, pkColumns);
             sb.append(");\n");
-
-            sb.append("        log.info(\"Deleting ").append(entityName.toLowerCase()).append(" with composite id: {}\", id);\n");
+            sb.append("        log.info(\"Deleting ").append(lowerDisplayLabel).append(" with composite id: {}\", id);\n");
             sb.append("        ").append(serviceVar).append(".delete").append(entityName).append("(id);\n");
             sb.append("        return ResponseEntity.noContent().build();\n");
             sb.append("    }\n\n");
-
-            // Composite PK builder helper inside generated controller
-            sb.append("    /**\n");
-            sb.append("     * Builds composite id object for ").append(entityName).append(".\n");
-            sb.append("     */\n");
-            sb.append("    private ").append(pkType).append(" build").append(entityName).append("Id(");
-
-            for (int i = 0; i < pkColumns.size(); i++) {
-                Column pkCol = pkColumns.get(i);
-                String paramType = detectJavaTypeForPkColumn(pkCol);
-                String paramName = toCamelCase(pkCol.getName());
-
-                sb.append(paramType).append(" ").append(paramName);
-                if (i < pkColumns.size() - 1) {
-                    sb.append(", ");
-                }
-            }
-            sb.append(") {\n");
-
-            sb.append("        ").append(pkType).append(" id = new ").append(pkType).append("();\n");
-            for (Column pkCol : pkColumns) {
-                String fieldName = toCamelCase(pkCol.getName());
-                sb.append("        id.set").append(toPascalCase(fieldName)).append("(").append(fieldName).append(");\n");
-            }
-            sb.append("        return id;\n");
-            sb.append("    }\n");
-        } else {
-            sb.append("    @DeleteMapping(\"/{id}\")\n");
-            sb.append("    public ResponseEntity<Void> deleteById(\n");
-            sb.append("            @Parameter(description = \"").append(entityName).append(" id\", required = true)\n");
-            sb.append("            @PathVariable ").append(pkType).append(" id) {\n");
-            sb.append("        log.info(\"Deleting ").append(entityName.toLowerCase()).append(" with id: {}\", id);\n");
-            sb.append("        ").append(serviceVar).append(".delete").append(entityName).append("(id);\n");
-            sb.append("        return ResponseEntity.noContent().build();\n");
-            sb.append("    }\n");
+            return;
         }
 
-        sb.append("}\n");
-
-        return sb.toString();
+        sb.append("    @DeleteMapping(\"/{id}\")\n");
+        sb.append("    public ResponseEntity<Void> deleteById(\n");
+        sb.append("            @Parameter(description = \"").append(lowerDisplayLabel).append(" id\", required = true)\n");
+        sb.append("            @PathVariable ").append(pkType).append(" id) {\n");
+        sb.append("        log.info(\"Deleting ").append(lowerDisplayLabel).append(" with id: {}\", id);\n");
+        sb.append("        ").append(serviceVar).append(".delete").append(entityName).append("(id);\n");
+        sb.append("        return ResponseEntity.noContent().build();\n");
+        sb.append("    }\n\n");
     }
 
+    /**
+     * Appends the composite id builder method.
+     *
+     * @param sb target builder
+     * @param entityName entity simple name
+     * @param displayLabel human-readable display label
+     * @param pkType composite primary key type
+     * @param pkColumns primary key columns
+     */
+    private void appendBuildCompositeIdMethod(
+            StringBuilder sb,
+            String entityName,
+            String displayLabel,
+            String pkType,
+            List<Column> pkColumns
+    ) {
+        sb.append("    /**\n");
+        sb.append("     * Builds a composite identifier for ").append(displayLabel).append(".\n");
+        sb.append("     *\n");
+
+        for (Column pkCol : pkColumns) {
+            String columnName = GeneratorSupport.unquoteIdentifier(pkCol.getName());
+            String paramName = toCamelCase(columnName);
+            sb.append("     * @param ").append(paramName).append(" ").append(columnName).append(" value\n");
+        }
+
+        sb.append("     * @return composed ").append(pkType).append("\n");
+        sb.append("     */\n");
+        sb.append("    private ").append(pkType).append(" build").append(entityName).append("Id(");
+
+        for (int i = 0; i < pkColumns.size(); i++) {
+            Column pkCol = pkColumns.get(i);
+            String paramType = detectJavaTypeForPkColumn(pkCol);
+            String paramName = toCamelCase(GeneratorSupport.unquoteIdentifier(pkCol.getName()));
+
+            sb.append(paramType).append(" ").append(paramName);
+            if (i < pkColumns.size() - 1) {
+                sb.append(", ");
+            }
+        }
+
+        sb.append(") {\n");
+        sb.append("        ").append(pkType).append(" id = new ").append(pkType).append("();\n");
+
+        for (Column pkCol : pkColumns) {
+            String fieldName = toCamelCase(GeneratorSupport.unquoteIdentifier(pkCol.getName()));
+            sb.append("        id.set").append(toPascalCase(fieldName)).append("(").append(fieldName).append(");\n");
+        }
+
+        sb.append("        return id;\n");
+        sb.append("    }\n");
+    }
+
+    /**
+     * Appends the ordered composite id arguments.
+     *
+     * @param sb target builder
+     * @param pkColumns primary key columns
+     */
+    private void appendCompositeIdArguments(StringBuilder sb, List<Column> pkColumns) {
+        for (int i = 0; i < pkColumns.size(); i++) {
+            sb.append(toCamelCase(GeneratorSupport.unquoteIdentifier(pkColumns.get(i).getName())));
+            if (i < pkColumns.size() - 1) {
+                sb.append(", ");
+            }
+        }
+    }
+
+    /**
+     * Checks whether any primary key column requires a UUID import.
+     *
+     * @param table source table metadata
+     * @return true when a UUID primary key type is detected
+     */
     private static boolean needsUuidImport(Table table) {
         return table.getColumns().stream()
                 .filter(Objects::nonNull)
@@ -354,11 +590,51 @@ public class ControllerGenerator {
                 .map(Column::getJavaType)
                 .filter(Objects::nonNull)
                 .map(String::trim)
-                .anyMatch(t -> t.equalsIgnoreCase("UUID")
-                        || t.equals("java.util.UUID")
-                        || t.endsWith(".UUID"));
+                .anyMatch(type -> type.equalsIgnoreCase("UUID")
+                        || type.equals("java.util.UUID")
+                        || type.endsWith(".UUID"));
     }
 
+    /**
+     * Checks whether any primary key column requires a BigInteger import.
+     *
+     * @param table source table metadata
+     * @return true when a BigInteger primary key type is detected
+     */
+    private static boolean needsBigIntegerImport(Table table) {
+        return table.getColumns().stream()
+                .filter(Objects::nonNull)
+                .filter(Column::isPrimaryKey)
+                .map(Column::getJavaType)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .anyMatch(type -> type.equals("BigInteger")
+                        || type.equals("java.math.BigInteger"));
+    }
+
+    /**
+     * Checks whether any primary key column requires a BigDecimal import.
+     *
+     * @param table source table metadata
+     * @return true when a BigDecimal primary key type is detected
+     */
+    private static boolean needsBigDecimalImport(Table table) {
+        return table.getColumns().stream()
+                .filter(Objects::nonNull)
+                .filter(Column::isPrimaryKey)
+                .map(Column::getJavaType)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .anyMatch(type -> type.equals("BigDecimal")
+                        || type.equals("java.math.BigDecimal"));
+    }
+
+    /**
+     * Checks whether a table uses a composite primary key.
+     *
+     * @param table source table metadata
+     * @return true when more than one primary key column exists
+     */
     private static boolean hasCompositePrimaryKey(Table table) {
         long pkCount = table.getColumns().stream()
                 .filter(Objects::nonNull)
@@ -367,53 +643,77 @@ public class ControllerGenerator {
         return pkCount > 1;
     }
 
+    /**
+     * Resolves the Java type to use for a primary key request parameter.
+     *
+     * @param column primary key column metadata
+     * @return resolved Java type name
+     */
     private static String detectJavaTypeForPkColumn(Column column) {
         if (column == null || column.getJavaType() == null || column.getJavaType().isBlank()) {
             return "Long";
         }
 
-        String t = column.getJavaType().trim();
+        String type = column.getJavaType().trim();
 
-        if ("UUID".equalsIgnoreCase(t) || "java.util.UUID".equals(t) || t.endsWith(".UUID")) {
+        if ("UUID".equalsIgnoreCase(type) || "java.util.UUID".equals(type) || type.endsWith(".UUID")) {
             return "UUID";
         }
 
-        // Numeric PKs -> Long (όπως ζήτησες)
-        if ("BigDecimal".equals(t) || "java.math.BigDecimal".equals(t)) {
+        if ("BigInteger".equals(type) || "java.math.BigInteger".equals(type)) {
+            return "BigInteger";
+        }
+
+        if ("BigDecimal".equals(type) || "java.math.BigDecimal".equals(type)) {
+            return "BigDecimal";
+        }
+
+        if ("long".equalsIgnoreCase(type) || "java.lang.Long".equals(type)) {
             return "Long";
         }
-
-        if ("long".equalsIgnoreCase(t) || "java.lang.Long".equals(t)) return "Long";
-        if ("int".equalsIgnoreCase(t) || "java.lang.Integer".equals(t)) return "Integer";
-        if ("short".equalsIgnoreCase(t) || "java.lang.Short".equals(t)) return "Short";
-        if ("byte".equalsIgnoreCase(t) || "java.lang.Byte".equals(t)) return "Byte";
-        if ("boolean".equalsIgnoreCase(t) || "java.lang.Boolean".equals(t)) return "Boolean";
-
-        if (t.contains(".")) {
-            return t.substring(t.lastIndexOf('.') + 1);
+        if ("int".equalsIgnoreCase(type) || "java.lang.Integer".equals(type)) {
+            return "Integer";
+        }
+        if ("short".equalsIgnoreCase(type) || "java.lang.Short".equals(type)) {
+            return "Short";
+        }
+        if ("byte".equalsIgnoreCase(type) || "java.lang.Byte".equals(type)) {
+            return "Byte";
+        }
+        if ("boolean".equalsIgnoreCase(type) || "java.lang.Boolean".equals(type)) {
+            return "Boolean";
         }
 
-        return t;
+        if (type.contains(".")) {
+            return type.substring(type.lastIndexOf('.') + 1);
+        }
+
+        return type;
     }
 
-    private static String safe(String s) {
-        return s == null ? "" : s.trim();
-    }
-
-
-
-
+    /**
+     * Converts a snake_case name to camelCase.
+     *
+     * @param raw source value
+     * @return camelCase value
+     */
     private static String toCamelCase(String raw) {
-        String s = safe(raw);
-        if (s.isEmpty()) return "id";
+        String value = GeneratorSupport.trimToEmpty(raw);
+        if (value.isEmpty()) {
+            return "id";
+        }
 
-        String lower = s.toLowerCase();
+        String lower = value.toLowerCase();
         String[] parts = lower.split("_+");
-        if (parts.length == 0) return "id";
+        if (parts.length == 0) {
+            return "id";
+        }
 
         StringBuilder out = new StringBuilder(parts[0]);
         for (int i = 1; i < parts.length; i++) {
-            if (parts[i].isEmpty()) continue;
+            if (parts[i].isEmpty()) {
+                continue;
+            }
             out.append(Character.toUpperCase(parts[i].charAt(0)));
             if (parts[i].length() > 1) {
                 out.append(parts[i].substring(1));
@@ -422,12 +722,26 @@ public class ControllerGenerator {
         return out.toString();
     }
 
+    /**
+     * Converts a camelCase value to PascalCase.
+     *
+     * @param camel source value
+     * @return PascalCase value
+     */
     private static String toPascalCase(String camel) {
-        String s = safe(camel);
-        if (s.isEmpty()) return "Id";
-        return Character.toUpperCase(s.charAt(0)) + s.substring(1);
+        String value = GeneratorSupport.trimToEmpty(camel);
+        if (value.isEmpty()) {
+            return "Id";
+        }
+        return Character.toUpperCase(value.charAt(0)) + value.substring(1);
     }
 
+    /**
+     * Returns all primary key columns of the table.
+     *
+     * @param table source table metadata
+     * @return list of primary key columns
+     */
     private static List<Column> getPrimaryKeyColumns(Table table) {
         Objects.requireNonNull(table, "table must not be null");
 
@@ -437,6 +751,12 @@ public class ControllerGenerator {
                 .toList();
     }
 
+    /**
+     * Resolves the Java type for a single primary key.
+     *
+     * @param table source table metadata
+     * @return resolved Java type name
+     */
     private static String detectSinglePrimaryKeyType(Table table) {
         List<Column> pkColumns = getPrimaryKeyColumns(table);
 
@@ -451,71 +771,51 @@ public class ControllerGenerator {
             );
         }
 
-        Column pk = pkColumns.get(0);
+        Column primaryKeyColumn = pkColumns.get(0);
 
-        String raw = pk.getJavaType();
-        if (raw == null || raw.isBlank()) {
+        String rawType = primaryKeyColumn.getJavaType();
+        if (rawType == null || rawType.isBlank()) {
             return "Long";
         }
 
-        String t = raw.trim();
+        String normalizedType = rawType.trim();
 
-        // UUID
-        if ("UUID".equalsIgnoreCase(t) || "java.util.UUID".equals(t) || t.endsWith(".UUID")) {
+        if ("UUID".equalsIgnoreCase(normalizedType)
+                || "java.util.UUID".equals(normalizedType)
+                || normalizedType.endsWith(".UUID")) {
             return "UUID";
         }
 
-        // numeric(...) PKs usually come as BigDecimal from parser -> map to Long (your rule)
-        if ("BigDecimal".equals(t) || "java.math.BigDecimal".equals(t)) {
+        if ("BigDecimal".equals(normalizedType)
+                || "java.math.BigDecimal".equals(normalizedType)) {
+            return "BigDecimal";
+        }
+
+        if ("BigInteger".equals(normalizedType)
+                || "java.math.BigInteger".equals(normalizedType)) {
+            return "BigInteger";
+        }
+
+        if ("long".equalsIgnoreCase(normalizedType) || "java.lang.Long".equals(normalizedType)) {
             return "Long";
         }
-
-        // Common boxed / primitive conversions
-        if ("long".equalsIgnoreCase(t) || "java.lang.Long".equals(t)) return "Long";
-        if ("int".equalsIgnoreCase(t) || "java.lang.Integer".equals(t)) return "Integer";
-        if ("short".equalsIgnoreCase(t) || "java.lang.Short".equals(t)) return "Short";
-        if ("byte".equalsIgnoreCase(t) || "java.lang.Byte".equals(t)) return "Byte";
-        if ("boolean".equalsIgnoreCase(t) || "java.lang.Boolean".equals(t)) return "Boolean";
-
-        // Fully qualified class name -> simple name
-        if (t.contains(".")) {
-            return t.substring(t.lastIndexOf('.') + 1);
+        if ("int".equalsIgnoreCase(normalizedType) || "java.lang.Integer".equals(normalizedType)) {
+            return "Integer";
+        }
+        if ("short".equalsIgnoreCase(normalizedType) || "java.lang.Short".equals(normalizedType)) {
+            return "Short";
+        }
+        if ("byte".equalsIgnoreCase(normalizedType) || "java.lang.Byte".equals(normalizedType)) {
+            return "Byte";
+        }
+        if ("boolean".equalsIgnoreCase(normalizedType) || "java.lang.Boolean".equals(normalizedType)) {
+            return "Boolean";
         }
 
-        return t;
-    }
-
-
-
-    private static String normalizeTableName(String raw) {
-        if (raw == null) return "";
-        String s = raw.trim();
-        int dot = s.lastIndexOf('.');
-        if (dot >= 0 && dot < s.length() - 1) {
-            s = s.substring(dot + 1);
+        if (normalizedType.contains(".")) {
+            return normalizedType.substring(normalizedType.lastIndexOf('.') + 1);
         }
-        return s;
-    }
 
-    private static Path ensureDirectory(Path path) {
-        try {
-            Files.createDirectories(path);
-            return path;
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to create directory: " + path, e);
-        }
-    }
-
-    private static void writeFile(Path filePath, String content, boolean overwrite) {
-        try {
-            if (!overwrite && Files.exists(filePath)) {
-                log.info("ℹ️ Skipping existing file: {}", filePath.toAbsolutePath());
-                return;
-            }
-            Files.writeString(filePath, content, StandardCharsets.UTF_8);
-            log.info("✅ Controller generated: {}", filePath.toAbsolutePath());
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to write file: " + filePath, e);
-        }
+        return normalizedType;
     }
 }

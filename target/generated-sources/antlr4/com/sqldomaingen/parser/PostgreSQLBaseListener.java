@@ -17,6 +17,18 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterIdentityColumn(PostgreSQLParser.IdentityColumnContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIdentityColumn(PostgreSQLParser.IdentityColumnContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterCreateTableStatement(PostgreSQLParser.CreateTableStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -41,6 +53,18 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterColumnAttribute(PostgreSQLParser.ColumnAttributeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitColumnAttribute(PostgreSQLParser.ColumnAttributeContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterColumnTypeModifier(PostgreSQLParser.ColumnTypeModifierContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -60,6 +84,42 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitGeneratedColumn(PostgreSQLParser.GeneratedColumnContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterGeneratedColumnBody(PostgreSQLParser.GeneratedColumnBodyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitGeneratedColumnBody(PostgreSQLParser.GeneratedColumnBodyContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterIdentityOptions(PostgreSQLParser.IdentityOptionsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIdentityOptions(PostgreSQLParser.IdentityOptionsContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterIdentityOption(PostgreSQLParser.IdentityOptionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIdentityOption(PostgreSQLParser.IdentityOptionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -125,25 +185,13 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterOnDeleteAction(PostgreSQLParser.OnDeleteActionContext ctx) { }
+	@Override public void enterFunctionCall(PostgreSQLParser.FunctionCallContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void exitOnDeleteAction(PostgreSQLParser.OnDeleteActionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterOnUpdateAction(PostgreSQLParser.OnUpdateActionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitOnUpdateAction(PostgreSQLParser.OnUpdateActionContext ctx) { }
+	@Override public void exitFunctionCall(PostgreSQLParser.FunctionCallContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -329,6 +377,30 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
+	@Override public void enterBooleanCondition(PostgreSQLParser.BooleanConditionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitBooleanCondition(PostgreSQLParser.BooleanConditionContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterPredicate(PostgreSQLParser.PredicateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitPredicate(PostgreSQLParser.PredicateContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
 	@Override public void enterSubquery(PostgreSQLParser.SubqueryContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -348,18 +420,6 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitComparisonOperator(PostgreSQLParser.ComparisonOperatorContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterArithmeticOperator(PostgreSQLParser.ArithmeticOperatorContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitArithmeticOperator(PostgreSQLParser.ArithmeticOperatorContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -509,18 +569,6 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterForeignTable(PostgreSQLParser.ForeignTableContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitForeignTable(PostgreSQLParser.ForeignTableContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterConflictAction(PostgreSQLParser.ConflictActionContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -617,18 +665,6 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterCreatePartitionStatement(PostgreSQLParser.CreatePartitionStatementContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitCreatePartitionStatement(PostgreSQLParser.CreatePartitionStatementContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterPartitionValuesClause(PostgreSQLParser.PartitionValuesClauseContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -641,18 +677,6 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterPartitionOfClause(PostgreSQLParser.PartitionOfClauseContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitPartitionOfClause(PostgreSQLParser.PartitionOfClauseContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterCreateIndexStatement(PostgreSQLParser.CreateIndexStatementContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -660,6 +684,18 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitCreateIndexStatement(PostgreSQLParser.CreateIndexStatementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void enterIndexElement(PostgreSQLParser.IndexElementContext ctx) { }
+	/**
+	 * {@inheritDoc}
+	 *
+	 * <p>The default implementation does nothing.</p>
+	 */
+	@Override public void exitIndexElement(PostgreSQLParser.IndexElementContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *
@@ -845,18 +881,6 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 *
 	 * <p>The default implementation does nothing.</p>
 	 */
-	@Override public void enterDefaultValue(PostgreSQLParser.DefaultValueContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitDefaultValue(PostgreSQLParser.DefaultValueContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
 	@Override public void enterNumericLiteral(PostgreSQLParser.NumericLiteralContext ctx) { }
 	/**
 	 * {@inheritDoc}
@@ -876,30 +900,6 @@ public class PostgreSQLBaseListener implements PostgreSQLListener {
 	 * <p>The default implementation does nothing.</p>
 	 */
 	@Override public void exitBooleanLiteral(PostgreSQLParser.BooleanLiteralContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterForeignKeyAction(PostgreSQLParser.ForeignKeyActionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitForeignKeyAction(PostgreSQLParser.ForeignKeyActionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void enterReferentialAction(PostgreSQLParser.ReferentialActionContext ctx) { }
-	/**
-	 * {@inheritDoc}
-	 *
-	 * <p>The default implementation does nothing.</p>
-	 */
-	@Override public void exitReferentialAction(PostgreSQLParser.ReferentialActionContext ctx) { }
 	/**
 	 * {@inheritDoc}
 	 *

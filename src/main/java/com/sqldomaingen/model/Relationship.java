@@ -42,4 +42,19 @@ public class Relationship {
         ONETOMANY,
         MANYTOMANY
     }
+
+    @Override
+    public String toString() {
+        return "Relationship(sourceColumn=" + sourceColumn +
+                ", targetColumn=" + targetColumn +
+                ", sourceTable=" + sourceTable +
+                ", targetTable=" + targetTable +
+                ", onUpdate=" + onUpdate +
+                ", onDelete=" + onDelete +
+                ", joinTableName=" + joinTableName +
+                ", inverseJoinColumn=" + inverseJoinColumn +
+                ", mappedBy=" + mappedBy +
+                ", relationshipType=" + relationshipType +
+                ")";
+    }
 }

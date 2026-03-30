@@ -1,8 +1,9 @@
 package com.sqldomaingen.generator;
 
+import com.sqldomaingen.model.Column;
+import com.sqldomaingen.model.ManyToManyRelation;
 import com.sqldomaingen.model.Relationship;
 import com.sqldomaingen.model.Table;
-import com.sqldomaingen.model.Column;
 import com.sqldomaingen.util.NamingConverter;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,52 +26,59 @@ public class RelationshipResolver {
     }
 
     /**
-     * Resolves and attaches relationships for a given table based on its FK columns.
+     * Resolves and attaches relationships for a given table.
+     * <p>
+     * If the table is a pure join table, it is registered as a synthetic
+     * many-to-many relation and no standard FK relationships are created.
      *
      * @param sourceTable the table to analyze
-     * @return list of relationships created for the source table (owning side)
+     * @return list of relationships created for the source table
      */
     public List<Relationship> resolveRelationships(Table sourceTable) {
-        log.info("🔵 Resolving relationships for table: {}", sourceTable.getName());
+        log.info("Resolving relationships for table: {}", sourceTable.getName());
+
+        if (sourceTable.isPureJoinTable()) {
+            log.debug("Table '{}' is already marked as pure join table. Skipping standard resolution.",
+                    sourceTable.getName());
+            return Collections.emptyList();
+        }
+
+        if (isPureManyToManyJoinTable(sourceTable)) {
+            registerPureManyToMany(sourceTable);
+            return Collections.emptyList();
+        }
+
         return handleForeignKeyRelationships(sourceTable);
     }
 
     /**
-     * Adds the inverse (non-owning) relationship to the referenced/target table.
+     * Adds the inverse relationship to the referenced table.
      * <p>
-     * For MANYTOONE:
-     * - if FK column is UNIQUE -> inverse becomes ONETOONE
-     * - otherwise -> inverse becomes ONETOMANY
-     * <p>
-     * For ONETOONE:
-     * - inverse is ONETOONE
-     * <p>
-     * Note: MANYTOMANY is skipped here because it is treated as a pseudo-constraint in this resolver.
+     * Standard inverse rules:
+     * <ul>
+     *     <li>MANYTOONE -> ONETOMANY or ONETOONE if FK is unique</li>
+     *     <li>ONETOONE -> ONETOONE</li>
+     *     <li>MANYTOMANY pseudo is skipped here</li>
+     * </ul>
+     *
+     * @param relationship the owning-side relationship
+     * @param column       the FK column used to create the relationship
      */
     private void addInverseRelationship(Relationship relationship, Column column) {
         if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) {
-            log.info("⛔ Skipping inverse for pseudo-ManyToMany on '{}.{}'",
+            log.info("Skipping inverse for pseudo-ManyToMany on '{}.{}'",
                     relationship.getSourceTable(), relationship.getSourceColumn());
             return;
         }
 
-        Table targetTable = tableMap.get(relationship.getTargetTable());
+        Table targetTable = findTargetTable(relationship.getTargetTable());
         if (targetTable == null) {
-            log.warn("⚠️ Target table '{}' not found while adding inverse relationship for '{}'",
+            log.warn("Target table '{}' not found while adding inverse relationship for '{}'",
                     relationship.getTargetTable(), column.getName());
             return;
         }
 
-        Relationship.RelationshipType inverseType;
-        boolean isUnique = column.isUnique();
-
-        if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOONE) {
-            inverseType = isUnique ? Relationship.RelationshipType.ONETOONE : Relationship.RelationshipType.ONETOMANY;
-        } else if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE) {
-            inverseType = Relationship.RelationshipType.ONETOONE;
-        } else {
-            inverseType = Relationship.RelationshipType.ONETOMANY;
-        }
+        Relationship.RelationshipType inverseType = determineInverseType(relationship, column);
 
         Relationship inverseRelationship = new Relationship();
         inverseRelationship.setSourceColumn(relationship.getTargetColumn());
@@ -78,37 +86,51 @@ public class RelationshipResolver {
         inverseRelationship.setSourceTable(relationship.getTargetTable());
         inverseRelationship.setTargetTable(relationship.getSourceTable());
         inverseRelationship.setRelationshipType(inverseType);
+        inverseRelationship.setMappedBy(getMappedByFieldName(column));
 
-        // mappedBy must match the owning-side field name inside the owning entity
-        String mappedByValue = getMappedByFieldName(column);
-        inverseRelationship.setMappedBy(mappedByValue);
-
-        log.info("🔧 Setting mappedBy='{}' for inverse relationship {} -> {}",
-                mappedByValue,
-                inverseRelationship.getSourceTable(),
-                inverseRelationship.getTargetTable());
-
-        // NOTE: This relies on Relationship.equals/hashCode. If not implemented, this may allow duplicates.
         if (!targetTable.getRelationships().contains(inverseRelationship)) {
             targetTable.addRelationship(inverseRelationship);
-            log.info("🔄 Inverse relationship added: {} -> {} ({})",
+            log.info("Inverse relationship added: {} -> {} ({})",
                     inverseRelationship.getSourceTable(),
                     inverseRelationship.getTargetTable(),
                     inverseRelationship.getRelationshipType());
         } else {
-            log.debug("⚠️ Inverse relationship already exists in '{}'. Skipping: {}",
+            log.debug("Inverse relationship already exists in '{}'. Skipping: {}",
                     targetTable.getName(), inverseRelationship);
         }
     }
 
     /**
-     * Derives the owning-side field name that the inverse relationship should reference via mappedBy.
+     * Determines the inverse relationship type based on the owning-side type.
+     *
+     * @param relationship the owning-side relationship
+     * @param column       the FK column used by the owning side
+     * @return the inverse relationship type
+     */
+    private Relationship.RelationshipType determineInverseType(Relationship relationship, Column column) {
+        if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOONE) {
+            return column.isUnique()
+                    ? Relationship.RelationshipType.ONETOONE
+                    : Relationship.RelationshipType.ONETOMANY;
+        }
+
+        if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE) {
+            return Relationship.RelationshipType.ONETOONE;
+        }
+
+        return Relationship.RelationshipType.ONETOMANY;
+    }
+
+    /**
+     * Derives the owning-side field name referenced by mappedBy.
      * Example: teacher_id -> teacher
+     *
+     * @param column the owning FK column
+     * @return the mappedBy value
      */
     private String getMappedByFieldName(Column column) {
         String rawName = column.getName();
 
-        // If the column ends with "_id", strip it (e.g. teacher_id -> teacher)
         if (rawName.toLowerCase().endsWith("_id")) {
             rawName = rawName.substring(0, rawName.length() - 3);
         }
@@ -117,39 +139,38 @@ public class RelationshipResolver {
     }
 
     /**
-     * Creates relationships for all FK columns of the source table.
-     * Also attaches the created relationships to:
-     * - source table (owning side)
-     * - internal resolver list
-     * - target table (inverse side)
+     * Creates standard FK relationships for all FK columns of the source table.
+     *
+     * @param sourceTable the table being analyzed
+     * @return locally created owning-side relationships
      */
     private List<Relationship> handleForeignKeyRelationships(Table sourceTable) {
-        log.info("🔄 Handling foreign key relationships for table: {}", sourceTable.getName());
+        log.info("Handling foreign key relationships for table: {}", sourceTable.getName());
 
         List<Relationship> localRelationships = new ArrayList<>();
         List<Column> foreignKeys = getForeignKeys(sourceTable);
 
         for (Column column : foreignKeys) {
-            log.debug("🔗 Analyzing foreign key: {}", column.getName());
-
             Relationship relationship = createRelationship(column, sourceTable);
-            if (relationship != null) {
-                localRelationships.add(relationship);
-                sourceTable.addRelationship(relationship);
-                this.relationships.add(relationship);
 
-                log.info("✅ Relationship created: {} -> {} ({})",
-                        relationship.getSourceTable(),
-                        relationship.getTargetTable(),
-                        relationship.getRelationshipType());
-
-                addInverseRelationship(relationship, column);
-            } else {
-                log.warn("❌ No relationship created for foreign key '{}'", column.getName());
+            if (relationship == null) {
+                log.warn("No relationship created for foreign key '{}'", column.getName());
+                continue;
             }
+
+            localRelationships.add(relationship);
+            sourceTable.addRelationship(relationship);
+            this.relationships.add(relationship);
+
+            log.info("Relationship created: {} -> {} ({})",
+                    relationship.getSourceTable(),
+                    relationship.getTargetTable(),
+                    relationship.getRelationshipType());
+
+            addInverseRelationship(relationship, column);
         }
 
-        log.info("🏁 Finished handling foreign key relationships for table '{}'. Relationships created: {}",
+        log.info("Finished handling foreign key relationships for table '{}'. Relationships created: {}",
                 sourceTable.getName(), localRelationships.size());
 
         return localRelationships;
@@ -157,6 +178,9 @@ public class RelationshipResolver {
 
     /**
      * Returns all FK columns of the given table.
+     *
+     * @param table the table to inspect
+     * @return the FK columns
      */
     private List<Column> getForeignKeys(Table table) {
         return table.getColumns().stream()
@@ -165,37 +189,37 @@ public class RelationshipResolver {
     }
 
     /**
-     * Builds a {@link Relationship} object for a given FK column.
-     * <p>
-     * Steps:
-     * 1) Find the referenced/target table
-     * 2) Find the referenced/target column
-     * 3) Determine relationship type (MANYTOONE / ONETOONE / MANYTOMANY pseudo)
+     * Builds a standard {@link Relationship} object for a given FK column.
      *
-     * @param column FK column
+     * @param column      FK column
      * @param sourceTable owning table
      * @return relationship or null if target table/column cannot be resolved
      */
     public Relationship createRelationship(Column column, Table sourceTable) {
-        log.info("🔄 Creating relationship for column '{}' in table '{}', referencing '{}.{}'",
+        log.info("Creating relationship for column '{}' in table '{}', referencing '{}.{}'",
                 column.getName(), sourceTable.getName(), column.getReferencedTable(), column.getReferencedColumn());
 
         Table targetTable = findTargetTable(column.getReferencedTable());
+
+        // 🔥 FIX: Do NOT drop FK if target table is missing
         if (targetTable == null) {
-            log.warn("⚠️ Target table '{}' not found for column '{}'", column.getReferencedTable(), column.getName());
-            return null;
+            log.warn("Target table '{}' not found for column '{}'. Keeping as scalar FK field.",
+                    column.getReferencedTable(), column.getName());
+            return null; // IMPORTANT: relation skipped, but column MUST remain
         }
 
         Column targetColumn = findTargetColumn(targetTable, column.getReferencedColumn());
         if (targetColumn == null) {
-            log.warn("⚠️ Target column '{}' not found in table '{}'",
+            log.warn("Target column '{}' not found in table '{}'",
                     column.getReferencedColumn(), targetTable.getName());
+
+            // 🔥 same logic εδώ
             return null;
         }
 
         Relationship.RelationshipType relationshipType = determineType(column, sourceTable, targetTable);
         if (relationshipType == null) {
-            log.warn("⚠️ Unable to determine relationship type for column '{}' in table '{}'",
+            log.warn("Unable to determine relationship type for column '{}' in table '{}'",
                     column.getName(), sourceTable.getName());
             return null;
         }
@@ -209,194 +233,397 @@ public class RelationshipResolver {
         relationship.setOnDelete(column.getOnDelete());
         relationship.setOnUpdate(column.getOnUpdate());
 
-        log.info("✅ Created relationship: {}", relationship);
+        log.info("Created relationship: {}", relationship);
         return relationship;
     }
 
     /**
-     * Checks whether a source table contains more than one FK pointing to the same target table.
-     * Note: currently unused, but kept for future relationship type heuristics.
+     * Checks whether the given table should be treated as a synthetic pure many-to-many join table.
+     * <p>
+     * This implementation is intentionally conservative.
+     * A table must:
+     * <ul>
+     *     <li>have exactly 2 columns</li>
+     *     <li>both columns must be FK</li>
+     *     <li>both columns must be PK</li>
+     *     <li>both FK targets must be resolvable</li>
+     *     <li>and the normalized table name must be explicitly allowed</li>
+     * </ul>
+     *
+     * @param table the table to inspect
+     * @return true if the table should be converted to synthetic many-to-many metadata
      */
-    private boolean isOneToMany(Table targetTable, Table sourceTable) {
-        long referenceCount = sourceTable.getColumns().stream()
-                .filter(col -> col.getReferencedTable() != null
-                        && col.getReferencedTable().equalsIgnoreCase(targetTable.getName()))
-                .count();
-        return referenceCount > 1;
+    private boolean isPureManyToManyJoinTable(Table table) {
+        if (table == null || table.getColumns() == null || table.getColumns().size() != 2) {
+            return false;
+        }
+
+        List<Column> foreignKeys = getForeignKeys(table);
+        if (foreignKeys.size() != 2) {
+            return false;
+        }
+
+        boolean allForeignKeysArePrimaryKeys = foreignKeys.stream()
+                .allMatch(Column::isPrimaryKey);
+
+        if (!allForeignKeysArePrimaryKeys) {
+            return false;
+        }
+
+        boolean allForeignKeysHaveTargets = foreignKeys.stream()
+                .allMatch(this::hasReferencedTarget);
+
+        if (!allForeignKeysHaveTargets) {
+            return false;
+        }
+
+        return isExplicitSyntheticManyToManyTable(table);
     }
 
     /**
-     * Checks whether the source table has exactly one FK pointing to the target table.
-     * Note: currently unused, but kept for future relationship type heuristics.
+     * Determines whether a join table name is explicitly allowed to be generated
+     * as a synthetic pure many-to-many relationship.
+     * <p>
+     * This avoids accidentally converting association entities that happen to have
+     * two FK primary-key columns but are still expected to exist as standalone entities.
+     *
+     * @param table the table to inspect
+     * @return true only for explicitly supported synthetic many-to-many join tables
      */
-    private boolean hasSingleReference(Table sourceTable, Table targetTable) {
-        log.debug("🔍 Entering hasSingleReference: Checking '{}' -> '{}'",
-                sourceTable.getName(), targetTable.getName());
+    private boolean isExplicitSyntheticManyToManyTable(Table table) {
+        String normalizedTableName = normalizeTableName(table.getName());
 
-        long referenceCount = sourceTable.getColumns().stream()
-                .filter(col -> col.getReferencedTable() != null
-                        && col.getReferencedTable().equalsIgnoreCase(targetTable.getName()))
-                .count();
+        Set<String> syntheticManyToManyTables = Set.of(
+                "company_language"
+        );
 
-        log.debug("📌 Found {} references from '{}' to '{}'",
-                referenceCount, sourceTable.getName(), targetTable.getName());
-
-        boolean result = referenceCount == 1;
-        log.info("🔍 Single reference check '{}' -> '{}': {} (result={})",
-                sourceTable.getName(), targetTable.getName(), referenceCount, result);
-
-        return result;
+        return syntheticManyToManyTables.contains(normalizedTableName);
     }
 
     /**
-     * Finds a target table by trying multiple matching strategies:
-     * - exact match
-     * - schema-stripped match
-     * - case-insensitive normalized match
+     * Checks whether the FK column references a resolvable target table and column.
+     *
+     * @param column the FK column to inspect
+     * @return true when target metadata can be resolved
+     */
+    private boolean hasReferencedTarget(Column column) {
+        if (column.getReferencedTable() == null || column.getReferencedColumn() == null) {
+            return false;
+        }
+
+        Table targetTable = findTargetTable(column.getReferencedTable());
+        if (targetTable == null) {
+            return false;
+        }
+
+        return findTargetColumn(targetTable, column.getReferencedColumn()) != null;
+    }
+
+    /**
+     * Registers synthetic many-to-many metadata on the two parent tables and
+     * marks the join table as pure so that no entity is generated for it later.
+     *
+     * @param joinTable the pure join table
+     */
+    private void registerPureManyToMany(Table joinTable) {
+        List<Column> foreignKeys = getForeignKeys(joinTable);
+        Column owningColumn = foreignKeys.get(0);
+        Column inverseColumn = foreignKeys.get(1);
+
+        Table owningTable = findTargetTable(owningColumn.getReferencedTable());
+        Table inverseTable = findTargetTable(inverseColumn.getReferencedTable());
+
+        if (owningTable == null || inverseTable == null) {
+            log.warn("Skipping pure many-to-many registration for '{}'. Parent table resolution failed.",
+                    joinTable.getName());
+            return;
+        }
+
+        String owningFieldName = toCollectionFieldName(inverseTable.getName());
+        String inverseFieldName = toCollectionFieldName(owningTable.getName());
+
+        ManyToManyRelation owningRelation = ManyToManyRelation.builder()
+                .fieldName(owningFieldName)
+                .targetEntityName(toEntityName(inverseTable.getName()))
+                .joinTableName(normalizeTableName(joinTable.getName()))
+                .joinColumnName(owningColumn.getName())
+                .inverseJoinColumnName(inverseColumn.getName())
+                .owningSide(true)
+                .build();
+
+        ManyToManyRelation inverseRelation = ManyToManyRelation.builder()
+                .fieldName(inverseFieldName)
+                .targetEntityName(toEntityName(owningTable.getName()))
+                .mappedBy(owningFieldName)
+                .owningSide(false)
+                .build();
+
+        addManyToManyRelationIfAbsent(owningTable, owningRelation);
+        addManyToManyRelationIfAbsent(inverseTable, inverseRelation);
+
+        joinTable.setPureJoinTable(true);
+
+        log.info("Registered pure many-to-many join table '{}': {} <-> {}",
+                joinTable.getName(), owningTable.getName(), inverseTable.getName());
+    }
+
+    /**
+     * Adds synthetic many-to-many metadata to a table if the same relation
+     * has not already been registered.
+     *
+     * @param table    the table receiving the metadata
+     * @param relation the relation metadata to register
+     */
+    private void addManyToManyRelationIfAbsent(Table table, ManyToManyRelation relation) {
+        boolean alreadyExists = table.getManyToManyRelations().stream()
+                .anyMatch(existing ->
+                        existing.isOwningSide() == relation.isOwningSide()
+                                && safeEquals(existing.getFieldName(), relation.getFieldName())
+                                && safeEquals(existing.getTargetEntityName(), relation.getTargetEntityName())
+                                && safeEquals(existing.getMappedBy(), relation.getMappedBy()));
+
+        if (!alreadyExists) {
+            table.addManyToManyRelation(relation);
+        }
+    }
+
+    /**
+     * Builds the generated entity name from a physical table name.
+     * Example: pep_schema.company_language -> CompanyLanguage
+     *
+     * @param tableName the physical table name
+     * @return the generated entity class name
+     */
+    private String toEntityName(String tableName) {
+        String normalized = normalizeTableName(tableName);
+        String[] parts = normalized.split("_");
+        StringBuilder builder = new StringBuilder();
+
+        for (String part : parts) {
+            if (part == null || part.isBlank()) {
+                continue;
+            }
+
+            builder.append(Character.toUpperCase(part.charAt(0)));
+            if (part.length() > 1) {
+                builder.append(part.substring(1).toLowerCase());
+            }
+        }
+
+        return builder.toString();
+    }
+
+    /**
+     * Builds the collection field name for a generated many-to-many relation.
+     * Example: company -> companies, languages -> languages
+     *
+     * @param tableName the referenced table name
+     * @return the collection field name
+     */
+    private String toCollectionFieldName(String tableName) {
+        String camelCaseName = NamingConverter.toCamelCase(normalizeTableName(tableName));
+
+        if (camelCaseName.endsWith("s")) {
+            return camelCaseName;
+        }
+
+        return pluralize(camelCaseName);
+    }
+
+    /**
+     * Applies a basic English pluralization rule for generated collection fields.
+     *
+     * @param singularName the singular field base name
+     * @return a pluralized field name
+     */
+    private String pluralize(String singularName) {
+        String lower = singularName.toLowerCase();
+
+        if (lower.endsWith("y")
+                && singularName.length() > 1
+                && !isVowel(lower.charAt(lower.length() - 2))) {
+            return singularName.substring(0, singularName.length() - 1) + "ies";
+        }
+
+        if (lower.endsWith("s")
+                || lower.endsWith("x")
+                || lower.endsWith("z")
+                || lower.endsWith("ch")
+                || lower.endsWith("sh")) {
+            return singularName + "es";
+        }
+
+        return singularName + "s";
+    }
+
+    /**
+     * Checks whether the provided character is a vowel.
+     *
+     * @param character the character to inspect
+     * @return true when the character is a vowel
+     */
+    private boolean isVowel(char character) {
+        return character == 'a'
+                || character == 'e'
+                || character == 'i'
+                || character == 'o'
+                || character == 'u';
+    }
+
+    /**
+     * Performs a null-safe equality check.
+     *
+     * @param left  first value
+     * @param right second value
+     * @return true when both values are equal
+     */
+    private boolean safeEquals(String left, String right) {
+        if (left == null) {
+            return right == null;
+        }
+
+        return left.equals(right);
+    }
+
+    /**
+     * Finds a target table by trying exact, schema-stripped, and normalized matches.
+     *
+     * @param referencedTableRaw the raw referenced table name
+     * @return the matching table or null
      */
     private Table findTargetTable(String referencedTableRaw) {
         String raw = referencedTableRaw == null ? "" : referencedTableRaw.trim();
         if (raw.isBlank()) {
-            log.error("❌ Referenced table name is null or blank.");
+            log.error("Referenced table name is null or blank.");
             return null;
         }
 
-        // 1) Exact key match
         Table direct = tableMap.get(raw);
-        if (direct != null) return direct;
+        if (direct != null) {
+            return direct;
+        }
 
-        // 2) Strip schema and retry
         String noSchema = normalizeTableName(raw);
         Table noSchemaHit = tableMap.get(noSchema);
-        if (noSchemaHit != null) return noSchemaHit;
+        if (noSchemaHit != null) {
+            return noSchemaHit;
+        }
 
-        // 3) Case-insensitive match on normalized keys
-        for (Map.Entry<String, Table> e : tableMap.entrySet()) {
-            String keyNorm = normalizeTableName(e.getKey());
+        for (Map.Entry<String, Table> entry : tableMap.entrySet()) {
+            String keyNorm = normalizeTableName(entry.getKey());
             if (keyNorm.equalsIgnoreCase(noSchema)) {
-                return e.getValue();
+                return entry.getValue();
             }
         }
 
-        log.error("❌ Table '{}' not found in tableMap keys: {}", raw, tableMap.keySet());
+        log.error("Table '{}' not found in tableMap keys: {}", raw, tableMap.keySet());
         return null;
     }
 
     /**
-     * Strips schema prefix from a table name (e.g. public.school -> school).
+     * Strips the schema prefix from a table name.
+     * Example: public.school -> school
+     *
+     * @param raw the raw table name
+     * @return the schema-free table name
      */
     private static String normalizeTableName(String raw) {
-        if (raw == null) return "";
-        String s = raw.trim();
-        int dot = s.lastIndexOf('.');
-        if (dot >= 0 && dot < s.length() - 1) {
-            s = s.substring(dot + 1);
+        if (raw == null) {
+            return "";
         }
-        return s;
+
+        String value = raw.trim();
+        int dot = value.lastIndexOf('.');
+
+        if (dot >= 0 && dot < value.length() - 1) {
+            value = value.substring(dot + 1);
+        }
+
+        return value;
     }
 
     /**
-     * Determines relationship type for an FK column.
-     * Rules:
-     * - if column is marked as MANYTOMANY pseudo-constraint -> MANYTOMANY
-     * - else if FK column is UNIQUE -> ONETOONE
-     * - else -> MANYTOONE
+     * Determines the relationship type for a standard FK column.
+     *
+     * @param column      the FK column
+     * @param sourceTable the source table
+     * @param targetTable the target table
+     * @return the resolved relationship type
      */
     private Relationship.RelationshipType determineType(
             Column column,
             Table sourceTable,
             Table targetTable
     ) {
-
-        // Explicit pseudo-constraint for ManyToMany
         if (column.isManyToMany()) {
-            log.info("🎯 Column '{}' has explicit MANYTOMANY pseudo-constraint. Assigning MANYTOMANY.", column.getName());
+            log.info("Column '{}' has explicit MANYTOMANY pseudo-constraint. Assigning MANYTOMANY.",
+                    column.getName());
             return Relationship.RelationshipType.MANYTOMANY;
         }
 
-        // FK + UNIQUE => OneToOne
         if (column.isUnique()) {
-            log.info("🔥 Column '{}' is unique. Assigning ONETOONE.", column.getName());
+            log.info("Column '{}' is unique. Assigning ONETOONE.", column.getName());
             return Relationship.RelationshipType.ONETOONE;
         }
 
-        // Default for FK columns
-        log.info("🔥 Column '{}' is not unique. Assigning MANYTOONE.", column.getName());
+        log.info("Column '{}' is not unique. Assigning MANYTOONE.", column.getName());
         return Relationship.RelationshipType.MANYTOONE;
     }
 
     /**
-     * Finds the referenced column in the target table (case-insensitive).
+     * Finds the referenced column in the target table using case-insensitive comparison.
+     *
+     * @param targetTable      the referenced table
+     * @param targetColumnName the referenced column name
+     * @return the resolved target column or null
      */
     private Column findTargetColumn(Table targetTable, String targetColumnName) {
         if (targetTable == null || targetColumnName == null || targetColumnName.isBlank()) {
-            log.warn("⚠️ Invalid target column lookup. Table: '{}', Column: '{}'",
-                    targetTable != null ? targetTable.getName() : "null", targetColumnName);
+            log.warn("Invalid target column lookup. Table: '{}', Column: '{}'",
+                    targetTable != null ? targetTable.getName() : "null",
+                    targetColumnName);
             return null;
         }
 
-        log.info("🔍 Checking columns in table '{}'. Looking for '{}'. Available columns: {}",
-                targetTable.getName(), targetColumnName,
-                targetTable.getColumns().stream()
-                        .map(Column::getName)
-                        .toList()
-        );
-
         Column targetColumn = targetTable.getColumns().stream()
-                .filter(col -> col.getName().equalsIgnoreCase(targetColumnName))
+                .filter(column -> column.getName().equalsIgnoreCase(targetColumnName))
                 .findFirst()
                 .orElse(null);
 
         if (targetColumn == null) {
-            log.warn("⚠️ Column '{}' not found in table '{}'", targetColumnName, targetTable.getName());
+            log.warn("Column '{}' not found in table '{}'",
+                    targetColumnName, targetTable.getName());
         }
 
         return targetColumn;
     }
 
     /**
-     * Resolves relationships for every table currently present in tableMap.
-     * Mainly useful for debugging and verifying relationship detection.
+     * Resolves relationships for every table currently present in the resolver map.
+     * Pure join tables are registered as synthetic many-to-many metadata and skipped
+     * from the standard FK relationship flow.
      */
     public void resolveRelationshipsForAllTables() {
-        log.info("🔍 Starting to resolve relationships for all {} tables...", tableMap.size());
-
-        log.debug("🗺️ TableMap contents:");
-        tableMap.forEach((key, table) -> {
-            log.debug("🔑 Key: '{}', Table Name: '{}'", key, table.getName());
-            table.getColumns().forEach(column -> {
-                log.debug("   🧱 Column: '{}', FK: {}, PK: {}, RefTable: '{}', RefColumn: '{}'",
-                        column.getName(),
-                        column.isForeignKey(),
-                        column.isPrimaryKey(),
-                        column.getReferencedTable(),
-                        column.getReferencedColumn());
-            });
-        });
+        log.info("Starting to resolve relationships for all {} tables...", tableMap.size());
 
         for (Table table : tableMap.values()) {
-            log.info("📋 Resolving relationships for table: {}", table.getName());
+            log.info("Resolving relationships for table: {}", table.getName());
 
-            for (Column column : table.getColumns()) {
-                log.info("🔎 Column: {} | Type: {} | PK: {} | FK: {} | RefTable: {} | RefColumn: {}",
-                        column.getName(),
-                        column.getSqlType(),
-                        column.isPrimaryKey(),
-                        column.isForeignKey(),
-                        column.getReferencedTable(),
-                        column.getReferencedColumn());
+            if (isPureManyToManyJoinTable(table)) {
+                registerPureManyToMany(table);
+                continue;
             }
 
             List<Relationship> localRelationships = resolveRelationships(table);
 
             for (Relationship relationship : localRelationships) {
-                log.info("🔗 Relationship created: {} -> {} | Type: {}",
+                log.info("Relationship created: {} -> {} | Type: {}",
                         relationship.getSourceTable(),
                         relationship.getTargetTable(),
                         relationship.getRelationshipType());
             }
         }
 
-        log.info("✅ Relationships resolved for all tables.");
+        log.info("Relationships resolved for all tables.");
     }
 }

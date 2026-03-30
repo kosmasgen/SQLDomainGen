@@ -22,7 +22,7 @@ class SQLParserTest {
     void testParseCreateBusinessLocationI18nTable_PostgreSQL_WithCompositePkAndFkConstraints() {
         String sql = """
         CREATE TABLE pep_schema.business_location_i18n (
-            description varchar(255) NOT NULL,
+            description varchar(1000) NOT NULL,
             code varchar(255) NOT NULL,
             date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
             last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
@@ -672,7 +672,313 @@ class SQLParserTest {
         });
     }
 
+    @Test
+    void testParseCreateCompanyTable_PostgreSQL_WithSelfReferenceAndFk() {
+        String sql = """
+        CREATE TABLE pep_schema.company (
+            id uuid NOT NULL,
+            chamber_id int4 NOT NULL,
+            chamber_company_id numeric NULL,
+            co_name varchar(1000) NOT NULL,
+            contact_email varchar(100) NULL,
+            date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+            last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+            rec_deleted boolean DEFAULT FALSE NOT NULL,
+            company_status_id uuid NULL,
+            parent_company_id uuid NULL,
+            CONSTRAINT pk_company PRIMARY KEY (id),
+            CONSTRAINT uk_company UNIQUE (chamber_id, chamber_company_id),
+            CONSTRAINT fk_company_status FOREIGN KEY (company_status_id)
+                REFERENCES pep_schema.company_status(id),
+            CONSTRAINT fk_company_parent FOREIGN KEY (parent_company_id)
+                REFERENCES pep_schema.company(id)
+        );
+        """;
+
+        sqlParser.setSqlContent(sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'pep_schema.company':\n{}", sql);
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE company.");
+
+            String tree = parseTree.toStringTree().toUpperCase();
+
+            assertTrue(tree.contains("PEP_SCHEMA"), "Expected schema name 'pep_schema' in parse tree.");
+            assertTrue(tree.contains("COMPANY"), "Expected table name 'company' in parse tree.");
+            assertTrue(tree.contains("COMPANY_STATUS_ID"), "Expected 'company_status_id' in parse tree.");
+            assertTrue(tree.contains("PARENT_COMPANY_ID"), "Expected 'parent_company_id' in parse tree.");
+
+            assertTrue(tree.contains("PRIMARY KEY") || tree.contains("PRIMARYKEY"),
+                    "Expected PRIMARY KEY in parse tree.");
+            assertTrue(tree.contains("UNIQUE"), "Expected UNIQUE constraint in parse tree.");
+            assertTrue(tree.contains("FOREIGN KEY") || tree.contains("FOREIGNKEY"),
+                    "Expected FOREIGN KEY constraints in parse tree.");
+            assertTrue(tree.contains("REFERENCES"), "Expected REFERENCES in parse tree.");
+
+            assertTrue(tree.contains("FK_COMPANY_STATUS"), "Expected FK name 'fk_company_status'.");
+            assertTrue(tree.contains("FK_COMPANY_PARENT"), "Expected FK name 'fk_company_parent'.");
+        });
+    }
+
+    @Test
+    void testParseCreateCompanyProfileI18nTable_PostgreSQL_WithCompositePkAndFkConstraints() {
+        String sql = """
+        CREATE TABLE pep_schema.company_profile_i18n (
+            company_profile_id uuid NOT NULL,
+            language_id uuid NOT NULL,
+            rec_deleted boolean DEFAULT FALSE NOT NULL,
+            name varchar(1000) NULL,
+            address_city varchar(50) NULL,
+            address_region varchar(50) NULL,
+            address_street varchar(100) NULL,
+            objective text NULL,
+            date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+            last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+            CONSTRAINT pk_company_profile_i18n PRIMARY KEY (company_profile_id, language_id),
+            CONSTRAINT fk_company_profile_i18n_profile FOREIGN KEY (company_profile_id)
+                REFERENCES pep_schema.company_profile(id) ON DELETE CASCADE,
+            CONSTRAINT fk_company_profile_i18n_language FOREIGN KEY (language_id)
+                REFERENCES pep_schema.languages(id)
+        );
+        """;
+
+        sqlParser.setSqlContent(sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'pep_schema.company_profile_i18n':\n{}", sql);
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE company_profile_i18n.");
+
+            String tree = parseTree.toStringTree().toUpperCase();
+
+            assertTrue(tree.contains("COMPANY_PROFILE_I18N"), "Expected table name 'company_profile_i18n'.");
+            assertTrue(tree.contains("COMPANY_PROFILE_ID"), "Expected 'company_profile_id' in parse tree.");
+            assertTrue(tree.contains("LANGUAGE_ID"), "Expected 'language_id' in parse tree.");
+
+            assertTrue(tree.contains("PRIMARY KEY") || tree.contains("PRIMARYKEY"),
+                    "Expected composite PRIMARY KEY in parse tree.");
+            assertTrue(tree.contains("FOREIGN KEY") || tree.contains("FOREIGNKEY"),
+                    "Expected FOREIGN KEY constraints in parse tree.");
+            assertTrue(tree.contains("REFERENCES"), "Expected REFERENCES in parse tree.");
+            assertTrue(tree.contains("CASCADE"), "Expected ON DELETE CASCADE in parse tree.");
+        });
+    }
+
+
+    @Test
+    void testParseCreateProfessionTable_PostgreSQL_WithParentFkAndSystemFk() {
+        String sql = """
+        CREATE TABLE pep_schema.profession (
+            id uuid NOT NULL,
+            chamber_id int4 NOT NULL,
+            chamber_profession_id int4 NULL,
+            parent_profession_id uuid NULL,
+            profession_system_id uuid NOT NULL,
+            code varchar(255) NOT NULL,
+            description varchar(1000) NULL,
+            date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+            last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+            rec_deleted bool DEFAULT FALSE NOT NULL,
+            CONSTRAINT pk_profession PRIMARY KEY (id),
+            CONSTRAINT uk_profession UNIQUE (chamber_id, chamber_profession_id),
+            CONSTRAINT fk_profession_parent FOREIGN KEY (parent_profession_id)
+                REFERENCES pep_schema.profession(id),
+            CONSTRAINT fk_profession_system FOREIGN KEY (profession_system_id)
+                REFERENCES pep_schema.profession_system(id)
+        );
+        """;
+
+        sqlParser.setSqlContent(sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'pep_schema.profession':\n{}", sql);
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE profession.");
+
+            String tree = parseTree.toStringTree().toUpperCase();
+
+            assertTrue(tree.contains("PROFESSION"), "Expected table name 'profession'.");
+            assertTrue(tree.contains("PARENT_PROFESSION_ID"), "Expected 'parent_profession_id'.");
+            assertTrue(tree.contains("PROFESSION_SYSTEM_ID"), "Expected 'profession_system_id'.");
+
+            assertTrue(tree.contains("PRIMARY KEY") || tree.contains("PRIMARYKEY"),
+                    "Expected PRIMARY KEY in parse tree.");
+            assertTrue(tree.contains("UNIQUE"), "Expected UNIQUE in parse tree.");
+            assertTrue(tree.contains("FOREIGN KEY") || tree.contains("FOREIGNKEY"),
+                    "Expected FOREIGN KEY constraints in parse tree.");
+            assertTrue(tree.contains("FK_PROFESSION_PARENT"), "Expected FK name 'fk_profession_parent'.");
+            assertTrue(tree.contains("FK_PROFESSION_SYSTEM"), "Expected FK name 'fk_profession_system'.");
+        });
+    }
+
+
+    @Test
+    void testParseCreateCompanyProfessionTable_PostgreSQL_WithUniqueAndCheckAndFks() {
+        String sql = """
+                CREATE TABLE pep_schema.company_profession (
+                    id uuid NOT NULL,
+                    chamber_id int4 NOT NULL,
+                    chamber_company_profession_id int4 NULL,
+                    company_id uuid NOT NULL,
+                    profession_id uuid NOT NULL,
+                    date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+                    from_date timestamp NULL,
+                    to_date timestamp NULL,
+                    last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+                    rec_deleted bool DEFAULT FALSE NOT NULL,
+                    notes varchar(1000) NULL,
+                    CONSTRAINT pk_company_profession PRIMARY KEY (id),
+                    CONSTRAINT uk_company_profession_chamber UNIQUE (chamber_id, chamber_company_profession_id),
+                    CONSTRAINT uk_company_profession_unique_pair UNIQUE (company_id, profession_id, from_date),
+                    CONSTRAINT ck_company_profession_dates CHECK (
+                        to_date IS NULL OR from_date IS NULL OR to_date >= from_date
+                    ),
+                    CONSTRAINT fk_company_profession_company FOREIGN KEY (company_id)
+                        REFERENCES pep_schema.company(id) ON DELETE CASCADE,
+                    CONSTRAINT fk_company_profession_profession FOREIGN KEY (profession_id)
+                        REFERENCES pep_schema.profession(id)
+                );
+                """;
+
+        sqlParser.setSqlContent(sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'pep_schema.company_profession':\n{}", sql);
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE company_profession.");
+
+            String tree = parseTree.toStringTree().toUpperCase();
+
+            assertTrue(tree.contains("COMPANY_PROFESSION"), "Expected table name 'company_profession'.");
+            assertTrue(tree.contains("COMPANY_ID"), "Expected 'company_id' in parse tree.");
+            assertTrue(tree.contains("PROFESSION_ID"), "Expected 'profession_id' in parse tree.");
+
+            assertTrue(tree.contains("PRIMARY KEY") || tree.contains("PRIMARYKEY"),
+                    "Expected PRIMARY KEY in parse tree.");
+            assertTrue(tree.contains("UNIQUE"), "Expected UNIQUE constraints in parse tree.");
+            assertTrue(tree.contains("CHECK"), "Expected CHECK constraint in parse tree.");
+            assertTrue(tree.contains("FOREIGN KEY") || tree.contains("FOREIGNKEY"),
+                    "Expected FOREIGN KEY constraints in parse tree.");
+            assertTrue(tree.contains("CASCADE"), "Expected ON DELETE CASCADE in parse tree.");
+        });
+
+
+    }
+
+
+    @Test
+    void testParseCreateCompanyProfessionSystemLinkTable_PostgreSQL_WithCompositePkAndTwoCascadeFks() {
+        String sql = """
+        CREATE TABLE pep_schema.company_profession_system_link (
+            company_id uuid NOT NULL,
+            profession_system_id uuid NOT NULL,
+            CONSTRAINT pk_company_prof_system_link PRIMARY KEY (company_id, profession_system_id),
+            CONSTRAINT fk_cpsl_company FOREIGN KEY (company_id)
+                REFERENCES pep_schema.company(id) ON DELETE CASCADE,
+            CONSTRAINT fk_cpsl_prof_system FOREIGN KEY (profession_system_id)
+                REFERENCES pep_schema.profession_system(id) ON DELETE CASCADE
+        );
+        """;
+
+        sqlParser.setSqlContent(sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'pep_schema.company_profession_system_link':\n{}", sql);
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE company_profession_system_link.");
+
+            String tree = parseTree.toStringTree().toUpperCase();
+
+            assertTrue(tree.contains("COMPANY_PROFESSION_SYSTEM_LINK"),
+                    "Expected table name 'company_profession_system_link'.");
+            assertTrue(tree.contains("COMPANY_ID"), "Expected 'company_id' in parse tree.");
+            assertTrue(tree.contains("PROFESSION_SYSTEM_ID"), "Expected 'profession_system_id' in parse tree.");
+
+            assertTrue(tree.contains("PRIMARY KEY") || tree.contains("PRIMARYKEY"),
+                    "Expected composite PRIMARY KEY in parse tree.");
+            assertTrue(tree.contains("FOREIGN KEY") || tree.contains("FOREIGNKEY"),
+                    "Expected FOREIGN KEY constraints in parse tree.");
+            assertTrue(tree.contains("CASCADE"), "Expected ON DELETE CASCADE in parse tree.");
+        });
+    }
+
+
+    @Test
+    void testParseCreateCompanyProfileLanguageTable_PostgreSQL_WithCompositePkAndTwoCascadeFks() {
+        String sql = """
+        CREATE TABLE pep_schema.company_profile_language (
+            company_profile_id uuid NOT NULL,
+            language_id uuid NOT NULL,
+            CONSTRAINT pk_company_profile_language PRIMARY KEY (company_profile_id, language_id),
+            CONSTRAINT fk_cpl_profile FOREIGN KEY (company_profile_id)
+                REFERENCES pep_schema.company_profile(id) ON DELETE CASCADE,
+            CONSTRAINT fk_cpl_language FOREIGN KEY (language_id)
+                REFERENCES pep_schema.languages(id) ON DELETE CASCADE
+        );
+        """;
+
+        sqlParser.setSqlContent(sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'pep_schema.company_profile_language':\n{}", sql);
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE company_profile_language.");
+
+            String tree = parseTree.toStringTree().toUpperCase();
+
+            assertTrue(tree.contains("COMPANY_PROFILE_LANGUAGE"), "Expected table name 'company_profile_language'.");
+            assertTrue(tree.contains("COMPANY_PROFILE_ID"), "Expected 'company_profile_id' in parse tree.");
+            assertTrue(tree.contains("LANGUAGE_ID"), "Expected 'language_id' in parse tree.");
+
+            assertTrue(tree.contains("PRIMARY KEY") || tree.contains("PRIMARYKEY"),
+                    "Expected composite PRIMARY KEY in parse tree.");
+            assertTrue(tree.contains("FOREIGN KEY") || tree.contains("FOREIGNKEY"),
+                    "Expected FOREIGN KEY constraints in parse tree.");
+            assertTrue(tree.contains("CASCADE"), "Expected ON DELETE CASCADE in parse tree.");
+        });
+    }
+
+    @Test
+    void testParseCreateCompanyStatusViewRulesTable_PostgreSQL_WithCompositePkAndCascadeFks() {
+        String sql = """
+        CREATE TABLE pep_schema.company_status_view_rules (
+            company_status_id uuid NOT NULL,
+            company_view_rules_id uuid NOT NULL,
+            exclude_companies bool NULL,
+            date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+            last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+            CONSTRAINT pk_company_status_view_rules PRIMARY KEY (company_status_id, company_view_rules_id),
+            CONSTRAINT fk_company_status_view_rules_status FOREIGN KEY (company_status_id)
+                REFERENCES pep_schema.company_status(id) ON DELETE CASCADE,
+            CONSTRAINT fk_company_status_view_rules_rules FOREIGN KEY (company_view_rules_id)
+                REFERENCES pep_schema.company_view_rules(id) ON DELETE CASCADE
+        );
+        """;
+
+        sqlParser.setSqlContent(sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'pep_schema.company_status_view_rules':\n{}", sql);
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE company_status_view_rules.");
+
+            String tree = parseTree.toStringTree().toUpperCase();
+
+            assertTrue(tree.contains("COMPANY_STATUS_VIEW_RULES"), "Expected table name 'company_status_view_rules'.");
+            assertTrue(tree.contains("COMPANY_STATUS_ID"), "Expected 'company_status_id' in parse tree.");
+            assertTrue(tree.contains("COMPANY_VIEW_RULES_ID"), "Expected 'company_view_rules_id' in parse tree.");
+
+            assertTrue(tree.contains("PRIMARY KEY") || tree.contains("PRIMARYKEY"),
+                    "Expected composite PRIMARY KEY in parse tree.");
+            assertTrue(tree.contains("FOREIGN KEY") || tree.contains("FOREIGNKEY"),
+                    "Expected FOREIGN KEY constraints in parse tree.");
+            assertTrue(tree.contains("REFERENCES"), "Expected REFERENCES in parse tree.");
+            assertTrue(tree.contains("CASCADE"), "Expected ON DELETE CASCADE in parse tree.");
+        });
+    }
 
 }
+
 
 

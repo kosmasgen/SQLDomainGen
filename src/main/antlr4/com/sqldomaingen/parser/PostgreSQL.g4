@@ -26,13 +26,14 @@ NEW : 'NEW';
 TABLE : 'TABLE';
 CREATE : 'CREATE';
 RELATIONSHIP : 'RELATIONSHIP';
-DECIMAL: 'DECIMAL';
-INT: 'INT';
-VARCHAR  : 'VARCHAR' ;
+DECIMAL   : 'DECIMAL' | 'decimal';
+INT       : 'INT' | 'int';
+VARCHAR   : 'VARCHAR' | 'varchar';
 DOT : '.';
 CONSTRAINT : 'CONSTRAINT';
 NULL : 'NULL';
 NOT : 'NOT';
+IS : 'IS';
 SET : 'SET';
 REFERENCES : 'REFERENCES';
 SERIAL : 'SERIAL';
@@ -54,11 +55,10 @@ ON_DELETE : 'ON DELETE';
 ON_UPDATE : 'ON UPDATE';
 UNIQUE : 'UNIQUE';
 EQUALS : '=';
-TEXT    : 'TEXT' ;
-INTEGER : 'INTEGER' ;
-BOOLEAN : 'BOOLEAN' ;
+TEXT      : 'TEXT' | 'text';
+INTEGER   : 'INTEGER' | 'integer';
+BOOLEAN   : 'BOOLEAN' | 'boolean';
 FOREIGN_KEY : 'FOREIGN KEY';
-NOT_NULL    : 'NOT NULL';
 TRIGGER      : 'TRIGGER';
 BEFORE       : 'BEFORE';
 AFTER        : 'AFTER';
@@ -68,8 +68,59 @@ EACH         : 'EACH';
 ROW          : 'ROW';
 EXECUTE      : 'EXECUTE';
 FUNCTION     : 'FUNCTION';
+IN : 'IN';
+BETWEEN : 'BETWEEN';
+AND : 'AND';
+LIKE : 'LIKE';
+ILIKE : 'ILIKE';
+PRIMARY : 'PRIMARY';
+KEY : 'KEY';
+FOREIGN : 'FOREIGN';
+EXCLUDE : 'EXCLUDE';
+BIGSERIAL : 'BIGSERIAL' | 'bigserial';
+JSONB     : 'JSONB' | 'jsonb';
+TIMESTAMP : 'TIMESTAMP' | 'timestamp';
+INDEX     : 'INDEX' | 'index';
+NOW       : 'NOW' | 'now';
+FLOAT8 : 'FLOAT8' | 'float8';
+FLOAT4 : 'FLOAT4' | 'float4';
+INT8 : 'INT8' | 'int8';
+SMALLINT : 'SMALLINT' | 'smallint';
+BIGINT : 'BIGINT' | 'bigint';
+SMALLSERIAL : 'SMALLSERIAL' | 'smallserial';
+REAL : 'REAL' | 'real';
+DOUBLE : 'DOUBLE' | 'double';
+PRECISION : 'PRECISION' | 'precision';
+NUMERIC : 'NUMERIC' | 'numeric';
+MONEY : 'MONEY' | 'money';
+CHAR : 'CHAR' | 'char';
+CHARACTER : 'CHARACTER' | 'character';
+JSON : 'JSON' | 'json';
+DATE : 'DATE' | 'date';
+TIME : 'TIME' | 'time';
+INTERVAL : 'INTERVAL' | 'interval';
+UUID : 'UUID' | 'uuid';
+BYTEA : 'BYTEA' | 'bytea';
+ENUM : 'ENUM' | 'enum';
+CITEXT : 'CITEXT' | 'citext';
+TSVECTOR : 'TSVECTOR' | 'tsvector';
+INET : 'INET' | 'inet';
+CIDR : 'CIDR' | 'cidr';
+MACADDR : 'MACADDR' | 'macaddr';
+XML : 'XML' | 'xml';
+PG_LSN : 'PG_LSN' | 'pg_lsn';
+BIT : 'BIT' | 'bit';
+VARBIT : 'VARBIT' | 'varbit';
+VARYING : 'VARYING' | 'varying';
+BPCHAR: [bB] [pP] [cC] [hH] [aA] [rR];
+WITHOUT : 'WITHOUT' | 'without';
+WITH : 'WITH' | 'with';
+ZONE : 'ZONE' | 'zone';
 
 
+identityColumn
+    : 'GENERATED' ('ALWAYS' | 'BY' 'DEFAULT') 'AS' 'IDENTITY' ('(' .*? ')')?
+    ;
 
 
 // -------------------------
@@ -83,8 +134,17 @@ createTableStatement
 
 // Ορισμός μιας στήλης στον πίνακα
 columnDef
-    : columnName dataType columnTypeModifier? (constraint)* (generatedColumn | collateClause)? onUpdateClause?
+    : columnName dataType columnAttribute*
     ;
+
+columnAttribute
+    : constraint
+    | generatedColumn
+    | identityColumn
+    | collateClause
+    | onUpdateClause
+    ;
+
 
 columnTypeModifier
     : '(' NUMBER (',' NUMBER)? ')'
@@ -93,8 +153,30 @@ columnTypeModifier
 
 // Υπολογιζόμενη στήλη
 generatedColumn
-    : 'GENERATED' ('ALWAYS' | 'BY DEFAULT') 'AS' '(' expression ')' 'STORED'
+    : 'GENERATED' ('ALWAYS' | 'BY DEFAULT') 'AS' generatedColumnBody
     ;
+
+
+ generatedColumnBody
+     : '(' expression ')' 'STORED'
+     | 'IDENTITY' identityOptions?
+     ;
+
+identityOptions
+    : '(' identityOption* ')'
+    ;
+
+identityOption
+    : 'INCREMENT' 'BY' numericLiteral
+    | 'MINVALUE' numericLiteral
+    | 'MAXVALUE' numericLiteral
+    | 'START' numericLiteral
+    | 'CACHE' numericLiteral
+    | 'CYCLE'
+    | 'NO' 'CYCLE'
+    ;
+
+
 
 // COLLATE για στήλες
 collateClause
@@ -138,67 +220,61 @@ alterColumnAction
 
 // Τύποι δεδομένων (PostgreSQL-specific)
 dataType
-    : 'INTEGER'
-    | 'FLOAT8'
-    | 'FLOAT4'
-    | 'INT8'
-    | 'INT'
-    | 'SMALLINT'
-    | 'BIGINT'
-    | 'BIGSERIAL'
-    | 'SERIAL'
-    | 'SMALLSERIAL'
-    | 'REAL'
-    | 'DOUBLE PRECISION'
-    | 'NUMERIC' ('(' NUMBER (',' NUMBER)? ')')?
+    : INTEGER
+    | FLOAT8
+    | FLOAT4
+    | INT8
+    | INT
+    | SMALLINT
+    | BIGINT
+    | BIGSERIAL
+    | SERIAL
+    | SMALLSERIAL
+    | REAL
+    | DOUBLE PRECISION
+    | NUMERIC ('(' NUMBER (',' NUMBER)? ')')?
     | decimalType
-    | 'MONEY'
-    | 'CHAR' ('(' NUMBER ')')?
-    | 'VARCHAR' ('(' NUMBER ')')?
-    | 'TEXT'
-    | 'BOOLEAN'
-    | 'JSON'
-    | 'JSONB'
-    | 'DATE'
-    | 'TIME' ('WITHOUT' 'TIME' 'ZONE' | 'WITH' 'TIME' 'ZONE')?
-    | 'TIMESTAMP' ('WITHOUT' 'TIME' 'ZONE' | 'WITH' 'TIME' 'ZONE')?
-    | 'TIMESTAMP'
-    | 'INTERVAL'
-    | 'UUID'
-    | 'ARRAY'
-    | 'BYTEA'
-    | 'ENUM' '(' STRING (',' STRING)* ')'
-    | 'CITEXT'
-    | 'TSVECTOR'
-    | 'INET'
-    | 'CIDR'
-    | 'MACADDR'
-    | 'XML'
-    | 'PG_LSN'
-    | 'BIT' ('(' NUMBER ')')?
-    | 'VARBIT' ('(' NUMBER ')')?
-    | 'TRIGGER'
+    | MONEY
+    | CHAR ('(' NUMBER ')')?
+    | VARCHAR ('(' NUMBER ')')?
+    | CHARACTER VARYING ('(' NUMBER ')')?
+    | TEXT
+    | BOOLEAN
+    | BPCHAR ('(' NUMBER ')')?
+    | JSON
+    | JSONB
+    | DATE
+    | TIME ('(' NUMBER ')')? ('WITHOUT' 'TIME' 'ZONE' | 'WITH' 'TIME' 'ZONE')?
+    | TIMESTAMP ('(' NUMBER ')')? ('WITHOUT' 'TIME' 'ZONE' | 'WITH' 'TIME' 'ZONE')?
+    | INTERVAL
+    | UUID
+    | ARRAY
+    | BYTEA
+    | ENUM '(' STRING (',' STRING)* ')'
+    | CITEXT
+    | TSVECTOR
+    | INET
+    | CIDR
+    | MACADDR
+    | XML
+    | PG_LSN
+    | BIT ('(' NUMBER ')')?
+    | VARBIT ('(' NUMBER ')')?
+    | TRIGGER
+    | IDENTIFIER IDENTIFIER
     | IDENTIFIER
     ;
 
 
 
-
-// Ενέργειες ON DELETE
-onDeleteAction
-    : 'CASCADE'
-    | 'SET NULL'
-    | 'SET DEFAULT'
-    | 'NO ACTION'
+functionCall
+    : IDENTIFIER '(' expressionList? ')'
     ;
 
-// Ενέργειες ON UPDATE
-onUpdateAction
-    : 'CASCADE'
-    | 'SET NULL'
-    | 'SET DEFAULT'
-    | 'NO ACTION'
-    ;
+
+
+
+
 
 onUpdateClause
     : 'ON UPDATE' 'CURRENT_TIMESTAMP'
@@ -208,17 +284,17 @@ onUpdateClause
 
 // In-line constraints (για μεμονωμένες στήλες)
 constraint
-    : 'NOT NULL'
-    | 'NULL'
-    | 'UNIQUE' ('ON CONFLICT' conflictAction)?
+    : NOT NULL
+    | NULL
+    | UNIQUE ('ON CONFLICT' conflictAction)?
     | MANYTOMANY ('ON CONFLICT' conflictAction)?
-    | 'DEFAULT' value
-    | 'CHECK' '(' condition ')'
-    | 'REFERENCES' (schemaName DOT)? tableName '(' columnName ')' (onAction)?
-    | 'FOREIGN KEY' '(' columnNameList ')' 'REFERENCES' (schemaName DOT)? tableName '(' columnNameList ')' ('RELATIONSHIP' relationshipType)? (onAction)*
-    | 'EXCLUDE' 'USING' IDENTIFIER '(' excludeElementList ')' ('WHERE' condition)?
+    | DEFAULT value
+    | CHECK LPAREN condition RPAREN
+    | REFERENCES (schemaName DOT)? tableName LPAREN columnName RPAREN onAction?
+    | FOREIGN KEY LPAREN columnNameList RPAREN REFERENCES (schemaName DOT)? tableName LPAREN columnNameList RPAREN (RELATIONSHIP relationshipType)? onAction*
+    | EXCLUDE USING IDENTIFIER LPAREN excludeElementList RPAREN ('WHERE' condition)?
     | 'AUTO_INCREMENT'
-    | 'PRIMARY KEY'
+    | PRIMARY KEY
     ;
 
 // Table-level constraints (για ολόκληρο τον πίνακα)
@@ -298,21 +374,31 @@ deleteStatement
     : 'DELETE FROM' tableName ('WHERE' condition)? ';'
     ;
 
-// Σύνθετες συνθήκες
+
 condition
-    : columnName comparisonOperator value
-    | columnName 'IN' '(' (value | subquery) (',' (value | subquery))* ')'
-    | columnName 'BETWEEN' value 'AND' value
-    | columnName 'IS' 'NULL'
-    | columnName 'IS NOT NULL'
-    | columnName 'LIKE' STRING
-    | columnName 'ILIKE' STRING
-    | 'NOT' condition
-    | condition 'AND' condition
-    | condition 'OR' condition
-    | 'true'
-    | 'false'
+    : booleanCondition
     ;
+
+booleanCondition
+    : predicate
+    | LPAREN booleanCondition RPAREN
+    | NOT booleanCondition
+    | booleanCondition 'AND' booleanCondition
+    | booleanCondition 'OR' booleanCondition
+    ;
+
+predicate
+    : expression IS NOT NULL
+    | expression IS NULL
+    | expression IN LPAREN (expression | subquery) (COMMA (expression | subquery))* RPAREN
+    | expression BETWEEN expression AND expression
+    | expression LIKE STRING
+    | expression ILIKE STRING
+    | expression comparisonOperator expression
+    | booleanLiteral
+    ;
+
+
 
 // Υποερώτημα (subquery)
 subquery
@@ -322,11 +408,6 @@ subquery
 // Τελεστές σύγκρισης
 comparisonOperator
     : '=' | '<>' | '!=' | '<' | '<=' | '>' | '>=' | '@>' | '<@' | '&&' | '?' | '?|' | '?&'
-    ;
-
-// Αριθμητικοί τελεστές
-arithmeticOperator
-    : '+' | '-' | '*' | '/' | '%' | '^'
     ;
 
 // Σενάριο SQL
@@ -403,10 +484,6 @@ columnNameList
     :  columnName (',' columnName)*
     ;
 
-// Ξένος πίνακας
-foreignTable
-    : (schemaName? '.' tableName | tableName) '(' columnName (',' columnName)* ')'
-    ;
 
 // Ενέργειες για ON CONFLICT
 conflictAction
@@ -458,10 +535,6 @@ partitionStrategy
     | 'HASH'
     ;
 
-// Δημιουργία partition από υπάρχον partitioned πίνακα
-createPartitionStatement
-    : CREATE TABLE tableName 'PARTITION OF' tableName partitionValuesClause SEMICOLON
-    ;
 
 // Ορισμός τιμών για partition
 partitionValuesClause
@@ -470,13 +543,22 @@ partitionValuesClause
                    | 'MODULUS' NUMBER 'REMAINDER' NUMBER)
     ;
 
-partitionOfClause
-    : 'PARTITION OF' tableName partitionValuesClause
-    ;
 
 // Δημιουργία Index
 createIndexStatement
-    : CREATE 'INDEX' IDENTIFIER ON tableName '(' columnName (',' columnName)* ')' (indexOptionsClause)? SEMICOLON
+    : CREATE 'UNIQUE'? 'INDEX' IDENTIFIER
+      ON tableName
+      ('USING' IDENTIFIER)?
+      '(' indexElement (',' indexElement)* ')'
+      ('WHERE' condition)?
+      (indexOptionsClause)?
+      SEMICOLON
+    ;
+
+
+
+indexElement
+    : expression IDENTIFIER? ('ASC' | 'DESC')?
     ;
 
 // Επιλογές για Index
@@ -486,52 +568,43 @@ indexOptionsClause
 
 // Ορισμός για υποστηριζόμενες εκφράσεις.
 expression
-    : value
-    | columnName
+    : '(' expression ')' typeCast?
     | anyExpression
-    | arrayConstructor
-    | '(' expression ')'
-    | expression ('+' | '-' | '*' | '/') expression
-    | expression comparisonOperator expression
-    | expression 'AND' expression
-    | expression 'OR' expression
-    | expression DOUBLE_COLON (typeName | dataType)
+    | functionCall typeCast?
+    | columnName typeCast?
+    | value
     ;
 
 
-    valueAtom
-        : STRING
-        | numericLiteral
-        | booleanLiteral
-        | 'CURRENT_TIMESTAMP'
-        | NULL
-        | (IDENTIFIER | 'now') ('(' valueList? ')')?
-        ;
 
-    typeCast
-        : DOUBLE_COLON IDENTIFIER (IDENTIFIER)?
-        ;
+valueAtom
+    : STRING
+    | numericLiteral
+    | booleanLiteral
+    | 'CURRENT_TIMESTAMP'
+    | NULL
+    | (IDENTIFIER | 'now') ('(' valueList? ')')?
+    ;
 
-    valueList
-        : value (',' value)*
-        ;
+typeCast
+    : DOUBLE_COLON dataType ('[' ']')*
+    ;
+
+valueList
+    : value (',' value)*
+    ;
 
 // Τιμές για στήλες, εκφράσεις, και DEFAULT
 value
-    : STRING
-    | NUMBER
+    : numericLiteral typeCast?
     | valueAtom typeCast?
-    | 'TRUE'
-    | 'FALSE'
-    | 'NULL'
-    | 'CURRENT_TIMESTAMP'
-    | 'current_user'
-    | 'now'
+    | arrayConstructor typeCast?
+    | intervalLiteral
     | 'infinity'
     | 'NaN'
-    | intervalLiteral
-    | arrayConstructor
     ;
+
+
 
 expressionList
     : expression (',' expression)*
@@ -539,9 +612,8 @@ expressionList
 
 
 arrayConstructor
-    : 'ARRAY' '[' expressionList ']' (DOUBLE_COLON dataType)?
+    : 'ARRAY' '[' expressionList ']' typeCast?
     ;
-
 
 // Δημιουργία πολιτικής (Policy) - Κανόνας
 createPolicyStatement
@@ -595,36 +667,26 @@ IDENTIFIER
     | '"' (~["\r\n])* '"'      // Εισαγωγικά ονόματα
     ;
 
-defaultValue
-    : 'DEFAULT' (| numericLiteral | booleanLiteral | 'CURRENT_TIMESTAMP')
+
+numericLiteral
+    : NUMBER
+    | '-' NUMBER
     ;
-
-
-numericLiteral : '-'? DIGIT+ ('.' DIGIT+)?;
 
 booleanLiteral
     : 'TRUE'
     | 'FALSE'
-    ;
-
-foreignKeyAction
-    : 'ON DELETE' fkAction=referentialAction
-    | 'ON UPDATE' fkAction=referentialAction
-    ;
-
-referentialAction
-    : 'CASCADE'
-    | 'SET NULL'
-    | 'SET DEFAULT'
-    | 'RESTRICT'
-    | 'NO ACTION'
+    | 'true'
+    | 'false'
     ;
 
 
 
 anyExpression
-    : 'ANY' '(' arrayConstructor ')'
+    : 'ANY' '(' expression ')'
     ;
+
+
 
 intervalLiteral
     : 'INTERVAL' STRING

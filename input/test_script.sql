@@ -1,35 +1,41 @@
 CREATE TABLE pep_schema.bg_poi (
-                                   id uuid  NOT NULL,
+                                   id uuid DEFAULT gen_random_uuid() NOT NULL,
                                    chamber_id int4 NOT NULL,
-                                   date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                   last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                   rec_deleted bool DEFAULT FALSE NOT NULL,
+                                   date_created timestamp DEFAULT now() NOT NULL,
+                                   last_updated timestamp DEFAULT now() NOT NULL,
+                                   recdeleted bool DEFAULT false NOT NULL,
                                    latitude varchar(255) NOT NULL,
                                    longitude varchar(255) NOT NULL,
                                    CONSTRAINT pk_bg_poi PRIMARY KEY (id)
 );
 
+
+
 CREATE TABLE pep_schema.business_location (
-                                              id uuid NOT NULL,
+                                              id uuid DEFAULT gen_random_uuid() NOT NULL,
                                               code varchar(255) NOT NULL,
-                                              date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                              last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                              rec_deleted bool DEFAULT false NOT NULL,
+                                              date_created timestamp DEFAULT now() NOT NULL,
+                                              last_updated timestamp DEFAULT now() NOT NULL,
+                                              recdeleted bool DEFAULT false NOT NULL,
                                               blob_uri text NULL,
                                               CONSTRAINT business_location_pkey PRIMARY KEY (id)
 );
 
+
+
 CREATE TABLE pep_schema.chamber_department (
-                                               id uuid NOT NULL,
+                                               id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                chamber_department_id int4 NULL,
                                                chamber_id int4 NULL,
-                                               date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                               last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                               rec_deleted bool DEFAULT FALSE NOT NULL,
+                                               date_created timestamp DEFAULT now() NULL,
+                                               last_updated timestamp DEFAULT now() NULL,
+                                               recdeleted bool DEFAULT false NOT NULL,
                                                cd varchar(5) NOT NULL,
                                                CONSTRAINT chamber_department_pkey PRIMARY KEY (id),
                                                CONSTRAINT uk_chamber_department UNIQUE (chamber_id, chamber_department_id)
 );
+
+
 
 CREATE TABLE pep_schema.company_contact_message (
                                                     id uuid NOT NULL,
@@ -42,21 +48,26 @@ CREATE TABLE pep_schema.company_contact_message (
                                                     CONSTRAINT company_contact_message_pkey PRIMARY KEY (id)
 );
 
+
+
+
+
 CREATE TABLE pep_schema.company_status (
-                                           id uuid NOT NULL,
+                                           id uuid DEFAULT gen_random_uuid() NOT NULL,
                                            chamber_id int4 NOT NULL,
                                            chamber_company_status_id int4 NULL,
                                            date_created timestamp NOT NULL,
                                            last_updated timestamp NOT NULL,
-                                           rec_deleted bool DEFAULT FALSE NULL,
+                                           recdeleted bool DEFAULT false NULL,
                                            CONSTRAINT company_status_pkey PRIMARY KEY (id),
                                            CONSTRAINT uk_company_status UNIQUE (chamber_id, chamber_company_status_id)
 );
 
+
 CREATE TABLE pep_schema.company_view_rules (
                                                id uuid NOT NULL,
-                                               date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                               last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                                               date_created timestamp DEFAULT now() NOT NULL,
+                                               last_updated timestamp DEFAULT now() NOT NULL,
                                                chamber_id int8 NULL,
                                                show_mobile_phone bool NULL,
                                                show_phones bool NULL,
@@ -66,23 +77,28 @@ CREATE TABLE pep_schema.company_view_rules (
                                                CONSTRAINT company_view_rules_pkey PRIMARY KEY (id)
 );
 
+
+
+
 CREATE TABLE pep_schema.corporate_status (
-                                             id uuid NOT NULL,
+                                             id uuid DEFAULT gen_random_uuid() NOT NULL,
                                              chamber_corporate_status_id int4 NULL,
                                              chamber_id int4 NULL,
                                              cd varchar(5) NOT NULL,
-                                             date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                             last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                             rec_deleted bool DEFAULT FALSE NOT NULL,
+                                             date_created timestamp DEFAULT now() NOT NULL,
+                                             last_updated timestamp DEFAULT now() NOT NULL,
+                                             recdeleted bool DEFAULT false NOT NULL,
                                              CONSTRAINT pk_corporate_status PRIMARY KEY (id),
                                              CONSTRAINT uk_corporate_status UNIQUE (chamber_id, chamber_corporate_status_id)
 );
 
+
+
 CREATE TABLE pep_schema.country (
-                                    id uuid NOT NULL,
-                                    date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                    last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                    rec_deleted bool DEFAULT FALSE NOT NULL,
+                                    id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                    date_created timestamp DEFAULT now() NULL,
+                                    last_updated timestamp DEFAULT now() NULL,
+                                    recdeleted bool DEFAULT false NOT NULL,
                                     chamber_id int4 NOT NULL,
                                     region_id uuid NULL,
                                     chamber_country_id int4 NULL,
@@ -90,36 +106,43 @@ CREATE TABLE pep_schema.country (
                                     CONSTRAINT pk_country PRIMARY KEY (id)
 );
 
+
 CREATE TABLE pep_schema.data_staging (
-                                         id long NOT NULL,
+                                         id bigserial NOT NULL,
                                          legacy_table_name varchar(100) NOT NULL,
                                          legacy_record_id varchar(255) NOT NULL,
                                          raw_data jsonb NOT NULL,
                                          legacy_updated_at timestamp NOT NULL,
-                                         pulled_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                                         pulled_at timestamp DEFAULT now() NOT NULL,
                                          status varchar(20) DEFAULT 'PENDING'::character varying NOT NULL,
                                          CONSTRAINT data_staging_legacy_table_name_legacy_record_id_legacy_upda_key UNIQUE (legacy_table_name, legacy_record_id, legacy_updated_at),
                                          CONSTRAINT data_staging_pkey PRIMARY KEY (id)
 );
+CREATE INDEX idx_staging_status ON pep_schema.data_staging USING btree (status, pulled_at);
+CREATE INDEX idx_staging_table_status ON pep_schema.data_staging USING btree (legacy_table_name, status);
+
+
 
 CREATE TABLE pep_schema.folder (
-                                   id uuid  NOT NULL,
+                                   id uuid DEFAULT gen_random_uuid() NOT NULL,
                                    descr text NOT NULL,
                                    uri varchar(2000) NOT NULL,
-                                   date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                   last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                   rec_deleted bool DEFAULT FALSE NOT NULL,
+                                   date_created timestamp DEFAULT now() NOT NULL,
+                                   last_updated timestamp DEFAULT now() NOT NULL,
+                                   recdeleted bool DEFAULT false NOT NULL,
                                    CONSTRAINT pk_folder PRIMARY KEY (id)
 );
 
+
+
 CREATE TABLE pep_schema.income_gemi_payment (
-                                                id uuid NOT NULL,
+                                                id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                 chamber_id int4 NOT NULL,
                                                 payment_type varchar(255) NULL,
                                                 sale_ts timestamp NULL,
                                                 chamber_amount numeric(19, 2) NULL,
                                                 chamber_amount_for_certs numeric(19, 2) NULL,
-                                                chamber_amount_for_postal numeric(19, 2) NULL,
+                                                chamber_amount_for_postal numeric(19 ,2) NULL,
                                                 total_amount_paid numeric(19, 2) NULL,
                                                 descr varchar(500) NULL,
                                                 payer varchar(500) NULL,
@@ -140,32 +163,41 @@ CREATE TABLE pep_schema.income_gemi_payment (
                                                 CONSTRAINT pk_income_gemi_payment PRIMARY KEY (id),
                                                 CONSTRAINT uk_income_gemi_payment UNIQUE (chamber_id, gemi_payment_id, payment_type, cancel_flag)
 );
+CREATE INDEX idx_gemi_pay_chamber ON pep_schema.income_gemi_payment USING btree (chamber_id);
+CREATE INDEX idx_gemi_pay_comp ON pep_schema.income_gemi_payment USING btree (company_gemi_id);
+CREATE INDEX idx_gemi_pay_dt ON pep_schema.income_gemi_payment USING btree (sale_ts);
+
+
 
 CREATE TABLE pep_schema.income_payment_method (
-                                                  id uuid NOT NULL,
+                                                  id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                   chamber_id int4 NOT NULL,
                                                   chamber_pay_method_id int4 NOT NULL,
                                                   description varchar(255) NOT NULL,
                                                   last_updated timestamp NOT NULL,
-                                                  rec_deleted int4 NULL,
+                                                  recdeleted int4 NULL,
                                                   CONSTRAINT pk_income_payment_method PRIMARY KEY (id),
                                                   CONSTRAINT uk_in_pay_method UNIQUE (chamber_id, chamber_pay_method_id)
 );
 
+
+
+
 CREATE TABLE pep_schema.income_type (
-                                        id uuid NOT NULL,
+                                        id uuid DEFAULT gen_random_uuid() NOT NULL,
                                         chamber_id int4 NOT NULL,
                                         chamber_type_id int4 NOT NULL,
                                         description varchar(255) NOT NULL,
                                         last_updated timestamp NOT NULL,
-                                        rec_deleted bool NULL,
+                                        recdeleted bool NULL,
                                         date_created timestamp NULL,
                                         CONSTRAINT pk_income_type PRIMARY KEY (id),
                                         CONSTRAINT uk_income_type UNIQUE (chamber_id, chamber_type_id)
 );
 
+
 CREATE TABLE pep_schema.languages (
-                                      id uuid NOT NULL,
+                                      id uuid DEFAULT gen_random_uuid() NOT NULL,
                                       chamber_id int4 NOT NULL,
                                       cd varchar(3) NOT NULL,
                                       descr varchar(50) NOT NULL,
@@ -175,33 +207,36 @@ CREATE TABLE pep_schema.languages (
                                       CONSTRAINT uk_languages_cd UNIQUE (cd)
 );
 
+
 CREATE TABLE pep_schema.municipality (
-                                         id uuid NOT NULL,
+                                         id uuid DEFAULT gen_random_uuid() NOT NULL,
                                          chamber_id int8 NULL,
                                          chamber_municipality_id int8 NULL,
                                          description varchar(255) NULL,
                                          date_created timestamp NULL,
                                          last_updated timestamp NULL,
-                                         rec_deleted bool DEFAULT FALSE NULL,
+                                         recdeleted bool DEFAULT false NULL,
                                          cd varchar(255) DEFAULT ''::character varying NOT NULL,
                                          is_proteas_data bool DEFAULT false NULL,
                                          CONSTRAINT municipality_chamber_unique UNIQUE (chamber_id, chamber_municipality_id),
                                          CONSTRAINT municipality_pkey PRIMARY KEY (id)
 );
 
+
 CREATE TABLE pep_schema.product (
-                                    id uuid NOT NULL,
+                                    id uuid DEFAULT gen_random_uuid() NOT NULL,
                                     chamber_id int4 NULL,
                                     chamber_product_id int8 NOT NULL,
-                                    version int4 NOT NULL,
+                                    "version" int4 NOT NULL,
                                     cd varchar(20) NOT NULL,
                                     cd_gemi varchar(255) NULL,
                                     date_created timestamp NOT NULL,
                                     last_updated timestamp NOT NULL,
                                     parent_product_id int8 NULL,
-                                    rec_deleted bool DEFAULT FALSE NOT NULL,
+                                    recdeleted bool DEFAULT false NOT NULL,
                                     CONSTRAINT product_pkey PRIMARY KEY (id)
 );
+
 
 CREATE TABLE pep_schema.profession_friendly_category (
                                                          id varchar(100) NOT NULL,
@@ -209,33 +244,39 @@ CREATE TABLE pep_schema.profession_friendly_category (
                                                          CONSTRAINT profession_friendly_category_pkey PRIMARY KEY (id)
 );
 
+
+
 CREATE TABLE pep_schema.profession_kind (
-                                            id uuid DEFAULT NOT NULL,
+                                            id uuid DEFAULT gen_random_uuid() NOT NULL,
                                             chamber_id int4 NOT NULL,
                                             chamber_prof_kind_id int4 NULL,
                                             cd varchar(255) NOT NULL,
-                                            date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                            last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                            rec_deleted bool DEFAULT FALSE NOT NULL,
+                                            date_created timestamp DEFAULT now() NULL,
+                                            last_updated timestamp DEFAULT now() NULL,
+                                            recdeleted bool DEFAULT false NOT NULL,
                                             CONSTRAINT pk_profession_kind PRIMARY KEY (id),
                                             CONSTRAINT uk_chamber_prof_kind UNIQUE (chamber_id, chamber_prof_kind_id)
 );
 
+
+
 CREATE TABLE pep_schema.profession_system (
-                                              id uuid NOT NULL,
+                                              id uuid DEFAULT gen_random_uuid() NOT NULL,
                                               chamber_id int4 NOT NULL,
                                               chamber_prof_system_id int4 NULL,
                                               cd varchar(255) NOT NULL,
                                               description varchar(255) NOT NULL,
-                                              date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                              last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                              rec_deleted bool DEFAULT FALSE NOT NULL,
+                                              date_created timestamp DEFAULT now() NULL,
+                                              last_updated timestamp DEFAULT now() NULL,
+                                              recdeleted bool DEFAULT false NOT NULL,
                                               CONSTRAINT pk_profession_system PRIMARY KEY (id),
                                               CONSTRAINT uk_chamber_prof_system UNIQUE (chamber_id, chamber_prof_system_id)
 );
 
+
+
 CREATE TABLE pep_schema.stats_expense (
-                                          id uuid NOT NULL,
+                                          id uuid DEFAULT gen_random_uuid() NOT NULL,
                                           chamber_id int4 NOT NULL,
                                           account_sum_id numeric NOT NULL,
                                           cd_use varchar(4) NOT NULL,
@@ -243,31 +284,37 @@ CREATE TABLE pep_schema.stats_expense (
                                           mm varchar(2) NOT NULL,
                                           amount numeric(19, 2) NULL,
                                           last_updated timestamp NULL,
-                                          rec_deleted numeric NULL,
+                                          recdeleted numeric NULL,
                                           CONSTRAINT pk_stats_expense PRIMARY KEY (id),
                                           CONSTRAINT uk_stats_expense UNIQUE (chamber_id, account_sum_id)
 );
+CREATE INDEX idx_stats_expense ON pep_schema.stats_expense USING btree (group_descr);
+CREATE INDEX idx_stats_expenseer ON pep_schema.stats_expense USING btree (chamber_id);
+
+
 
 CREATE TABLE pep_schema.sync_watermarks (
                                             id bigserial NOT NULL,
                                             table_name varchar(100) NOT NULL,
                                             last_sync_timestamp timestamp NOT NULL,
-                                            updated_at timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                                            updated_at timestamp DEFAULT now() NOT NULL,
                                             CONSTRAINT sync_watermarks_pkey PRIMARY KEY (id),
                                             CONSTRAINT sync_watermarks_table_name_key UNIQUE (table_name)
 );
 
+
+
 CREATE TABLE pep_schema.syncruns (
-                                     id long NOT NULL,
-                                     lastrun timestamp NULL,
-                                     trades_lastrun timestamp NULL,
+                                     id bigint NOT NULL,
+                                     last_run timestamp NULL,
+                                     trades_last_run timestamp NULL,
                                      is_running bool DEFAULT false NULL,
-                                     CONSTRAINT syncruns_pkey PRIMARY KEY (id)
+                                     CONSTRAINT pk_syncruns PRIMARY KEY (id)
 );
 
 CREATE TABLE pep_schema.syncruns_error_log (
                                                id serial4 NOT NULL,
-                                               date_created NOT NULL,
+                                               date_created timestamp DEFAULT now() NOT NULL,
                                                error_message text NULL,
                                                table_name varchar(100) NOT NULL,
                                                table_chamber_id numeric NOT NULL,
@@ -275,9 +322,11 @@ CREATE TABLE pep_schema.syncruns_error_log (
                                                CONSTRAINT syn_error_pkey PRIMARY KEY (id)
 );
 
+
+
 CREATE TABLE pep_schema.temporary_company (
-                                              id long NOT NULL,
-                                              version numeric(19) NOT NULL,
+                                              id numeric(19) NOT NULL,
+                                              "version" numeric(19) NOT NULL,
                                               address_city varchar(50) NULL,
                                               address_country_id numeric(19) NULL,
                                               address_latitude varchar(255) NULL,
@@ -350,7 +399,7 @@ CREATE TABLE pep_schema.temporary_company (
                                               mail_name varchar(60) NULL,
                                               me_criteria1_id numeric(19) NULL,
                                               me_criteria2_id numeric(19) NULL,
-                                              member numeric(1) NULL,
+                                              "member" numeric(1) NULL,
                                               member_dues timestamp(6) NULL,
                                               nationality_id numeric(19) NULL,
                                               nextam numeric(19) NULL,
@@ -416,7 +465,7 @@ CREATE TABLE pep_schema.temporary_company (
                                               proeg_subscr_date timestamp(6) NULL,
                                               proeg_subscr_notes varchar(300) NULL,
                                               migr_capitol numeric NULL,
-                                              migr_capitol2 numeric(19, 2) NULL,
+                                              migr_capitol2 numeric(19,2) NULL,
                                               migr_many_children_flag varchar(1) NULL,
                                               migr_amea_flag varchar(1) NULL,
                                               migr_ypokat_flag varchar(1) NULL,
@@ -426,19 +475,22 @@ CREATE TABLE pep_schema.temporary_company (
                                               print_katast_flag numeric(1) DEFAULT 1 NOT NULL,
                                               subscr_calc_date varchar(255) NULL,
                                               show_business_guide numeric(1) DEFAULT 1 NOT NULL,
+                                              "7060" int4 NULL,
                                               CONSTRAINT pk_company PRIMARY KEY (id)
 );
 
+
+
 CREATE TABLE pep_schema.temporary_company_profession (
-                                                         id long NOT NULL,
-                                                         version numeric(19) NOT NULL,
+                                                         id numeric(19) NOT NULL,
+                                                         "version" numeric(19) NOT NULL,
                                                          company_id numeric(19) NOT NULL,
                                                          date_created timestamp(6) NOT NULL,
                                                          from_date timestamp(6) NULL,
                                                          last_updated timestamp(6) NOT NULL,
                                                          profession_id numeric(19) NOT NULL,
                                                          profession_kind_id numeric(19) NULL,
-                                                         rec_eleted numeric(19) NOT NULL,
+                                                         recdeleted numeric(19) NOT NULL,
                                                          to_date timestamp(6) NULL,
                                                          gemi_id numeric(19) NULL,
                                                          gemi_date_created date NULL,
@@ -447,15 +499,15 @@ CREATE TABLE pep_schema.temporary_company_profession (
 );
 
 CREATE TABLE pep_schema.temporary_company_title (
-                                                    id long NOT NULL,
-                                                    version numeric(19) NOT NULL,
+                                                    id numeric(19) NOT NULL,
+                                                    "version" numeric(19) NOT NULL,
                                                     company_id numeric(19) NULL,
                                                     company_preregistration_id numeric(19) NULL,
                                                     date_created timestamp(6) NOT NULL,
                                                     from_date timestamp(6) NULL,
                                                     last_updated timestamp(6) NOT NULL,
                                                     order_seq numeric NOT NULL,
-                                                    rec_deleted numeric(19) NOT NULL,
+                                                    recdeleted numeric(19) NOT NULL,
                                                     title varchar(1000) NULL,
                                                     title_latin varchar(255) NULL,
                                                     title_nrm varchar(1000) NULL,
@@ -465,51 +517,67 @@ CREATE TABLE pep_schema.temporary_company_title (
                                                     gemi_date_created date NULL,
                                                     gemi_last_updated date NULL,
                                                     CONSTRAINT pk_temporary_company_title PRIMARY KEY (id)
-
 );
 
+
 CREATE TABLE pep_schema.temporary_company_titlei18n (
-                                                        id long NOT NULL,
-                                                        version numeric(19) NOT NULL,
+                                                        id numeric(19) NOT NULL,
+                                                        "version" numeric(19) NOT NULL,
                                                         company_title_id numeric(19) NOT NULL,
                                                         date_created timestamp(6) NOT NULL,
-                                                        language_id numeric(19) NOT NULL,
+                                                        language_id uuid NOT NULL,
                                                         last_updated timestamp(6) NOT NULL,
-                                                        rec_deleted numeric(19) NOT NULL,
+                                                        recdeleted numeric(19) NOT NULL,
                                                         title varchar(1000) NULL,
                                                         gemi_id numeric(19) NULL,
                                                         gemi_date_created date NULL,
                                                         gemi_last_updated date NULL,
-                                                        CONSTRAINT pk_temporary_company_title_i18n PRIMARY KEY (id)
+                                                        CONSTRAINT pk_temporary_company_titlei18n PRIMARY KEY (id),
+                                                        CONSTRAINT fk_temporary_company_titlei18n_title
+                                                            FOREIGN KEY (company_title_id)
+                                                                REFERENCES pep_schema.temporary_company_title(id),
+                                                        CONSTRAINT fk_temporary_company_titlei18n_lang
+                                                            FOREIGN KEY (language_id)
+                                                                REFERENCES pep_schema.languages(id)
 );
 
+
+
+
 CREATE TABLE pep_schema.temporary_companyi18n (
-                                                  id long NOT NULL,
-                                                  version numeric(19) NOT NULL,
+                                                  id numeric(19) NOT NULL,
+                                                  "version" numeric(19) NOT NULL,
                                                   city varchar(50) NULL,
                                                   co_name varchar(1000) NULL,
                                                   company_id numeric(19) NOT NULL,
                                                   date_created timestamp(6) NOT NULL,
-                                                  language_id numeric(19) NOT NULL,
+                                                  language_id uuid NOT NULL,
                                                   last_updated timestamp(6) NOT NULL,
                                                   mail_name varchar(60) NULL,
                                                   objective text NULL,
-                                                  rec_deleted numeric(19) NOT NULL,
+                                                  recdeleted numeric(19) NOT NULL,
                                                   street varchar(60) NULL,
-                                                  comments text NULL,
+                                                  "comments" text NULL,
                                                   gemi_id numeric(19) NULL,
                                                   gemi_date_created date NULL,
                                                   gemi_last_updated date NULL,
                                                   gemi_city varchar(24) NULL,
                                                   article text NULL,
-                                                  CONSTRAINT pk_temporary_company_i18n PRIMARY KEY (id)
+                                                  CONSTRAINT pk_temporary_companyi18n PRIMARY KEY (id),
+                                                  CONSTRAINT fk_temporary_companyi18n_company
+                                                      FOREIGN KEY (company_id)
+                                                          REFERENCES pep_schema.temporary_company(id),
+                                                  CONSTRAINT fk_temporary_companyi18n_lang
+                                                      FOREIGN KEY (language_id)
+                                                          REFERENCES pep_schema.languages(id)
 );
 
+
 CREATE TABLE pep_schema.bg_poi_i18n (
-                                        id uuid NOT NULL,
-                                        date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                        last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                        rec_deleted bool DEFAULT FALSE NOT NULL,
+                                        id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                        date_created timestamp DEFAULT now() NOT NULL,
+                                        last_updated timestamp DEFAULT now() NOT NULL,
+                                        recdeleted bool DEFAULT false NOT NULL,
                                         title varchar(255) NOT NULL,
                                         poi_id uuid NOT NULL,
                                         language_id uuid NOT NULL,
@@ -518,12 +586,13 @@ CREATE TABLE pep_schema.bg_poi_i18n (
                                         CONSTRAINT fk_poi_id FOREIGN KEY (poi_id) REFERENCES pep_schema.bg_poi(id)
 );
 
+
 CREATE TABLE pep_schema.business_location_i18n (
                                                    description varchar(255) NOT NULL,
                                                    code varchar(255) NOT NULL,
-                                                   date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                                   last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                                   rec_deleted bool DEFAULT FALSE NOT NULL,
+                                                   date_created timestamp DEFAULT now() NOT NULL,
+                                                   last_updated timestamp DEFAULT now() NOT NULL,
+                                                   recdeleted bool DEFAULT false NOT NULL,
                                                    business_location_id uuid NOT NULL,
                                                    language_id uuid NOT NULL,
                                                    CONSTRAINT business_location_i18n_pkey PRIMARY KEY (business_location_id, language_id),
@@ -535,9 +604,9 @@ CREATE TABLE pep_schema.chamber_departmenti18n (
                                                    department_id uuid NOT NULL,
                                                    language_id uuid NOT NULL,
                                                    description varchar(50) NOT NULL,
-                                                   date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                                   last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                                   rec_deleted bool DEFAULT FALSE NOT NULL,
+                                                   date_created timestamp DEFAULT now() NULL,
+                                                   last_updated timestamp DEFAULT now() NULL,
+                                                   recdeleted bool DEFAULT false NOT NULL,
                                                    chamber_i18n_id int4 NULL,
                                                    CONSTRAINT pk_chamber_departmenti18n PRIMARY KEY (department_id, language_id),
                                                    CONSTRAINT uk_chamber_dep_i18n UNIQUE (department_id, chamber_i18n_id),
@@ -555,6 +624,10 @@ CREATE TABLE pep_schema.company_status_view_rules (
                                                       CONSTRAINT fk_company_status_rules_company_status FOREIGN KEY (company_status_id) REFERENCES pep_schema.company_status(id),
                                                       CONSTRAINT fk_company_status_rules_company_view FOREIGN KEY (company_view_rules_id) REFERENCES pep_schema.company_view_rules(id)
 );
+CREATE INDEX idx_company_status_view_rules_company_status_id ON pep_schema.company_status_view_rules USING btree (company_status_id);
+CREATE INDEX idx_company_status_view_rules_company_view_rules_id ON pep_schema.company_status_view_rules USING btree (company_view_rules_id);
+CREATE INDEX idx_company_status_view_rules_exclude_companies ON pep_schema.company_status_view_rules USING btree (exclude_companies) WHERE (exclude_companies = true);
+
 
 CREATE TABLE pep_schema.company_statusi18n (
                                                company_status_id uuid NOT NULL,
@@ -562,7 +635,7 @@ CREATE TABLE pep_schema.company_statusi18n (
                                                description varchar(100) NOT NULL,
                                                date_created timestamp NULL,
                                                last_updated timestamp NULL,
-                                               rec_deleted bool DEFAULT FALSE NOT NULL,
+                                               recdeleted bool DEFAULT false NOT NULL,
                                                chamber_i18n_id int4 NULL,
                                                CONSTRAINT pk_company_status_i18n PRIMARY KEY (company_status_id, language_id),
                                                CONSTRAINT uk_co_status_i18n_chamber UNIQUE (company_status_id, chamber_i18n_id),
@@ -581,6 +654,11 @@ CREATE TABLE pep_schema.corporate_status_view_rules (
                                                         CONSTRAINT fk_corporate_status_rules_company_view FOREIGN KEY (company_view_rules_id) REFERENCES pep_schema.company_view_rules(id),
                                                         CONSTRAINT fk_corporate_status_rules_corporate_status FOREIGN KEY (corporate_status_id) REFERENCES pep_schema.corporate_status(id)
 );
+CREATE INDEX idx_corporate_status_view_rules_company_view_rules_id ON pep_schema.corporate_status_view_rules USING btree (company_view_rules_id);
+CREATE INDEX idx_corporate_status_view_rules_corporate_status_id ON pep_schema.corporate_status_view_rules USING btree (corporate_status_id);
+CREATE INDEX idx_corporate_status_view_rules_exclude_companies ON pep_schema.corporate_status_view_rules USING btree (exclude_companies) WHERE (exclude_companies = true);
+CREATE INDEX idx_corporate_status_view_rules_show_contact_info ON pep_schema.corporate_status_view_rules USING btree (show_contact_info) WHERE (show_contact_info = false);
+
 
 CREATE TABLE pep_schema.corporate_statusi18n (
                                                  corporate_status_id uuid NOT NULL,
@@ -588,7 +666,7 @@ CREATE TABLE pep_schema.corporate_statusi18n (
                                                  description varchar(50) NOT NULL,
                                                  date_created timestamp NULL,
                                                  last_updated timestamp NULL,
-                                                 rec_Deleted bool DEFAULT FALSE NOT NULL,
+                                                 recdeleted bool DEFAULT false NOT NULL,
                                                  chamber_i18n_id int4 NULL,
                                                  grouped_description varchar(50) DEFAULT NULL::character varying NULL,
                                                  CONSTRAINT pk_corporate_status_i18n PRIMARY KEY (corporate_status_id, language_id),
@@ -597,13 +675,15 @@ CREATE TABLE pep_schema.corporate_statusi18n (
                                                  CONSTRAINT fk_corp_status_i18n_lang FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
 
+
+
 CREATE TABLE pep_schema.country_i18n (
                                          country_id uuid NOT NULL,
                                          language_id uuid NOT NULL,
                                          description varchar(400) NOT NULL,
-                                         date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                         last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                         rec_deleted bool DEFAULT FALSE NOT NULL,
+                                         date_created timestamp DEFAULT now() NULL,
+                                         last_updated timestamp DEFAULT now() NULL,
+                                         recdeleted bool DEFAULT false NOT NULL,
                                          chamber_country_i18n_id int4 NULL,
                                          CONSTRAINT country_i18n_pkey PRIMARY KEY (country_id, language_id),
                                          CONSTRAINT country_i18n_unique UNIQUE (country_id, chamber_country_i18n_id),
@@ -611,8 +691,10 @@ CREATE TABLE pep_schema.country_i18n (
                                          CONSTRAINT fk_country_i18n_lang FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
 
+
+
 CREATE TABLE pep_schema.income_transaction (
-                                               id uuid DEFAULT NOT NULL,
+                                               id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                chamber_id int4 NOT NULL,
                                                chamber_in_transd_id numeric NOT NULL,
                                                cd_use varchar(4) NOT NULL,
@@ -623,7 +705,7 @@ CREATE TABLE pep_schema.income_transaction (
                                                income_type_id uuid NULL,
                                                amount numeric(19, 2) NULL,
                                                last_updated timestamp NOT NULL,
-                                               rec_deleted numeric NOT NULL,
+                                               recdeleted numeric NOT NULL,
                                                income_pay_method_id uuid NULL,
                                                is_echamber int4 NULL,
                                                block_ser varchar(3) NULL,
@@ -636,6 +718,14 @@ CREATE TABLE pep_schema.income_transaction (
                                                CONSTRAINT fk_income_pay_method FOREIGN KEY (income_pay_method_id) REFERENCES pep_schema.income_payment_method(id),
                                                CONSTRAINT fk_income_type FOREIGN KEY (income_type_id) REFERENCES pep_schema.income_type(id)
 );
+CREATE INDEX idx_in_trans_chamber ON pep_schema.income_transaction USING btree (chamber_id);
+CREATE INDEX idx_in_trans_comp ON pep_schema.income_transaction USING btree (company_id);
+CREATE INDEX idx_in_trans_dt ON pep_schema.income_transaction USING btree (dt);
+CREATE INDEX idx_in_trans_member ON pep_schema.income_transaction USING btree (is_member);
+CREATE INDEX idx_in_trans_pay ON pep_schema.income_transaction USING btree (income_pay_method_id);
+CREATE INDEX idx_in_trans_type ON pep_schema.income_transaction USING btree (income_type_id);
+
+
 
 CREATE TABLE pep_schema.municipality_i18n (
                                               municipality_id uuid NOT NULL,
@@ -643,7 +733,7 @@ CREATE TABLE pep_schema.municipality_i18n (
                                               description varchar(255) NOT NULL,
                                               date_created timestamp NULL,
                                               last_updated timestamp NULL,
-                                              rec_deleted bool DEFAULT FALSE NOT NULL,
+                                              recdeleted bool DEFAULT false NOT NULL,
                                               chamber_i18n_id int4 NULL,
                                               CONSTRAINT pk_municipality_i18n PRIMARY KEY (municipality_id, language_id),
                                               CONSTRAINT uk_municipality_i18n_chamber UNIQUE (municipality_id, chamber_i18n_id),
@@ -651,8 +741,9 @@ CREATE TABLE pep_schema.municipality_i18n (
                                               CONSTRAINT fk_municipality_i18n_lang FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
 
+
 CREATE TABLE pep_schema.producti18n (
-                                        version int4 NOT NULL,
+                                        "version" int4 NOT NULL,
                                         description varchar(500) NOT NULL,
                                         chamber_i18n_id int8 NOT NULL,
                                         language_id uuid NOT NULL,
@@ -660,22 +751,23 @@ CREATE TABLE pep_schema.producti18n (
                                         short_description varchar(35) NULL,
                                         date_created timestamp NOT NULL,
                                         last_updated timestamp NOT NULL,
-                                        rec_deleted bool DEFAULT FALSE NOT NULL,
+                                        recdeleted bool DEFAULT false NOT NULL,
                                         CONSTRAINT pk_producti18n PRIMARY KEY (product_id, language_id),
                                         CONSTRAINT fk_producti18n_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id),
                                         CONSTRAINT fk_producti18n_product FOREIGN KEY (product_id) REFERENCES pep_schema.product(id)
 );
 
+
 CREATE TABLE pep_schema.profession (
-                                       id uuid NOT NULL,
+                                       id uuid DEFAULT gen_random_uuid() NOT NULL,
                                        chamber_id int4 NOT NULL,
                                        chamber_profession_id int4 NULL,
                                        parent_profession_id uuid NULL,
                                        profession_system_id uuid NOT NULL,
                                        code varchar(255) NOT NULL,
-                                       date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                       last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                       rec_deleted bool DEFAULT FALSE NOT NULL,
+                                       date_created timestamp DEFAULT now() NULL,
+                                       last_updated timestamp DEFAULT now() NULL,
+                                       recdeleted bool DEFAULT false NOT NULL,
                                        proteas_id numeric(19) NULL,
                                        friendly_cat_id varchar(100) NULL,
                                        CONSTRAINT pk_profession PRIMARY KEY (id),
@@ -684,14 +776,23 @@ CREATE TABLE pep_schema.profession (
                                        CONSTRAINT fk_prof_system FOREIGN KEY (profession_system_id) REFERENCES pep_schema.profession_system(id),
                                        CONSTRAINT fk_profession_friendly_category FOREIGN KEY (friendly_cat_id) REFERENCES pep_schema.profession_friendly_category(id)
 );
+CREATE INDEX "profession_code_IDX" ON pep_schema.profession USING btree (code);
+CREATE INDEX "profession_date_created_IDX" ON pep_schema.profession USING btree (date_created);
+CREATE INDEX "profession_last_updated_IDX" ON pep_schema.profession USING btree (last_updated);
+CREATE INDEX "profession_parent_profession_id_IDX" ON pep_schema.profession USING btree (parent_profession_id);
+CREATE INDEX "profession_profession_system_id_IDX" ON pep_schema.profession USING btree (profession_system_id);
+CREATE INDEX "profession_recdeleted_IDX" ON pep_schema.profession USING btree (recdeleted);
+
+
+
 
 CREATE TABLE pep_schema.profession_kindi18n (
                                                 profession_kind_id uuid NOT NULL,
                                                 language_id uuid NOT NULL,
-                                                rec_deleted bool DEFAULT FALSE NOT NULL,
+                                                recdeleted bool DEFAULT false NOT NULL,
                                                 description varchar(255) NOT NULL,
-                                                date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                                last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+                                                date_created timestamp DEFAULT now() NULL,
+                                                last_updated timestamp DEFAULT now() NULL,
                                                 chamber_i18n_id int4 NULL,
                                                 CONSTRAINT pk_prof_kind_i18n PRIMARY KEY (profession_kind_id, language_id),
                                                 CONSTRAINT uk_chamber_prof_kind_i18n UNIQUE (profession_kind_id, chamber_i18n_id),
@@ -702,31 +803,45 @@ CREATE TABLE pep_schema.profession_kindi18n (
 CREATE TABLE pep_schema.professioni18n (
                                            profession_id uuid NOT NULL,
                                            language_id uuid NOT NULL,
-                                           rec_deleted bool DEFAULT FALSE NOT NULL,
+                                           recdeleted bool DEFAULT false NOT NULL,
                                            description varchar(500) NOT NULL,
-                                           date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                           last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+                                           date_created timestamp DEFAULT now() NULL,
+                                           last_updated timestamp DEFAULT now() NULL,
                                            chamber_i18n_id int4 NULL,
                                            CONSTRAINT pk_profession_i18n PRIMARY KEY (profession_id, language_id),
                                            CONSTRAINT uk_chamber_profession_i18n UNIQUE (profession_id, chamber_i18n_id),
                                            CONSTRAINT fk_profession_i18n FOREIGN KEY (profession_id) REFERENCES pep_schema.profession(id),
                                            CONSTRAINT fk_profession_i18n_lang FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
+CREATE INDEX "professioni18n_date_created_IDX" ON pep_schema.professioni18n USING btree (date_created);
+CREATE INDEX "professioni18n_description_IDX" ON pep_schema.professioni18n USING btree (description);
+CREATE INDEX "professioni18n_last_updated_IDX" ON pep_schema.professioni18n USING btree (last_updated);
+CREATE INDEX "professioni18n_recdeleted_IDX" ON pep_schema.professioni18n USING btree (recdeleted);
+
+
 
 CREATE TABLE pep_schema.audit_trail (
-                                        id uuid NOT NULL,
-                                        date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                                        id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                        date_created timestamp DEFAULT now() NOT NULL,
                                         ip varchar(50) NOT NULL,
                                         complete_uri text NULL,
                                         company_id uuid NULL,
                                         profile_id uuid NULL,
-                                        CONSTRAINT pk_audit_trail PRIMARY KEY (id)
+                                        uri_path text GENERATED ALWAYS AS (regexp_replace(complete_uri, '^GET https?://[^/]+'::text, ''::text)) STORED,
+                                        country_id uuid NULL,
+                                        CONSTRAINT pk_audit_trail PRIMARY KEY (id),
+                                        CONSTRAINT fk_audit_trail_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                        CONSTRAINT fk_audit_trail_country FOREIGN KEY (country_id) REFERENCES pep_schema.country(id),
+                                        CONSTRAINT fk_audit_trail_profile FOREIGN KEY (profile_id) REFERENCES pep_schema.company_profile(id)
 );
+CREATE INDEX idx_audit_trail_uri_path ON pep_schema.audit_trail USING btree (uri_path);
+
+
 
 CREATE TABLE pep_schema.ch_app_user_contact (
                                                 id uuid NOT NULL,
-                                                date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                                last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+                                                date_created timestamp DEFAULT now() NULL,
+                                                last_updated timestamp DEFAULT now() NULL,
                                                 chamber_app_user_id uuid NOT NULL,
                                                 phone1 varchar(20) NULL,
                                                 phone2 varchar(20) NULL,
@@ -739,20 +854,26 @@ CREATE TABLE pep_schema.ch_app_user_contact (
                                                 latitude varchar(255) NULL,
                                                 longitude varchar(255) NULL,
                                                 street_number varchar(255) NULL,
-                                                rec_deleted bool DEFAULT FALSE NOT NULL,
+                                                recdeleted bool DEFAULT false NOT NULL,
                                                 listing_url varchar(255) NULL,
-                                                CONSTRAINT pk_ch_app_user_contact PRIMARY KEY (id)
+                                                email varchar(255) NULL,
+                                                mobile varchar(50) NULL,
+                                                CONSTRAINT pk_ch_app_user_contact PRIMARY KEY (id),
+                                                CONSTRAINT fk_ch_app_user_contact_chamber_app_user
+                                                    FOREIGN KEY (chamber_app_user_id) REFERENCES pep_schema.chamber_app_user(id)
 );
 
 CREATE TABLE pep_schema.ch_app_user_contact_i18n (
                                                      ch_app_user_contact_id uuid NOT NULL,
                                                      language_id uuid NOT NULL,
-                                                     date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                                     last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
+                                                     date_created timestamp DEFAULT now() NULL,
+                                                     last_updated timestamp DEFAULT now() NULL,
                                                      city varchar(50) NULL,
                                                      street varchar(255) NULL,
-                                                     rec_deleted bool DEFAULT FALSE NOT NULL,
-                                                     CONSTRAINT pk_ch_app_user_contact_i18n PRIMARY KEY (ch_app_user_contact_id, language_id)
+                                                     recdeleted bool DEFAULT false NOT NULL,
+                                                     CONSTRAINT pk_ch_app_user_contact_i18n PRIMARY KEY (ch_app_user_contact_id, language_id),
+                                                     CONSTRAINT fk_ch_app_user_contact FOREIGN KEY (ch_app_user_contact_id) REFERENCES pep_schema.ch_app_user_contact(id),
+                                                     CONSTRAINT fk_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
 
 CREATE TABLE pep_schema.chamber_app_user (
@@ -761,11 +882,18 @@ CREATE TABLE pep_schema.chamber_app_user (
                                              last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
                                              chamber_id int4 NOT NULL,
                                              chamber_app_id uuid NOT NULL,
-                                             company_id uuid NOT NULL,
-                                             rec_deleted bool DEFAULT FALSE NOT NULL,
+                                             company_id uuid NULL,
+                                             recdeleted bool DEFAULT false NOT NULL,
                                              profile_id uuid NULL,
-                                             CONSTRAINT pk_chamber_app_user PRIMARY KEY (id)
+                                             person_id uuid NULL,
+                                             CONSTRAINT chk_chamber_app_user_company_or_person CHECK (((company_id IS NOT NULL) OR (person_id IS NOT NULL))),
+                                             CONSTRAINT pk_chamber_app_user PRIMARY KEY (id),
+                                             CONSTRAINT fk_chamber_app_user_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
+
 );
+
+
+
 
 CREATE TABLE pep_schema.company (
                                     id uuid NOT NULL,
@@ -775,11 +903,11 @@ CREATE TABLE pep_schema.company (
                                     co_name varchar(1000) NOT NULL,
                                     chamber_company_id numeric NULL,
                                     chamber_id int4 NOT NULL,
-                                    cancel_date timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                    date_interruption timestamp DEFAULT CURRENT_TIMESTAMP NULL,
-                                    member numeric NULL,
+                                    cancel_date timestamp DEFAULT now() NULL,
+                                    date_interruption timestamp DEFAULT now() NULL,
+                                    "member" numeric NULL,
                                     rec_type varchar(1) NULL,
-                                    rec_deleted bool DEFAULT FALSE NULL,
+                                    recdeleted bool DEFAULT false NULL,
                                     address_city varchar(50) NULL,
                                     address_latitude varchar(255) NULL,
                                     address_longitude varchar(255) NULL,
@@ -837,17 +965,43 @@ CREATE TABLE pep_schema.company (
                                     jb_isvalid bool DEFAULT false NULL,
                                     jb_activation_status varchar NULL,
                                     CONSTRAINT company_pkey PRIMARY KEY (id),
-                                    CONSTRAINT uk_company UNIQUE (chamber_id, chamber_company_id)
+                                    CONSTRAINT uk_company UNIQUE (chamber_id, chamber_company_id),
+                                    CONSTRAINT fk_company_business_location FOREIGN KEY (business_location_id) REFERENCES pep_schema.business_location(id) ON DELETE RESTRICT,
+                                    CONSTRAINT fk_company_chamber_depart FOREIGN KEY (chamber_department_id) REFERENCES pep_schema.chamber_department(id),
+                                    CONSTRAINT fk_company_company_status FOREIGN KEY (company_status_id) REFERENCES pep_schema.company_status(id),
+                                    CONSTRAINT fk_company_corporate_stat FOREIGN KEY (corporate_status_id) REFERENCES pep_schema.corporate_status(id),
+                                    CONSTRAINT fk_company_country FOREIGN KEY (address_country_id) REFERENCES pep_schema.country(id),
+                                    CONSTRAINT fk_company_municipality FOREIGN KEY (address_municipality_pri_id) REFERENCES pep_schema.municipality(id)
 );
+CREATE INDEX idx_company_afm ON pep_schema.company USING btree (afm);
+CREATE INDEX idx_company_am ON pep_schema.company USING btree (am);
+CREATE INDEX idx_company_chamber_id ON pep_schema.company USING btree (chamber_id);
+CREATE INDEX idx_company_co_name ON pep_schema.company USING btree (co_name);
+CREATE INDEX idx_company_corp_status ON pep_schema.company USING btree (corporate_status_id);
+CREATE INDEX idx_company_dt_registered ON pep_schema.company USING btree (date_registered);
+CREATE INDEX idx_company_gemi_id ON pep_schema.company USING btree (gemi_id);
+CREATE INDEX idx_company_gemi_number ON pep_schema.company USING btree (gemi_number);
+CREATE INDEX idx_company_jb_email ON pep_schema.company USING btree (jb_email);
+CREATE INDEX idx_company_jb_industry ON pep_schema.company USING btree (jb_industry_id);
+CREATE INDEX idx_company_jb_location ON pep_schema.company USING btree (jb_location_id);
+CREATE INDEX idx_company_jb_uuid ON pep_schema.company USING btree (jb_uuid);
+CREATE INDEX idx_company_member ON pep_schema.company USING btree (member);
+CREATE INDEX idx_company_rec_type ON pep_schema.company USING btree (rec_type);
+CREATE INDEX idx_company_status ON pep_schema.company USING btree (company_status_id);
+
+
+
 
 CREATE TABLE pep_schema.company_article_file (
-                                                 id uuid NOT NULL,
+                                                 id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                  article_id uuid NOT NULL,
                                                  file_id uuid NOT NULL,
                                                  order_seq int4 DEFAULT 0 NOT NULL,
-                                                 date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                                 last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                                 CONSTRAINT company_article_file_pkey PRIMARY KEY (id)
+                                                 date_created timestamp DEFAULT now() NOT NULL,
+                                                 last_updated timestamp DEFAULT now() NOT NULL,
+                                                 CONSTRAINT company_article_file_pkey PRIMARY KEY (id),
+                                                 CONSTRAINT fk_article FOREIGN KEY (article_id) REFERENCES pep_schema.company_yp_article(id),
+                                                 CONSTRAINT fk_file FOREIGN KEY (file_id) REFERENCES pep_schema.company_file(id)
 );
 
 CREATE TABLE pep_schema.company_bg_cooperation (
@@ -855,33 +1009,40 @@ CREATE TABLE pep_schema.company_bg_cooperation (
                                                    chamber_id int4 NULL,
                                                    company_id uuid NOT NULL,
                                                    coop_company_id uuid NOT NULL,
-                                                   date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                                   last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                                   rec_deleted bool DEFAULT FALSE NOT NULL,
+                                                   date_created timestamp DEFAULT now() NOT NULL,
+                                                   last_updated timestamp DEFAULT now() NOT NULL,
+                                                   recdeleted bool DEFAULT false NOT NULL,
                                                    cooperation_status varchar(50) NULL,
-                                                   CONSTRAINT company_bg_cooperation_pkey PRIMARY KEY (id)
+                                                   CONSTRAINT company_bg_cooperation_pkey PRIMARY KEY (id),
+                                                   CONSTRAINT fk_company_bg_cooperation_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                                   CONSTRAINT fk_company_bg_cooperation_coop_company FOREIGN KEY (coop_company_id) REFERENCES pep_schema.company(id)
 );
 
 CREATE TABLE pep_schema.company_bg_cooperation_i18n (
                                                         id uuid NOT NULL,
                                                         description varchar(1000) NULL,
-                                                        date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                                        last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                                        rec_deleted bool DEFAULT FALSE NOT NULL,
+                                                        date_created timestamp DEFAULT now() NOT NULL,
+                                                        last_updated timestamp DEFAULT now() NOT NULL,
+                                                        recdeleted bool DEFAULT false NOT NULL,
                                                         cooperation_id uuid NOT NULL,
                                                         language_id uuid NOT NULL,
-                                                        CONSTRAINT company_bg_cooperation_i18n_pkey PRIMARY KEY (id)
+                                                        CONSTRAINT company_bg_cooperation_i18n_pkey PRIMARY KEY (id),
+                                                        CONSTRAINT fk_cooperation_id FOREIGN KEY (cooperation_id) REFERENCES pep_schema.company_bg_cooperation(id),
+                                                        CONSTRAINT fk_language_id FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
 
 CREATE TABLE pep_schema.company_favourites (
-                                               id uuid NOT NULL,
+                                               id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                company_id uuid NOT NULL,
                                                favourite_company_id uuid NOT NULL,
-                                               date_created timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
-                                               last_updated timestamp DEFAULT CURRENT_TIMESTAMP NOT NULL,
+                                               date_created timestamp DEFAULT now() NOT NULL,
+                                               last_updated timestamp DEFAULT now() NOT NULL,
                                                notes text NULL,
                                                favourite_profile_id uuid NULL,
-                                               CONSTRAINT company_favourites_pkey PRIMARY KEY (id)
+                                               CONSTRAINT company_favourites_pkey PRIMARY KEY (id),
+                                               CONSTRAINT fk_company_favourites_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                               CONSTRAINT fk_company_favourites_favourite FOREIGN KEY (favourite_company_id) REFERENCES pep_schema.company(id),
+                                               CONSTRAINT fk_company_favourites_profile FOREIGN KEY (favourite_profile_id) REFERENCES pep_schema.company_profile(id)
 );
 
 CREATE TABLE pep_schema.company_file (
@@ -891,41 +1052,54 @@ CREATE TABLE pep_schema.company_file (
                                          file_size int4 NOT NULL,
                                          blob_uri varchar(2000) NOT NULL,
                                          order_seq int4 NOT NULL,
-                                         rec_deleted bool NULL,
-                                         date_created timestamp DEFAULT  NOT NULL,
-                                         last_updated timestamp DEFAULT  NOT NULL,
+                                         recdeleted bool NULL,
+                                         date_created timestamp DEFAULT now() NOT NULL,
+                                         last_updated timestamp DEFAULT now() NOT NULL,
                                          company_id uuid NOT NULL,
                                          language_id uuid NULL,
                                          is_logo bool NULL,
                                          is_background bool DEFAULT false NULL,
                                          company_profile_id uuid NULL,
                                          is_embedded bool DEFAULT false NOT NULL,
-                                         CONSTRAINT company_file_pkey PRIMARY KEY (id)
+                                         CONSTRAINT company_file_pkey PRIMARY KEY (id),
+                                         CONSTRAINT fk_company_file_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                         CONSTRAINT fk_company_file_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id),
+                                         CONSTRAINT fk_company_profile FOREIGN KEY (company_profile_id) REFERENCES pep_schema.company_profile(id)
 );
 
 CREATE TABLE pep_schema.company_profession (
-                                               id uuid DEFAULT NOT NULL,
+                                               id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                chamber_id int4 NOT NULL,
                                                chamber_company_profession_id int4 NULL,
                                                company_id uuid NOT NULL,
                                                profession_id uuid NOT NULL,
                                                profession_kind_id uuid NULL,
-                                               date_created timestamp NULL,
+                                               date_created timestamp DEFAULT now() NULL,
                                                from_date timestamp NULL,
-                                               last_updated timestamp NULL,
-                                               rec_deleted bool DEFAULT FALSE NOT NULL,
+                                               last_updated timestamp DEFAULT now() NULL,
+                                               recdeleted bool DEFAULT false NOT NULL,
                                                to_date timestamp NULL,
                                                profile_id uuid NULL,
                                                gemi_id numeric NULL,
                                                gemi_date_created timestamp NULL,
                                                gemi_last_updated timestamp NULL,
                                                CONSTRAINT company_profession_pkey PRIMARY KEY (id),
-                                               CONSTRAINT uk_chamber_company_profession UNIQUE (chamber_id, chamber_company_profession_id)
+                                               CONSTRAINT uk_chamber_company_profession UNIQUE (chamber_id, chamber_company_profession_id),
+                                               CONSTRAINT fk_company_id FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                               CONSTRAINT fk_company_profession_profile FOREIGN KEY (profile_id) REFERENCES pep_schema.company_profile(id),
+                                               CONSTRAINT fk_profession_id FOREIGN KEY (profession_id) REFERENCES pep_schema.profession(id),
+                                               CONSTRAINT fk_profession_kind_id FOREIGN KEY (profession_kind_id) REFERENCES pep_schema.profession_kind(id)
 );
+CREATE INDEX idx_company_profession_chamber_company ON pep_schema.company_profession USING btree (chamber_id, company_id) WHERE (recdeleted = false);
+CREATE INDEX idx_company_profession_kind_idx ON pep_schema.company_profession USING btree (profession_kind_id) WHERE (recdeleted = false);
+CREATE INDEX idx_cp_chamber_profession_idx ON pep_schema.company_profession USING btree (chamber_id, profession_kind_id) WHERE (recdeleted = false);
+
+
+
 
 CREATE TABLE pep_schema.company_profile (
                                             id uuid NOT NULL,
-                                            name varchar(1000) NOT NULL,
+                                            "name" varchar(1000) NOT NULL,
                                             address_city varchar(50) NULL,
                                             address_latitude varchar(255) NULL,
                                             address_longitude varchar(255) NULL,
@@ -943,37 +1117,44 @@ CREATE TABLE pep_schema.company_profile (
                                             last_updated timestamp NULL,
                                             business_location_id uuid NULL,
                                             company_id uuid NOT NULL,
-                                            rec_deleted bool DEFAULT FALSE NULL,
+                                            recdeleted bool DEFAULT false NULL,
                                             show_business_guide bool DEFAULT true NULL,
-                                            CONSTRAINT company_profile_pkey PRIMARY KEY (id)
+                                            CONSTRAINT company_profile_pkey PRIMARY KEY (id),
+                                            CONSTRAINT fk_company_profile_business_location FOREIGN KEY (business_location_id) REFERENCES pep_schema.business_location(id),
+                                            CONSTRAINT fk_company_profile_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );
 
 CREATE TABLE pep_schema.company_profile_i18n (
                                                  company_profile_id uuid NOT NULL,
                                                  language_id uuid NOT NULL,
                                                  rec_deleted bool NOT NULL,
-                                                 name varchar(1000) NULL,
+                                                 "name" varchar(1000) NULL,
                                                  address_city varchar(50) NULL,
                                                  address_region varchar(50) NULL,
                                                  address_street varchar(100) NULL,
                                                  date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
                                                  last_updated timestamp DEFAULT CURRENT_TIMESTAMP NULL,
                                                  objective text NULL,
-                                                 CONSTRAINT company_profile_i18n_pkey PRIMARY KEY (company_profile_id, language_id)
+                                                 CONSTRAINT company_profile_i18n_pkey PRIMARY KEY (company_profile_id, language_id),
+                                                 CONSTRAINT fk_company_profile_i18n_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id),
+                                                 CONSTRAINT fk_company_profile_i18n_profile FOREIGN KEY (company_profile_id) REFERENCES pep_schema.company_profile(id)
 );
 
 CREATE TABLE pep_schema.company_title (
-                                          id uuid DEFAULT  NOT NULL,
+                                          id uuid DEFAULT gen_random_uuid() NOT NULL,
                                           chamber_id int4 NOT NULL,
                                           title varchar(1000) NULL,
                                           chamber_title_id numeric NULL,
                                           company_id uuid NOT NULL,
                                           date_created timestamp NOT NULL,
                                           last_updated timestamp NOT NULL,
-                                          rec_deleted bool DEFAULT FALSE NOT NULL,
+                                          recdeleted bool DEFAULT false NOT NULL,
                                           CONSTRAINT pk_company_title PRIMARY KEY (id),
-                                          CONSTRAINT uk_chamber_company_title UNIQUE (chamber_id, chamber_title_id)
+                                          CONSTRAINT uk_chamber_company_title UNIQUE (chamber_id, chamber_title_id),
+                                          CONSTRAINT fk_company_title FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );
+CREATE INDEX "company_title_company_id_IDX" ON pep_schema.company_title USING btree (company_id);
+
 
 CREATE TABLE pep_schema.company_titlei18n (
                                               company_title_id uuid NOT NULL,
@@ -982,37 +1163,55 @@ CREATE TABLE pep_schema.company_titlei18n (
                                               date_created timestamp NULL,
                                               last_updated timestamp NULL,
                                               chamber_i18n_id int4 NOT NULL,
-                                              rec_deleted bool DEFAULT FALSE NOT NULL,
+                                              recdeleted bool DEFAULT false NOT NULL,
                                               CONSTRAINT pk_company_titlei18n PRIMARY KEY (company_title_id, language_id, chamber_i18n_id),
-                                              CONSTRAINT uk_chamber_co_title_i18n UNIQUE (company_title_id, chamber_i18n_id)
+                                              CONSTRAINT uk_chamber_co_title_i18n UNIQUE (company_title_id, chamber_i18n_id),
+                                              CONSTRAINT fk_co_title_i18n
+                                                  FOREIGN KEY (company_title_id)
+                                                      REFERENCES pep_schema.company_title(id),
+                                              CONSTRAINT fk_co_title_i18n_lang
+                                                  FOREIGN KEY (language_id)
+                                                      REFERENCES pep_schema.languages(id)
 );
+CREATE INDEX "company_titlei18n_company_title_id_IDX"
+    ON pep_schema.company_titlei18n USING btree (company_title_id);
+CREATE INDEX company_titlei18n_title_idx
+    ON pep_schema.company_titlei18n USING btree (title);
 
 CREATE TABLE pep_schema.company_yp_article (
-                                               id uuid NOT NULL,
+                                               id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                chamber_id int4 NULL,
                                                company_id uuid NOT NULL,
                                                title text NULL,
                                                html text NULL,
                                                language_id uuid NULL,
                                                order_seq int4 DEFAULT 0 NOT NULL,
-                                               date_created timestamp NOT NULL,
-                                               last_updated timestamp NOT NULL,
-                                               rec_deleted bool DEFAULT FALSE NOT NULL,
-                                               is_published bool DEFAULT FALSE NOT NULL,
+                                               date_created timestamp DEFAULT now() NOT NULL,
+                                               last_updated timestamp DEFAULT now() NOT NULL,
+                                               recdeleted bool DEFAULT false NOT NULL,
+                                               is_published bool DEFAULT false NOT NULL,
                                                company_profile_id uuid NOT NULL,
                                                CONSTRAINT company_yp_article_un UNIQUE (company_id, title),
-                                               CONSTRAINT pk_company_article PRIMARY KEY (id)
+                                               CONSTRAINT pk_company_article PRIMARY KEY (id),
+                                               CONSTRAINT fk_company_article FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                               CONSTRAINT fk_company_article_lang FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id),
+                                               CONSTRAINT fk_company_profile FOREIGN KEY (company_profile_id) REFERENCES pep_schema.company_profile(id)
 );
+
+
+
 
 CREATE TABLE pep_schema.company_yp_article_i18n (
                                                     company_article_id uuid NOT NULL,
                                                     title text NULL,
                                                     html text NULL,
                                                     language_id uuid NOT NULL,
-                                                    date_created timestamp NOT NULL,
-                                                    last_updated timestamp NOT NULL,
-                                                    rec_deleted bool DEFAULT FALSE NOT NULL,
-                                                    CONSTRAINT pk_company_article_i18n PRIMARY KEY (company_article_id, language_id)
+                                                    date_created timestamp DEFAULT now() NOT NULL,
+                                                    last_updated timestamp DEFAULT now() NOT NULL,
+                                                    recdeleted bool DEFAULT false NOT NULL,
+                                                    CONSTRAINT pk_company_article_i18n PRIMARY KEY (company_article_id, language_id),
+                                                    CONSTRAINT fk_company_article_i18n_company_article FOREIGN KEY (company_article_id) REFERENCES pep_schema.company_yp_article(id),
+                                                    CONSTRAINT fk_company_article_i18n_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
 
 CREATE TABLE pep_schema.company_yp_file (
@@ -1023,30 +1222,33 @@ CREATE TABLE pep_schema.company_yp_file (
                                             file_size int4 NOT NULL,
                                             title varchar NULL,
                                             order_seq int4 NOT NULL,
-                                            rec_deleted bool DEFAULT FALSE NULL,
+                                            recdeleted bool DEFAULT false NULL,
                                             date_created timestamp NOT NULL,
                                             last_updated timestamp NOT NULL,
                                             company_id uuid NOT NULL,
                                             language_id uuid NOT NULL,
                                             blob_uri varchar(2000) NULL,
-                                            CONSTRAINT company_yp_file_pkey PRIMARY KEY (id)
+                                            CONSTRAINT company_yp_file_pkey PRIMARY KEY (id),
+                                            CONSTRAINT fk_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                            CONSTRAINT fk_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
 
 CREATE TABLE pep_schema.company_yp_photo (
-                                             id uuid NOT NULL,
+                                             id uuid DEFAULT gen_random_uuid() NOT NULL,
                                              chamber_id int4 NOT NULL,
                                              company_id uuid NOT NULL,
                                              file_name varchar(100) NOT NULL,
                                              mime_type varchar(100) NOT NULL,
-                                             file_size int4 DEFAULT 0 NOT NULL,
-                                             is_logo bool DEFAULT false NOT NULL,
-                                             blob_uri varchar(2000) NOT NULL,
+                                             file_size int4 NOT NULL,
+                                             title varchar NULL,
                                              order_seq int4 DEFAULT 0 NOT NULL,
-                                             date_created timestamp NOT NULL,
-                                             last_updated timestamp NOT NULL,
-                                             rec_deleted bool DEFAULT FALSE NOT NULL,
+                                             date_created timestamp DEFAULT now() NOT NULL,
+                                             last_updated timestamp DEFAULT now() NOT NULL,
+                                             recdeleted bool DEFAULT false NOT NULL,
+                                             blob_uri varchar(2000) NOT NULL,
                                              CONSTRAINT company_yp_photo_un UNIQUE (company_id, file_name),
-                                             CONSTRAINT pk_company_photo PRIMARY KEY (id)
+                                             CONSTRAINT pk_company_photo PRIMARY KEY (id),
+                                             CONSTRAINT fk_company_photo FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );
 
 CREATE TABLE pep_schema.companyi18n (
@@ -1055,61 +1257,81 @@ CREATE TABLE pep_schema.companyi18n (
                                         chamber_i18n_id int4 NOT NULL,
                                         city varchar(50) NULL,
                                         co_name varchar(1000) NULL,
-                                        date_created timestamp NULL,
-                                        last_updated timestamp NULL,
+                                        date_created timestamp DEFAULT now() NULL,
+                                        last_updated timestamp DEFAULT now() NULL,
                                         objective text NULL,
-                                        rec_deleted bool DEFAULT FALSE NOT NULL,
+                                        recdeleted bool DEFAULT false NOT NULL,
                                         street varchar(60) NULL,
                                         responsible_name varchar(255) NULL,
                                         CONSTRAINT pk_companyi18n PRIMARY KEY (company_id, language_id, chamber_i18n_id),
-                                        CONSTRAINT uk_company_chamber_i18n UNIQUE (company_id, chamber_i18n_id)
+                                        CONSTRAINT uk_company_chamber_i18n UNIQUE (company_id, chamber_i18n_id),
+                                        CONSTRAINT fk_company_i18n_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id) ON DELETE CASCADE,
+                                        CONSTRAINT fk_company_i18n_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
 
+
+
+
+
 CREATE TABLE pep_schema.export_comp_prod_country (
-                                                     id uuid DEFAULT NOT NULL,
+                                                     id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                      export_company_id uuid NOT NULL,
                                                      country_id uuid NOT NULL,
                                                      date_created timestamp NOT NULL,
                                                      last_updated timestamp NOT NULL,
-                                                     rec_deleted bool DEFAULT FALSE NOT NULL,
+                                                     recdeleted bool DEFAULT false NOT NULL,
                                                      exp_year int4 NOT NULL,
                                                      product_id uuid NULL,
                                                      CONSTRAINT export_comp_prod_country_pkey PRIMARY KEY (id),
-                                                     CONSTRAINT export_comp_prod_country_year_check CHECK (((exp_year >= 1800) AND (exp_year <= 2100)))
+                                                     CONSTRAINT export_comp_prod_country_year_check CHECK (((exp_year >= 1800) AND (exp_year <= 2100))),
+                                                     CONSTRAINT fk_export_comp_prod_country_country FOREIGN KEY (country_id) REFERENCES pep_schema.country(id),
+                                                     CONSTRAINT fk_export_comp_prod_country_export_company FOREIGN KEY (export_company_id) REFERENCES pep_schema.export_company(id),
+                                                     CONSTRAINT fk_export_comp_prod_country_product FOREIGN KEY (product_id) REFERENCES pep_schema.product(id)
 );
 
 CREATE TABLE pep_schema.export_company (
-                                           id uuid DEFAULT NOT NULL,
+                                           id uuid DEFAULT gen_random_uuid() NOT NULL,
                                            date_created timestamp NOT NULL,
                                            last_updated timestamp NOT NULL,
                                            company_id uuid NOT NULL,
-                                           active bool DEFAULT FALSE NULL,
+                                           active bool DEFAULT false NULL,
                                            eme_code int8 NOT NULL,
-                                           CONSTRAINT export_company_pkey PRIMARY KEY (id)
+                                           CONSTRAINT export_company_pkey PRIMARY KEY (id),
+                                           CONSTRAINT fk_export_company_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );
 
+
+
+
+
+
 CREATE TABLE pep_schema.status_history (
-                                           id uuid DEFAULT NOT NULL,
+                                           id uuid DEFAULT gen_random_uuid() NOT NULL,
                                            chamber_id int4 NOT NULL,
                                            chamber_status_history_id numeric NOT NULL,
                                            company_id uuid NOT NULL,
                                            company_status_id uuid NOT NULL,
                                            date_created timestamp NOT NULL,
                                            last_updated timestamp NOT NULL,
-                                           notes varchar(255) NULL,
+                                           notes varchar(256) NULL,
                                            reg_dt timestamp NOT NULL,
                                            start_dt timestamp NOT NULL,
-                                           rec_deleted bool NOT NULL,
+                                           recdeleted bool NOT NULL,
                                            gemi_id numeric NULL,
                                            gemi_date_created timestamp NULL,
                                            gemi_last_updated timestamp NULL,
                                            action_no varchar(50) NULL,
                                            CONSTRAINT pk_status_history PRIMARY KEY (id),
-                                           CONSTRAINT uk_chamber_status_history UNIQUE (chamber_id, chamber_status_history_id)
+                                           CONSTRAINT uk_chamber_status_history UNIQUE (chamber_id, chamber_status_history_id),
+                                           CONSTRAINT fk_history_status FOREIGN KEY (company_status_id) REFERENCES pep_schema.company_status(id),
+                                           CONSTRAINT fk_status_history FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );
+CREATE INDEX sh_company_id_idx ON pep_schema.status_history USING btree (company_id);
+
+
 
 CREATE TABLE pep_schema.user_contactinfo (
-                                             id uuid DEFAULT NOT NULL,
+                                             id uuid DEFAULT gen_random_uuid() NOT NULL,
                                              chamber_id int4 NULL,
                                              company_id uuid NOT NULL,
                                              username text NOT NULL,
@@ -1117,30 +1339,37 @@ CREATE TABLE pep_schema.user_contactinfo (
                                              phone varchar(20) NULL,
                                              mobile varchar(50) NULL,
                                              contact_url varchar(255) NULL,
-                                             date_created timestamp NOT NULL,
-                                             last_updated timestamp NOT NULL,
-                                             CONSTRAINT user_contactinfo_pkey PRIMARY KEY (id)
+                                             date_created timestamp DEFAULT now() NOT NULL,
+                                             last_updated timestamp DEFAULT now() NOT NULL,
+                                             CONSTRAINT user_contactinfo_pkey PRIMARY KEY (id),
+                                             CONSTRAINT fk_user_contactinfo_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );
 
+
+
+
 CREATE TABLE pep_schema.user_geodata (
-                                         id uuid DEFAULT NOT NULL,
+                                         id uuid DEFAULT gen_random_uuid() NOT NULL,
                                          chamber_id int4 NULL,
                                          company_id uuid NOT NULL,
                                          username text NOT NULL,
                                          latitude varchar(255) NOT NULL,
                                          longitude varchar(255) NOT NULL,
-                                         date_created timestamp NOT NULL,
-                                         last_updated timestamp NOT NULL,
-                                         CONSTRAINT user_geodata_pkey PRIMARY KEY (id)
+                                         date_created timestamp DEFAULT now() NOT NULL,
+                                         last_updated timestamp DEFAULT now() NOT NULL,
+                                         CONSTRAINT user_geodata_pkey PRIMARY KEY (id),
+                                         CONSTRAINT fk_user_geodata_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );
-
 CREATE TABLE pep_schema.working_hours (
-                                          id int8  NOT NULL,
+                                          id int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1
+                                              MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
                                           company_id uuid NOT NULL,
                                           day_of_week varchar(20) NOT NULL,
                                           opening_time time NULL,
                                           closing_time time NULL,
                                           is_closed bool DEFAULT false NOT NULL,
                                           profile_id uuid NULL,
-                                          CONSTRAINT working_hours_pkey PRIMARY KEY (id)
+                                          CONSTRAINT working_hours_pkey PRIMARY KEY (id),
+                                          CONSTRAINT fk_working_hours_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                          CONSTRAINT fk_working_hours_profile FOREIGN KEY (profile_id) REFERENCES pep_schema.company_profile(id)
 );

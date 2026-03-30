@@ -17,7 +17,7 @@ public class ColumnTest {
         columnDefinition.setColumnName("username");
         columnDefinition.setSqlType("VARCHAR");
         columnDefinition.setJavaType("String");
-        columnDefinition.setLength(100);
+        columnDefinition.setLength(1000);
         columnDefinition.setPrimaryKey(false);
         columnDefinition.setNullable(false);
         columnDefinition.setUnique(true);
@@ -29,7 +29,7 @@ public class ColumnTest {
         assertEquals("username", column.getName());
         assertEquals("VARCHAR", column.getSqlType());
         assertEquals("String", column.getJavaType());
-        assertEquals(100, column.getLength());
+        assertEquals(1000, column.getLength());
         assertFalse(column.isPrimaryKey());
         assertFalse(column.isNullable());
         assertTrue(column.isUnique());

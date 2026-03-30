@@ -1,5 +1,6 @@
 package com.sqldomaingen.parser;
 
+import com.sqldomaingen.util.NamingConverter;
 import com.sqldomaingen.util.TypeMapper;
 import com.sqldomaingen.model.Column;
 import lombok.AllArgsConstructor;
@@ -33,7 +34,10 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
     private String onUpdate;
     private String onDelete;
     private String mappedBy;
+    private String generatedAs;
     private boolean manyToMany = false;
+    private boolean isIdentity = false;
+    private String identityGeneration;
 
     /**
      * Builds a {@link ColumnDefinition} by walking the ANTLR parse context with this listener.
@@ -59,8 +63,8 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
         ColumnDefinition columnDefinition = new ColumnDefinition();
         ParseTreeWalker.DEFAULT.walk(columnDefinition, ctx);
 
-        // Map SQL type to Java type after the listener collected sqlType.
-        columnDefinition.javaType = TypeMapper.mapToJavaType(columnDefinition.sqlType);
+        Column column = columnDefinition.toColumn();
+        columnDefinition.javaType = TypeMapper.mapToJavaType(column);
 
         log.info("Parsed column -> name='{}', sqlType='{}', javaType='{}', pk={}",
                 columnDefinition.getColumnName(),
@@ -91,93 +95,206 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
      */
     @Override
     public void enterDataType(PostgreSQLParser.DataTypeContext ctx) {
-        sqlType = ctx.getText().toUpperCase();
-
-        if (ctx.decimalType() != null) {
-            precision = ctx.decimalType().precision != null ? Integer.parseInt(ctx.decimalType().precision.getText()) : 0;
-            scale = ctx.decimalType().scale != null ? Integer.parseInt(ctx.decimalType().scale.getText()) : 0;
+        if (this.sqlType != null && !this.sqlType.isBlank()) {
+            return;
         }
 
-        length = extractLength(sqlType);
+        sqlType = ctx.getText().toUpperCase(java.util.Locale.ROOT);
 
-        log.debug("SQL type extracted: '{}' | precision={} | scale={} | length={}", sqlType, precision, scale, length);
+        if ("BIGSERIAL".equals(sqlType) || "SERIAL".equals(sqlType) || "SMALLSERIAL".equals(sqlType)) {
+            this.isIdentity = true;
+            this.identityGeneration = "BY DEFAULT";
+        }
+
+        String baseSqlType = getBaseSqlType();
+
+        if ("DECIMAL".equals(baseSqlType) || "NUMERIC".equals(baseSqlType)) {
+            extractPrecisionAndScale(sqlType);
+            this.length = 0;
+        } else {
+            this.length = extractLength(sqlType);
+        }
+
+        log.debug("SQL type extracted: '{}' | precision={} | scale={} | length={}",
+                sqlType, precision, scale, length);
+    }
+
+    private void extractPrecisionAndScale(String typeText) {
+        if (typeText == null || typeText.isBlank()) {
+            this.precision = 0;
+            this.scale = 0;
+            return;
+        }
+
+        int open = typeText.indexOf('(');
+        int close = typeText.indexOf(')', open + 1);
+
+        if (open < 0 || close < 0 || close <= open + 1) {
+            this.precision = 0;
+            this.scale = 0;
+            return;
+        }
+
+        try {
+            String insideParentheses = typeText.substring(open + 1, close);
+            String[] parts = insideParentheses.split(",");
+
+            this.precision = parts.length >= 1 ? Integer.parseInt(parts[0].trim()) : 0;
+            this.scale = parts.length >= 2 ? Integer.parseInt(parts[1].trim()) : 0;
+        } catch (NumberFormatException exception) {
+            log.warn("Invalid numeric precision/scale format in SQL type '{}'. Using precision=0, scale=0.", typeText);
+            this.precision = 0;
+            this.scale = 0;
+        }
     }
 
     /**
-     * Handles column-level constraints and updates the flags/metadata accordingly.
-     * <p>
-     * Supports:
-     * <ul>
-     *   <li>PRIMARY KEY</li>
-     *   <li>NOT NULL</li>
-     *   <li>UNIQUE</li>
-     *   <li>DEFAULT ...</li>
-     *   <li>CHECK (...)</li>
-     *   <li>REFERENCES ...</li>
-     * </ul>
+     * Handles a column-level constraint and updates column metadata.
+     *
+     * @param ctx the constraint context
      */
     @Override
     public void enterConstraint(PostgreSQLParser.ConstraintContext ctx) {
-        String constraintText = ctx.getText().toUpperCase();
+        String rawConstraintText = ctx.getText().toUpperCase(java.util.Locale.ROOT);
+        String normalizedConstraintText = rawConstraintText.replaceAll("\\s+", "");
 
-        if (constraintText.contains("PRIMARY KEY")) {
+        if (normalizedConstraintText.contains("PRIMARYKEY")) {
             this.primaryKey = true;
-            this.nullable = false; // PRIMARY KEY implies NOT NULL
+            this.nullable = false;
             log.info("Column '{}' marked as PRIMARY KEY", this.columnName);
         }
 
-        if (constraintText.contains("NOT NULL")) {
+        if (normalizedConstraintText.contains("NOTNULL")) {
             this.nullable = false;
+            log.info("Column '{}' marked as NOT NULL", this.columnName);
         }
 
-        if (constraintText.contains("UNIQUE")) {
+        if (normalizedConstraintText.contains("UNIQUE")) {
             this.unique = true;
         }
 
-        // Note: This is not a standard SQL keyword. Keep it only if your grammar emits it intentionally.
-        if (constraintText.contains("MANYTOMANY")) {
+        if (normalizedConstraintText.contains("MANYTOMANY")) {
             this.manyToMany = true;
         }
 
-        if (constraintText.contains("DEFAULT")) {
+        if (normalizedConstraintText.contains("DEFAULT")) {
             this.defaultValue = extractDefaultValue(ctx);
         }
 
-        if (constraintText.contains("CHECK")) {
+        if (normalizedConstraintText.contains("CHECK")) {
             this.checkConstraint = extractCheckConstraint(ctx);
         }
 
-        if (constraintText.contains("REFERENCES")) {
+        if (normalizedConstraintText.contains("REFERENCES")) {
             this.foreignKey = true;
             extractForeignKeyDetails(ctx);
         }
 
         log.debug("Constraints extracted for '{}' -> pk={}, nullable={}, unique={}, manyToMany={}, default={}, check={}, fk={}",
-                this.columnName, this.primaryKey, this.nullable, this.unique, this.manyToMany, this.defaultValue, this.checkConstraint, this.foreignKey);
+                this.columnName,
+                this.primaryKey,
+                this.nullable,
+                this.unique,
+                this.manyToMany,
+                this.defaultValue,
+                this.checkConstraint,
+                this.foreignKey);
     }
 
     /**
      * Returns the SQL base type without parameters (e.g. VARCHAR(20) -> VARCHAR).
      */
     public String getBaseSqlType() {
+        if (sqlType == null || sqlType.isBlank()) {
+            return "";
+        }
         return sqlType.contains("(") ? sqlType.substring(0, sqlType.indexOf("(")) : sqlType;
     }
 
-    /**
-     * Extracts the "length" argument from SQL types that include size (e.g. VARCHAR(255)).
-     * Returns a default value when not available or not parseable.
-     */
-    private int extractLength(String typeText) {
-        if (typeText.contains("(") && typeText.contains(")")) {
+    @Override
+    public void enterColumnTypeModifier(PostgreSQLParser.ColumnTypeModifierContext ctx) {
+        if (ctx == null) {
+            return;
+        }
+
+        String modifierText = ctx.getText(); // e.g. "(1000)" or "(10,2)"
+        if (modifierText == null || modifierText.isBlank()) {
+            return;
+        }
+
+        if (this.sqlType == null || this.sqlType.isBlank()) {
+            this.sqlType = modifierText.toUpperCase();
+        } else {
+            this.sqlType = (this.sqlType + modifierText).toUpperCase();
+        }
+
+        // Recalculate length after appending modifier
+        this.length = extractLength(this.sqlType);
+
+        // If numeric/decimal precision-scale were not captured in enterDataType, recover them here
+        String baseType = getBaseSqlType();
+        if ((baseType.equals("DECIMAL") || baseType.equals("NUMERIC")) && modifierText.startsWith("(") && modifierText.endsWith(")")) {
             try {
-                String insideParentheses = typeText.substring(typeText.indexOf("(") + 1, typeText.indexOf(")"));
-                String[] parts = insideParentheses.split(",");
-                return Integer.parseInt(parts[0].trim());
+                String inside = modifierText.substring(1, modifierText.length() - 1);
+                String[] parts = inside.split(",");
+
+                if (parts.length >= 1) {
+                    this.precision = Integer.parseInt(parts[0].trim());
+                }
+                if (parts.length >= 2) {
+                    this.scale = Integer.parseInt(parts[1].trim());
+                }
             } catch (NumberFormatException e) {
-                log.warn("Invalid length format in SQL type '{}'. Defaulting to 255.", typeText);
+                log.warn("Invalid numeric precision/scale format in modifier '{}'", modifierText);
             }
         }
-        return 255;
+
+        log.debug("SQL type modifier extracted: '{}' | sqlType now='{}' | precision={} | scale={} | length={}",
+                modifierText, this.sqlType, this.precision, this.scale, this.length);
+    }
+
+    @Override
+    public void enterIdentityColumn(PostgreSQLParser.IdentityColumnContext ctx) {
+        String text = ctx.getText().toUpperCase(java.util.Locale.ROOT);
+
+        this.isIdentity = true;
+
+        if (text.contains("BYDEFAULT")) {
+            this.identityGeneration = "BY DEFAULT";
+        } else if (text.contains("ALWAYS")) {
+            this.identityGeneration = "ALWAYS";
+        }
+
+        log.info("Column '{}' marked as IDENTITY ({})",
+                this.columnName,
+                this.identityGeneration);
+    }
+
+
+    /**
+     * Extracts the "length" argument from SQL types that include size (e.g. VARCHAR(255)).
+     * Returns 0 when not available or not parseable.
+     */
+    private int extractLength(String typeText) {
+        if (typeText == null || typeText.isBlank()) {
+            return 0;
+        }
+
+        int open = typeText.indexOf('(');
+        int close = typeText.indexOf(')', open + 1);
+
+        if (open < 0 || close < 0 || close <= open + 1) {
+            return 0;
+        }
+
+        try {
+            String insideParentheses = typeText.substring(open + 1, close);
+            String[] parts = insideParentheses.split(",");
+            return Integer.parseInt(parts[0].trim());
+        } catch (NumberFormatException e) {
+            log.warn("Invalid length format in SQL type '{}'. Returning 0 (no explicit length).", typeText);
+            return 0;
+        }
     }
 
     /**
@@ -212,25 +329,86 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
     }
 
     /**
-     * Extracts FK target table/column from a REFERENCES clause.
+     * Extracts FK target schema/table/column from a REFERENCES clause.
+     * <p>
+     * This method preserves schema-qualified targets, e.g.
+     * {@code REFERENCES config_schema.chamber(id)} so cross-schema foreign keys
+     * are never downgraded to table-only names.
      */
     private void extractForeignKeyDetails(PostgreSQLParser.ConstraintContext ctx) {
         log.debug("Extracting FOREIGN KEY details from: {}", ctx.getText());
 
+        String referencedTableName = null;
+        String referencedSchemaName = null;
+        String referencedColumnName = null;
+
         if (ctx.tableName() != null) {
-            referencedTable = ctx.tableName().getText();
+            referencedTableName = ctx.tableName().getText().replace("\"", "").trim();
         } else {
             log.warn("FK extraction: tableName is null.");
         }
 
+        if (ctx.schemaName() != null) {
+            referencedSchemaName = ctx.schemaName().getText().replace("\"", "").trim();
+        }
+
         if (ctx.columnName() != null) {
-            referencedColumn = ctx.columnName().getText();
+            referencedColumnName = ctx.columnName().getText().replace("\"", "").trim();
         } else {
             log.warn("FK extraction: columnName is null.");
         }
 
-        log.info("FK extracted -> referencedTable='{}', referencedColumn='{}'", referencedTable, referencedColumn);
+        if (referencedTableName != null && !referencedTableName.isBlank()) {
+            referencedTable = referencedSchemaName != null && !referencedSchemaName.isBlank()
+                    ? referencedSchemaName + "." + referencedTableName
+                    : referencedTableName;
+        } else {
+            referencedTable = null;
+        }
+
+        referencedColumn = referencedColumnName;
+
+        log.info("FK extracted -> referencedTable='{}', referencedColumn='{}'",
+                referencedTable, referencedColumn);
     }
+
+    @Override
+    public void enterGeneratedColumn(PostgreSQLParser.GeneratedColumnContext ctx) {
+        String generatedColumnText = ctx.getText();
+        String normalizedGeneratedColumnText = generatedColumnText.toUpperCase(java.util.Locale.ROOT);
+
+        if (normalizedGeneratedColumnText.contains("GENERATED")
+                && normalizedGeneratedColumnText.contains("AS")
+                && normalizedGeneratedColumnText.contains("STORED")) {
+            String normalizedGeneratedAs = generatedColumnText
+                    .replaceAll("(?i)generatedalwaysas", "GENERATED ALWAYS AS")
+                    .replaceAll("(?i)generatedbydefaultas", "GENERATED BY DEFAULT AS")
+                    .replaceAll("(?i)\\)stored", ") STORED")
+                    .replaceAll("AS\\(", "AS (");
+
+            this.generatedAs = normalizedGeneratedAs;
+
+            log.info("Column '{}' marked as GENERATED STORED column: {}",
+                    this.columnName,
+                    this.generatedAs);
+        }
+
+        if (normalizedGeneratedColumnText.contains("IDENTITY")) {
+            this.isIdentity = true;
+
+            if (normalizedGeneratedColumnText.contains("BYDEFAULT")) {
+                this.identityGeneration = "BY DEFAULT";
+            } else if (normalizedGeneratedColumnText.contains("ALWAYS")) {
+                this.identityGeneration = "ALWAYS";
+            }
+
+            log.info("Column '{}' marked as IDENTITY ({})",
+                    this.columnName,
+                    this.identityGeneration);
+        }
+    }
+
+
 
     /**
      * Converts this definition to the internal {@link Column} model used by the generator.
@@ -240,6 +418,7 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
 
         Column column = new Column();
         column.setName(this.columnName);
+        column.setFieldName(NamingConverter.toJavaFieldName(this.columnName));
         column.setJavaType(this.javaType);
         column.setSqlType(this.sqlType);
         column.setLength(this.length);
@@ -254,6 +433,9 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
         column.setOnDelete(this.onDelete);
         column.setOnUpdate(this.onUpdate);
         column.setMappedBy(this.mappedBy);
+        column.setIdentity(this.isIdentity);
+        column.setIdentityGeneration(this.identityGeneration);
+        column.setGeneratedAs(this.generatedAs);
 
         if (this.foreignKey) {
             column.setForeignKey(true);

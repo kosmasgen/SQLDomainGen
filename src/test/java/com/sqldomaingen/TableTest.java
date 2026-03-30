@@ -174,14 +174,15 @@ public class TableTest {
                 "Column(name=parent_dept_id, sqlType=INT, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=null, primaryKey=false, unique=false, manyToMany=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null), " +
                 "Column(name=created_at, sqlType=TIMESTAMP, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=CURRENT_TIMESTAMP, primaryKey=false, unique=false, manyToMany=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null), " +
                 "Column(name=updated_at, sqlType=TIMESTAMP, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=CURRENT_TIMESTAMP, primaryKey=false, unique=false, manyToMany=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null)" +
-                "], constraints=[PRIMARY KEY (department_id), FOREIGN KEY (parent_dept_id) REFERENCES department(department_id)], relationships=[]}";
-
+                "], constraints=[PRIMARY KEY (department_id), FOREIGN KEY (parent_dept_id) REFERENCES department(department_id)], relationships=[], manyToManyRelations=[], pureJoinTable=false}";
 
         log.info("✅ Table state: {}", table);
         System.out.println("🔎 Actual table.toString():\n");
         System.out.println("📌 Expected:\n" + expected);
+
         Assertions.assertEquals(expected, table.toString(), "Table toString should match the expected format.");
     }
+
 
     @Test
     public void testRecurringPatternTable_WithForeignKeyColumn() {

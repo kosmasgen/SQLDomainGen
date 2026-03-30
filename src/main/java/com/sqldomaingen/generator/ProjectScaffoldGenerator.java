@@ -2,19 +2,19 @@ package com.sqldomaingen.generator;
 
 import lombok.extern.log4j.Log4j2;
 
-import java.io.IOException;
-import java.nio.charset.StandardCharsets;
-import java.nio.file.Files;
+import com.sqldomaingen.util.GeneratorSupport;
 import java.nio.file.Path;
 import java.util.Objects;
 
+import static com.sqldomaingen.util.Constants.*;
+
 /**
  * Generates a minimal, buildable Spring Boot Maven project scaffold:
- * pom.xml, Application class, and application.yml.
+ * pom.xml, Application class, and application.properties
  * Target structure:
  * {outputDir}/pom.xml
  * {outputDir}/src/main/java/{basePackagePath}/Application.java
- * {outputDir}/src/main/resources/application.yml
+ * {outputDir}/src/main/resources/application.properties
  * {outputDir}/src/test/java/{basePackagePath}/ (directory only)
  */
 @Log4j2
@@ -23,11 +23,14 @@ public class ProjectScaffoldGenerator {
     /**
      * Generates the project scaffold under outputDir.
      *
-     * @param outputDir   target project root directory
+     * @param outputDir target project root directory
      * @param basePackage Java base package (e.g. gr.knowledge.schoolmanagement)
-     * @param overwrite   if true, overwrites existing files
+     * @param overwrite if true, overwrites existing files
      */
-    public void generateScaffold(String outputDir, String basePackage, boolean overwrite) {
+    public void generateScaffold(String outputDir,
+                                 String basePackage,
+                                 String defaultSchemaName,
+                                 boolean overwrite) {
         Objects.requireNonNull(outputDir, "outputDir must not be null");
         Objects.requireNonNull(basePackage, "basePackage must not be null");
 
@@ -42,169 +45,207 @@ public class ProjectScaffoldGenerator {
         }
 
         Path projectRoot = Path.of(out);
-        ensureDir(projectRoot);
+        GeneratorSupport.ensureDirectory(projectRoot);
 
         String groupId = pkg;
         String artifactId = resolveArtifactId(pkg);
 
         writePom(projectRoot, groupId, artifactId, overwrite);
         writeApplication(projectRoot, pkg, overwrite);
-        createApplicationProperties(projectRoot, artifactId, overwrite);
+        createApplicationProperties(projectRoot, artifactId, defaultSchemaName, overwrite);
 
-        ensureDir(resolveBaseJavaDir(projectRoot, pkg, true));
+        GeneratorSupport.ensureDirectory(resolveBaseJavaDir(projectRoot, pkg, true));
 
-        log.info("✅ Project scaffold created under: {}", projectRoot.toAbsolutePath());
+        log.info("Project scaffold created under: {}", projectRoot.toAbsolutePath());
     }
 
 
 
+    /**
+     * Resolves the Maven artifactId from the base package.
+     *
+     * @param basePackage base Java package
+     * @return resolved artifactId, or generated-app when blank
+     */
     private static String resolveArtifactId(String basePackage) {
-        int lastDot = basePackage.lastIndexOf('.');
-        String lastSegment = (lastDot >= 0) ? basePackage.substring(lastDot + 1) : basePackage;
+        int lastDotIndex = basePackage.lastIndexOf('.');
+        String lastSegment = lastDotIndex >= 0
+                ? basePackage.substring(lastDotIndex + 1)
+                : basePackage;
 
-        String a = lastSegment.trim();
-        if (a.isEmpty()) {
+        String artifactId = lastSegment.trim();
+        if (artifactId.isEmpty()) {
             return "generated-app";
         }
-        // Keep underscores as-is to avoid unexpected renames.
-        return a;
+
+        return artifactId;
     }
 
+    /**
+     * Generates the Maven pom.xml file for the project.
+     *
+     * @param projectRoot target project root directory
+     * @param groupId Maven groupId
+     * @param artifactId Maven artifactId
+     * @param overwrite true to overwrite an existing file
+     */
     private void writePom(Path projectRoot, String groupId, String artifactId, boolean overwrite) {
         Path pom = projectRoot.resolve("pom.xml");
 
         String safeGroupId = (groupId == null || groupId.isBlank()) ? "com.generated" : groupId.trim();
         String safeArtifactId = (artifactId == null || artifactId.isBlank()) ? "generated-app" : artifactId.trim();
-
-        // Keep it simple: name = artifactId (can be changed later if you want a prettier display name)
         String projectName = safeArtifactId;
 
         String content = """
-            <?xml version="1.0" encoding="UTF-8"?>
-            <project xmlns="http://maven.apache.org/POM/4.0.0"
-                     xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                     xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
-                <modelVersion>4.0.0</modelVersion>
+    <?xml version="1.0" encoding="UTF-8"?>
+    <project xmlns="http://maven.apache.org/POM/4.0.0"
+             xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+             xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+        <modelVersion>4.0.0</modelVersion>
 
-                <parent>
+        <parent>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-parent</artifactId>
+            <version>%s</version>
+            <relativePath/>
+        </parent>
+
+        <groupId>%s</groupId>
+        <artifactId>%s</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <name>%s</name>
+        <description>Generated Spring Boot project</description>
+
+        <properties>
+            <java.version>21</java.version>
+            <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+            <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+            <springdoc.version>%s</springdoc.version>
+            <modelmapper.version>%s</modelmapper.version>
+        </properties>
+
+        <dependencies>
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-web</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-data-jpa</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-validation</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springdoc</groupId>
+                <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
+                <version>${springdoc.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.modelmapper</groupId>
+                <artifactId>modelmapper</artifactId>
+                <version>${modelmapper.version}</version>
+            </dependency>
+
+            <dependency>
+                <groupId>org.hibernate.orm</groupId>
+                <artifactId>hibernate-envers</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>org.postgresql</groupId>
+                <artifactId>postgresql</artifactId>
+                <scope>runtime</scope>
+            </dependency>
+            
+            <dependency>
+                 <groupId>org.liquibase</groupId>
+                 <artifactId>liquibase-core</artifactId>
+            </dependency>
+
+            <dependency>
+                <groupId>org.projectlombok</groupId>
+                <artifactId>lombok</artifactId>
+                <optional>true</optional>
+            </dependency>
+
+            <dependency>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-starter-test</artifactId>
+                <scope>test</scope>
+            </dependency>
+        </dependencies>
+
+        <build>
+            <plugins>
+                <plugin>
                     <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-starter-parent</artifactId>
-                    <version>3.4.2</version>
-                    <relativePath/>
-                </parent>
+                    <artifactId>spring-boot-maven-plugin</artifactId>
+                </plugin>
+            </plugins>
+        </build>
 
-                <groupId>%s</groupId>
-                <artifactId>%s</artifactId>
-                <version>0.0.1-SNAPSHOT</version>
-                <name>%s</name>
-                <description>Generated Spring Boot project</description>
+    </project>
+    """.formatted(
+                SPRING_BOOT_VERSION,
+                safeGroupId,
+                safeArtifactId,
+                projectName,
+                SPRINGDOC_VERSION,
+                MODELMAPPER_VERSION
+        );
 
-                <properties>
-                    <java.version>21</java.version>
-                    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-                    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-                </properties>
-
-                <dependencies>
-                    <dependency>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-web</artifactId>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-data-jpa</artifactId>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-validation</artifactId>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.springdoc</groupId>
-                        <artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>
-                        <version>2.8.5</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.modelmapper</groupId>
-                        <artifactId>modelmapper</artifactId>
-                        <version>3.2.0</version>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.postgresql</groupId>
-                        <artifactId>postgresql</artifactId>
-                        <scope>runtime</scope>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.projectlombok</groupId>
-                        <artifactId>lombok</artifactId>
-                        <optional>true</optional>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>org.springframework.boot</groupId>
-                        <artifactId>spring-boot-starter-test</artifactId>
-                        <scope>test</scope>
-                    </dependency>
-
-                    <dependency>
-                        <groupId>com.h2database</groupId>
-                        <artifactId>h2</artifactId>
-                        <scope>test</scope>
-                    </dependency>
-                </dependencies>
-
-                <build>
-                    <plugins>
-                        <plugin>
-                            <groupId>org.springframework.boot</groupId>
-                            <artifactId>spring-boot-maven-plugin</artifactId>
-                        </plugin>
-                    </plugins>
-                </build>
-
-            </project>
-            """.formatted(safeGroupId, safeArtifactId, projectName);
-
-        writeFile(pom, content, overwrite);
-        log.info("✅ pom.xml created: {}", pom.toAbsolutePath());
+        GeneratorSupport.writeFile(pom, content, overwrite);
     }
 
 
-
+    /**
+     * Generates the Spring Boot application entry point class.
+     *
+     * @param projectRoot target project root directory
+     * @param basePackage base Java package
+     * @param overwrite true to overwrite an existing file
+     */
     private void writeApplication(Path projectRoot, String basePackage, boolean overwrite) {
         Path baseJavaDir = resolveBaseJavaDir(projectRoot, basePackage, false);
-        ensureDir(baseJavaDir);
+        GeneratorSupport.ensureDirectory(baseJavaDir);
 
         String applicationClassName = resolveApplicationClassName(basePackage);
         Path appFile = baseJavaDir.resolve(applicationClassName + ".java");
 
         String content = """
-            package %s;
+        package %s;
 
-            import org.springframework.boot.SpringApplication;
-            import org.springframework.boot.autoconfigure.SpringBootApplication;
+        import org.springframework.boot.SpringApplication;
+        import org.springframework.boot.autoconfigure.SpringBootApplication;
 
-            /**
-             * Spring Boot entry point for the generated project.
-             */
-            @SpringBootApplication
-            public class %s {
+        /**
+         * Spring Boot entry point for the generated project.
+         */
+        @SpringBootApplication
+        public class %s {
 
-                public static void main(String[] args) {
-                    SpringApplication.run(%s.class, args);
-                }
+            public static void main(String[] args) {
+                SpringApplication.run(%s.class, args);
             }
-            """.formatted(basePackage, applicationClassName, applicationClassName);
+        }
+        """.formatted(basePackage, applicationClassName, applicationClassName);
 
-        writeFile(appFile, content, overwrite);
-        log.info("✅ Application created: {}", appFile.toAbsolutePath());
+        GeneratorSupport.writeFile(appFile, content, overwrite);
     }
 
+
+    /**
+     * Resolves the Spring Boot application class name from the base package.
+     *
+     * @param basePackage base Java package
+     * @return resolved application class name
+     */
     private static String resolveApplicationClassName(String basePackage) {
         String leaf = basePackage.substring(basePackage.lastIndexOf('.') + 1).trim();
 
@@ -230,6 +271,10 @@ public class ProjectScaffoldGenerator {
         return capitalize(leaf) + "Application";
     }
 
+    /**
+     * Capitalizes the first character of the given string.
+     * @return value with uppercase first character, or empty string when blank
+     */
     private static String capitalize(String s) {
         if (s == null || s.isBlank()) return "";
         String t = s.trim();
@@ -237,50 +282,78 @@ public class ProjectScaffoldGenerator {
     }
 
 
-    private void createApplicationProperties(Path root, String applicationName, boolean overwrite) {
+    /**
+     * Creates the application.properties file for the generated project.
+     *
+     * @param root project root directory
+     * @param applicationName Spring application name
+     * @param overwrite whether existing files should be overwritten
+     */
+    private void createApplicationProperties(Path root,
+                                             String applicationName,
+                                             String defaultSchemaName,
+                                             boolean overwrite) {
         String name = (applicationName == null || applicationName.isBlank())
                 ? "generated-app"
                 : applicationName.trim();
+
+        String resolvedSchemaName = (defaultSchemaName == null || defaultSchemaName.isBlank())
+                ? "public"
+                : defaultSchemaName.trim();
 
         String props = """
 spring.application.name=%s
 
 ############################
-# PostgreSQL (example)
+# PostgreSQL
 ############################
-# spring.datasource.url=jdbc:postgresql://localhost:5432/schooldb
-# spring.datasource.username=schooluser
-# spring.datasource.password=Strong_Pass_123!
-# spring.datasource.driver-class-name=org.postgresql.Driver
-# spring.jpa.properties.hibernate.dialect=org.hibernate.dialect.PostgreSQLDialect
+spring.datasource.url=jdbc:postgresql://localhost:5432/schooldb
+spring.datasource.username=schooluser
+spring.datasource.password=Strong_Pass_123!
 
 ############################
-# Database
+# Liquibase
 ############################
-spring.autoconfigure.exclude=org.springframework.boot.autoconfigure.jdbc.DataSourceAutoConfiguration
-# Remove the line above and uncomment the PostgreSQL settings to enable DB connectivity.
+spring.liquibase.enabled=true
+spring.liquibase.change-log=classpath:db/migration/changelog-master.xml
+spring.liquibase.default-schema=%s
 
+############################
+# JPA
+############################
 spring.jpa.hibernate.ddl-auto=none
 spring.jpa.open-in-view=false
+spring.jpa.properties.hibernate.default_schema=%s
+spring.jpa.properties.org.hibernate.envers.default_schema=audit
 
 server.port=8081
 
-#########################
+############################
 # Swagger
-#########################
+############################
 springdoc.default-produces-media-type=application/json
 springdoc.api-docs.enabled=true
 springdoc.swagger-ui.enabled=true
-""".formatted(name);
+springdoc.swagger-ui.tagsSorter=alpha
+springdoc.swagger-ui.operationsSorter=alpha
+springdoc.writer-with-order-by-keys=true
+""".formatted(name, resolvedSchemaName, resolvedSchemaName);
 
         Path file = root.resolve("src/main/resources/application.properties");
-        writeFile(file, props, overwrite);
+        GeneratorSupport.writeFile(file, props, overwrite);
     }
 
 
 
 
-
+    /**
+     * Resolves the base Java source directory for the given package.
+     *
+     * @param projectRoot target project root directory
+     * @param basePackage base Java package
+     * @param testSources true to resolve the test source path, false for main source path
+     * @return resolved base Java directory path
+     */
     private static Path resolveBaseJavaDir(Path projectRoot, String basePackage, boolean testSources) {
         String basePath = basePackage.replace('.', '/');
 
@@ -291,33 +364,5 @@ springdoc.swagger-ui.enabled=true
         return projectRoot.resolve(Path.of("src", "main", "java", basePath));
     }
 
-    private static void ensureDir(Path dir) {
-        try {
-            Files.createDirectories(dir);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to create directory: " + dir, e);
-        }
-    }
-
-    private static void writeFile(Path filePath, String content, boolean overwrite) {
-        Objects.requireNonNull(filePath, "filePath must not be null");
-        Objects.requireNonNull(content, "content must not be null");
-
-        try {
-            if (Files.exists(filePath) && !overwrite) {
-                log.info("ℹ️ File exists, skipping (overwrite=false): {}", filePath.toAbsolutePath());
-                return;
-            }
-
-            Path parent = filePath.getParent();
-            if (parent != null) {
-                Files.createDirectories(parent);
-            }
-
-            Files.writeString(filePath, content, StandardCharsets.UTF_8);
-        } catch (IOException e) {
-            throw new IllegalStateException("Failed to write file: " + filePath.toAbsolutePath(), e);
-        }
-    }
 }
 

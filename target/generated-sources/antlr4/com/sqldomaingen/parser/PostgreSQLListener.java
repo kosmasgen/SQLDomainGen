@@ -8,6 +8,16 @@ import org.antlr.v4.runtime.tree.ParseTreeListener;
  */
 public interface PostgreSQLListener extends ParseTreeListener {
 	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#identityColumn}.
+	 * @param ctx the parse tree
+	 */
+	void enterIdentityColumn(PostgreSQLParser.IdentityColumnContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#identityColumn}.
+	 * @param ctx the parse tree
+	 */
+	void exitIdentityColumn(PostgreSQLParser.IdentityColumnContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#createTableStatement}.
 	 * @param ctx the parse tree
 	 */
@@ -28,6 +38,16 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 */
 	void exitColumnDef(PostgreSQLParser.ColumnDefContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#columnAttribute}.
+	 * @param ctx the parse tree
+	 */
+	void enterColumnAttribute(PostgreSQLParser.ColumnAttributeContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#columnAttribute}.
+	 * @param ctx the parse tree
+	 */
+	void exitColumnAttribute(PostgreSQLParser.ColumnAttributeContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#columnTypeModifier}.
 	 * @param ctx the parse tree
 	 */
@@ -47,6 +67,36 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitGeneratedColumn(PostgreSQLParser.GeneratedColumnContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#generatedColumnBody}.
+	 * @param ctx the parse tree
+	 */
+	void enterGeneratedColumnBody(PostgreSQLParser.GeneratedColumnBodyContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#generatedColumnBody}.
+	 * @param ctx the parse tree
+	 */
+	void exitGeneratedColumnBody(PostgreSQLParser.GeneratedColumnBodyContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#identityOptions}.
+	 * @param ctx the parse tree
+	 */
+	void enterIdentityOptions(PostgreSQLParser.IdentityOptionsContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#identityOptions}.
+	 * @param ctx the parse tree
+	 */
+	void exitIdentityOptions(PostgreSQLParser.IdentityOptionsContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#identityOption}.
+	 * @param ctx the parse tree
+	 */
+	void enterIdentityOption(PostgreSQLParser.IdentityOptionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#identityOption}.
+	 * @param ctx the parse tree
+	 */
+	void exitIdentityOption(PostgreSQLParser.IdentityOptionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#collateClause}.
 	 * @param ctx the parse tree
@@ -98,25 +148,15 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 */
 	void exitDataType(PostgreSQLParser.DataTypeContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link PostgreSQLParser#onDeleteAction}.
+	 * Enter a parse tree produced by {@link PostgreSQLParser#functionCall}.
 	 * @param ctx the parse tree
 	 */
-	void enterOnDeleteAction(PostgreSQLParser.OnDeleteActionContext ctx);
+	void enterFunctionCall(PostgreSQLParser.FunctionCallContext ctx);
 	/**
-	 * Exit a parse tree produced by {@link PostgreSQLParser#onDeleteAction}.
+	 * Exit a parse tree produced by {@link PostgreSQLParser#functionCall}.
 	 * @param ctx the parse tree
 	 */
-	void exitOnDeleteAction(PostgreSQLParser.OnDeleteActionContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PostgreSQLParser#onUpdateAction}.
-	 * @param ctx the parse tree
-	 */
-	void enterOnUpdateAction(PostgreSQLParser.OnUpdateActionContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PostgreSQLParser#onUpdateAction}.
-	 * @param ctx the parse tree
-	 */
-	void exitOnUpdateAction(PostgreSQLParser.OnUpdateActionContext ctx);
+	void exitFunctionCall(PostgreSQLParser.FunctionCallContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#onUpdateClause}.
 	 * @param ctx the parse tree
@@ -268,6 +308,26 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 */
 	void exitCondition(PostgreSQLParser.ConditionContext ctx);
 	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#booleanCondition}.
+	 * @param ctx the parse tree
+	 */
+	void enterBooleanCondition(PostgreSQLParser.BooleanConditionContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#booleanCondition}.
+	 * @param ctx the parse tree
+	 */
+	void exitBooleanCondition(PostgreSQLParser.BooleanConditionContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#predicate}.
+	 * @param ctx the parse tree
+	 */
+	void enterPredicate(PostgreSQLParser.PredicateContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#predicate}.
+	 * @param ctx the parse tree
+	 */
+	void exitPredicate(PostgreSQLParser.PredicateContext ctx);
+	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#subquery}.
 	 * @param ctx the parse tree
 	 */
@@ -287,16 +347,6 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitComparisonOperator(PostgreSQLParser.ComparisonOperatorContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PostgreSQLParser#arithmeticOperator}.
-	 * @param ctx the parse tree
-	 */
-	void enterArithmeticOperator(PostgreSQLParser.ArithmeticOperatorContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PostgreSQLParser#arithmeticOperator}.
-	 * @param ctx the parse tree
-	 */
-	void exitArithmeticOperator(PostgreSQLParser.ArithmeticOperatorContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#sqlScript}.
 	 * @param ctx the parse tree
@@ -418,16 +468,6 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 */
 	void exitColumnNameList(PostgreSQLParser.ColumnNameListContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link PostgreSQLParser#foreignTable}.
-	 * @param ctx the parse tree
-	 */
-	void enterForeignTable(PostgreSQLParser.ForeignTableContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PostgreSQLParser#foreignTable}.
-	 * @param ctx the parse tree
-	 */
-	void exitForeignTable(PostgreSQLParser.ForeignTableContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#conflictAction}.
 	 * @param ctx the parse tree
 	 */
@@ -508,16 +548,6 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 */
 	void exitPartitionStrategy(PostgreSQLParser.PartitionStrategyContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link PostgreSQLParser#createPartitionStatement}.
-	 * @param ctx the parse tree
-	 */
-	void enterCreatePartitionStatement(PostgreSQLParser.CreatePartitionStatementContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PostgreSQLParser#createPartitionStatement}.
-	 * @param ctx the parse tree
-	 */
-	void exitCreatePartitionStatement(PostgreSQLParser.CreatePartitionStatementContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#partitionValuesClause}.
 	 * @param ctx the parse tree
 	 */
@@ -528,16 +558,6 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 */
 	void exitPartitionValuesClause(PostgreSQLParser.PartitionValuesClauseContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link PostgreSQLParser#partitionOfClause}.
-	 * @param ctx the parse tree
-	 */
-	void enterPartitionOfClause(PostgreSQLParser.PartitionOfClauseContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PostgreSQLParser#partitionOfClause}.
-	 * @param ctx the parse tree
-	 */
-	void exitPartitionOfClause(PostgreSQLParser.PartitionOfClauseContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#createIndexStatement}.
 	 * @param ctx the parse tree
 	 */
@@ -547,6 +567,16 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitCreateIndexStatement(PostgreSQLParser.CreateIndexStatementContext ctx);
+	/**
+	 * Enter a parse tree produced by {@link PostgreSQLParser#indexElement}.
+	 * @param ctx the parse tree
+	 */
+	void enterIndexElement(PostgreSQLParser.IndexElementContext ctx);
+	/**
+	 * Exit a parse tree produced by {@link PostgreSQLParser#indexElement}.
+	 * @param ctx the parse tree
+	 */
+	void exitIndexElement(PostgreSQLParser.IndexElementContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#indexOptionsClause}.
 	 * @param ctx the parse tree
@@ -698,16 +728,6 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 */
 	void exitSqlAction(PostgreSQLParser.SqlActionContext ctx);
 	/**
-	 * Enter a parse tree produced by {@link PostgreSQLParser#defaultValue}.
-	 * @param ctx the parse tree
-	 */
-	void enterDefaultValue(PostgreSQLParser.DefaultValueContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PostgreSQLParser#defaultValue}.
-	 * @param ctx the parse tree
-	 */
-	void exitDefaultValue(PostgreSQLParser.DefaultValueContext ctx);
-	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#numericLiteral}.
 	 * @param ctx the parse tree
 	 */
@@ -727,26 +747,6 @@ public interface PostgreSQLListener extends ParseTreeListener {
 	 * @param ctx the parse tree
 	 */
 	void exitBooleanLiteral(PostgreSQLParser.BooleanLiteralContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PostgreSQLParser#foreignKeyAction}.
-	 * @param ctx the parse tree
-	 */
-	void enterForeignKeyAction(PostgreSQLParser.ForeignKeyActionContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PostgreSQLParser#foreignKeyAction}.
-	 * @param ctx the parse tree
-	 */
-	void exitForeignKeyAction(PostgreSQLParser.ForeignKeyActionContext ctx);
-	/**
-	 * Enter a parse tree produced by {@link PostgreSQLParser#referentialAction}.
-	 * @param ctx the parse tree
-	 */
-	void enterReferentialAction(PostgreSQLParser.ReferentialActionContext ctx);
-	/**
-	 * Exit a parse tree produced by {@link PostgreSQLParser#referentialAction}.
-	 * @param ctx the parse tree
-	 */
-	void exitReferentialAction(PostgreSQLParser.ReferentialActionContext ctx);
 	/**
 	 * Enter a parse tree produced by {@link PostgreSQLParser#anyExpression}.
 	 * @param ctx the parse tree

@@ -112,3 +112,6 @@
 1771584901806:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output" -p "gr.knowledge.pep" -w true -b true
 1771600627315:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output" -p "gr.knowledge." -w true -b true
 1771921186861:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output/PepTest" -p "gr.knowledge.pepTest" -w true -b true
+1774267556359:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output/PepTest" -p "gr.knowledge.pepTest" -w true -b true -a "kosmasgenaris@knowledge.gr"
+1774520723603:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output/PepTest" -p "gr.knowledge.pepTest" -w true -b true -a "kosmasgenaris@\n"
+1774524413391:generate-entity -i "C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql" -o "C:/Users/kosma/IdeaProjects/SQLDomainGen/output/PepTest" -p "gr.knowledge.pepTest" -w true -b true -a "kosmasgenaris@"

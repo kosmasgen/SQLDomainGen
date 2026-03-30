@@ -16,7 +16,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.nio.file.Paths;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -33,292 +32,6 @@ class EntityGeneratorTest {
         entityGenerator = new EntityGenerator();
         log.info("🔧 Setting up EntityGeneratorTest...");
     }
-
-    @Test
-    void testCreateEntityContent_ForCompositePkJoinTable_GeneratesEmbeddedIdAndMapsId() {
-        // Target table: pep_schema.business_location
-        Table businessLocation = new Table();
-        businessLocation.setName("pep_schema.business_location");
-
-        Column businessLocationPk = new Column();
-        businessLocationPk.setName("id");
-        businessLocationPk.setSqlType("uuid");
-        businessLocationPk.setJavaType("java.util.UUID");
-        businessLocationPk.setPrimaryKey(true);
-        businessLocationPk.setNullable(false);
-
-        businessLocation.setColumns(new ArrayList<>(List.of(businessLocationPk)));
-
-        // Target table: pep_schema.languages
-        Table languages = new Table();
-        languages.setName("pep_schema.languages");
-
-        Column languagesPk = new Column();
-        languagesPk.setName("id");
-        languagesPk.setSqlType("uuid");
-        languagesPk.setJavaType("java.util.UUID");
-        languagesPk.setPrimaryKey(true);
-        languagesPk.setNullable(false);
-
-        languages.setColumns(new ArrayList<>(List.of(languagesPk)));
-
-        // Join table: pep_schema.business_location_i18n
-        Table joinTable = new Table();
-        joinTable.setName("pep_schema.business_location_i18n");
-
-        Column description = new Column();
-        description.setName("description");
-        description.setSqlType("varchar");
-        description.setJavaType("java.lang.String");
-        description.setNullable(false);
-        description.setLength(255);
-
-        Column code = new Column();
-        code.setName("code");
-        code.setSqlType("varchar");
-        code.setJavaType("java.lang.String");
-        code.setNullable(false);
-        code.setLength(255);
-
-        Column dateCreated = new Column();
-        dateCreated.setName("date_created");
-        dateCreated.setSqlType("timestamp");
-        dateCreated.setJavaType("java.time.LocalDateTime");
-        dateCreated.setNullable(false);
-
-        Column lastUpdated = new Column();
-        lastUpdated.setName("last_updated");
-        lastUpdated.setSqlType("timestamp");
-        lastUpdated.setJavaType("java.time.LocalDateTime");
-        lastUpdated.setNullable(false);
-
-        Column recdeleted = new Column();
-        recdeleted.setName("recdeleted");
-        recdeleted.setSqlType("bool");
-        recdeleted.setJavaType("java.lang.Boolean");
-        recdeleted.setNullable(false);
-        recdeleted.setDefaultValue("false");
-
-        Column businessLocationId = new Column();
-        businessLocationId.setName("business_location_id");
-        businessLocationId.setSqlType("uuid");
-        businessLocationId.setJavaType("java.util.UUID");
-        businessLocationId.setPrimaryKey(true);
-        businessLocationId.setForeignKey(true);
-        businessLocationId.setNullable(false);
-        businessLocationId.setReferencedTable("pep_schema.business_location");
-        businessLocationId.setReferencedColumn("id");
-
-        Column languageId = new Column();
-        languageId.setName("language_id");
-        languageId.setSqlType("uuid");
-        languageId.setJavaType("java.util.UUID");
-        languageId.setPrimaryKey(true);
-        languageId.setForeignKey(true);
-        languageId.setNullable(false);
-        languageId.setReferencedTable("pep_schema.languages");
-        languageId.setReferencedColumn("id");
-
-        joinTable.setColumns(new ArrayList<>(List.of(
-                description, code, dateCreated, lastUpdated, recdeleted, businessLocationId, languageId
-        )));
-
-        // Resolve relationships first (same flow as production generator)
-        RelationshipResolver relationshipResolver = new RelationshipResolver(Map.of(
-                businessLocation.getName(), businessLocation,
-                languages.getName(), languages,
-                joinTable.getName(), joinTable
-        ));
-        relationshipResolver.resolveRelationships(joinTable);
-
-        String content = entityGenerator.createEntityContent(joinTable, "gr.knowledge.pepTest.entity", true);
-
-        assertNotNull(content);
-
-        // Class and table
-        assertTrue(content.contains("public class BusinessLocationI18n"), "Expected entity class name BusinessLocationI18n.");
-        assertTrue(content.contains("@Table(name = \"business_location_i18n\")"), "Expected correct @Table annotation.");
-
-        // Composite PK join entity pattern
-        assertTrue(content.contains("@EmbeddedId"), "Expected @EmbeddedId for composite PK join entity.");
-        assertTrue(content.contains("private Id id;"), "Expected embedded id field 'id'.");
-
-        assertTrue(content.contains("@MapsId(\"businessLocationId\")"),
-                "Expected @MapsId for business_location_id.");
-        assertTrue(content.contains("@MapsId(\"languageId\")"),
-                "Expected @MapsId for language_id.");
-
-        assertTrue(content.contains("private BusinessLocation businessLocation;"),
-                "Expected @ManyToOne relation field to BusinessLocation.");
-        assertTrue(content.contains("private Languages language;"),
-                "Expected @ManyToOne relation field to Languages.");
-
-        assertTrue(content.contains("@Embeddable"), "Expected nested @Embeddable Id class.");
-        assertTrue(content.contains("public static class Id implements java.io.Serializable"),
-                "Expected nested serializable Id class.");
-        assertTrue(content.contains("private UUID businessLocationId;"),
-                "Expected businessLocationId inside embedded Id.");
-        assertTrue(content.contains("private UUID languageId;"),
-                "Expected languageId inside embedded Id.");
-
-        // Regular columns must still exist
-        assertTrue(content.contains("private String description;"), "Expected normal column field: description.");
-        assertTrue(content.contains("private String code;"), "Expected normal column field: code.");
-        assertTrue(content.contains("private Boolean recdeleted = false;"), "Expected boolean default handling.");
-
-        // Must NOT generate legacy wrong style for composite FK PK columns
-        assertFalse(content.contains("@GeneratedValue(generator = \"UUID\")"),
-                "Composite PK join entity FK columns must not be generated as standalone UUID IDs.");
-        assertFalse(content.contains("@Id\n    @Id"),
-                "Should not generate duplicated standalone @Id fields.");
-
-        // Composite FK primitive fields should appear only once each (inside embedded Id)
-        String businessLocationIdField = "private UUID businessLocationId;";
-        assertEquals(content.indexOf(businessLocationIdField), content.lastIndexOf(businessLocationIdField),
-                "businessLocationId primitive field should exist only once (inside EmbeddedId).");
-
-        String languageIdField = "private UUID languageId;";
-        assertEquals(content.indexOf(languageIdField), content.lastIndexOf(languageIdField),
-                "languageId primitive field should exist only once (inside EmbeddedId).");
-
-        // Join entity should not generate collection navigation fields on itself
-        assertFalse(content.contains("@OneToMany("),
-                "Composite join entity should not generate inverse @OneToMany collections.");
-        assertFalse(content.contains("@ManyToMany("),
-                "Composite join entity should not generate @ManyToMany collections.");
-    }
-
-    @Test
-    void testGenerateEntityWithManyToOne() throws IOException {
-        log.info("🟢 Running testGenerateEntityWithManyToOne...");
-
-        Table orders = new Table();
-        orders.setName("Orders");
-
-        Table customers = new Table();
-        customers.setName("Customers");
-
-        Column customerId = new Column();
-        customerId.setName("id");
-        customerId.setSqlType("INT");
-        customerId.setJavaType("Long");
-        customerId.setPrimaryKey(true);
-        customerId.setNullable(false);
-        customers.setColumns(List.of(customerId));
-
-        Column orderId = new Column();
-        orderId.setName("id");
-        orderId.setSqlType("INT");
-        orderId.setJavaType("Long");
-        orderId.setPrimaryKey(true);
-        orderId.setNullable(false);
-
-        Column customerIdColumn = new Column();
-        customerIdColumn.setName("customer_id");
-        customerIdColumn.setSqlType("INT");
-        customerIdColumn.setJavaType("Long");
-        customerIdColumn.setNullable(false);
-        customerIdColumn.setForeignKey(true);
-        customerIdColumn.setReferencedTable("Customers");
-        customerIdColumn.setReferencedColumn("id");
-
-        orders.setColumns(List.of(orderId, customerIdColumn));
-
-        entityGenerator.generate(List.of(orders, customers), tempDir.toString(), "com.example.entities", true, false);
-
-        Path generatedFile = tempDir.resolve("Orders.java");
-        assertTrue(Files.exists(generatedFile), "✅ Generated entity file should exist");
-
-        String content = Files.readString(generatedFile);
-        log.debug("📄 Generated content: \n{}", content);
-
-        System.out.println("---- Orders.java (ManyToOne) ----");
-        System.out.println(content);
-        System.out.println("-------------------------------");
-
-
-        assertTrue(content.contains("@ManyToOne"), "⚠️ Δεν βρέθηκε η σχέση ManyToOne");
-        assertTrue(content.contains("@JoinColumn(name = \"customer_id\", referencedColumnName = \"id\")"), "⚠️ Το JoinColumn δεν δημιουργήθηκε σωστά");
-
-        // ✅ Έλεγχος για το όνομα του field (customer)
-        assertTrue(content.contains("private Customers customer"), "⚠️ Το όνομα του field για το ManyToOne δεν είναι σωστό");
-    }
-
-    @Test
-    void testGenerateEntityWithOneToOne() throws IOException {
-        log.info("🟢 Running testGenerateEntityWithOneToOne...");
-
-        // Ορίζουμε τον σταθερό φάκελο εξόδου (π.χ. Επιφάνεια Εργασίας)
-        Path outputDir = Paths.get(System.getProperty("user.home"), "Desktop", "GeneratedEntities");
-        Files.createDirectories(outputDir); // Δημιουργούμε τον φάκελο αν δεν υπάρχει
-
-        // Δημιουργούμε τα tables και τις στήλες
-        Table users = new Table();
-        users.setName("Users");
-
-        Table userDetails = new Table();
-        userDetails.setName("UserDetails");
-
-        Column userId = new Column();
-        userId.setName("id");
-        userId.setSqlType("INT");
-        userId.setJavaType("Long");
-        userId.setPrimaryKey(true);
-        users.setColumns(new ArrayList<>(List.of(userId)));
-
-        Column detailsId = new Column();
-        detailsId.setName("id");
-        detailsId.setSqlType("INT");
-        detailsId.setJavaType("Long");
-        detailsId.setPrimaryKey(true);
-        userDetails.setColumns(new ArrayList<>(List.of(detailsId)));
-
-        Column userIdFk = new Column();
-        userIdFk.setName("user_id");
-        userIdFk.setSqlType("INT");
-        userIdFk.setJavaType("Long");
-        userIdFk.setPrimaryKey(false);
-        userIdFk.setForeignKey(true);
-        userIdFk.setNullable(false);
-        userIdFk.setUnique(true);
-        userIdFk.setReferencedTable("Users");
-        userIdFk.setReferencedColumn("id");
-        userDetails.getColumns().add(userIdFk);
-
-        // Καλούμε το generate περνώντας το outputDir
-        entityGenerator.generate(List.of(users, userDetails), outputDir.toString(), "com.example.entities", true, false);
-
-        // Ελέγχουμε αν δημιουργήθηκε το αρχείο UserDetails.java
-        Path generatedUserDetailsFile = outputDir.resolve("UserDetails.java");
-        assertTrue(Files.exists(generatedUserDetailsFile), "✅ Generated UserDetails.java file should exist");
-
-        String userDetailsContent = Files.readString(generatedUserDetailsFile);
-        log.debug("📄 Generated UserDetails.java content: \n{}", userDetailsContent);
-        System.out.println("---- UserDetails.java ----");
-        System.out.println(userDetailsContent);
-        System.out.println("--------------------------");
-
-        // Ελέγχουμε αν δημιουργήθηκε το αρχείο Users.java
-        Path generatedUsersFile = outputDir.resolve("Users.java");
-        if (Files.exists(generatedUsersFile)) {
-            String usersContent = Files.readString(generatedUsersFile);
-            log.debug("📄 Generated Users.java content: \n{}", usersContent);
-            System.out.println("---- Users.java ----");
-            System.out.println(usersContent);
-            System.out.println("--------------------");
-        } else {
-            log.warn("❌ Users.java file was not generated.");
-        }
-
-        // 🔍 Έλεγχοι περιεχομένου αρχείου UserDetails
-        assertTrue(userDetailsContent.contains("@OneToOne"), "⚠️ Δεν βρέθηκε η σχέση OneToOne");
-        assertTrue(userDetailsContent.contains("@JoinColumn(name = \"user_id\""), "⚠️ Δεν βρέθηκε το JoinColumn για user_id");
-        assertTrue(userDetailsContent.contains("private Users user"), "⚠️ Το όνομα του field (user) δεν είναι σωστό");
-
-        // ❌ Δεν πρέπει να υπάρχει mappedBy εδώ
-        assertFalse(userDetailsContent.contains("mappedBy"), "❌ Το mappedBy δεν πρέπει να υπάρχει στο UserDetails (owning πλευρά)");
-    }
-
 
     @Test
     void testGenerateEntityWithOneToMany() {
@@ -607,5 +320,719 @@ class EntityGeneratorTest {
                 .count();
 
         assertEquals(1, fieldCount, "❌ Πρέπει να υπάρχει μόνο ένα πεδίο 'parent' για self-referencing σχέση.");
+    }
+
+    @Test
+    void testGenerateCompositePkJoinTable_GeneratesExternalPkAndMapsId() throws IOException {
+        Table businessLocation = new Table();
+        businessLocation.setName("pep_schema.business_location");
+
+        Column businessLocationPk = new Column();
+        businessLocationPk.setName("id");
+        businessLocationPk.setSqlType("uuid");
+        businessLocationPk.setJavaType("java.util.UUID");
+        businessLocationPk.setPrimaryKey(true);
+        businessLocationPk.setNullable(false);
+
+        businessLocation.setColumns(new ArrayList<>(List.of(businessLocationPk)));
+
+        Table languages = new Table();
+        languages.setName("pep_schema.languages");
+
+        Column languagesPk = new Column();
+        languagesPk.setName("id");
+        languagesPk.setSqlType("uuid");
+        languagesPk.setJavaType("java.util.UUID");
+        languagesPk.setPrimaryKey(true);
+        languagesPk.setNullable(false);
+
+        languages.setColumns(new ArrayList<>(List.of(languagesPk)));
+
+        Table joinTable = new Table();
+        joinTable.setName("pep_schema.business_location_i18n");
+
+        Column description = new Column();
+        description.setName("description");
+        description.setSqlType("varchar");
+        description.setJavaType("java.lang.String");
+        description.setNullable(false);
+        description.setLength(1000);
+
+        Column code = new Column();
+        code.setName("code");
+        code.setSqlType("varchar");
+        code.setJavaType("java.lang.String");
+        code.setNullable(false);
+        code.setLength(255);
+
+        Column recdeleted = new Column();
+        recdeleted.setName("recdeleted");
+        recdeleted.setSqlType("bool");
+        recdeleted.setJavaType("java.lang.Boolean");
+        recdeleted.setNullable(false);
+        recdeleted.setDefaultValue("false");
+
+        Column businessLocationId = new Column();
+        businessLocationId.setName("business_location_id");
+        businessLocationId.setSqlType("uuid");
+        businessLocationId.setJavaType("java.util.UUID");
+        businessLocationId.setPrimaryKey(true);
+        businessLocationId.setForeignKey(true);
+        businessLocationId.setNullable(false);
+        businessLocationId.setReferencedTable("pep_schema.business_location");
+        businessLocationId.setReferencedColumn("id");
+
+        Column languageId = new Column();
+        languageId.setName("language_id");
+        languageId.setSqlType("uuid");
+        languageId.setJavaType("java.util.UUID");
+        languageId.setPrimaryKey(true);
+        languageId.setForeignKey(true);
+        languageId.setNullable(false);
+        languageId.setReferencedTable("pep_schema.languages");
+        languageId.setReferencedColumn("id");
+
+        joinTable.setColumns(new ArrayList<>(List.of(
+                description, code, recdeleted, businessLocationId, languageId
+        )));
+
+        entityGenerator.generate(
+                List.of(businessLocation, languages, joinTable),
+                tempDir.toString(),
+                "com.example",
+                true,
+                false
+        );
+
+        Path entityFile = findGeneratedFile("BusinessLocationI18n.java");
+        Path pkFile = findGeneratedFile("BusinessLocationI18nPK.java");
+
+        assertTrue(Files.exists(entityFile), "BusinessLocationI18n.java should be generated.");
+        assertTrue(Files.exists(pkFile), "BusinessLocationI18nPK.java should be generated.");
+
+        String entityContent = Files.readString(entityFile);
+        String pkContent = Files.readString(pkFile);
+
+        assertTrue(entityContent.contains("public class BusinessLocationI18n"),
+                "Expected entity class name BusinessLocationI18n.");
+        assertTrue(entityContent.contains("@Table(name = \"business_location_i18n\")"),
+                "Expected correct @Table annotation.");
+        assertTrue(entityContent.contains("@EmbeddedId"),
+                "Expected @EmbeddedId for composite PK join entity.");
+        assertTrue(entityContent.contains("private BusinessLocationI18nPK id;"),
+                "Expected external PK type field.");
+
+        assertTrue(entityContent.contains("@MapsId(\"businessLocationId\")"),
+                "Expected @MapsId for business_location_id.");
+        assertTrue(entityContent.contains("private BusinessLocation businessLocation;"),
+                "Expected relation field to BusinessLocation.");
+
+        assertTrue(entityContent.contains("@MapsId(\"languageId\")"),
+                "Expected @MapsId for language_id.");
+        assertTrue(entityContent.contains("private Languages language;"),
+                "Expected relation field to Languages.");
+
+        assertTrue(entityContent.contains("private String description;"),
+                "Expected normal column field: description.");
+        assertTrue(entityContent.contains("private String code;"),
+                "Expected normal column field: code.");
+        assertTrue(entityContent.contains("private Boolean recdeleted = false;"),
+                "Expected boolean default handling.");
+
+        assertFalse(entityContent.contains("public static class Id"),
+                "Entity should not contain nested Id class anymore.");
+        assertFalse(entityContent.contains("@Embeddable"),
+                "Entity file should not contain @Embeddable; PK is external now.");
+        assertFalse(entityContent.contains("@ManyToMany("),
+                "Composite join entity should not generate @ManyToMany.");
+        assertFalse(entityContent.contains("@OneToMany("),
+                "Composite join entity should not generate inverse collections on itself.");
+
+        assertTrue(pkContent.contains("@Embeddable"),
+                "Expected @Embeddable on external PK class.");
+        assertTrue(pkContent.contains("public class BusinessLocationI18nPK implements Serializable"),
+                "Expected external PK class name BusinessLocationI18nPK.");
+        assertTrue(pkContent.contains("private UUID businessLocationId;"),
+                "Expected businessLocationId in PK class.");
+        assertTrue(pkContent.contains("private UUID languageId;"),
+                "Expected languageId in PK class.");
+    }
+
+
+    @Test
+    void testGenerateEntityWithOneToOne_UsesTempDirAndGeneratesBothSides() throws IOException {
+        Table users = new Table();
+        users.setName("Users");
+
+        Column userId = new Column();
+        userId.setName("id");
+        userId.setSqlType("INT");
+        userId.setJavaType("Long");
+        userId.setPrimaryKey(true);
+        userId.setNullable(false);
+        users.setColumns(new ArrayList<>(List.of(userId)));
+
+        Table userDetails = new Table();
+        userDetails.setName("UserDetails");
+
+        Column detailsId = new Column();
+        detailsId.setName("id");
+        detailsId.setSqlType("INT");
+        detailsId.setJavaType("Long");
+        detailsId.setPrimaryKey(true);
+        detailsId.setNullable(false);
+
+        Column userIdFk = new Column();
+        userIdFk.setName("user_id");
+        userIdFk.setSqlType("INT");
+        userIdFk.setJavaType("Long");
+        userIdFk.setForeignKey(true);
+        userIdFk.setNullable(false);
+        userIdFk.setUnique(true);
+        userIdFk.setReferencedTable("Users");
+        userIdFk.setReferencedColumn("id");
+
+        userDetails.setColumns(new ArrayList<>(List.of(detailsId, userIdFk)));
+
+        entityGenerator.generate(
+                List.of(users, userDetails),
+                tempDir.toString(),
+                "com.example",
+                true,
+                false
+        );
+
+        Path userDetailsFile = findGeneratedFile("UserDetails.java");
+        Path usersFile = findGeneratedFile("Users.java");
+
+        assertTrue(Files.exists(userDetailsFile), "UserDetails.java should be generated.");
+        assertTrue(Files.exists(usersFile), "Users.java should be generated.");
+
+        String userDetailsContent = Files.readString(userDetailsFile);
+        String usersContent = Files.readString(usersFile);
+
+        assertTrue(userDetailsContent.contains("@OneToOne"),
+                "Expected owning @OneToOne on UserDetails.");
+        assertTrue(userDetailsContent.contains("@JoinColumn(name = \"user_id\", nullable = false, unique = true)"),
+                "Expected correct @JoinColumn for unique FK.");
+        assertTrue(userDetailsContent.contains("private Users user;"),
+                "Expected owning relation field 'user'.");
+        assertFalse(userDetailsContent.contains("mappedBy"),
+                "Owning side must not contain mappedBy.");
+
+        assertTrue(usersContent.contains("@OneToOne(mappedBy = \"user\", fetch = FetchType.LAZY)"),
+                "Expected inverse @OneToOne on Users.");
+        assertTrue(usersContent.contains("private UserDetails userDetails;"),
+                "Expected inverse field userDetails on Users.");
+    }
+
+    @Test
+    void testGenerateCompanyProfessionEntity_WithTwoManyToOneAndNoManyToMany() throws IOException {
+        Table company = new Table();
+        company.setName("pep_schema.company");
+
+        Column companyId = new Column();
+        companyId.setName("id");
+        companyId.setSqlType("uuid");
+        companyId.setJavaType("java.util.UUID");
+        companyId.setPrimaryKey(true);
+        companyId.setNullable(false);
+        company.setColumns(new ArrayList<>(List.of(companyId)));
+
+        Table profession = new Table();
+        profession.setName("pep_schema.profession");
+
+        Column professionId = new Column();
+        professionId.setName("id");
+        professionId.setSqlType("uuid");
+        professionId.setJavaType("java.util.UUID");
+        professionId.setPrimaryKey(true);
+        professionId.setNullable(false);
+        profession.setColumns(new ArrayList<>(List.of(professionId)));
+
+        Table companyProfession = new Table();
+        companyProfession.setName("pep_schema.company_profession");
+
+        Column id = new Column();
+        id.setName("id");
+        id.setSqlType("uuid");
+        id.setJavaType("java.util.UUID");
+        id.setPrimaryKey(true);
+        id.setNullable(false);
+
+        Column companyFk = new Column();
+        companyFk.setName("company_id");
+        companyFk.setSqlType("uuid");
+        companyFk.setJavaType("java.util.UUID");
+        companyFk.setForeignKey(true);
+        companyFk.setNullable(false);
+        companyFk.setReferencedTable("pep_schema.company");
+        companyFk.setReferencedColumn("id");
+
+        Column professionFk = new Column();
+        professionFk.setName("profession_id");
+        professionFk.setSqlType("uuid");
+        professionFk.setJavaType("java.util.UUID");
+        professionFk.setForeignKey(true);
+        professionFk.setNullable(false);
+        professionFk.setReferencedTable("pep_schema.profession");
+        professionFk.setReferencedColumn("id");
+
+        Column notes = new Column();
+        notes.setName("notes");
+        notes.setSqlType("varchar");
+        notes.setJavaType("String");
+        notes.setNullable(true);
+
+        companyProfession.setColumns(new ArrayList<>(List.of(id, companyFk, professionFk, notes)));
+
+        entityGenerator.generate(
+                List.of(company, profession, companyProfession),
+                tempDir.toString(),
+                "com.example",
+                true,
+                false
+        );
+
+        Path entityFile = findGeneratedFile("CompanyProfession.java");
+        assertTrue(Files.exists(entityFile), "CompanyProfession.java should be generated.");
+
+        String content = Files.readString(entityFile);
+
+        assertTrue(content.contains("public class CompanyProfession"),
+                "Expected entity class CompanyProfession.");
+        assertTrue(content.contains("@ManyToOne(fetch = FetchType.LAZY)"),
+                "Expected @ManyToOne annotations.");
+        assertTrue(content.contains("@JoinColumn(name = \"company_id\", nullable = false)"),
+                "Expected JoinColumn for company_id.");
+        assertTrue(content.contains("private Company company;"),
+                "Expected relation field to Company.");
+        assertTrue(content.contains("@JoinColumn(name = \"profession_id\", nullable = false)"),
+                "Expected JoinColumn for profession_id.");
+        assertTrue(content.contains("private Profession profession;"),
+                "Expected relation field to Profession.");
+        assertTrue(content.contains("private String notes;"),
+                "Expected normal payload column field.");
+        assertFalse(content.contains("@ManyToMany("),
+                "company_profession must remain join entity, not synthetic many-to-many.");
+    }
+
+    @Test
+    void testGenerateCompanyProfileLanguageEntity_GeneratesExternalPkAndMapsId() throws IOException {
+        Table companyProfile = new Table();
+        companyProfile.setName("pep_schema.company_profile");
+
+        Column companyProfileId = new Column();
+        companyProfileId.setName("id");
+        companyProfileId.setSqlType("uuid");
+        companyProfileId.setJavaType("java.util.UUID");
+        companyProfileId.setPrimaryKey(true);
+        companyProfileId.setNullable(false);
+        companyProfile.setColumns(new ArrayList<>(List.of(companyProfileId)));
+
+        Table language = new Table();
+        language.setName("pep_schema.languages");
+
+        Column languageId = new Column();
+        languageId.setName("id");
+        languageId.setSqlType("uuid");
+        languageId.setJavaType("java.util.UUID");
+        languageId.setPrimaryKey(true);
+        languageId.setNullable(false);
+        language.setColumns(new ArrayList<>(List.of(languageId)));
+
+        Table companyProfileLanguage = new Table();
+        companyProfileLanguage.setName("pep_schema.company_profile_language");
+
+        Column companyProfileFk = new Column();
+        companyProfileFk.setName("company_profile_id");
+        companyProfileFk.setSqlType("uuid");
+        companyProfileFk.setJavaType("java.util.UUID");
+        companyProfileFk.setPrimaryKey(true);
+        companyProfileFk.setForeignKey(true);
+        companyProfileFk.setNullable(false);
+        companyProfileFk.setReferencedTable("pep_schema.company_profile");
+        companyProfileFk.setReferencedColumn("id");
+
+        Column languageFk = new Column();
+        languageFk.setName("language_id");
+        languageFk.setSqlType("uuid");
+        languageFk.setJavaType("java.util.UUID");
+        languageFk.setPrimaryKey(true);
+        languageFk.setForeignKey(true);
+        languageFk.setNullable(false);
+        languageFk.setReferencedTable("pep_schema.languages");
+        languageFk.setReferencedColumn("id");
+
+        companyProfileLanguage.setColumns(new ArrayList<>(List.of(companyProfileFk, languageFk)));
+
+        entityGenerator.generate(
+                List.of(companyProfile, language, companyProfileLanguage),
+                tempDir.toString(),
+                "com.example",
+                true,
+                false
+        );
+
+        Path entityFile = findGeneratedFile("CompanyProfileLanguage.java");
+        Path pkFile = findGeneratedFile("CompanyProfileLanguagePK.java");
+
+        assertTrue(Files.exists(entityFile), "CompanyProfileLanguage.java should be generated.");
+        assertTrue(Files.exists(pkFile), "CompanyProfileLanguagePK.java should be generated.");
+
+        String entityContent = Files.readString(entityFile);
+        String pkContent = Files.readString(pkFile);
+
+        assertTrue(entityContent.contains("@EmbeddedId"),
+                "Expected @EmbeddedId.");
+        assertTrue(entityContent.contains("private CompanyProfileLanguagePK id;"),
+                "Expected external PK field.");
+        assertTrue(entityContent.contains("@MapsId(\"companyProfileId\")"),
+                "Expected @MapsId for company_profile_id.");
+        assertTrue(entityContent.contains("private CompanyProfile companyProfile;"),
+                "Expected relation field to CompanyProfile.");
+        assertTrue(entityContent.contains("@MapsId(\"languageId\")"),
+                "Expected @MapsId for language_id.");
+        assertTrue(entityContent.contains("private Languages language;"),
+                "Expected relation field to Languages.");
+        assertFalse(entityContent.contains("@ManyToMany("),
+                "Association entity should not be generated as @ManyToMany here.");
+
+        assertTrue(pkContent.contains("@Embeddable"),
+                "Expected @Embeddable PK class.");
+        assertTrue(pkContent.contains("public class CompanyProfileLanguagePK implements Serializable"),
+                "Expected PK class name CompanyProfileLanguagePK.");
+        assertTrue(pkContent.contains("private UUID companyProfileId;"),
+                "Expected companyProfileId field in PK class.");
+        assertTrue(pkContent.contains("private UUID languageId;"),
+                "Expected languageId field in PK class.");
+    }
+
+
+    @Test
+    void testGenerateCompanyStatusViewRulesEntity_GeneratesExternalPkAndMapsId() throws IOException {
+        Table companyStatus = new Table();
+        companyStatus.setName("pep_schema.company_status");
+
+        Column companyStatusId = new Column();
+        companyStatusId.setName("id");
+        companyStatusId.setSqlType("uuid");
+        companyStatusId.setJavaType("java.util.UUID");
+        companyStatusId.setPrimaryKey(true);
+        companyStatusId.setNullable(false);
+        companyStatus.setColumns(new ArrayList<>(List.of(companyStatusId)));
+
+        Table companyViewRules = new Table();
+        companyViewRules.setName("pep_schema.company_view_rules");
+
+        Column companyViewRulesId = new Column();
+        companyViewRulesId.setName("id");
+        companyViewRulesId.setSqlType("uuid");
+        companyViewRulesId.setJavaType("java.util.UUID");
+        companyViewRulesId.setPrimaryKey(true);
+        companyViewRulesId.setNullable(false);
+        companyViewRules.setColumns(new ArrayList<>(List.of(companyViewRulesId)));
+
+        Table companyStatusViewRules = new Table();
+        companyStatusViewRules.setName("pep_schema.company_status_view_rules");
+
+        Column companyStatusFk = new Column();
+        companyStatusFk.setName("company_status_id");
+        companyStatusFk.setSqlType("uuid");
+        companyStatusFk.setJavaType("java.util.UUID");
+        companyStatusFk.setPrimaryKey(true);
+        companyStatusFk.setForeignKey(true);
+        companyStatusFk.setNullable(false);
+        companyStatusFk.setReferencedTable("pep_schema.company_status");
+        companyStatusFk.setReferencedColumn("id");
+
+        Column companyViewRulesFk = new Column();
+        companyViewRulesFk.setName("company_view_rules_id");
+        companyViewRulesFk.setSqlType("uuid");
+        companyViewRulesFk.setJavaType("java.util.UUID");
+        companyViewRulesFk.setPrimaryKey(true);
+        companyViewRulesFk.setForeignKey(true);
+        companyViewRulesFk.setNullable(false);
+        companyViewRulesFk.setReferencedTable("pep_schema.company_view_rules");
+        companyViewRulesFk.setReferencedColumn("id");
+
+        Column excludeCompanies = new Column();
+        excludeCompanies.setName("exclude_companies");
+        excludeCompanies.setSqlType("bool");
+        excludeCompanies.setJavaType("Boolean");
+        excludeCompanies.setNullable(true);
+
+        companyStatusViewRules.setColumns(new ArrayList<>(List.of(
+                companyStatusFk,
+                companyViewRulesFk,
+                excludeCompanies
+        )));
+
+        entityGenerator.generate(
+                List.of(companyStatus, companyViewRules, companyStatusViewRules),
+                tempDir.toString(),
+                "com.example",
+                true,
+                false
+        );
+
+        Path entityFile = findGeneratedFile("CompanyStatusViewRules.java");
+        Path pkFile = findGeneratedFile("CompanyStatusViewRulesPK.java");
+
+        assertTrue(Files.exists(entityFile), "CompanyStatusViewRules.java should be generated.");
+        assertTrue(Files.exists(pkFile), "CompanyStatusViewRulesPK.java should be generated.");
+
+        String entityContent = Files.readString(entityFile);
+        String pkContent = Files.readString(pkFile);
+
+        assertTrue(entityContent.contains("public class CompanyStatusViewRules"),
+                "Expected entity class CompanyStatusViewRules.");
+        assertTrue(entityContent.contains("@Table(name = \"company_status_view_rules\")"),
+                "Expected correct @Table annotation.");
+        assertTrue(entityContent.contains("@EmbeddedId"),
+                "Expected @EmbeddedId.");
+        assertTrue(entityContent.contains("private CompanyStatusViewRulesPK id;"),
+                "Expected external PK field.");
+
+        assertTrue(entityContent.contains("@MapsId(\"companyStatusId\")"),
+                "Expected @MapsId for company_status_id.");
+        assertTrue(entityContent.contains("private CompanyStatus companyStatus;"),
+                "Expected relation field to CompanyStatus.");
+
+        assertTrue(entityContent.contains("@MapsId(\"companyViewRulesId\")"),
+                "Expected @MapsId for company_view_rules_id.");
+        assertTrue(entityContent.contains("private CompanyViewRules companyViewRules;"),
+                "Expected relation field to CompanyViewRules.");
+
+        assertTrue(entityContent.contains("private Boolean excludeCompanies;"),
+                "Expected normal payload column field.");
+
+        assertFalse(entityContent.contains("@ManyToMany("),
+                "company_status_view_rules must not be generated as synthetic many-to-many.");
+        assertFalse(entityContent.contains("public static class Id"),
+                "Entity should not contain nested Id class anymore.");
+
+        assertTrue(pkContent.contains("@Embeddable"),
+                "Expected @Embeddable PK class.");
+        assertTrue(pkContent.contains("public class CompanyStatusViewRulesPK implements Serializable"),
+                "Expected PK class name CompanyStatusViewRulesPK.");
+        assertTrue(pkContent.contains("private UUID companyStatusId;"),
+                "Expected companyStatusId field in PK class.");
+        assertTrue(pkContent.contains("private UUID companyViewRulesId;"),
+                "Expected companyViewRulesId field in PK class.");
+    }
+
+
+    @Test
+    void testGenerateCompanyProfessionSystemLinkEntity_GeneratesExternalPkAndMapsId() throws IOException {
+        Table company = new Table();
+        company.setName("pep_schema.company");
+
+        Column companyId = new Column();
+        companyId.setName("id");
+        companyId.setSqlType("uuid");
+        companyId.setJavaType("java.util.UUID");
+        companyId.setPrimaryKey(true);
+        companyId.setNullable(false);
+        company.setColumns(new ArrayList<>(List.of(companyId)));
+
+        Table professionSystem = new Table();
+        professionSystem.setName("pep_schema.profession_system");
+
+        Column professionSystemId = new Column();
+        professionSystemId.setName("id");
+        professionSystemId.setSqlType("uuid");
+        professionSystemId.setJavaType("java.util.UUID");
+        professionSystemId.setPrimaryKey(true);
+        professionSystemId.setNullable(false);
+        professionSystem.setColumns(new ArrayList<>(List.of(professionSystemId)));
+
+        Table companyProfessionSystemLink = new Table();
+        companyProfessionSystemLink.setName("pep_schema.company_profession_system_link");
+
+        Column companyFk = new Column();
+        companyFk.setName("company_id");
+        companyFk.setSqlType("uuid");
+        companyFk.setJavaType("java.util.UUID");
+        companyFk.setPrimaryKey(true);
+        companyFk.setForeignKey(true);
+        companyFk.setNullable(false);
+        companyFk.setReferencedTable("pep_schema.company");
+        companyFk.setReferencedColumn("id");
+
+        Column professionSystemFk = new Column();
+        professionSystemFk.setName("profession_system_id");
+        professionSystemFk.setSqlType("uuid");
+        professionSystemFk.setJavaType("java.util.UUID");
+        professionSystemFk.setPrimaryKey(true);
+        professionSystemFk.setForeignKey(true);
+        professionSystemFk.setNullable(false);
+        professionSystemFk.setReferencedTable("pep_schema.profession_system");
+        professionSystemFk.setReferencedColumn("id");
+
+        companyProfessionSystemLink.setColumns(new ArrayList<>(List.of(companyFk, professionSystemFk)));
+
+        entityGenerator.generate(
+                List.of(company, professionSystem, companyProfessionSystemLink),
+                tempDir.toString(),
+                "com.example",
+                true,
+                false
+        );
+
+        Path entityFile = findGeneratedFile("CompanyProfessionSystemLink.java");
+        Path pkFile = findGeneratedFile("CompanyProfessionSystemLinkPK.java");
+
+        assertTrue(Files.exists(entityFile), "CompanyProfessionSystemLink.java should be generated.");
+        assertTrue(Files.exists(pkFile), "CompanyProfessionSystemLinkPK.java should be generated.");
+
+        String entityContent = Files.readString(entityFile);
+        String pkContent = Files.readString(pkFile);
+
+        assertTrue(entityContent.contains("public class CompanyProfessionSystemLink"),
+                "Expected entity class CompanyProfessionSystemLink.");
+        assertTrue(entityContent.contains("@Table(name = \"company_profession_system_link\")"),
+                "Expected correct @Table annotation.");
+        assertTrue(entityContent.contains("@EmbeddedId"),
+                "Expected @EmbeddedId.");
+        assertTrue(entityContent.contains("private CompanyProfessionSystemLinkPK id;"),
+                "Expected external PK field.");
+
+        assertTrue(entityContent.contains("@MapsId(\"companyId\")"),
+                "Expected @MapsId for company_id.");
+        assertTrue(entityContent.contains("private Company company;"),
+                "Expected relation field to Company.");
+
+        assertTrue(entityContent.contains("@MapsId(\"professionSystemId\")"),
+                "Expected @MapsId for profession_system_id.");
+        assertTrue(entityContent.contains("private ProfessionSystem professionSystem;"),
+                "Expected relation field to ProfessionSystem.");
+
+        assertFalse(entityContent.contains("@ManyToMany("),
+                "company_profession_system_link must not be generated as synthetic many-to-many.");
+        assertFalse(entityContent.contains("public static class Id"),
+                "Entity should not contain nested Id class anymore.");
+
+        assertTrue(pkContent.contains("@Embeddable"),
+                "Expected @Embeddable PK class.");
+        assertTrue(pkContent.contains("public class CompanyProfessionSystemLinkPK implements Serializable"),
+                "Expected PK class name CompanyProfessionSystemLinkPK.");
+        assertTrue(pkContent.contains("private UUID companyId;"),
+                "Expected companyId field in PK class.");
+        assertTrue(pkContent.contains("private UUID professionSystemId;"),
+                "Expected professionSystemId field in PK class.");
+    }
+
+    @Test
+    void testGenerateEntity_WithNumericPrecisionAndScale_ShouldRenderColumnMetadata() throws IOException {
+        Table table = new Table();
+        table.setName("income_gemi_payment");
+
+        Column id = new Column();
+        id.setName("id");
+        id.setFieldName("id");
+        id.setSqlType("UUID");
+        id.setJavaType("java.util.UUID");
+        id.setPrimaryKey(true);
+        id.setNullable(false);
+        id.setDefaultValue("gen_random_uuid()");
+
+        Column chamberAmount = new Column();
+        chamberAmount.setName("chamber_amount");
+        chamberAmount.setFieldName("chamberAmount");
+        chamberAmount.setSqlType("NUMERIC(19,2)");
+        chamberAmount.setJavaType("java.math.BigDecimal");
+        chamberAmount.setNullable(true);
+        chamberAmount.setPrecision(19);
+        chamberAmount.setScale(2);
+
+        Column totalAmountPaid = new Column();
+        totalAmountPaid.setName("total_amount_paid");
+        totalAmountPaid.setFieldName("totalAmountPaid");
+        totalAmountPaid.setSqlType("NUMERIC(19,2)");
+        totalAmountPaid.setJavaType("java.math.BigDecimal");
+        totalAmountPaid.setNullable(true);
+        totalAmountPaid.setPrecision(19);
+        totalAmountPaid.setScale(2);
+
+        Column remittanceAmount = new Column();
+        remittanceAmount.setName("remittance_amount");
+        remittanceAmount.setFieldName("remittanceAmount");
+        remittanceAmount.setSqlType("NUMERIC(19,2)");
+        remittanceAmount.setJavaType("java.math.BigDecimal");
+        remittanceAmount.setNullable(true);
+        remittanceAmount.setPrecision(19);
+        remittanceAmount.setScale(2);
+
+        table.setColumns(new ArrayList<>(List.of(
+                id,
+                chamberAmount,
+                totalAmountPaid,
+                remittanceAmount
+        )));
+
+        entityGenerator.generate(
+                List.of(table),
+                tempDir.toString(),
+                "com.example",
+                true,
+                false
+        );
+
+        Path generatedFile = findGeneratedFile("IncomeGemiPayment.java");
+        assertTrue(Files.exists(generatedFile), "IncomeGemiPayment.java should be generated.");
+
+        String content = Files.readString(generatedFile);
+
+        assertTrue(
+                content.contains("public class IncomeGemiPayment"),
+                "Expected entity class IncomeGemiPayment."
+        );
+
+        assertTrue(
+                content.contains("@Column(name = \"chamber_amount\", precision = 19, scale = 2)"),
+                "Expected precision/scale metadata for chamber_amount."
+        );
+        assertTrue(
+                content.contains("private BigDecimal chamberAmount;"),
+                "Expected BigDecimal field for chamber_amount."
+        );
+
+        assertTrue(
+                content.contains("@Column(name = \"total_amount_paid\", precision = 19, scale = 2)"),
+                "Expected precision/scale metadata for total_amount_paid."
+        );
+        assertTrue(
+                content.contains("private BigDecimal totalAmountPaid;"),
+                "Expected BigDecimal field for total_amount_paid."
+        );
+
+        assertTrue(
+                content.contains("@Column(name = \"remittance_amount\", precision = 19, scale = 2)"),
+                "Expected precision/scale metadata for remittance_amount."
+        );
+        assertTrue(
+                content.contains("private BigDecimal remittanceAmount;"),
+                "Expected BigDecimal field for remittance_amount."
+        );
+    }
+
+    
+
+
+
+
+
+
+
+
+    private Path findGeneratedFile(String fileName) throws IOException {
+        try (var walk = Files.walk(tempDir)) {
+            return walk
+                    .filter(Files::isRegularFile)
+                    .filter(path -> path.getFileName().toString().equals(fileName))
+                    .findFirst()
+                    .orElseThrow(() -> new AssertionError("Could not find generated file: " + fileName));
+        }
     }
 }

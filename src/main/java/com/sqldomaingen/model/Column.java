@@ -41,6 +41,7 @@ public class Column {
     private int precision;
     private int scale;
     private String mappedBy;
+    private String fieldName;
 
 
 }
