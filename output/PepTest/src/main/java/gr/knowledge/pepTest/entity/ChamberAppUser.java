@@ -5,10 +5,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "chamber_app_user")
 @Getter
 @Setter
@@ -18,8 +18,6 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class ChamberAppUser {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -27,23 +25,30 @@ public class ChamberAppUser {
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
+    // TODO: Foreign key 'chamber_id' was not resolved to a generated entity relationship.
+    // Keep it as a scalar field until the target entity becomes available.
     @Column(name = "chamber_id", nullable = false)
     private Integer chamberId;
 
+    // TODO: Foreign key 'chamber_app_id' was not resolved to a generated entity relationship.
+    // Keep it as a scalar field until the target entity becomes available.
     @Column(name = "chamber_app_id", nullable = false)
     private UUID chamberAppId;
 
-    @Column(name = "company_id", nullable = false)
-    private UUID companyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id")
+    private Company company;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
     @Column(name = "profile_id")
     private UUID profileId;
+
+    @Column(name = "person_id")
+    private UUID personId;
 
 }

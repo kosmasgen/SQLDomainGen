@@ -5,14 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
+import java.math.BigInteger;
 import jakarta.validation.constraints.Size;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for StatsExpense.
@@ -24,32 +23,30 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StatsExpenseDto {
 
-    @NotNull
     private UUID id;
 
     @NotNull
     private Integer chamberId;
 
     @NotNull
-    private BigDecimal accountSumId;
+    private BigInteger accountSumId;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 4)
     private String cdUse;
 
-    @Size(max = 255)
+    @Size(max = 300)
     private String groupDescr;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 2)
     private String mm;
 
-    @Positive
     private BigDecimal amount;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
-    private BigDecimal recDeleted;
+    private BigInteger recdeleted;
 
 }

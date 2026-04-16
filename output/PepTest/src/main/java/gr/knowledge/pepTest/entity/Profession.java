@@ -2,15 +2,15 @@ package gr.knowledge.pepTest.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
-@Table(name = "profession")
+@Audited
+@Table(name = "profession", uniqueConstraints = @UniqueConstraint(columnNames = {"chamber_id", "chamber_profession_id"}))
 @Getter
 @Setter
 @Builder
@@ -19,8 +19,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class Profession {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -30,30 +29,32 @@ public class Profession {
     @Column(name = "chamber_profession_id")
     private Integer chamberProfessionId;
 
-    @Column(name = "parent_profession_id")
-    private UUID parentProfessionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "parent_profession_id")
+    private Profession parentProfession;
 
-    @Column(name = "profession_system_id", nullable = false)
-    private UUID professionSystemId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profession_system_id", nullable = false)
+    private ProfessionSystem professionSystem;
 
-    @Column(name = "code", length = 255, nullable = false)
+    @Column(name = "code", nullable = false)
     private String code;
 
     @CreationTimestamp
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
-    @Column(name = "proteas_id")
-    private BigDecimal proteasId;
+    @Column(name = "proteas_id", precision = 19)
+    private BigInteger proteasId;
 
-    @Column(name = "friendly_cat_id", length = 255)
-    private String friendlyCatId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "friendly_cat_id")
+    private ProfessionFriendlyCategory friendlyCat;
 
 }

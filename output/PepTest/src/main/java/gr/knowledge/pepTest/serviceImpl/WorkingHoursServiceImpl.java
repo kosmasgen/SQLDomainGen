@@ -5,17 +5,16 @@ import gr.knowledge.pepTest.mapper.WorkingHoursMapper;
 import gr.knowledge.pepTest.entity.WorkingHours;
 import gr.knowledge.pepTest.repository.WorkingHoursRepository;
 import gr.knowledge.pepTest.service.WorkingHoursService;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code WorkingHours} domain operations.
+ * Service implementation for {@code Working Hours} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -27,75 +26,97 @@ public class WorkingHoursServiceImpl implements WorkingHoursService {
     private final WorkingHoursMapper workingHoursMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link WorkingHoursDto}
+     * Retrieves all working hourses records.
+     * @return list of WorkingHoursDto
      */
     @Override
-    public List<WorkingHoursDto> getAllWorkingHours() {
-        log.info("Fetching all working-hours.");
-        return workingHoursMapper.toDTO(workingHoursRepository.findAll());
+    public List<WorkingHoursDto> getAllWorkingHourses() {
+        log.info("Fetching all working hourses records.");
+        return workingHoursMapper.toDTOList(workingHoursRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link WorkingHoursDto}
+     * Retrieves a working hours record by id.
+     * @param id the working hours id
+     * @return WorkingHoursDto
      */
     @Override
     public WorkingHoursDto getWorkingHoursById(Long id) {
-        log.info("Fetching working-hours with id: {}", id);
-        WorkingHours entity = workingHoursRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkingHours not found with id: " + id));
-        return workingHoursMapper.toDTO(entity);
+        log.info("Fetching working hours with id: {}", id);
+
+        WorkingHours existingEntity = findWorkingHoursByIdOrThrow(id);
+        return workingHoursMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new working hours record.
      * @param dto input payload
      * @return created {@link WorkingHoursDto}
      */
     @Override
     public WorkingHoursDto createWorkingHours(WorkingHoursDto dto) {
-        log.info("Creating working-hours.");
+        log.info("Creating working hours.");
+
         WorkingHours entity = workingHoursMapper.toEntity(dto);
-        WorkingHours saved = workingHoursRepository.save(entity);
-        return workingHoursMapper.toDTO(saved);
+        WorkingHours savedEntity = workingHoursRepository.save(entity);
+
+        return workingHoursMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing working hours record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param id the working hours id
+     * @param dto input payload with partial fields
      * @return updated {@link WorkingHoursDto}
      */
     @Override
     public WorkingHoursDto updateWorkingHours(Long id, WorkingHoursDto dto) {
-        log.info("Updating working-hours with id: {}", id);
-        workingHoursRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkingHours not found with id: " + id));
-        WorkingHours entity = workingHoursMapper.toEntity(dto);
-        entity.setId(id);
-        WorkingHours saved = workingHoursRepository.save(entity);
-        return workingHoursMapper.toDTO(saved);
+        log.info("Updating working hours with id: {}", id);
+
+        WorkingHours existingEntity = findWorkingHoursByIdOrThrow(id);
+        workingHoursMapper.partialUpdate(existingEntity, dto);
+        WorkingHours savedEntity = workingHoursRepository.save(existingEntity);
+
+        return workingHoursMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a working hours record by id.
+     * @param id the working hours id
      */
     @Override
     public void deleteWorkingHours(Long id) {
-        log.info("Deleting working-hours with id: {}", id);
-        workingHoursRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "WorkingHours not found with id: " + id));
+        log.info("Deleting working hours with id: {}", id);
+
+        findWorkingHoursByIdOrThrow(id);
         workingHoursRepository.deleteById(id);
     }
+
+    /**
+     * Finds an existing working hours record by id or throws an exception.
+     * @param id the working hours id
+     * @return existing WorkingHours entity
+     */
+    private WorkingHours findWorkingHoursByIdOrThrow(Long id) {
+        return workingHoursRepository.findById(id)
+                .orElseThrow(() -> createWorkingHoursNotFoundException(id));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the working hours entity.
+     @param id the working hours id
+     @return runtime exception
+     */
+    private RuntimeException createWorkingHoursNotFoundException(Long id) {
+        log.warn("WorkingHours not found with id: {}", id);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("WorkingHours")
+                .message("WorkingHours not found with id: " + id)
+                .build();
+    }
+
 }

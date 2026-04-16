@@ -3,8 +3,10 @@ package gr.knowledge.pepTest.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "syncruns")
 @Getter
 @Setter
@@ -14,15 +16,14 @@ import java.time.LocalDateTime;
 public class Syncruns {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "lastrun")
-    private LocalDateTime lastrun;
+    @Column(name = "last_run")
+    private LocalDateTime lastRun;
 
-    @Column(name = "trades_lastrun")
-    private LocalDateTime tradesLastrun;
+    @Column(name = "trades_last_run")
+    private LocalDateTime tradesLastRun;
 
     @Column(name = "is_running")
     private Boolean isRunning;

@@ -4,9 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "company_yp_article_i18n")
 @Getter
 @Setter
@@ -16,12 +17,17 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class CompanyYpArticleI18n {
 
     @EmbeddedId
-    private CompanyYpArticleI18nPK id;
+    private CompanyYpArticleI18nKey id;
 
-    @Column(name = "title")
+    @MapsId("companyArticleId")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_article_id", nullable = false)
+    private CompanyYpArticle companyArticle;
+
+    @Column(name = "title", columnDefinition = "text")
     private String title;
 
-    @Column(name = "html")
+    @Column(name = "html", columnDefinition = "text")
     private String html;
 
     @MapsId("languageId")
@@ -33,11 +39,10 @@ public class CompanyYpArticleI18n {
     @Column(name = "date_created", nullable = false, updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
 }

@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.CompanyBgCooperationI18nDto;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code CompanyBgCooperationI18n} domain operations.
@@ -10,15 +10,13 @@ import java.util.List;
 public interface CompanyBgCooperationI18nService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all company bg cooperation i18ns.
      * @return non-null list of {@link CompanyBgCooperationI18nDto}
      */
-    List<CompanyBgCooperationI18nDto> getAllCompanyBgCooperationI18n();
+    List<CompanyBgCooperationI18nDto> getAllCompanyBgCooperationI18ns();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link CompanyBgCooperationI18nDto}
      */
@@ -26,7 +24,6 @@ public interface CompanyBgCooperationI18nService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link CompanyBgCooperationI18nDto}
      */
@@ -34,19 +31,16 @@ public interface CompanyBgCooperationI18nService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link CompanyBgCooperationI18nDto}
      */
     CompanyBgCooperationI18nDto updateCompanyBgCooperationI18n(UUID id, CompanyBgCooperationI18nDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteCompanyBgCooperationI18n(UUID id);

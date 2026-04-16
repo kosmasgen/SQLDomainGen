@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.BusinessLocationI18nDto;
-import gr.knowledge.pepTest.entity.BusinessLocationI18nPK;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code BusinessLocationI18n} domain operations.
@@ -10,23 +10,21 @@ import java.util.List;
 public interface BusinessLocationI18nService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all business location i18ns.
      * @return non-null list of {@link BusinessLocationI18nDto}
      */
-    List<BusinessLocationI18nDto> getAllBusinessLocationI18n();
+    List<BusinessLocationI18nDto> getAllBusinessLocationI18ns();
 
     /**
      * Retrieves a record by id.
-     *
-     * @param id the record id
+     * @param businessLocationId the business_location_id value
+     * @param languageId the language_id value
      * @return the matching {@link BusinessLocationI18nDto}
      */
-    BusinessLocationI18nDto getBusinessLocationI18nById(BusinessLocationI18nPK id);
+    BusinessLocationI18nDto getBusinessLocationI18nById(UUID businessLocationId, UUID languageId);
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link BusinessLocationI18nDto}
      */
@@ -34,20 +32,19 @@ public interface BusinessLocationI18nService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param businessLocationId the business_location_id value
+     * @param languageId the language_id value
+     * @param dto input payload with partial fields
      * @return updated {@link BusinessLocationI18nDto}
      */
-    BusinessLocationI18nDto updateBusinessLocationI18n(BusinessLocationI18nPK id, BusinessLocationI18nDto dto);
+    BusinessLocationI18nDto updateBusinessLocationI18n(UUID businessLocationId, UUID languageId, BusinessLocationI18nDto dto);
 
     /**
      * Deletes a record by id.
-     *
-     * @param id the record id
+     * @param businessLocationId the business_location_id value
+     * @param languageId the language_id value
      */
-    void deleteBusinessLocationI18n(BusinessLocationI18nPK id);
+    void deleteBusinessLocationI18n(UUID businessLocationId, UUID languageId);
 }

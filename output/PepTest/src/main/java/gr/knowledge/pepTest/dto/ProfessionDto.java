@@ -5,13 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.ProfessionDto;
+import gr.knowledge.pepTest.dto.ProfessionSystemDto;
+import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.math.BigInteger;
+import gr.knowledge.pepTest.dto.ProfessionFriendlyCategoryDto;
 
 /**
  * Data transfer object for Profession.
@@ -23,7 +25,6 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProfessionDto {
 
-    @NotNull
     private UUID id;
 
     @NotNull
@@ -31,10 +32,10 @@ public class ProfessionDto {
 
     private Integer chamberProfessionId;
 
-    private UUID parentProfessionId;
+    private ProfessionDto parentProfession;
 
     @NotNull
-    private UUID professionSystemId;
+    private ProfessionSystemDto professionSystem;
 
     @NotNull
     @Size(max = 255)
@@ -47,11 +48,10 @@ public class ProfessionDto {
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
-    private BigDecimal proteasId;
+    private BigInteger proteasId;
 
-    @Size(max = 255)
-    private String friendlyCatId;
+    private ProfessionFriendlyCategoryDto friendlyCat;
 
 }

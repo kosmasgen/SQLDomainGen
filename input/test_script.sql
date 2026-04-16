@@ -465,7 +465,7 @@ CREATE TABLE pep_schema.temporary_company (
                                               proeg_subscr_date timestamp(6) NULL,
                                               proeg_subscr_notes varchar(300) NULL,
                                               migr_capitol numeric NULL,
-                                              migr_capitol2 numeric(19,2) NULL,
+                                              migr_capitol2 numeric(19, 2) NULL,
                                               migr_many_children_flag varchar(1) NULL,
                                               migr_amea_flag varchar(1) NULL,
                                               migr_ypokat_flag varchar(1) NULL,
@@ -888,7 +888,9 @@ CREATE TABLE pep_schema.chamber_app_user (
                                              person_id uuid NULL,
                                              CONSTRAINT chk_chamber_app_user_company_or_person CHECK (((company_id IS NOT NULL) OR (person_id IS NOT NULL))),
                                              CONSTRAINT pk_chamber_app_user PRIMARY KEY (id),
-                                             CONSTRAINT fk_chamber_app_user_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
+                                             CONSTRAINT fk_chamber_app_user_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                             CONSTRAINT fk_chamber_app_user_chamber FOREIGN KEY (chamber_id) REFERENCES config_schema.chamber(id),
+                                             CONSTRAINT fk_chamber_app_user_chamber_app FOREIGN KEY (chamber_app_id) REFERENCES config_schema.chamber_app(id)
 
 );
 
@@ -971,7 +973,9 @@ CREATE TABLE pep_schema.company (
                                     CONSTRAINT fk_company_company_status FOREIGN KEY (company_status_id) REFERENCES pep_schema.company_status(id),
                                     CONSTRAINT fk_company_corporate_stat FOREIGN KEY (corporate_status_id) REFERENCES pep_schema.corporate_status(id),
                                     CONSTRAINT fk_company_country FOREIGN KEY (address_country_id) REFERENCES pep_schema.country(id),
-                                    CONSTRAINT fk_company_municipality FOREIGN KEY (address_municipality_pri_id) REFERENCES pep_schema.municipality(id)
+                                    CONSTRAINT fk_company_municipality FOREIGN KEY (address_municipality_pri_id) REFERENCES pep_schema.municipality(id),
+                                    CONSTRAINT fk_company_industry FOREIGN KEY (jb_industry_id) REFERENCES jobs_schema.jb_industries(id),
+                                    CONSTRAINT fk_company_location FOREIGN KEY (jb_location_id) REFERENCES jobs_schema.jb_locations(id)
 );
 CREATE INDEX idx_company_afm ON pep_schema.company USING btree (afm);
 CREATE INDEX idx_company_am ON pep_schema.company USING btree (am);
@@ -1289,6 +1293,7 @@ CREATE TABLE pep_schema.export_comp_prod_country (
                                                      CONSTRAINT fk_export_comp_prod_country_product FOREIGN KEY (product_id) REFERENCES pep_schema.product(id)
 );
 
+
 CREATE TABLE pep_schema.export_company (
                                            id uuid DEFAULT gen_random_uuid() NOT NULL,
                                            date_created timestamp NOT NULL,
@@ -1360,6 +1365,7 @@ CREATE TABLE pep_schema.user_geodata (
                                          CONSTRAINT user_geodata_pkey PRIMARY KEY (id),
                                          CONSTRAINT fk_user_geodata_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );
+
 CREATE TABLE pep_schema.working_hours (
                                           id int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1
                                               MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -1373,3 +1379,4 @@ CREATE TABLE pep_schema.working_hours (
                                           CONSTRAINT fk_working_hours_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
                                           CONSTRAINT fk_working_hours_profile FOREIGN KEY (profile_id) REFERENCES pep_schema.company_profile(id)
 );
+

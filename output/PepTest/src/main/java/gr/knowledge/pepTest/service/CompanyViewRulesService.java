@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.CompanyViewRulesDto;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code CompanyViewRules} domain operations.
@@ -10,15 +10,13 @@ import java.util.List;
 public interface CompanyViewRulesService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all company view ruleses.
      * @return non-null list of {@link CompanyViewRulesDto}
      */
-    List<CompanyViewRulesDto> getAllCompanyViewRules();
+    List<CompanyViewRulesDto> getAllCompanyViewRuleses();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link CompanyViewRulesDto}
      */
@@ -26,7 +24,6 @@ public interface CompanyViewRulesService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link CompanyViewRulesDto}
      */
@@ -34,19 +31,16 @@ public interface CompanyViewRulesService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link CompanyViewRulesDto}
      */
     CompanyViewRulesDto updateCompanyViewRules(UUID id, CompanyViewRulesDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteCompanyViewRules(UUID id);

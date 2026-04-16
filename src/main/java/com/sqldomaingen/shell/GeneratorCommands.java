@@ -1,5 +1,8 @@
 package com.sqldomaingen.shell;
 
+import com.sqldomaingen.validation.GenerationValidationReport;
+import com.sqldomaingen.validation.GenerationValidationRunner;
+import com.sqldomaingen.validation.ValidationReportPdfWriter;
 import com.sqldomaingen.generator.ConfigGenerator;
 import com.sqldomaingen.generator.ControllerGenerator;
 import com.sqldomaingen.generator.DTOGenerator;
@@ -10,7 +13,7 @@ import com.sqldomaingen.generator.MapperGenerator;
 import com.sqldomaingen.generator.ProjectScaffoldGenerator;
 import com.sqldomaingen.generator.RepositoryGenerator;
 import com.sqldomaingen.generator.ServiceGenerator;
-import com.sqldomaingen.generator.TestGenerator;
+import com.sqldomaingen.generatorTest.TestGenerator;
 import com.sqldomaingen.model.Entity;
 import com.sqldomaingen.model.IndexDefinition;
 import com.sqldomaingen.model.Table;
@@ -48,14 +51,16 @@ public class GeneratorCommands {
     private final EntityGenerator entityGenerator = new EntityGenerator();
 
     /**
-     * Runs the full generation pipeline using a SQL file as input.
+     * Generates the full Spring backend from the provided SQL file
+     * and produces a validation PDF report in the output directory.
      *
-     * @param inputFile path to the SQL input file
-     * @param outputDir target project root directory for generated output
-     * @param packageName base Java package name
-     * @param overwrite whether to overwrite existing files
-     * @param useBuilder whether to use builder pattern for generated entities
-     * @return success or error message
+     * @param inputFile input SQL file path
+     * @param outputDir output project directory
+     * @param packageName base package name
+     * @param overwrite whether existing files should be overwritten
+     * @param useBuilder whether builder generation should be enabled
+     * @param author Liquibase author
+     * @return generation result message
      */
     @ShellMethod("Generate full Spring backend from a SQL file.")
     public String generateEntity(
@@ -106,18 +111,51 @@ public class GeneratorCommands {
             new RepositoryGenerator().generateRepositories(javaGenerationTables, outputDir, packageName);
             new ServiceGenerator().generateAllServices(javaGenerationTables, outputDir, packageName);
             new ControllerGenerator().generateControllers(javaGenerationTables, outputDir, packageName, overwrite);
-            new TestGenerator().generateTests(javaGenerationTables, outputDir, packageName, overwrite);
+            new TestGenerator().generateTests(javaGenerationTables, models, outputDir, packageName, overwrite);
 
             new LiquibaseGenerator().generateLiquibaseFiles(outputDir, parsedTables, overwrite, author);
 
-            log.info("Backend generation completed successfully. Output dir: {}", outputDir);
-            System.exit(0);
-            return "Backend generation completed successfully.";
+            Path validationDir = createValidationOutputDirectory(outputDir);
 
-        } catch (IOException exception) {
+            GenerationValidationReport validationReport = new GenerationValidationRunner().run(
+                    inputFile,
+                    outputDir,
+                    packageName,
+                    parsedTables,
+                    javaGenerationTables,
+                    models
+            );
+
+            new ValidationReportPdfWriter().writePdf(
+                    validationReport,
+                    validationDir.resolve("validation-report.pdf")
+            );
+
+            log.info("Backend generation completed successfully. Output dir: {}", outputDir);
+            log.info("Validation report written under: {}", validationDir.toAbsolutePath());
+
+            System.exit(0);
+
+            return "Backend generation completed successfully. Validation report generated at: "
+                    + validationDir.resolve("validation-report.pdf").toAbsolutePath();
+
+        } catch (Exception exception) {
             log.error("Generation failed", exception);
             return "Generation failed: " + exception.getMessage();
         }
+    }
+
+    /**
+     * Creates the validation report output directory under the generated project root.
+     *
+     * @param outputDir output project directory
+     * @return validation output directory
+     * @throws IOException if directory creation fails
+     */
+    private Path createValidationOutputDirectory(String outputDir) throws IOException {
+        Path validationDir = Paths.get(outputDir, "validation");
+        Files.createDirectories(validationDir);
+        return validationDir;
     }
 
 

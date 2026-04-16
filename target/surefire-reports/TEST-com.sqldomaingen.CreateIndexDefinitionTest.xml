@@ -1,0 +1,429 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="https://maven.apache.org/surefire/maven-surefire-plugin/xsd/surefire-test-report-3.0.xsd" version="3.0" name="com.sqldomaingen.CreateIndexDefinitionTest" time="0.201" tests="8" errors="0" skipped="0" failures="0">
+  <properties>
+    <property name="java.specification.version" value="21"/>
+    <property name="sun.cpu.isalist" value="amd64"/>
+    <property name="sun.jnu.encoding" value="Cp1253"/>
+    <property name="java.class.path" value="C:\Users\kosma\IdeaProjects\SQLDomainGen\target\test-classes;C:\Users\kosma\IdeaProjects\SQLDomainGen\target\classes;C:\Users\kosma\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\kosma\.m2\repository\org\hibernate\orm\hibernate-core\6.2.5.Final\hibernate-core-6.2.5.Final.jar;C:\Users\kosma\.m2\repository\jakarta\persistence\jakarta.persistence-api\3.1.0\jakarta.persistence-api-3.1.0.jar;C:\Users\kosma\.m2\repository\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;C:\Users\kosma\.m2\repository\org\jboss\logging\jboss-logging\3.5.3.Final\jboss-logging-3.5.3.Final.jar;C:\Users\kosma\.m2\repository\org\hibernate\common\hibernate-commons-annotations\6.0.6.Final\hibernate-commons-annotations-6.0.6.Final.jar;C:\Users\kosma\.m2\repository\io\smallrye\jandex\3.0.5\jandex-3.0.5.jar;C:\Users\kosma\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy\1.14.6\byte-buddy-1.14.6.jar;C:\Users\kosma\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.0\jakarta.xml.bind-api-4.0.0.jar;C:\Users\kosma\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-runtime\4.0.3\jaxb-runtime-4.0.3.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-core\4.0.3\jaxb-core-4.0.3.jar;C:\Users\kosma\.m2\repository\org\eclipse\angus\angus-activation\2.0.1\angus-activation-2.0.1.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\txw2\4.0.3\txw2-4.0.3.jar;C:\Users\kosma\.m2\repository\com\sun\istack\istack-commons-runtime\4.1.2\istack-commons-runtime-4.1.2.jar;C:\Users\kosma\.m2\repository\jakarta\inject\jakarta.inject-api\2.0.1\jakarta.inject-api-2.0.1.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.3\junit-jupiter-api-5.9.3.jar;C:\Users\kosma\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-commons\1.9.3\junit-platform-commons-1.9.3.jar;C:\Users\kosma\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.3\junit-jupiter-engine-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-engine\1.9.3\junit-platform-engine-1.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter\5.9.3\junit-jupiter-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.9.3\junit-jupiter-params-5.9.3.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-api\2.20.0\log4j-api-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-core\2.20.0\log4j-core-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-slf4j2-impl\2.20.0\log4j-slf4j2-impl-2.20.0.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-test\3.1.3\spring-boot-starter-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter\3.1.3\spring-boot-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot\3.1.3\spring-boot-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\3.1.3\spring-boot-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-logging\3.1.3\spring-boot-starter-logging-3.1.3.jar;C:\Users\kosma\.m2\repository\org\slf4j\jul-to-slf4j\2.0.7\jul-to-slf4j-2.0.7.jar;C:\Users\kosma\.m2\repository\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\Users\kosma\.m2\repository\org\yaml\snakeyaml\1.33\snakeyaml-1.33.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test\3.1.3\spring-boot-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\3.1.3\spring-boot-test-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\com\jayway\jsonpath\json-path\2.8.0\json-path-2.8.0.jar;C:\Users\kosma\.m2\repository\net\minidev\json-smart\2.4.11\json-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\net\minidev\accessors-smart\2.4.11\accessors-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\org\ow2\asm\asm\9.3\asm-9.3.jar;C:\Users\kosma\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\kosma\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-junit-jupiter\5.3.1\mockito-junit-jupiter-5.3.1.jar;C:\Users\kosma\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\kosma\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-core\6.0.11\spring-core-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-jcl\6.0.11\spring-jcl-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-test\6.0.11\spring-test-6.0.11.jar;C:\Users\kosma\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\kosma\.m2\repository\org\projectlombok\lombok\1.18.30\lombok-1.18.30.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr4-runtime\4.13.1\antlr4-runtime-4.13.1.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-starter\3.1.3\spring-shell-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-autoconfigure\3.1.3\spring-shell-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-core\3.1.3\spring-shell-core-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-validation\3.1.3\spring-boot-starter-validation-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\10.1.12\tomcat-embed-el-10.1.12.jar;C:\Users\kosma\.m2\repository\org\hibernate\validator\hibernate-validator\8.0.1.Final\hibernate-validator-8.0.1.Final.jar;C:\Users\kosma\.m2\repository\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-messaging\6.0.11\spring-messaging-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-beans\6.0.11\spring-beans-6.0.11.jar;C:\Users\kosma\.m2\repository\org\jline\jline\3.23.0\jline-3.23.0.jar;C:\Users\kosma\.m2\repository\org\antlr\ST4\4.3.1\ST4-4.3.1.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr-runtime\3.5.2\antlr-runtime-3.5.2.jar;C:\Users\kosma\.m2\repository\commons-io\commons-io\2.11.0\commons-io-2.11.0.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard\3.1.3\spring-shell-standard-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard-commands\3.1.3\spring-shell-standard-commands-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-table\3.1.3\spring-shell-table-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-context\6.0.11\spring-context-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-aop\6.0.11\spring-aop-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-expression\6.0.11\spring-expression-6.0.11.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.6\byte-buddy-agent-1.14.6.jar;C:\Users\kosma\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\kosma\.m2\repository\com\github\spotbugs\spotbugs-annotations\4.7.3\spotbugs-annotations-4.7.3.jar;C:\Users\kosma\.m2\repository\com\google\code\findbugs\jsr305\3.0.2\jsr305-3.0.2.jar;"/>
+    <property name="java.vm.vendor" value="Oracle Corporation"/>
+    <property name="sun.arch.data.model" value="64"/>
+    <property name="user.variant" value=""/>
+    <property name="java.vendor.url" value="https://java.oracle.com/"/>
+    <property name="user.timezone" value="Europe/Athens"/>
+    <property name="os.name" value="Windows 11"/>
+    <property name="java.vm.specification.version" value="21"/>
+    <property name="sun.java.launcher" value="SUN_STANDARD"/>
+    <property name="user.country" value="GR"/>
+    <property name="sun.boot.library.path" value="C:\Program Files\Java\jdk-21\bin"/>
+    <property name="sun.java.command" value="C:\Users\kosma\AppData\Local\Temp\surefire4751996465976510959\surefirebooter-20260401153851942_5.jar C:\Users\kosma\AppData\Local\Temp\surefire4751996465976510959 2026-04-01T15-38-51_184-jvmRun1 surefire-20260401153851942_1tmp surefire_1-20260401153851942_3tmp"/>
+    <property name="jdk.debug" value="release"/>
+    <property name="surefire.test.class.path" value="C:\Users\kosma\IdeaProjects\SQLDomainGen\target\test-classes;C:\Users\kosma\IdeaProjects\SQLDomainGen\target\classes;C:\Users\kosma\.m2\repository\org\slf4j\slf4j-api\2.0.7\slf4j-api-2.0.7.jar;C:\Users\kosma\.m2\repository\org\hibernate\orm\hibernate-core\6.2.5.Final\hibernate-core-6.2.5.Final.jar;C:\Users\kosma\.m2\repository\jakarta\persistence\jakarta.persistence-api\3.1.0\jakarta.persistence-api-3.1.0.jar;C:\Users\kosma\.m2\repository\jakarta\transaction\jakarta.transaction-api\2.0.1\jakarta.transaction-api-2.0.1.jar;C:\Users\kosma\.m2\repository\org\jboss\logging\jboss-logging\3.5.3.Final\jboss-logging-3.5.3.Final.jar;C:\Users\kosma\.m2\repository\org\hibernate\common\hibernate-commons-annotations\6.0.6.Final\hibernate-commons-annotations-6.0.6.Final.jar;C:\Users\kosma\.m2\repository\io\smallrye\jandex\3.0.5\jandex-3.0.5.jar;C:\Users\kosma\.m2\repository\com\fasterxml\classmate\1.5.1\classmate-1.5.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy\1.14.6\byte-buddy-1.14.6.jar;C:\Users\kosma\.m2\repository\jakarta\xml\bind\jakarta.xml.bind-api\4.0.0\jakarta.xml.bind-api-4.0.0.jar;C:\Users\kosma\.m2\repository\jakarta\activation\jakarta.activation-api\2.1.2\jakarta.activation-api-2.1.2.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-runtime\4.0.3\jaxb-runtime-4.0.3.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\jaxb-core\4.0.3\jaxb-core-4.0.3.jar;C:\Users\kosma\.m2\repository\org\eclipse\angus\angus-activation\2.0.1\angus-activation-2.0.1.jar;C:\Users\kosma\.m2\repository\org\glassfish\jaxb\txw2\4.0.3\txw2-4.0.3.jar;C:\Users\kosma\.m2\repository\com\sun\istack\istack-commons-runtime\4.1.2\istack-commons-runtime-4.1.2.jar;C:\Users\kosma\.m2\repository\jakarta\inject\jakarta.inject-api\2.0.1\jakarta.inject-api-2.0.1.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-api\5.9.3\junit-jupiter-api-5.9.3.jar;C:\Users\kosma\.m2\repository\org\opentest4j\opentest4j\1.2.0\opentest4j-1.2.0.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-commons\1.9.3\junit-platform-commons-1.9.3.jar;C:\Users\kosma\.m2\repository\org\apiguardian\apiguardian-api\1.1.2\apiguardian-api-1.1.2.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-engine\5.9.3\junit-jupiter-engine-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\platform\junit-platform-engine\1.9.3\junit-platform-engine-1.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter\5.9.3\junit-jupiter-5.9.3.jar;C:\Users\kosma\.m2\repository\org\junit\jupiter\junit-jupiter-params\5.9.3\junit-jupiter-params-5.9.3.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-api\2.20.0\log4j-api-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-core\2.20.0\log4j-core-2.20.0.jar;C:\Users\kosma\.m2\repository\org\apache\logging\log4j\log4j-slf4j2-impl\2.20.0\log4j-slf4j2-impl-2.20.0.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-test\3.1.3\spring-boot-starter-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter\3.1.3\spring-boot-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot\3.1.3\spring-boot-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-autoconfigure\3.1.3\spring-boot-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-logging\3.1.3\spring-boot-starter-logging-3.1.3.jar;C:\Users\kosma\.m2\repository\org\slf4j\jul-to-slf4j\2.0.7\jul-to-slf4j-2.0.7.jar;C:\Users\kosma\.m2\repository\jakarta\annotation\jakarta.annotation-api\2.1.1\jakarta.annotation-api-2.1.1.jar;C:\Users\kosma\.m2\repository\org\yaml\snakeyaml\1.33\snakeyaml-1.33.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test\3.1.3\spring-boot-test-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-test-autoconfigure\3.1.3\spring-boot-test-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\com\jayway\jsonpath\json-path\2.8.0\json-path-2.8.0.jar;C:\Users\kosma\.m2\repository\net\minidev\json-smart\2.4.11\json-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\net\minidev\accessors-smart\2.4.11\accessors-smart-2.4.11.jar;C:\Users\kosma\.m2\repository\org\ow2\asm\asm\9.3\asm-9.3.jar;C:\Users\kosma\.m2\repository\org\assertj\assertj-core\3.24.2\assertj-core-3.24.2.jar;C:\Users\kosma\.m2\repository\org\hamcrest\hamcrest\2.2\hamcrest-2.2.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-junit-jupiter\5.3.1\mockito-junit-jupiter-5.3.1.jar;C:\Users\kosma\.m2\repository\org\skyscreamer\jsonassert\1.5.1\jsonassert-1.5.1.jar;C:\Users\kosma\.m2\repository\com\vaadin\external\google\android-json\0.0.20131108.vaadin1\android-json-0.0.20131108.vaadin1.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-core\6.0.11\spring-core-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-jcl\6.0.11\spring-jcl-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-test\6.0.11\spring-test-6.0.11.jar;C:\Users\kosma\.m2\repository\org\xmlunit\xmlunit-core\2.9.1\xmlunit-core-2.9.1.jar;C:\Users\kosma\.m2\repository\org\projectlombok\lombok\1.18.30\lombok-1.18.30.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr4-runtime\4.13.1\antlr4-runtime-4.13.1.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-starter\3.1.3\spring-shell-starter-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-autoconfigure\3.1.3\spring-shell-autoconfigure-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-core\3.1.3\spring-shell-core-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\boot\spring-boot-starter-validation\3.1.3\spring-boot-starter-validation-3.1.3.jar;C:\Users\kosma\.m2\repository\org\apache\tomcat\embed\tomcat-embed-el\10.1.12\tomcat-embed-el-10.1.12.jar;C:\Users\kosma\.m2\repository\org\hibernate\validator\hibernate-validator\8.0.1.Final\hibernate-validator-8.0.1.Final.jar;C:\Users\kosma\.m2\repository\jakarta\validation\jakarta.validation-api\3.0.2\jakarta.validation-api-3.0.2.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-messaging\6.0.11\spring-messaging-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-beans\6.0.11\spring-beans-6.0.11.jar;C:\Users\kosma\.m2\repository\org\jline\jline\3.23.0\jline-3.23.0.jar;C:\Users\kosma\.m2\repository\org\antlr\ST4\4.3.1\ST4-4.3.1.jar;C:\Users\kosma\.m2\repository\org\antlr\antlr-runtime\3.5.2\antlr-runtime-3.5.2.jar;C:\Users\kosma\.m2\repository\commons-io\commons-io\2.11.0\commons-io-2.11.0.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard\3.1.3\spring-shell-standard-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-standard-commands\3.1.3\spring-shell-standard-commands-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\shell\spring-shell-table\3.1.3\spring-shell-table-3.1.3.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-context\6.0.11\spring-context-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-aop\6.0.11\spring-aop-6.0.11.jar;C:\Users\kosma\.m2\repository\org\springframework\spring-expression\6.0.11\spring-expression-6.0.11.jar;C:\Users\kosma\.m2\repository\org\mockito\mockito-core\4.8.1\mockito-core-4.8.1.jar;C:\Users\kosma\.m2\repository\net\bytebuddy\byte-buddy-agent\1.14.6\byte-buddy-agent-1.14.6.jar;C:\Users\kosma\.m2\repository\org\objenesis\objenesis\3.2\objenesis-3.2.jar;C:\Users\kosma\.m2\repository\com\github\spotbugs\spotbugs-annotations\4.7.3\spotbugs-annotations-4.7.3.jar;C:\Users\kosma\.m2\repository\com\google\code\findbugs\jsr305\3.0.2\jsr305-3.0.2.jar;"/>
+    <property name="sun.cpu.endian" value="little"/>
+    <property name="user.home" value="C:\Users\kosma"/>
+    <property name="user.language" value="el"/>
+    <property name="java.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.version.date" value="2025-04-15"/>
+    <property name="java.home" value="C:\Program Files\Java\jdk-21"/>
+    <property name="file.separator" value="\"/>
+    <property name="basedir" value="C:\Users\kosma\IdeaProjects\SQLDomainGen"/>
+    <property name="java.vm.compressedOopsMode" value="32-bit"/>
+    <property name="line.separator" value="&#10;"/>
+    <property name="java.vm.specification.vendor" value="Oracle Corporation"/>
+    <property name="java.specification.name" value="Java Platform API Specification"/>
+    <property name="surefire.real.class.path" value="C:\Users\kosma\AppData\Local\Temp\surefire4751996465976510959\surefirebooter-20260401153851942_5.jar"/>
+    <property name="user.script" value=""/>
+    <property name="sun.management.compiler" value="HotSpot 64-Bit Tiered Compilers"/>
+    <property name="java.runtime.version" value="21.0.7+8-LTS-245"/>
+    <property name="user.name" value="kosma"/>
+    <property name="stdout.encoding" value="Cp1253"/>
+    <property name="path.separator" value=";"/>
+    <property name="os.version" value="10.0"/>
+    <property name="java.runtime.name" value="Java(TM) SE Runtime Environment"/>
+    <property name="file.encoding" value="UTF-8"/>
+    <property name="java.vm.name" value="Java HotSpot(TM) 64-Bit Server VM"/>
+    <property name="localRepository" value="C:\Users\kosma\.m2\repository"/>
+    <property name="java.vendor.url.bug" value="https://bugreport.java.com/bugreport/"/>
+    <property name="java.io.tmpdir" value="C:\Users\kosma\AppData\Local\Temp\"/>
+    <property name="java.version" value="21.0.7"/>
+    <property name="user.dir" value="C:\Users\kosma\IdeaProjects\SQLDomainGen"/>
+    <property name="os.arch" value="amd64"/>
+    <property name="java.vm.specification.name" value="Java Virtual Machine Specification"/>
+    <property name="sun.os.patch.level" value=""/>
+    <property name="native.encoding" value="Cp1253"/>
+    <property name="java.library.path" value="C:\Program Files\Java\jdk-21\bin;C:\WINDOWS\Sun\Java\bin;C:\WINDOWS\system32;C:\WINDOWS;C:\Program Files\Java\jdk-21\bin;C:\Python313\Scripts\;C:\Python313\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\apache-maven-3.9.9\bin;C:\ProgramData\chocolatey\bin;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\PuTTY\;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\Java\jdk-21\bin;C:\Python313\Scripts\;C:\Python313\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\apache-maven-3.9.9\bin;C:\ProgramData\chocolatey\bin;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\PuTTY\;C:\Program Files\Java\jdk-21\bin;C:\Python313\Scripts\;C:\Python313\;C:\WINDOWS\system32;C:\WINDOWS;C:\WINDOWS\System32\Wbem;C:\WINDOWS\System32\WindowsPowerShell\v1.0\;C:\WINDOWS\System32\OpenSSH\;C:\Program Files\apache-maven-3.9.9\bin;C:\ProgramData\chocolatey\bin;C:\Program Files\nodejs\;C:\Program Files\Git\cmd;C:\Program Files\Docker\Docker\resources\bin;C:\Program Files\PuTTY\;C:\Users\kosma\AppData\Local\Microsoft\WindowsApps;C:\Program Files\JetBrains\IntelliJ IDEA Community Edition 2024.3.3\bin;;C:\Users\kosma\AppData\Local\GitHubDesktop\bin;C:\Users\kosma\AppData\Roaming\npm;C:\Program Files\JetBrains\IntelliJ IDEA 202;."/>
+    <property name="java.vm.info" value="mixed mode, sharing"/>
+    <property name="stderr.encoding" value="Cp1253"/>
+    <property name="java.vendor" value="Oracle Corporation"/>
+    <property name="java.vm.version" value="21.0.7+8-LTS-245"/>
+    <property name="sun.io.unicode.encoding" value="UnicodeLittle"/>
+    <property name="java.class.version" value="65.0"/>
+  </properties>
+  <testcase name="testProcessCreateIndex_WithMultipleIndexesInSameScript" classname="com.sqldomaingen.CreateIndexDefinitionTest" time="0.035">
+    <system-out><![CDATA[enter   sqlScript, LT(1)=CREATE
+enter   createIndexStatement, LT(1)=CREATE
+consume [@0,0:5='CREATE',<141>,1:0] rule createIndexStatement
+consume [@1,7:11='INDEX',<101>,1:7] rule createIndexStatement
+consume [@2,13:37='idx_company_search_mv_afm',<234>,1:13] rule createIndexStatement
+consume [@3,39:40='ON',<127>,2:0] rule createIndexStatement
+enter   tableName, LT(1)=pep_schema
+enter   schemaName, LT(1)=pep_schema
+consume [@4,42:51='pep_schema',<234>,2:3] rule schemaName
+exit    schemaName, LT(1)=.
+consume [@5,52:52='.',<146>,2:13] rule tableName
+consume [@6,53:69='company_search_mv',<234>,2:14] rule tableName
+exit    tableName, LT(1)=USING
+consume [@7,71:75='USING',<137>,2:32] rule createIndexStatement
+consume [@8,77:81='btree',<234>,2:38] rule createIndexStatement
+consume [@9,83:83='(',<118>,2:44] rule createIndexStatement
+enter   indexElement, LT(1)=afm
+enter   expression, LT(1)=afm
+enter   columnName, LT(1)=afm
+consume [@10,84:86='afm',<234>,2:45] rule columnName
+exit    columnName, LT(1)=)
+exit    expression, LT(1)=)
+exit    indexElement, LT(1)=)
+consume [@11,87:87=')',<119>,2:48] rule createIndexStatement
+consume [@12,88:88=';',<122>,2:49] rule createIndexStatement
+exit    createIndexStatement, LT(1)=CREATE
+enter   createIndexStatement, LT(1)=CREATE
+consume [@13,91:96='CREATE',<141>,4:0] rule createIndexStatement
+consume [@14,98:103='UNIQUE',<170>,4:7] rule createIndexStatement
+consume [@15,105:109='INDEX',<101>,4:14] rule createIndexStatement
+consume [@16,111:134='idx_company_search_mv_id',<234>,4:20] rule createIndexStatement
+consume [@17,136:137='ON',<127>,5:0] rule createIndexStatement
+enter   tableName, LT(1)=pep_schema
+enter   schemaName, LT(1)=pep_schema
+consume [@18,139:148='pep_schema',<234>,5:3] rule schemaName
+exit    schemaName, LT(1)=.
+consume [@19,149:149='.',<146>,5:13] rule tableName
+consume [@20,150:166='company_search_mv',<234>,5:14] rule tableName
+exit    tableName, LT(1)=USING
+consume [@21,168:172='USING',<137>,5:32] rule createIndexStatement
+consume [@22,174:178='btree',<234>,5:38] rule createIndexStatement
+consume [@23,180:180='(',<118>,5:44] rule createIndexStatement
+enter   indexElement, LT(1)=id
+enter   expression, LT(1)=id
+enter   columnName, LT(1)=id
+consume [@24,181:182='id',<234>,5:45] rule columnName
+exit    columnName, LT(1)=)
+exit    expression, LT(1)=)
+exit    indexElement, LT(1)=)
+consume [@25,183:183=')',<119>,5:47] rule createIndexStatement
+consume [@26,184:184=';',<122>,5:48] rule createIndexStatement
+exit    createIndexStatement, LT(1)=CREATE
+enter   createIndexStatement, LT(1)=CREATE
+consume [@27,187:192='CREATE',<141>,7:0] rule createIndexStatement
+consume [@28,194:198='INDEX',<101>,7:7] rule createIndexStatement
+consume [@29,200:233='idx_company_search_mv_titles_greek',<234>,7:13] rule createIndexStatement
+consume [@30,235:236='ON',<127>,8:0] rule createIndexStatement
+enter   tableName, LT(1)=pep_schema
+enter   schemaName, LT(1)=pep_schema
+consume [@31,238:247='pep_schema',<234>,8:3] rule schemaName
+exit    schemaName, LT(1)=.
+consume [@32,248:248='.',<146>,8:13] rule tableName
+consume [@33,249:265='company_search_mv',<234>,8:14] rule tableName
+exit    tableName, LT(1)=USING
+consume [@34,267:271='USING',<137>,8:32] rule createIndexStatement
+consume [@35,273:275='gin',<234>,8:38] rule createIndexStatement
+consume [@36,277:277='(',<118>,8:42] rule createIndexStatement
+enter   indexElement, LT(1)=titles_greek
+enter   expression, LT(1)=titles_greek
+enter   columnName, LT(1)=titles_greek
+consume [@37,278:289='titles_greek',<234>,8:43] rule columnName
+exit    columnName, LT(1)=)
+exit    expression, LT(1)=)
+exit    indexElement, LT(1)=)
+consume [@38,290:290=')',<119>,8:55] rule createIndexStatement
+consume [@39,291:291=';',<122>,8:56] rule createIndexStatement
+exit    createIndexStatement, LT(1)=CREATE
+enter   createIndexStatement, LT(1)=CREATE
+consume [@40,294:299='CREATE',<141>,10:0] rule createIndexStatement
+consume [@41,301:305='INDEX',<101>,10:7] rule createIndexStatement
+consume [@42,307:346='idx_company_search_mv_aegean_cuisine_url',<234>,10:13] rule createIndexStatement
+consume [@43,348:349='ON',<127>,11:0] rule createIndexStatement
+enter   tableName, LT(1)=pep_schema
+enter   schemaName, LT(1)=pep_schema
+consume [@44,351:360='pep_schema',<234>,11:3] rule schemaName
+exit    schemaName, LT(1)=.
+consume [@45,361:361='.',<146>,11:13] rule tableName
+consume [@46,362:378='company_search_mv',<234>,11:14] rule tableName
+exit    tableName, LT(1)=USING
+consume [@47,380:384='USING',<137>,11:32] rule createIndexStatement
+consume [@48,386:390='btree',<234>,11:38] rule createIndexStatement
+consume [@49,392:392='(',<118>,11:44] rule createIndexStatement
+enter   indexElement, LT(1)=aegean_cuisine_url
+enter   expression, LT(1)=aegean_cuisine_url
+enter   columnName, LT(1)=aegean_cuisine_url
+consume [@50,393:410='aegean_cuisine_url',<234>,11:45] rule columnName
+exit    columnName, LT(1)=)
+exit    expression, LT(1)=)
+exit    indexElement, LT(1)=)
+consume [@51,411:411=')',<119>,11:63] rule createIndexStatement
+consume [@52,413:417='WHERE',<51>,12:0] rule createIndexStatement
+enter   condition, LT(1)=(
+enter   booleanCondition, LT(1)=(
+consume [@53,419:419='(',<118>,12:6] rule booleanCondition
+enter   booleanCondition, LT(1)=aegean_cuisine_url
+enter   predicate, LT(1)=aegean_cuisine_url
+enter   expression, LT(1)=aegean_cuisine_url
+enter   columnName, LT(1)=aegean_cuisine_url
+consume [@54,420:437='aegean_cuisine_url',<234>,12:7] rule columnName
+exit    columnName, LT(1)=IS
+exit    expression, LT(1)=IS
+consume [@55,439:440='IS',<150>,12:26] rule predicate
+consume [@56,442:444='NOT',<149>,12:29] rule predicate
+consume [@57,446:449='NULL',<148>,12:33] rule predicate
+exit    predicate, LT(1)=)
+exit    booleanCondition, LT(1)=)
+consume [@58,450:450=')',<119>,12:37] rule booleanCondition
+exit    booleanCondition, LT(1)=;
+exit    condition, LT(1)=;
+consume [@59,451:451=';',<122>,12:38] rule createIndexStatement
+exit    createIndexStatement, LT(1)=<EOF>
+consume [@60,453:452='<EOF>',<-1>,13:0] rule sqlScript
+exit    sqlScript, LT(1)=<EOF>
+]]></system-out>
+  </testcase>
+  <testcase name="testProcessCreateIndex_WithSimpleMultiColumnIndex" classname="com.sqldomaingen.CreateIndexDefinitionTest" time="0.009">
+    <system-out><![CDATA[enter   sqlScript, LT(1)=CREATE
+enter   createIndexStatement, LT(1)=CREATE
+consume [@0,0:5='CREATE',<141>,1:0] rule createIndexStatement
+consume [@1,7:11='INDEX',<101>,1:7] rule createIndexStatement
+consume [@2,13:30='idx_staging_status',<234>,1:13] rule createIndexStatement
+consume [@3,32:33='ON',<127>,2:0] rule createIndexStatement
+enter   tableName, LT(1)=pep_schema
+enter   schemaName, LT(1)=pep_schema
+consume [@4,35:44='pep_schema',<234>,2:3] rule schemaName
+exit    schemaName, LT(1)=.
+consume [@5,45:45='.',<146>,2:13] rule tableName
+consume [@6,46:57='data_staging',<234>,2:14] rule tableName
+exit    tableName, LT(1)=USING
+consume [@7,59:63='USING',<137>,2:27] rule createIndexStatement
+consume [@8,65:69='btree',<234>,2:33] rule createIndexStatement
+consume [@9,71:71='(',<118>,2:39] rule createIndexStatement
+enter   indexElement, LT(1)=status
+enter   expression, LT(1)=status
+enter   columnName, LT(1)=status
+consume [@10,72:77='status',<234>,2:40] rule columnName
+exit    columnName, LT(1)=,
+exit    expression, LT(1)=,
+exit    indexElement, LT(1)=,
+consume [@11,78:78=',',<125>,2:46] rule createIndexStatement
+enter   indexElement, LT(1)=pulled_at
+enter   expression, LT(1)=pulled_at
+enter   columnName, LT(1)=pulled_at
+consume [@12,80:88='pulled_at',<234>,2:48] rule columnName
+exit    columnName, LT(1)=)
+exit    expression, LT(1)=)
+exit    indexElement, LT(1)=)
+consume [@13,89:89=')',<119>,2:57] rule createIndexStatement
+consume [@14,90:90=';',<122>,2:58] rule createIndexStatement
+exit    createIndexStatement, LT(1)=<EOF>
+consume [@15,92:91='<EOF>',<-1>,3:0] rule sqlScript
+exit    sqlScript, LT(1)=<EOF>
+]]></system-out>
+  </testcase>
+  <testcase name="testProcessCreateIndex_WithSecondMultiColumnIndex" classname="com.sqldomaingen.CreateIndexDefinitionTest" time="0.008">
+    <system-out><![CDATA[enter   sqlScript, LT(1)=CREATE
+enter   createIndexStatement, LT(1)=CREATE
+consume [@0,0:5='CREATE',<141>,1:0] rule createIndexStatement
+consume [@1,7:11='INDEX',<101>,1:7] rule createIndexStatement
+consume [@2,13:36='idx_staging_table_status',<234>,1:13] rule createIndexStatement
+consume [@3,38:39='ON',<127>,2:0] rule createIndexStatement
+enter   tableName, LT(1)=pep_schema
+enter   schemaName, LT(1)=pep_schema
+consume [@4,41:50='pep_schema',<234>,2:3] rule schemaName
+exit    schemaName, LT(1)=.
+consume [@5,51:51='.',<146>,2:13] rule tableName
+consume [@6,52:63='data_staging',<234>,2:14] rule tableName
+exit    tableName, LT(1)=USING
+consume [@7,65:69='USING',<137>,2:27] rule createIndexStatement
+consume [@8,71:75='btree',<234>,2:33] rule createIndexStatement
+consume [@9,77:77='(',<118>,2:39] rule createIndexStatement
+enter   indexElement, LT(1)=legacy_table_name
+enter   expression, LT(1)=legacy_table_name
+enter   columnName, LT(1)=legacy_table_name
+consume [@10,78:94='legacy_table_name',<234>,2:40] rule columnName
+exit    columnName, LT(1)=,
+exit    expression, LT(1)=,
+exit    indexElement, LT(1)=,
+consume [@11,95:95=',',<125>,2:57] rule createIndexStatement
+enter   indexElement, LT(1)=status
+enter   expression, LT(1)=status
+enter   columnName, LT(1)=status
+consume [@12,97:102='status',<234>,2:59] rule columnName
+exit    columnName, LT(1)=)
+exit    expression, LT(1)=)
+exit    indexElement, LT(1)=)
+consume [@13,103:103=')',<119>,2:65] rule createIndexStatement
+consume [@14,104:104=';',<122>,2:66] rule createIndexStatement
+exit    createIndexStatement, LT(1)=<EOF>
+consume [@15,106:105='<EOF>',<-1>,3:0] rule sqlScript
+exit    sqlScript, LT(1)=<EOF>
+]]></system-out>
+  </testcase>
+  <testcase name="testProcessCreateIndex_WithPartialIndex" classname="com.sqldomaingen.CreateIndexDefinitionTest" time="0.008">
+    <system-out><![CDATA[enter   sqlScript, LT(1)=CREATE
+enter   createIndexStatement, LT(1)=CREATE
+consume [@0,0:5='CREATE',<141>,1:0] rule createIndexStatement
+consume [@1,7:11='INDEX',<101>,1:7] rule createIndexStatement
+consume [@2,13:52='idx_company_search_mv_aegean_cuisine_url',<234>,1:13] rule createIndexStatement
+consume [@3,54:55='ON',<127>,2:0] rule createIndexStatement
+enter   tableName, LT(1)=pep_schema
+enter   schemaName, LT(1)=pep_schema
+consume [@4,57:66='pep_schema',<234>,2:3] rule schemaName
+exit    schemaName, LT(1)=.
+consume [@5,67:67='.',<146>,2:13] rule tableName
+consume [@6,68:84='company_search_mv',<234>,2:14] rule tableName
+exit    tableName, LT(1)=USING
+consume [@7,86:90='USING',<137>,2:32] rule createIndexStatement
+consume [@8,92:96='btree',<234>,2:38] rule createIndexStatement
+consume [@9,98:98='(',<118>,2:44] rule createIndexStatement
+enter   indexElement, LT(1)=aegean_cuisine_url
+enter   expression, LT(1)=aegean_cuisine_url
+enter   columnName, LT(1)=aegean_cuisine_url
+consume [@10,99:116='aegean_cuisine_url',<234>,2:45] rule columnName
+exit    columnName, LT(1)=)
+exit    expression, LT(1)=)
+exit    indexElement, LT(1)=)
+consume [@11,117:117=')',<119>,2:63] rule createIndexStatement
+consume [@12,119:123='WHERE',<51>,3:0] rule createIndexStatement
+enter   condition, LT(1)=(
+enter   booleanCondition, LT(1)=(
+consume [@13,125:125='(',<118>,3:6] rule booleanCondition
+enter   booleanCondition, LT(1)=aegean_cuisine_url
+enter   predicate, LT(1)=aegean_cuisine_url
+enter   expression, LT(1)=aegean_cuisine_url
+enter   columnName, LT(1)=aegean_cuisine_url
+consume [@14,126:143='aegean_cuisine_url',<234>,3:7] rule columnName
+exit    columnName, LT(1)=IS
+exit    expression, LT(1)=IS
+consume [@15,145:146='IS',<150>,3:26] rule predicate
+consume [@16,148:150='NOT',<149>,3:29] rule predicate
+consume [@17,152:155='NULL',<148>,3:33] rule predicate
+exit    predicate, LT(1)=)
+exit    booleanCondition, LT(1)=)
+consume [@18,156:156=')',<119>,3:37] rule booleanCondition
+exit    booleanCondition, LT(1)=;
+exit    condition, LT(1)=;
+consume [@19,157:157=';',<122>,3:38] rule createIndexStatement
+exit    createIndexStatement, LT(1)=<EOF>
+consume [@20,159:158='<EOF>',<-1>,4:0] rule sqlScript
+exit    sqlScript, LT(1)=<EOF>
+]]></system-out>
+  </testcase>
+  <testcase name="testParseSQLToTables_WithIndexes_ShouldAttachIndexesToCorrectTable" classname="com.sqldomaingen.CreateIndexDefinitionTest" time="0.069"/>
+  <testcase name="testProcessCreateIndex_WithUniqueIndex" classname="com.sqldomaingen.CreateIndexDefinitionTest" time="0.004">
+    <system-out><![CDATA[enter   sqlScript, LT(1)=CREATE
+enter   createIndexStatement, LT(1)=CREATE
+consume [@0,0:5='CREATE',<141>,1:0] rule createIndexStatement
+consume [@1,7:12='UNIQUE',<170>,1:7] rule createIndexStatement
+consume [@2,14:18='INDEX',<101>,1:14] rule createIndexStatement
+consume [@3,20:36='idx_company_email',<234>,1:20] rule createIndexStatement
+consume [@4,38:39='ON',<127>,2:0] rule createIndexStatement
+enter   tableName, LT(1)=pep_schema
+enter   schemaName, LT(1)=pep_schema
+consume [@5,41:50='pep_schema',<234>,2:3] rule schemaName
+exit    schemaName, LT(1)=.
+consume [@6,51:51='.',<146>,2:13] rule tableName
+consume [@7,52:58='company',<234>,2:14] rule tableName
+exit    tableName, LT(1)=USING
+consume [@8,60:64='USING',<137>,2:22] rule createIndexStatement
+consume [@9,66:70='btree',<234>,2:28] rule createIndexStatement
+consume [@10,72:72='(',<118>,2:34] rule createIndexStatement
+enter   indexElement, LT(1)=contact_email
+enter   expression, LT(1)=contact_email
+enter   columnName, LT(1)=contact_email
+consume [@11,73:85='contact_email',<234>,2:35] rule columnName
+exit    columnName, LT(1)=)
+exit    expression, LT(1)=)
+exit    indexElement, LT(1)=)
+consume [@12,86:86=')',<119>,2:48] rule createIndexStatement
+consume [@13,87:87=';',<122>,2:49] rule createIndexStatement
+exit    createIndexStatement, LT(1)=<EOF>
+consume [@14,89:88='<EOF>',<-1>,3:0] rule sqlScript
+exit    sqlScript, LT(1)=<EOF>
+]]></system-out>
+  </testcase>
+  <testcase name="testProcessCreateIndex_WithExpressionIndex" classname="com.sqldomaingen.CreateIndexDefinitionTest" time="0.032">
+    <system-out><![CDATA[enter   sqlScript, LT(1)=CREATE
+enter   createIndexStatement, LT(1)=CREATE
+consume [@0,0:5='CREATE',<141>,1:0] rule createIndexStatement
+consume [@1,7:11='INDEX',<101>,1:7] rule createIndexStatement
+consume [@2,13:52='idx_company_search_mv_name_english_lower',<234>,1:13] rule createIndexStatement
+consume [@3,54:55='ON',<127>,2:0] rule createIndexStatement
+enter   tableName, LT(1)=pep_schema
+enter   schemaName, LT(1)=pep_schema
+consume [@4,57:66='pep_schema',<234>,2:3] rule schemaName
+exit    schemaName, LT(1)=.
+consume [@5,67:67='.',<146>,2:13] rule tableName
+consume [@6,68:84='company_search_mv',<234>,2:14] rule tableName
+exit    tableName, LT(1)=USING
+consume [@7,86:90='USING',<137>,2:32] rule createIndexStatement
+consume [@8,92:96='btree',<234>,2:38] rule createIndexStatement
+consume [@9,98:98='(',<118>,2:44] rule createIndexStatement
+enter   indexElement, LT(1)=lower
+enter   expression, LT(1)=lower
+enter   functionCall, LT(1)=lower
+consume [@10,99:103='lower',<234>,2:45] rule functionCall
+consume [@11,104:104='(',<118>,2:50] rule functionCall
+enter   expressionList, LT(1)=(
+enter   expression, LT(1)=(
+consume [@12,105:105='(',<118>,2:51] rule expression
+enter   expression, LT(1)=name_english
+enter   columnName, LT(1)=name_english
+consume [@13,106:117='name_english',<234>,2:52] rule columnName
+exit    columnName, LT(1)=)
+exit    expression, LT(1)=)
+consume [@14,118:118=')',<119>,2:64] rule expression
+enter   typeCast, LT(1)=::
+consume [@15,119:120='::',<124>,2:65] rule typeCast
+enter   dataType, LT(1)=text
+consume [@16,121:124='text',<172>,2:67] rule dataType
+exit    dataType, LT(1)=)
+exit    typeCast, LT(1)=)
+exit    expression, LT(1)=)
+exit    expressionList, LT(1)=)
+consume [@17,125:125=')',<119>,2:71] rule functionCall
+exit    functionCall, LT(1)=)
+exit    expression, LT(1)=)
+exit    indexElement, LT(1)=)
+consume [@18,126:126=')',<119>,2:72] rule createIndexStatement
+consume [@19,127:127=';',<122>,2:73] rule createIndexStatement
+exit    createIndexStatement, LT(1)=<EOF>
+consume [@20,129:128='<EOF>',<-1>,3:0] rule sqlScript
+exit    sqlScript, LT(1)=<EOF>
+]]></system-out>
+  </testcase>
+  <testcase name="testProcessCreateIndex_WithGinIndex" classname="com.sqldomaingen.CreateIndexDefinitionTest" time="0.017">
+    <system-out><![CDATA[enter   sqlScript, LT(1)=CREATE
+enter   createIndexStatement, LT(1)=CREATE
+consume [@0,0:5='CREATE',<141>,1:0] rule createIndexStatement
+consume [@1,7:11='INDEX',<101>,1:7] rule createIndexStatement
+consume [@2,13:46='idx_company_search_mv_titles_greek',<234>,1:13] rule createIndexStatement
+consume [@3,48:49='ON',<127>,2:0] rule createIndexStatement
+enter   tableName, LT(1)=pep_schema
+enter   schemaName, LT(1)=pep_schema
+consume [@4,51:60='pep_schema',<234>,2:3] rule schemaName
+exit    schemaName, LT(1)=.
+consume [@5,61:61='.',<146>,2:13] rule tableName
+consume [@6,62:78='company_search_mv',<234>,2:14] rule tableName
+exit    tableName, LT(1)=USING
+consume [@7,80:84='USING',<137>,2:32] rule createIndexStatement
+consume [@8,86:88='gin',<234>,2:38] rule createIndexStatement
+consume [@9,90:90='(',<118>,2:42] rule createIndexStatement
+enter   indexElement, LT(1)=titles_greek
+enter   expression, LT(1)=titles_greek
+enter   columnName, LT(1)=titles_greek
+consume [@10,91:102='titles_greek',<234>,2:43] rule columnName
+exit    columnName, LT(1)=)
+exit    expression, LT(1)=)
+exit    indexElement, LT(1)=)
+consume [@11,103:103=')',<119>,2:55] rule createIndexStatement
+consume [@12,104:104=';',<122>,2:56] rule createIndexStatement
+exit    createIndexStatement, LT(1)=<EOF>
+consume [@13,106:105='<EOF>',<-1>,3:0] rule sqlScript
+exit    sqlScript, LT(1)=<EOF>
+]]></system-out>
+  </testcase>
+</testsuite>

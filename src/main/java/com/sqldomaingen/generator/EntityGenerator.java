@@ -221,7 +221,7 @@ public class EntityGenerator {
 
         entityBuilder.append("}\n");
 
-        log.debug("Generated entity content for table '{}':\n{}", table.getName(), entityBuilder);
+        //log.debug("Generated entity content for table '{}':\n{}", table.getName(), entityBuilder);
         return entityBuilder.toString();
     }
 
@@ -243,7 +243,6 @@ public class EntityGenerator {
 
         boolean needsCreationTimestamp = false;
         boolean needsUpdateTimestamp = false;
-        boolean needsUuidImport = false;
         boolean needsJsonImports = false;
 
         boolean compositePrimaryKey = hasCompositePrimaryKey(table);
@@ -259,14 +258,12 @@ public class EntityGenerator {
                 continue;
             }
 
-            String javaType = resolveJavaType(column);
+            if (shouldImportScalarColumnJavaType(table, column)) {
+                String javaType = resolveJavaType(column);
 
-            if (javaType != null && !javaType.isBlank() && javaType.startsWith("java.")) {
-                imports.add("import " + javaType + ";");
-            }
-
-            if (javaType != null && !javaType.isBlank() && isUuidType(javaType)) {
-                needsUuidImport = true;
+                if (javaType != null && !javaType.isBlank() && javaType.startsWith("java.")) {
+                    imports.add("import " + javaType + ";");
+                }
             }
 
             if (shouldUseCreationTimestamp(column)) {
@@ -283,9 +280,7 @@ public class EntityGenerator {
         }
 
         boolean needsCollectionImports = table.getRelationships().stream()
-                .anyMatch(relationship ->
-                        relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY
-                                || relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY);
+                .anyMatch(relationship -> relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY);
 
         if (!needsCollectionImports) {
             needsCollectionImports = hasSyntheticManyToManyRelations(table);
@@ -294,10 +289,6 @@ public class EntityGenerator {
         if (needsCollectionImports) {
             imports.add("import java.util.List;");
             imports.add("import java.util.ArrayList;");
-        }
-
-        if (needsUuidImport) {
-            imports.add("import java.util.UUID;");
         }
 
         if (needsCreationTimestamp) {
@@ -318,6 +309,30 @@ public class EntityGenerator {
         }
 
         builder.append("\n");
+    }
+
+
+    /**
+     * Determines whether the Java type of column must be imported because
+     * the column is generated as a scalar field in the entity.
+     *
+     * @param table the source table
+     * @param column the source column
+     * @return true when the generated entity will contain a scalar field for this column
+     */
+    private boolean shouldImportScalarColumnJavaType(Table table, Column column) {
+        if (table == null || column == null) {
+            return false;
+        }
+
+        if (!column.isForeignKey()) {
+            return true;
+        }
+
+        ForeignKeyGenerationStrategy strategy = resolveForeignKeyGenerationStrategy(table, column);
+
+        return strategy == ForeignKeyGenerationStrategy.SCALAR
+                || strategy == ForeignKeyGenerationStrategy.UNRESOLVED_SCALAR;
     }
 
 
@@ -403,8 +418,9 @@ public class EntityGenerator {
      *     <li>basic columns</li>
      *     <li>primary keys</li>
      *     <li>standard FK relationships</li>
-     *     <li>inverse collections</li>
+     *     <li>inverse many-to-many collections</li>
      *     <li>synthetic many-to-many fields from pure join tables</li>
+     *     <li>inverse one-to-one relationships</li>
      * </ul>
      *
      * @param builder the builder receiving field content
@@ -432,9 +448,17 @@ public class EntityGenerator {
             log.debug("Processing column: {}", column.getName());
 
             if (compositePrimaryKey && isCompositeKeyColumn(column, primaryKeyColumns)) {
-                if (compositeJoinTable) {
+                if (!column.isForeignKey()) {
+                    continue;
+                }
+
+                ForeignKeyGenerationStrategy strategy = resolveForeignKeyGenerationStrategy(table, column);
+
+                if (compositeJoinTable
+                        && strategy == ForeignKeyGenerationStrategy.COMPOSITE_MAPS_ID_RELATION) {
                     addCompositeKeyRelationshipField(builder, column, table, generatedFieldNames);
                 }
+
                 continue;
             }
 
@@ -443,25 +467,47 @@ public class EntityGenerator {
                 continue;
             }
 
-            boolean hasResolvedRelationship = findRelationshipForColumn(table, column).isPresent();
-
-            if (column.isForeignKey() || hasResolvedRelationship) {
-                addRelationshipField(builder, column, table, generatedFieldNames);
+            if (!column.isForeignKey()) {
+                addColumnField(builder, column, useBuilder);
                 continue;
             }
 
-            addColumnField(builder, column, useBuilder);
+            ForeignKeyGenerationStrategy strategy = resolveForeignKeyGenerationStrategy(table, column);
+
+            switch (strategy) {
+                case RELATION -> addRelationshipField(builder, column, table, generatedFieldNames, useBuilder);
+
+                case SCALAR -> addFlatForeignKeyScalarField(builder, column, useBuilder);
+
+                case UNRESOLVED_SCALAR -> addUnresolvedForeignKeyScalarField(builder, column, useBuilder);
+
+                case COMPOSITE_MAPS_ID_RELATION -> {
+                    log.warn("Composite @MapsId strategy reached non-composite branch for column '{}.{}'. " +
+                                    "Falling back to standard relationship generation.",
+                            table.getName(),
+                            column.getName());
+                    addRelationshipField(builder, column, table, generatedFieldNames, useBuilder);
+                }
+            }
         }
 
         if (!compositeJoinTable) {
 
             for (Relationship relationship : table.getRelationships()) {
-                boolean isInverseCollectionSide =
-                        (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY
-                                || relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY)
+                boolean isInverseManyToManySide =
+                        relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY
                                 && relationship.getMappedBy() != null;
 
-                if (!isInverseCollectionSide) {
+                if (!isInverseManyToManySide) {
+                    continue;
+                }
+
+                if (!shouldGenerateInverseRelationship(relationship)) {
+                    log.debug("Skipping inverse relationship field for sourceTable='{}', target='{}', mappedBy='{}' " +
+                                    "because the owning side will not be generated as a relation field.",
+                            relationship.getSourceTable(),
+                            relationship.getTargetTable(),
+                            relationship.getMappedBy());
                     continue;
                 }
 
@@ -489,7 +535,7 @@ public class EntityGenerator {
                         relationship.getTargetTable(),
                         relationship.getJoinTableName());
 
-                String expectedFieldName = NamingConverter.toCamelCasePlural(relationship.getTargetTable());
+                String expectedFieldName = NamingConverter.toCamelCasePlural(stripSchema(relationship.getTargetTable()));
                 if (generatedFieldNames.contains(expectedFieldName)) {
                     log.warn("Skipping ManyToMany owning-side field '{}': already generated", expectedFieldName);
                     continue;
@@ -512,6 +558,15 @@ public class EntityGenerator {
                     continue;
                 }
 
+                if (!shouldGenerateInverseRelationship(relationship)) {
+                    log.debug("Skipping inverse @OneToOne for sourceTable='{}', target='{}', mappedBy='{}' " +
+                                    "because the owning side will not be generated as a relation field.",
+                            relationship.getSourceTable(),
+                            relationship.getTargetTable(),
+                            relationship.getMappedBy());
+                    continue;
+                }
+
                 String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
                 String fieldName = java.beans.Introspector.decapitalize(targetEntity);
                 String mappedBy = relationship.getMappedBy();
@@ -529,6 +584,184 @@ public class EntityGenerator {
             }
         }
     }
+
+
+    /**
+     * Determines whether an inverse relationship should be generated.
+     * <p>
+     * An inverse field is valid only when the owning side can actually be generated
+     * as a JPA relation field in the target entity. This prevents broken mappings
+     * such as mappedBy = "company" when the target entity only contains companyId.
+     *
+     * @param relationship inverse relationship metadata
+     * @return true when the owning side will be generated as a relation field
+     */
+    private boolean shouldGenerateInverseRelationship(Relationship relationship) {
+        if (relationship == null || relationship.getMappedBy() == null || relationship.getMappedBy().isBlank()) {
+            return false;
+        }
+
+        Optional<Table> targetTableOptional = findTargetTableInGeneratorMap(relationship.getTargetTable());
+        if (targetTableOptional.isEmpty()) {
+            log.debug("Skipping inverse relationship because target table '{}' could not be resolved.",
+                    relationship.getTargetTable());
+            return false;
+        }
+
+        Table targetTable = targetTableOptional.get();
+        String expectedMappedBy = relationship.getMappedBy();
+        String expectedParentTable = stripSchema(relationship.getSourceTable());
+
+        for (Column column : targetTable.getColumns()) {
+            if (column == null || !column.isForeignKey()) {
+                continue;
+            }
+
+            ForeignKeyGenerationStrategy strategy = resolveForeignKeyGenerationStrategy(targetTable, column);
+            if (strategy != ForeignKeyGenerationStrategy.RELATION
+                    && strategy != ForeignKeyGenerationStrategy.COMPOSITE_MAPS_ID_RELATION) {
+                continue;
+            }
+
+            Optional<Relationship> owningRelationship = resolveOwningRelationshipForFieldGeneration(targetTable, column);
+            if (owningRelationship.isEmpty()) {
+                continue;
+            }
+
+            Relationship resolvedOwningRelationship = owningRelationship.get();
+            String resolvedParentTable = stripSchema(resolvedOwningRelationship.getTargetTable());
+            String resolvedFieldName = resolveRelationFieldName(column.getName());
+
+            if (expectedParentTable.equals(resolvedParentTable) && expectedMappedBy.equals(resolvedFieldName)) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+
+    /**
+     * Generates a flat scalar field for a foreign key column that should remain an id
+     * instead of becoming a JPA relationship.
+     *
+     * @param builder the builder receiving the generated content
+     * @param column the foreign key column
+     * @param useBuilder true when Lombok builder is enabled
+     */
+    private void addFlatForeignKeyScalarField(StringBuilder builder, Column column, boolean useBuilder) {
+        String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
+        String javaType = resolveJavaType(column);
+        String cleanedType = toSimpleJavaType(javaType);
+        String sqlType = normalizeSqlType(column.getSqlType());
+
+        builder.append("    @Column(name = \"").append(columnName).append("\"");
+
+        appendCharacterColumnMetadata(builder, column, sqlType);
+        appendNumericColumnMetadata(builder, column, sqlType);
+
+        if (column.isUnique()) {
+            builder.append(", unique = true");
+        }
+
+        if (!column.isNullable()) {
+            builder.append(", nullable = false");
+        }
+
+        builder.append(")\n");
+
+        addBuilderDefaultAnnotation(builder, useBuilder, false);
+
+        builder.append("    private ")
+                .append(cleanedType)
+                .append(" ")
+                .append(column.getFieldName())
+                .append(";\n\n");
+    }
+
+    /**
+     * Appends JPA metadata for VARCHAR, CHAR, BPCHAR, and TEXT columns.
+     *
+     * @param builder the builder receiving annotation content
+     * @param column the source column metadata
+     * @param sqlType the normalized SQL type
+     */
+    private void appendCharacterColumnMetadata(StringBuilder builder, Column column, String sqlType) {
+        int length = column.getLength();
+
+        if (isTextType(sqlType)) {
+            builder.append(", columnDefinition = \"text\"");
+            return;
+        }
+
+        if (isFixedCharType(sqlType) && length > 0) {
+            builder.append(", columnDefinition = \"char(")
+                    .append(length)
+                    .append(")\"");
+            return;
+        }
+
+        if (isVarcharType(sqlType) && length > 0 && length != 255) {
+            builder.append(", length = ").append(length);
+        }
+    }
+
+    /**
+     * Appends JPA precision and scale metadata for NUMERIC and DECIMAL columns.
+     *
+     * @param builder the builder receiving annotation content
+     * @param column the source column metadata
+     * @param sqlType the normalized SQL type
+     */
+    private void appendNumericColumnMetadata(StringBuilder builder, Column column, String sqlType) {
+        if (!(sqlType.startsWith("DECIMAL") || sqlType.startsWith("NUMERIC"))) {
+            return;
+        }
+
+        if (column.getPrecision() <= 0) {
+            return;
+        }
+
+        builder.append(", precision = ").append(column.getPrecision());
+
+        if (column.getScale() > 0) {
+            builder.append(", scale = ").append(column.getScale());
+        }
+    }
+
+    /**
+     * Returns true when the SQL type is a VARCHAR family type.
+     *
+     * @param sqlType the normalized SQL type
+     * @return true when the type is VARCHAR
+     */
+    private boolean isVarcharType(String sqlType) {
+        return sqlType != null && sqlType.startsWith("VARCHAR");
+    }
+
+    /**
+     * Returns true when the SQL type is a fixed CHAR family type.
+     *
+     * @param sqlType the normalized SQL type
+     * @return true when the type is CHAR or BPCHAR
+     */
+    private boolean isFixedCharType(String sqlType) {
+        return sqlType != null
+                && (sqlType.startsWith("CHAR") || sqlType.startsWith("BPCHAR"));
+    }
+
+    /**
+     * Returns true when the SQL type is a TEXT family type.
+     *
+     * @param sqlType the normalized SQL type
+     * @return true when the type is TEXT
+     */
+    private boolean isTextType(String sqlType) {
+        return sqlType != null && sqlType.startsWith("TEXT");
+    }
+
+
+
 
     /**
      * Generates a synthetic pure many-to-many field using metadata registered on the table.
@@ -602,7 +835,7 @@ public class EntityGenerator {
     private String getEmbeddedIdTypeName(Table table) {
         String rawTableName = table != null ? table.getName() : null;
         String simpleTableName = stripSchema(rawTableName);
-        return NamingConverter.toPascalCase(simpleTableName) + "PK";
+        return NamingConverter.toPascalCase(simpleTableName) + "Key";
     }
 
     private boolean isCompositeKeyJoinTable(Table table) {
@@ -702,7 +935,6 @@ public class EntityGenerator {
             builder.append(", nullable = false");
         }
 
-        addOnDeleteAndOnUpdate(builder, relationship);
         builder.append(")\n");
 
         builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
@@ -1040,54 +1272,74 @@ public class EntityGenerator {
     }
 
 
+    /**
+     * Generates an owning-side relationship field for a resolved foreign key column.
+     * <p>
+     * This method assumes that relationship-vs-scalar strategy has already been
+     * decided by the caller. Its responsibility is limited to rendering the JPA
+     * field for supported owning-side relationships.
+     *
+     * @param builder the builder receiving generated content
+     * @param column the foreign key column
+     * @param table the source table
+     * @param generatedFieldNames already generated field names for duplicate protection
+     * @param useBuilder true when Lombok builder is enabled
+     */
+    public void addRelationshipField(StringBuilder builder,
+                                     Column column,
+                                     Table table,
+                                     Set<String> generatedFieldNames,
+                                     boolean useBuilder) {
+        log.debug("Resolving owning-side relationship field for column '{}' in table '{}'",
+                column.getName(),
+                table.getName());
 
-    // parent  Side Table
-    public void addRelationshipField(StringBuilder builder, Column column, Table table, Set<String> generatedFieldNames) {
-        log.debug("🔵 Resolving relationship for column: {} in table: {}", column.getName(), table.getName());
-
-        // 3. addRelationshipField()
-        Optional<Relationship> relationshipOpt = table.getRelationships().stream()
-                .filter(rel -> Objects.equals(stripSchema(rel.getSourceTable()), stripSchema(table.getName())))
-                .filter(rel -> Objects.equals(rel.getSourceColumn(), column.getName()))
-                .findFirst();
+        Optional<Relationship> relationshipOpt = resolveOwningRelationshipForFieldGeneration(table, column);
 
         if (relationshipOpt.isEmpty()) {
-            log.warn("⚠️ No relationship found for FK column '{}'. Falling back to scalar field.", column.getName());
-            addUnresolvedForeignKeyScalarField(builder, column);
+            log.warn("No owning-side relationship found for FK column '{}.{}'. Falling back to unresolved scalar field.",
+                    table.getName(),
+                    column.getName());
+            addUnresolvedForeignKeyScalarField(builder, column, useBuilder);
             return;
         }
 
         Relationship relationship = relationshipOpt.get();
-        log.debug("💬 Relationship details -> Source: {}, Target: {}, Type: {}, MappedBy: {}, JoinTable: {}",
-                relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(),
-                relationship.getMappedBy(), relationship.getJoinTableName());
 
-        String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
-        String fieldName = NamingConverter.toCamelCase(column.getName().replaceAll("(?i)_id$", ""));
+        log.debug("Relationship details -> source='{}', target='{}', type={}, mappedBy='{}', joinTable='{}'",
+                relationship.getSourceTable(),
+                relationship.getTargetTable(),
+                relationship.getRelationshipType(),
+                relationship.getMappedBy(),
+                relationship.getJoinTableName());
 
-        if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY &&
-                relationship.getJoinTableName() != null) {
-            fieldName = NamingConverter.toCamelCasePlural(stripSchema(relationship.getTargetTable()));
-        }
-
-        if (generatedFieldNames.contains(fieldName)) {
-            log.warn("⚠️ Skipping relationship field '{}': already generated (possible duplicate)", fieldName);
+        if (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY) {
+            log.debug("Skipping MANYTOMANY generation for column '{}.{}' because it is handled elsewhere.",
+                    table.getName(),
+                    column.getName());
             return;
         }
 
-        generatedFieldNames.add(fieldName);
+        String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
+        String fieldName = resolveRelationFieldName(column.getName());
 
-        boolean requiredFk = isNotNullColumn(column);
+        if (generatedFieldNames.contains(fieldName)) {
+            log.warn("Skipping relationship field '{}' because it has already been generated.", fieldName);
+            return;
+        }
+
+        boolean requiredForeignKey = isNotNullColumn(column);
 
         switch (relationship.getRelationshipType()) {
-
             case ONETOONE -> {
-                // If mappedBy exists, we are on the inverse side; do not generate the owning field here.
                 if (relationship.getMappedBy() != null) {
-                    log.debug("⏭️ Skipping ONETOONE field '{}' because it's inverse side (mappedBy = '{}')",
-                            fieldName, relationship.getMappedBy());
+                    log.debug("Skipping ONETOONE field '{}' because it belongs to the inverse side (mappedBy='{}').",
+                            fieldName,
+                            relationship.getMappedBy());
                     return;
                 }
+
+                generatedFieldNames.add(fieldName);
 
                 builder.append("    @OneToOne(fetch = FetchType.LAZY)\n");
                 builder.append("    @JoinColumn(name = \"").append(column.getName()).append("\"");
@@ -1097,7 +1349,7 @@ public class EntityGenerator {
                     builder.append(", referencedColumnName = \"").append(targetColumn).append("\"");
                 }
 
-                if (requiredFk) {
+                if (requiredForeignKey) {
                     builder.append(", nullable = false");
                 }
 
@@ -1105,13 +1357,18 @@ public class EntityGenerator {
                     builder.append(", unique = true");
                 }
 
-                addOnDeleteAndOnUpdate(builder, relationship);
                 builder.append(")\n");
 
-                builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
+                builder.append("    private ")
+                        .append(targetEntity)
+                        .append(" ")
+                        .append(fieldName)
+                        .append(";\n\n");
             }
 
             case MANYTOONE -> {
+                generatedFieldNames.add(fieldName);
+
                 builder.append("    @ManyToOne(fetch = FetchType.LAZY)\n");
                 builder.append("    @JoinColumn(name = \"").append(column.getName()).append("\"");
 
@@ -1120,24 +1377,30 @@ public class EntityGenerator {
                     builder.append(", referencedColumnName = \"").append(targetColumn).append("\"");
                 }
 
-                if (requiredFk) {
+                if (requiredForeignKey) {
                     builder.append(", nullable = false");
                 }
 
-                addOnDeleteAndOnUpdate(builder, relationship);
                 builder.append(")\n");
 
-                builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
+                builder.append("    private ")
+                        .append(targetEntity)
+                        .append(" ")
+                        .append(fieldName)
+                        .append(";\n\n");
             }
 
-            case MANYTOMANY -> {
-                log.debug("⏭️ Skipping MANYTOMANY generation here; handled elsewhere. Field='{}'", fieldName);
+            default -> {
+                log.warn("Relationship type '{}' is not supported by addRelationshipField for column '{}.{}'. Falling back to unresolved scalar field.",
+                        relationship.getRelationshipType(),
+                        table.getName(),
+                        column.getName());
+                addUnresolvedForeignKeyScalarField(builder, column, useBuilder);
             }
-
-            default -> log.warn("⚠️ Relationship type {} is not handled here for column: {}",
-                    relationship.getRelationshipType(), column.getName());
         }
     }
+
+
 
     private boolean shouldIncludeReferencedColumn(String targetColumn) {
         if (targetColumn == null) {
@@ -1219,7 +1482,7 @@ public class EntityGenerator {
     }
 
     /**
-     * Generates inverse-side collection fields for one-to-many and many-to-many relationships.
+     * Generates inverse-side collection fields for many-to-many relationships.
      *
      * @param builder the builder receiving generated content
      * @param relationship the inverse relationship metadata
@@ -1231,7 +1494,9 @@ public class EntityGenerator {
                                             Set<String> generatedFieldNames,
                                             boolean useBuilder) {
         String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
-        String fieldName = NamingConverter.toCamelCasePlural(stripSchema(relationship.getTargetTable()));
+        String rawTargetTableName = stripSchema(relationship.getTargetTable());
+
+        String fieldName = NamingConverter.toCamelCasePlural(rawTargetTableName);
 
         if (generatedFieldNames.contains(fieldName)) {
             log.warn("⚠️ Skipping inverse field '{}': already generated (probably duplicate relationship)", fieldName);
@@ -1241,75 +1506,36 @@ public class EntityGenerator {
         generatedFieldNames.add(fieldName);
 
         log.debug("🔄 Creating inverse relationship field for table '{}' -> '{}', type: {}, mappedBy: '{}', fieldName: '{}'",
-                relationship.getSourceTable(), relationship.getTargetTable(), relationship.getRelationshipType(), relationship.getMappedBy(), fieldName);
+                relationship.getSourceTable(),
+                relationship.getTargetTable(),
+                relationship.getRelationshipType(),
+                relationship.getMappedBy(),
+                fieldName);
 
-        switch (relationship.getRelationshipType()) {
-
-            case ONETOMANY -> {
-                if (relationship.getMappedBy() == null || relationship.getMappedBy().isBlank()) {
-                    log.warn("⚠️ Skipping OneToMany inverse field '{}' because mappedBy is missing.", fieldName);
-                    return;
-                }
-
-                builder.append("    @OneToMany(mappedBy = \"")
-                        .append(relationship.getMappedBy())
-                        .append("\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)\n");
-
-                addBuilderDefaultAnnotation(builder, useBuilder, true);
-
-                builder.append("    private List<").append(targetEntity).append("> ")
-                        .append(fieldName).append(" = new ArrayList<>();\n\n");
-            }
-
-            case MANYTOMANY -> {
-                if (relationship.getMappedBy() == null || relationship.getMappedBy().isBlank()) {
-                    log.warn("⚠️ Skipping ManyToMany inverse field '{}' because mappedBy is missing.", fieldName);
-                    return;
-                }
-
-                builder.append("    @ManyToMany(mappedBy = \"").append(relationship.getMappedBy())
-                        .append("\", fetch = FetchType.LAZY)\n");
-
-                addBuilderDefaultAnnotation(builder, useBuilder, true);
-
-                builder.append("    private List<").append(targetEntity).append("> ")
-                        .append(fieldName).append(" = new ArrayList<>();\n\n");
-            }
-
-            default -> log.warn("⚠️ Relationship type {} is not handled here for inverse relationships.", relationship.getRelationshipType());
+        if (relationship.getRelationshipType() != Relationship.RelationshipType.MANYTOMANY) {
+            log.warn("⚠️ Relationship type {} is not handled here for inverse relationships.",
+                    relationship.getRelationshipType());
+            return;
         }
+
+        if (relationship.getMappedBy() == null || relationship.getMappedBy().isBlank()) {
+            log.warn("⚠️ Skipping ManyToMany inverse field '{}' because mappedBy is missing.", fieldName);
+            return;
+        }
+
+        builder.append("    @ManyToMany(mappedBy = \"").append(relationship.getMappedBy())
+                .append("\", fetch = FetchType.LAZY)\n");
+
+        addBuilderDefaultAnnotation(builder, useBuilder, true);
+
+        builder.append("    private List<").append(targetEntity).append("> ")
+                .append(fieldName).append(" = new ArrayList<>();\n\n");
     }
-
-    private void addOnDeleteAndOnUpdate(StringBuilder builder, Relationship relationship) {
-        if (relationship == null) {
-            return;
-        }
-
-        if (relationship.getOnDelete() == null && relationship.getOnUpdate() == null) {
-            return;
-        }
-
-        String sourceCol = relationship.getSourceColumn();
-        String targetCol = relationship.getTargetColumn();
-
-        if (sourceCol == null || sourceCol.isBlank() || targetCol == null || targetCol.isBlank()) {
-            log.warn("⚠️ Skipping foreignKey name because source/target columns are missing. sourceColumn='{}', targetColumn='{}'",
-                    sourceCol, targetCol);
-            return;
-        }
-
-        builder.append(", foreignKey = @ForeignKey(name = \"fk_")
-                .append(sourceCol)
-                .append("_")
-                .append(targetCol)
-                .append("\", value = ConstraintMode.CONSTRAINT)");
-    }
-
 
 
     /**
      * Generates a simple column field with JPA annotations.
-     * Handles JSON/JSONB columns explicitly for Hibernate.
+     * Handles JSON/JSONB columns explicitly for Hibernate and preserves NUMERIC/DECIMAL precision metadata.
      *
      * @param builder the builder receiving generated content
      * @param column the column metadata
@@ -1322,7 +1548,6 @@ public class EntityGenerator {
         String sqlType = normalizeSqlType(column.getSqlType());
 
         boolean isJsonColumn = TypeMapper.isJsonType(column);
-        boolean isNumeric19LongColumn = isNumeric19LongColumn(column, javaType);
         boolean isGeneratedStoredColumn = column.getGeneratedAs() != null && !column.getGeneratedAs().isBlank();
 
         if (shouldUseCreationTimestamp(column)) {
@@ -1353,26 +1578,8 @@ public class EntityGenerator {
             } else {
                 builder.append("    @Column(name = \"").append(columnName).append("\"");
 
-                int length = column.getLength();
-                boolean isCharLike = sqlType.startsWith("VARCHAR") || sqlType.startsWith("CHAR");
-
-                if ("TEXT".equals(sqlType)) {
-                    builder.append(", columnDefinition = \"text\"");
-                }
-
-                if (isCharLike && length > 0 && length != 255) {
-                    builder.append(", length = ").append(length);
-                }
-
-                if (!isNumeric19LongColumn
-                        && (sqlType.startsWith("DECIMAL") || sqlType.startsWith("NUMERIC"))
-                        && column.getPrecision() > 0) {
-                    builder.append(", precision = ").append(column.getPrecision());
-
-                    if (column.getScale() > 0) {
-                        builder.append(", scale = ").append(column.getScale());
-                    }
-                }
+                appendCharacterColumnMetadata(builder, column, sqlType);
+                appendNumericColumnMetadata(builder, column, sqlType);
 
                 if (column.isUnique()) {
                     builder.append(", unique = true");
@@ -1395,21 +1602,14 @@ public class EntityGenerator {
         }
 
         String cleanedType = toSimpleJavaType(javaType);
-        String booleanDefaultInitializer = resolveBooleanDefaultInitializer(column, columnName);
-        boolean hasInitializer = booleanDefaultInitializer != null;
 
-        addBuilderDefaultAnnotation(builder, useBuilder, hasInitializer);
+        addBuilderDefaultAnnotation(builder, useBuilder, false);
 
         builder.append("    private ")
                 .append(cleanedType)
                 .append(" ")
-                .append(column.getFieldName());
-
-        if (hasInitializer) {
-            builder.append(" = ").append(booleanDefaultInitializer);
-        }
-
-        builder.append(";\n\n");
+                .append(column.getFieldName())
+                .append(";\n\n");
     }
 
 
@@ -1458,9 +1658,10 @@ public class EntityGenerator {
      * <p>
      * This method creates:
      * <ul>
+     *     <li>composite id fields for tables with embedded keys</li>
      *     <li>scalar fields for normal columns</li>
      *     <li>owning-side relation fields for resolved FK relationships</li>
-     *     <li>inverse relation fields for ONETOMANY and inverse ONETOONE</li>
+     *     <li>inverse relation fields for ONETOONE relationships</li>
      *     <li>synthetic MANYTOMANY collection fields from pure join tables</li>
      * </ul>
      *
@@ -1477,10 +1678,12 @@ public class EntityGenerator {
 
             Entity entity = new Entity();
             entity.setName(resolveEntityName(table));
+            entity.setCompositeKey(table.getCompositeKey());
 
             List<Field> fields = new ArrayList<>();
             Set<String> generatedFieldNames = new HashSet<>();
 
+            addCompositePrimaryKeyMetadataField(table, fields, generatedFieldNames);
             addColumnAndOwningRelationFields(table, fields, generatedFieldNames);
             addInverseRelationshipFields(table, fields, generatedFieldNames);
             addSyntheticManyToManyFields(table, fields, generatedFieldNames);
@@ -1490,6 +1693,37 @@ public class EntityGenerator {
         }
 
         return result;
+    }
+
+    /**
+     * Adds the composite id metadata field for tables that use an embedded key.
+     *
+     * @param table the source table
+     * @param fields the generated fields
+     * @param generatedFieldNames already generated field names
+     */
+    private void addCompositePrimaryKeyMetadataField(
+            Table table,
+            List<Field> fields,
+            Set<String> generatedFieldNames
+    ) {
+        if (!hasCompositePrimaryKey(table)) {
+            return;
+        }
+
+        Field compositeIdField = Field.builder()
+                .name("id")
+                .type(getEmbeddedIdTypeName(table))
+                .primaryKey(true)
+                .foreignKey(false)
+                .unique(false)
+                .nullable(false)
+                .columnName("id")
+                .build();
+
+        if (generatedFieldNames.add(compositeIdField.getName())) {
+            fields.add(compositeIdField);
+        }
     }
 
     /**
@@ -1514,50 +1748,170 @@ public class EntityGenerator {
      * @param fields the generated fields
      * @param generatedFieldNames already generated field names
      */
-    private void addColumnAndOwningRelationFields(Table table,
-                                                  List<Field> fields,
-                                                  Set<String> generatedFieldNames) {
+    private void addColumnAndOwningRelationFields(
+            Table table,
+            List<Field> fields,
+            Set<String> generatedFieldNames
+    ) {
+        boolean compositePrimaryKey = hasCompositePrimaryKey(table);
+        List<Column> compositePrimaryKeyColumns = compositePrimaryKey
+                ? getPrimaryKeyColumns(table)
+                : Collections.emptyList();
+
         for (Column column : table.getColumns()) {
-            Optional<Relationship> relationship = findOwningRelationship(table, column);
+            if (compositePrimaryKey && isCompositeKeyColumn(column, compositePrimaryKeyColumns)) {
+                addCompositePrimaryKeyOwningRelationField(table, column, fields, generatedFieldNames);
+                continue;
+            }
 
-            if (relationship.isPresent()) {
-                Field relationField = createOwningRelationField(column, relationship.get());
+            if (!column.isForeignKey()) {
+                Field scalarField = createScalarField(column);
 
-                if (generatedFieldNames.add(relationField.getName())) {
-                    fields.add(relationField);
+                if (generatedFieldNames.add(scalarField.getName())) {
+                    fields.add(scalarField);
                 }
                 continue;
             }
 
-            Field scalarField = createScalarField(column);
+            ForeignKeyGenerationStrategy strategy = resolveForeignKeyGenerationStrategy(table, column);
 
-            if (generatedFieldNames.add(scalarField.getName())) {
-                fields.add(scalarField);
+            switch (strategy) {
+                case RELATION, COMPOSITE_MAPS_ID_RELATION -> {
+                    Optional<Relationship> relationship = resolveOwningRelationshipForFieldGeneration(table, column);
+
+                    if (relationship.isPresent()) {
+                        Field relationField = createOwningRelationField(column, relationship.get());
+
+                        if (generatedFieldNames.add(relationField.getName())) {
+                            fields.add(relationField);
+                        }
+                    } else {
+                        Field scalarField = createScalarField(column);
+
+                        if (generatedFieldNames.add(scalarField.getName())) {
+                            fields.add(scalarField);
+                        }
+                    }
+                }
+
+                case SCALAR, UNRESOLVED_SCALAR -> {
+                    Field scalarField = createScalarField(column);
+
+                    if (generatedFieldNames.add(scalarField.getName())) {
+                        fields.add(scalarField);
+                    }
+                }
             }
         }
     }
 
 
     /**
-     * Finds the owning-side relationship for the given foreign key column.
+     * Adds only the owning relation metadata for a composite primary key column.
+     * <p>
+     * The raw key values already live inside the generated embedded key field,
+     * so direct scalar duplication must be avoided here.
      *
      * @param table the source table
-     * @param column the source column
+     * @param column the composite primary key column
+     * @param fields the generated fields
+     * @param generatedFieldNames already generated field names
+     */
+    private void addCompositePrimaryKeyOwningRelationField(
+            Table table,
+            Column column,
+            List<Field> fields,
+            Set<String> generatedFieldNames
+    ) {
+        if (!column.isForeignKey()) {
+            return;
+        }
+
+        ForeignKeyGenerationStrategy strategy = resolveForeignKeyGenerationStrategy(table, column);
+
+        if (strategy != ForeignKeyGenerationStrategy.RELATION
+                && strategy != ForeignKeyGenerationStrategy.COMPOSITE_MAPS_ID_RELATION) {
+            return;
+        }
+
+        Optional<Relationship> relationship = resolveOwningRelationshipForFieldGeneration(table, column);
+
+        if (relationship.isEmpty()) {
+            return;
+        }
+
+        Field relationField = createOwningRelationField(column, relationship.get());
+
+        if (generatedFieldNames.add(relationField.getName())) {
+            fields.add(relationField);
+        }
+    }
+
+    /**
+     * Resolves the owning-side relationship used by field metadata generation.
+     * Ensures that FK columns always produce a relation when possible.
+     */
+    private Optional<Relationship> resolveOwningRelationshipForFieldGeneration(Table table, Column column) {
+
+        // 1. Try strict owning relationship
+        Optional<Relationship> relationship = findOwningRelationship(table, column);
+        if (relationship.isPresent()) {
+            return relationship;
+        }
+
+        // 2. Try resolved relationships (non-owning filtered)
+        relationship = findRelationshipForColumn(table, column)
+                .filter(rel ->
+                        rel.getMappedBy() == null &&
+                                (rel.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                                        || rel.getRelationshipType() == Relationship.RelationshipType.ONETOONE)
+                );
+
+        if (relationship.isPresent()) {
+            return relationship;
+        }
+
+        //  3. FORCE fallback inference for FK
+        if (column.isForeignKey()) {
+            Optional<Relationship> inferred = inferCompositePkRelationship(table, column);
+
+            if (inferred.isPresent()) {
+                log.debug("Fallback inferred relationship used for {}.{}", table.getName(), column.getName());
+                return inferred;
+            }
+        }
+
+        return Optional.empty();
+    }
+
+
+    /**
+     * Finds the standard owning-side relationship for the given foreign key column.
+     * <p>
+     * This method only returns already resolved owning-side relationships and does
+     * not apply fallback inference or strategy rules.
+     *
+     * @param table the source table
+     * @param column the source foreign key column
      * @return the resolved owning-side relationship if present
      */
     private Optional<Relationship> findOwningRelationship(Table table, Column column) {
-        if (column == null || !column.isForeignKey()) {
+        if (table == null
+                || column == null
+                || !column.isForeignKey()
+                || table.getRelationships() == null
+                || table.getRelationships().isEmpty()) {
             return Optional.empty();
         }
 
         return table.getRelationships().stream()
+                .filter(Objects::nonNull)
+                .filter(relationship -> Objects.equals(relationship.getSourceTable(), table.getName()))
+                .filter(relationship -> Objects.equals(relationship.getSourceColumn(), column.getName()))
+                .filter(relationship -> relationship.getMappedBy() == null)
                 .filter(relationship ->
-                        relationship.getSourceTable().equals(table.getName())
-                                && relationship.getSourceColumn() != null
-                                && relationship.getSourceColumn().equals(column.getName())
-                                && relationship.getMappedBy() == null
-                                && (relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
-                                || relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE))
+                        relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                                || relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE)
                 .findFirst();
     }
 
@@ -1586,18 +1940,19 @@ public class EntityGenerator {
     /**
      * Creates an owning-side relation field from a foreign key column and a resolved relationship.
      *
-     * @param column the FK column
-     * @param relationship the resolved relationship
-     * @return the generated relation field
+     * @param column the foreign key column
+     * @param relationship the resolved owning-side relationship
+     * @return the generated relation field metadata
      */
     private Field createOwningRelationField(Column column, Relationship relationship) {
         String relationFieldName = resolveRelationFieldName(column.getName());
         String referencedEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
+        Field.RelationKind relationKind = toRelationKind(relationship.getRelationshipType());
 
         return Field.builder()
                 .name(relationFieldName)
                 .type(referencedEntity)
-                .primaryKey(column.isPrimaryKey())
+                .primaryKey(false)
                 .foreignKey(true)
                 .unique(column.isUnique())
                 .nullable(column.isNullable())
@@ -1608,12 +1963,11 @@ public class EntityGenerator {
                 .mappedBy(null)
                 .cascade("ALL")
                 .orphanRemoval(false)
-                .relationKind(toRelationKind(relationship.getRelationshipType()))
+                .relationKind(relationKind)
                 .collection(false)
                 .owningSide(true)
                 .build();
     }
-
 
     /**
      * Resolves a relation field name from a foreign key column name.
@@ -1652,12 +2006,13 @@ public class EntityGenerator {
                 continue;
             }
 
-            if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOMANY) {
-                Field inverseCollectionField = createInverseCollectionField(relationship);
-
-                if (generatedFieldNames.add(inverseCollectionField.getName())) {
-                    fields.add(inverseCollectionField);
-                }
+            if (!shouldGenerateInverseRelationship(relationship)) {
+                log.debug("Skipping inverse metadata field for sourceTable='{}', target='{}', mappedBy='{}' " +
+                                "because the owning side will not be generated as a relation field.",
+                        relationship.getSourceTable(),
+                        relationship.getTargetTable(),
+                        relationship.getMappedBy());
+                continue;
             }
 
             if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE) {
@@ -1670,29 +2025,6 @@ public class EntityGenerator {
         }
     }
 
-    /**
-     * Creates an inverse one-to-many collection field.
-     *
-     * @param relationship the inverse relationship metadata
-     * @return the generated collection field
-     */
-    private Field createInverseCollectionField(Relationship relationship) {
-        String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
-        String fieldName = NamingConverter.toCamelCasePlural(stripSchema(relationship.getTargetTable()));
-
-        return Field.builder()
-                .name(fieldName)
-                .type("List<" + targetEntity + ">")
-                .foreignKey(false)
-                .referencedEntity(targetEntity)
-                .mappedBy(relationship.getMappedBy())
-                .cascade("ALL")
-                .orphanRemoval(true)
-                .relationKind(Field.RelationKind.ONE_TO_MANY)
-                .collection(true)
-                .owningSide(false)
-                .build();
-    }
 
     /**
      * Creates an inverse one-to-one field.
@@ -1789,64 +2121,36 @@ public class EntityGenerator {
     }
 
     /**
-     * Generates a scalar field for a foreign key column when no relationship
-     * could be resolved to a generated entity.
+     * Generates a scalar fallback field for a foreign key column whose target
+     * relationship could not be resolved to a generated entity.
+     * <p>
+     * This method only adds an explanatory TODO comment and delegates the actual
+     * scalar field generation to the flat foreign key scalar renderer.
      *
      * @param builder the builder receiving the generated content
      * @param column the unresolved foreign key column
+     * @param useBuilder true when Lombok builder is enabled
      */
-    private void addUnresolvedForeignKeyScalarField(StringBuilder builder, Column column) {
+    private void addUnresolvedForeignKeyScalarField(StringBuilder builder,
+                                                    Column column,
+                                                    boolean useBuilder) {
         String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
-        String javaType = resolveJavaType(column);
-        String cleanedType = toSimpleJavaType(javaType);
-        String sqlType = normalizeSqlType(column.getSqlType());
-        boolean isNumeric19LongColumn = isNumeric19LongColumn(column, javaType);
 
         builder.append("    // TODO: Foreign key '")
                 .append(columnName)
-                .append("' was not resolved to a generated entity relationship. ")
-                .append("Convert to @ManyToOne when the target entity becomes available.\n");
+                .append("' was not resolved to a generated entity relationship.\n")
+                .append("    // Keep it as a scalar field until the target entity becomes available.\n");
 
-        builder.append("    @Column(name = \"").append(columnName).append("\"");
-
-        int length = column.getLength();
-        boolean isCharLike = sqlType.startsWith("VARCHAR") || sqlType.startsWith("CHAR");
-
-        if (isCharLike && length > 0 && length != 255) {
-            builder.append(", length = ").append(length);
-        }
-
-        if (!isNumeric19LongColumn
-                && (sqlType.startsWith("DECIMAL") || sqlType.startsWith("NUMERIC"))
-                && column.getPrecision() > 0) {
-            builder.append(", precision = ").append(column.getPrecision());
-
-            if (column.getScale() > 0) {
-                builder.append(", scale = ").append(column.getScale());
-            }
-        }
-
-        if (column.isUnique()) {
-            builder.append(", unique = true");
-        }
-
-        if (!column.isNullable()) {
-            builder.append(", nullable = false");
-        }
-
-        builder.append(")\n");
-
-        builder.append("    private ")
-                .append(cleanedType)
-                .append(" ")
-                .append(column.getFieldName())
-                .append(";\n\n");
+        addFlatForeignKeyScalarField(builder, column, useBuilder);
     }
 
 
     /**
-     * Adds Lombok builder default annotation when builder generation is enabled
-     * and the field is initialized inline.
+     * Disables Lombok builder defaults for generated entities.
+     *
+     * <p>JPA entities should not use {@code @Builder.Default} because it introduces
+     * hidden initialization behavior in the persistence model. This method is kept
+     * only to preserve the current generation flow and intentionally does nothing.</p>
      *
      * @param builder the target builder
      * @param useBuilder true when Lombok builder is enabled for the entity
@@ -1855,42 +2159,7 @@ public class EntityGenerator {
     private void addBuilderDefaultAnnotation(StringBuilder builder,
                                              boolean useBuilder,
                                              boolean hasInitializer) {
-        if (!useBuilder || !hasInitializer) {
-            return;
-        }
-
-        builder.append("    @Builder.Default\n");
-    }
-
-    /**
-     * Resolves the inline boolean default initializer for a column.
-     *
-     * @param column the source column metadata
-     * @param columnName the physical column name used for logging
-     * @return {@code "true"} or {@code "false"} when a supported boolean default exists, otherwise {@code null}
-     */
-    private String resolveBooleanDefaultInitializer(Column column, String columnName) {
-        if (column == null) {
-            return null;
-        }
-
-        String javaType = toSimpleJavaType(column.getJavaType());
-        if (!"Boolean".equals(javaType) || column.getDefaultValue() == null) {
-            return null;
-        }
-
-        String defaultValue = column.getDefaultValue().trim().toLowerCase(Locale.ROOT);
-
-        if (defaultValue.equals("true") || defaultValue.equals("1")) {
-            return "true";
-        }
-
-        if (defaultValue.equals("false") || defaultValue.equals("0")) {
-            return "false";
-        }
-
-        log.warn("Boolean column '{}' has an unsupported default value: {}", columnName, defaultValue);
-        return null;
+        // Intentionally empty.
     }
 
 
@@ -1938,28 +2207,8 @@ public class EntityGenerator {
         return false;
     }
 
-
     /**
-     * Checks whether a column is mapped as Long from a numeric(19) or decimal(19) SQL type.
-     *
-     * @param column the source column
-     * @param resolvedJavaType the resolved Java type
-     * @return true when the column is a numeric(19) long mapping
-     */
-    private boolean isNumeric19LongColumn(Column column, String resolvedJavaType) {
-        if (column == null || resolvedJavaType == null || !"Long".equals(resolvedJavaType)) {
-            return false;
-        }
-
-        String sqlType = column.getSqlType() == null ? "" : column.getSqlType().trim().toLowerCase(Locale.ROOT);
-
-        return (sqlType.equals("numeric(19)") || sqlType.equals("decimal(19)"))
-                && column.getScale() == 0;
-    }
-
-
-    /**
-     * Resolves the effective Java type for a column, overriding numeric(19) to Long.
+     * Resolves the effective Java type for a column.
      *
      * @param column the source column
      * @return the effective Java type
@@ -1969,14 +2218,155 @@ public class EntityGenerator {
             return "";
         }
 
-        String sqlType = column.getSqlType() == null ? "" : column.getSqlType().trim().toLowerCase(Locale.ROOT);
+        return column.getJavaType() == null ? "" : column.getJavaType();
+    }
 
-        if ((sqlType.equals("numeric(19)") || sqlType.equals("decimal(19)"))
-                && column.getScale() == 0) {
-            return "Long";
+    /**
+     * Describes how a foreign key column should be generated in the entity model.
+     */
+    private enum ForeignKeyGenerationStrategy {
+        SCALAR,
+        RELATION,
+        COMPOSITE_MAPS_ID_RELATION,
+        UNRESOLVED_SCALAR
+    }
+
+    /**
+     * Resolves the generation strategy for a foreign key column.
+     * <p>
+     * This method is the single decision point that determines whether a foreign key
+     * should be generated as:
+     * <ul>
+     *     <li>a plain scalar id field</li>
+     *     <li>a standard owning-side relation</li>
+     *     <li>a composite-key {@code @MapsId} relation</li>
+     *     <li>an unresolved scalar fallback</li>
+     * </ul>
+     *
+     * @param table the source table
+     * @param column the foreign key column to evaluate
+     * @return the resolved generation strategy
+     */
+    private ForeignKeyGenerationStrategy resolveForeignKeyGenerationStrategy(Table table, Column column) {
+        if (table == null || column == null || !column.isForeignKey()) {
+            return ForeignKeyGenerationStrategy.SCALAR;
         }
 
-        return column.getJavaType() == null ? "" : column.getJavaType();
+        if (shouldGenerateCompositeMapsIdRelation(table, column)) {
+            return ForeignKeyGenerationStrategy.COMPOSITE_MAPS_ID_RELATION;
+        }
+
+        Optional<Relationship> relationship = findRelationshipForColumn(table, column);
+
+        if (relationship.isEmpty()) {
+            return ForeignKeyGenerationStrategy.UNRESOLVED_SCALAR;
+        }
+
+        if (shouldKeepForeignKeyAsScalar(table, column, relationship.get())) {
+            return ForeignKeyGenerationStrategy.SCALAR;
+        }
+
+        return ForeignKeyGenerationStrategy.RELATION;
+    }
+
+    /**
+     * Checks whether the foreign key column should be generated as a composite-key
+     * {@code @MapsId} relation.
+     *
+     * @param table the source table
+     * @param column the foreign key column
+     * @return true when the FK participates in a composite primary key and should
+     *         become a {@code @MapsId} relation
+     */
+    private boolean shouldGenerateCompositeMapsIdRelation(Table table, Column column) {
+        if (table == null || column == null) {
+            return false;
+        }
+
+        if (!hasCompositePrimaryKey(table)) {
+            return false;
+        }
+
+        List<Column> primaryKeyColumns = getPrimaryKeyColumns(table);
+
+        if (!isCompositeKeyColumn(column, primaryKeyColumns)) {
+            return false;
+        }
+
+        return findRelationshipForColumn(table, column).isPresent()
+                || inferCompositePkRelationship(table, column).isPresent();
+    }
+
+    /**
+     * Checks whether a resolved foreign key should remain a scalar field instead of
+     * becoming a JPA relation.
+     *
+     * @param table the source table
+     * @param column the foreign key column
+     * @param relationship the resolved relationship metadata
+     * @return true when the FK should remain scalar
+     */
+    private boolean shouldKeepForeignKeyAsScalar(Table table, Column column, Relationship relationship) {
+        if (isI18nParentOrLanguageRelation(table, relationship)) {
+            return false;
+        }
+
+        return isCrossSchemaRelationship(table, relationship);
+    }
+
+
+    /**
+     * Checks whether the relationship is the typical i18n relation to a parent entity
+     * or to the languages table.
+     *
+     * @param table the source table
+     * @param relationship the resolved relationship metadata
+     * @return true when the FK should remain a relation because it is part of the i18n model
+     */
+    private boolean isI18nParentOrLanguageRelation(Table table, Relationship relationship) {
+        if (table == null || relationship == null || table.getName() == null || relationship.getTargetTable() == null) {
+            return false;
+        }
+
+        String sourceTableName = stripSchema(table.getName()).toLowerCase(Locale.ROOT);
+        if (!sourceTableName.contains("i18n")) {
+            return false;
+        }
+
+        String targetTableName = stripSchema(relationship.getTargetTable()).toLowerCase(Locale.ROOT);
+
+        if (targetTableName.equals("language") || targetTableName.equals("languages")) {
+            return true;
+        }
+
+        String baseTableName = sourceTableName
+                .replace("_i18n", "")
+                .replace("i18n", "")
+                .trim();
+
+        return !baseTableName.isBlank() && targetTableName.equals(baseTableName);
+    }
+
+    /**
+     * Checks whether the relationship points to a table in a different schema.
+     *
+     * @param table the source table
+     * @param relationship the resolved relationship metadata
+     * @return true when source and target tables belong to different schemas
+     */
+    private boolean isCrossSchemaRelationship(Table table, Relationship relationship) {
+        if (table == null || relationship == null) {
+            return false;
+        }
+
+        String sourceSchema = extractSchema(table.getName());
+        String targetSchema = extractSchema(relationship.getTargetTable());
+
+        if (sourceSchema == null || targetSchema == null) {
+            return false;
+        }
+
+        return !sameSchema(sourceSchema, targetSchema);
     }
 
 

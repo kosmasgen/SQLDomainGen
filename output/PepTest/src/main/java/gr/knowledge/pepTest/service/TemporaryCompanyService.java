@@ -2,6 +2,7 @@ package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.TemporaryCompanyDto;
 import java.util.List;
+import java.math.BigInteger;
 
 /**
  * Service contract for {@code TemporaryCompany} domain operations.
@@ -9,23 +10,20 @@ import java.util.List;
 public interface TemporaryCompanyService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all temporary companies.
      * @return non-null list of {@link TemporaryCompanyDto}
      */
-    List<TemporaryCompanyDto> getAllTemporaryCompany();
+    List<TemporaryCompanyDto> getAllTemporaryCompanies();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link TemporaryCompanyDto}
      */
-    TemporaryCompanyDto getTemporaryCompanyById(Long id);
+    TemporaryCompanyDto getTemporaryCompanyById(BigInteger id);
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link TemporaryCompanyDto}
      */
@@ -33,20 +31,17 @@ public interface TemporaryCompanyService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link TemporaryCompanyDto}
      */
-    TemporaryCompanyDto updateTemporaryCompany(Long id, TemporaryCompanyDto dto);
+    TemporaryCompanyDto updateTemporaryCompany(BigInteger id, TemporaryCompanyDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
-    void deleteTemporaryCompany(Long id);
+    void deleteTemporaryCompany(BigInteger id);
 }

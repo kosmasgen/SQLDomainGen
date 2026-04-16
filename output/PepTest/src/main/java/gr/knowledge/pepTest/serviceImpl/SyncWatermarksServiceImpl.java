@@ -5,17 +5,16 @@ import gr.knowledge.pepTest.mapper.SyncWatermarksMapper;
 import gr.knowledge.pepTest.entity.SyncWatermarks;
 import gr.knowledge.pepTest.repository.SyncWatermarksRepository;
 import gr.knowledge.pepTest.service.SyncWatermarksService;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code SyncWatermarks} domain operations.
+ * Service implementation for {@code Sync Watermarks} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -27,75 +26,118 @@ public class SyncWatermarksServiceImpl implements SyncWatermarksService {
     private final SyncWatermarksMapper syncWatermarksMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link SyncWatermarksDto}
+     * Retrieves all sync watermarkses records.
+     * @return list of SyncWatermarksDto
      */
     @Override
-    public List<SyncWatermarksDto> getAllSyncWatermarks() {
-        log.info("Fetching all sync-watermarks.");
-        return syncWatermarksMapper.toDTO(syncWatermarksRepository.findAll());
+    public List<SyncWatermarksDto> getAllSyncWatermarkses() {
+        log.info("Fetching all sync watermarkses records.");
+        return syncWatermarksMapper.toDTOList(syncWatermarksRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link SyncWatermarksDto}
+     * Retrieves a sync watermarks record by id.
+     * @param id the sync watermarks id
+     * @return SyncWatermarksDto
      */
     @Override
     public SyncWatermarksDto getSyncWatermarksById(Long id) {
-        log.info("Fetching sync-watermarks with id: {}", id);
-        SyncWatermarks entity = syncWatermarksRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SyncWatermarks not found with id: " + id));
-        return syncWatermarksMapper.toDTO(entity);
+        log.info("Fetching sync watermarks with id: {}", id);
+
+        SyncWatermarks existingEntity = findSyncWatermarksByIdOrThrow(id);
+        return syncWatermarksMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new sync watermarks record.
      * @param dto input payload
      * @return created {@link SyncWatermarksDto}
      */
     @Override
     public SyncWatermarksDto createSyncWatermarks(SyncWatermarksDto dto) {
-        log.info("Creating sync-watermarks.");
+        log.info("Creating sync watermarks.");
+
+        validateSyncWatermarksCreateUniqueConstraints(dto);
+
         SyncWatermarks entity = syncWatermarksMapper.toEntity(dto);
-        SyncWatermarks saved = syncWatermarksRepository.save(entity);
-        return syncWatermarksMapper.toDTO(saved);
+        SyncWatermarks savedEntity = syncWatermarksRepository.save(entity);
+
+        return syncWatermarksMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing sync watermarks record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param id the sync watermarks id
+     * @param dto input payload with partial fields
      * @return updated {@link SyncWatermarksDto}
      */
     @Override
     public SyncWatermarksDto updateSyncWatermarks(Long id, SyncWatermarksDto dto) {
-        log.info("Updating sync-watermarks with id: {}", id);
-        syncWatermarksRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SyncWatermarks not found with id: " + id));
-        SyncWatermarks entity = syncWatermarksMapper.toEntity(dto);
-        entity.setId(id);
-        SyncWatermarks saved = syncWatermarksRepository.save(entity);
-        return syncWatermarksMapper.toDTO(saved);
+        log.info("Updating sync watermarks with id: {}", id);
+
+        SyncWatermarks existingEntity = findSyncWatermarksByIdOrThrow(id);
+        syncWatermarksMapper.partialUpdate(existingEntity, dto);
+        SyncWatermarks savedEntity = syncWatermarksRepository.save(existingEntity);
+
+        return syncWatermarksMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a sync watermarks record by id.
+     * @param id the sync watermarks id
      */
     @Override
     public void deleteSyncWatermarks(Long id) {
-        log.info("Deleting sync-watermarks with id: {}", id);
-        syncWatermarksRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "SyncWatermarks not found with id: " + id));
+        log.info("Deleting sync watermarks with id: {}", id);
+
+        findSyncWatermarksByIdOrThrow(id);
         syncWatermarksRepository.deleteById(id);
     }
+
+    /**
+     * Validates unique constraints for create operations.
+     * @param dto input payload
+     */
+    private void validateSyncWatermarksCreateUniqueConstraints(SyncWatermarksDto dto) {
+
+        if (dto == null) {
+            return;
+        }
+
+        if (dto.getTableName() != null && syncWatermarksRepository.existsByTableName(dto.getTableName())) {
+            throw GeneratedRuntimeException.builder()
+                    .code(ErrorCodes.BAD_REQUEST)
+                    .entity("SyncWatermarks")
+                    .message("SyncWatermarks already exists with tableName: " + dto.getTableName())
+                    .build();
+        }
+    }
+
+    /**
+     * Finds an existing sync watermarks record by id or throws an exception.
+     * @param id the sync watermarks id
+     * @return existing SyncWatermarks entity
+     */
+    private SyncWatermarks findSyncWatermarksByIdOrThrow(Long id) {
+        return syncWatermarksRepository.findById(id)
+                .orElseThrow(() -> createSyncWatermarksNotFoundException(id));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the sync watermarks entity.
+     @param id the sync watermarks id
+     @return runtime exception
+     */
+    private RuntimeException createSyncWatermarksNotFoundException(Long id) {
+        log.warn("SyncWatermarks not found with id: {}", id);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("SyncWatermarks")
+                .message("SyncWatermarks not found with id: " + id)
+                .build();
+    }
+
 }

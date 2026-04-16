@@ -5,12 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.entity.CompanyProfileI18nKey;
+import gr.knowledge.pepTest.dto.CompanyProfileDto;
 import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for CompanyProfileI18n.
@@ -22,25 +23,27 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CompanyProfileI18nDto {
 
-    @NotNull
-    private UUID companyProfileId;
+    private CompanyProfileI18nKey id;
 
     @NotNull
-    private UUID languageId;
+    private CompanyProfileDto companyProfile;
+
+    @NotNull
+    private LanguagesDto language;
 
     @NotNull
     private Boolean recDeleted;
 
-    @Size(max = 255)
+    @Size(max = 1000)
     private String name;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String addressCity;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String addressRegion;
 
-    @Size(max = 255)
+    @Size(max = 100)
     private String addressStreet;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -49,7 +52,6 @@ public class CompanyProfileI18nDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
-    @Size(max = 255)
     private String objective;
 
 }

@@ -5,18 +5,17 @@ import gr.knowledge.pepTest.mapper.UserContactinfoMapper;
 import gr.knowledge.pepTest.entity.UserContactinfo;
 import gr.knowledge.pepTest.repository.UserContactinfoRepository;
 import gr.knowledge.pepTest.service.UserContactinfoService;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
 import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code UserContactinfo} domain operations.
+ * Service implementation for {@code User Contactinfo} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -28,75 +27,97 @@ public class UserContactinfoServiceImpl implements UserContactinfoService {
     private final UserContactinfoMapper userContactinfoMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link UserContactinfoDto}
+     * Retrieves all user contactinfos records.
+     * @return list of UserContactinfoDto
      */
     @Override
-    public List<UserContactinfoDto> getAllUserContactinfo() {
-        log.info("Fetching all user-contactinfo.");
-        return userContactinfoMapper.toDTO(userContactinfoRepository.findAll());
+    public List<UserContactinfoDto> getAllUserContactinfos() {
+        log.info("Fetching all user contactinfos records.");
+        return userContactinfoMapper.toDTOList(userContactinfoRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link UserContactinfoDto}
+     * Retrieves a user contactinfo record by id.
+     * @param id the user contactinfo id
+     * @return UserContactinfoDto
      */
     @Override
     public UserContactinfoDto getUserContactinfoById(UUID id) {
-        log.info("Fetching user-contactinfo with id: {}", id);
-        UserContactinfo entity = userContactinfoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "UserContactinfo not found with id: " + id));
-        return userContactinfoMapper.toDTO(entity);
+        log.info("Fetching user contactinfo with id: {}", id);
+
+        UserContactinfo existingEntity = findUserContactinfoByIdOrThrow(id);
+        return userContactinfoMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new user contactinfo record.
      * @param dto input payload
      * @return created {@link UserContactinfoDto}
      */
     @Override
     public UserContactinfoDto createUserContactinfo(UserContactinfoDto dto) {
-        log.info("Creating user-contactinfo.");
+        log.info("Creating user contactinfo.");
+
         UserContactinfo entity = userContactinfoMapper.toEntity(dto);
-        UserContactinfo saved = userContactinfoRepository.save(entity);
-        return userContactinfoMapper.toDTO(saved);
+        UserContactinfo savedEntity = userContactinfoRepository.save(entity);
+
+        return userContactinfoMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing user contactinfo record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param id the user contactinfo id
+     * @param dto input payload with partial fields
      * @return updated {@link UserContactinfoDto}
      */
     @Override
     public UserContactinfoDto updateUserContactinfo(UUID id, UserContactinfoDto dto) {
-        log.info("Updating user-contactinfo with id: {}", id);
-        userContactinfoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "UserContactinfo not found with id: " + id));
-        UserContactinfo entity = userContactinfoMapper.toEntity(dto);
-        entity.setId(id);
-        UserContactinfo saved = userContactinfoRepository.save(entity);
-        return userContactinfoMapper.toDTO(saved);
+        log.info("Updating user contactinfo with id: {}", id);
+
+        UserContactinfo existingEntity = findUserContactinfoByIdOrThrow(id);
+        userContactinfoMapper.partialUpdate(existingEntity, dto);
+        UserContactinfo savedEntity = userContactinfoRepository.save(existingEntity);
+
+        return userContactinfoMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a user contactinfo record by id.
+     * @param id the user contactinfo id
      */
     @Override
     public void deleteUserContactinfo(UUID id) {
-        log.info("Deleting user-contactinfo with id: {}", id);
-        userContactinfoRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "UserContactinfo not found with id: " + id));
+        log.info("Deleting user contactinfo with id: {}", id);
+
+        findUserContactinfoByIdOrThrow(id);
         userContactinfoRepository.deleteById(id);
     }
+
+    /**
+     * Finds an existing user contactinfo record by id or throws an exception.
+     * @param id the user contactinfo id
+     * @return existing UserContactinfo entity
+     */
+    private UserContactinfo findUserContactinfoByIdOrThrow(UUID id) {
+        return userContactinfoRepository.findById(id)
+                .orElseThrow(() -> createUserContactinfoNotFoundException(id));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the user contactinfo entity.
+     @param id the user contactinfo id
+     @return runtime exception
+     */
+    private RuntimeException createUserContactinfoNotFoundException(UUID id) {
+        log.warn("UserContactinfo not found with id: {}", id);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("UserContactinfo")
+                .message("UserContactinfo not found with id: " + id)
+                .build();
+    }
+
 }

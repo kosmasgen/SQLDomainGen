@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.CompanyStatusi18nDto;
-import gr.knowledge.pepTest.entity.CompanyStatusi18nPK;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code CompanyStatusi18n} domain operations.
@@ -10,23 +10,21 @@ import java.util.List;
 public interface CompanyStatusi18nService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all company statusi18ns.
      * @return non-null list of {@link CompanyStatusi18nDto}
      */
-    List<CompanyStatusi18nDto> getAllCompanyStatusi18n();
+    List<CompanyStatusi18nDto> getAllCompanyStatusi18ns();
 
     /**
      * Retrieves a record by id.
-     *
-     * @param id the record id
+     * @param companyStatusId the company_status_id value
+     * @param languageId the language_id value
      * @return the matching {@link CompanyStatusi18nDto}
      */
-    CompanyStatusi18nDto getCompanyStatusi18nById(CompanyStatusi18nPK id);
+    CompanyStatusi18nDto getCompanyStatusi18nById(UUID companyStatusId, UUID languageId);
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link CompanyStatusi18nDto}
      */
@@ -34,20 +32,19 @@ public interface CompanyStatusi18nService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param companyStatusId the company_status_id value
+     * @param languageId the language_id value
+     * @param dto input payload with partial fields
      * @return updated {@link CompanyStatusi18nDto}
      */
-    CompanyStatusi18nDto updateCompanyStatusi18n(CompanyStatusi18nPK id, CompanyStatusi18nDto dto);
+    CompanyStatusi18nDto updateCompanyStatusi18n(UUID companyStatusId, UUID languageId, CompanyStatusi18nDto dto);
 
     /**
      * Deletes a record by id.
-     *
-     * @param id the record id
+     * @param companyStatusId the company_status_id value
+     * @param languageId the language_id value
      */
-    void deleteCompanyStatusi18n(CompanyStatusi18nPK id);
+    void deleteCompanyStatusi18n(UUID companyStatusId, UUID languageId);
 }

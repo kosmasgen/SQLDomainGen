@@ -5,12 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.dto.CompanyProfileDto;
 
 /**
  * Data transfer object for WorkingHours.
@@ -22,14 +22,13 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class WorkingHoursDto {
 
-    @NotNull
     private Long id;
 
     @NotNull
-    private UUID companyId;
+    private CompanyDto company;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 20)
     private String dayOfWeek;
 
     @JsonFormat(pattern = "HH:mm:ss")
@@ -41,6 +40,6 @@ public class WorkingHoursDto {
     @NotNull
     private Boolean isClosed;
 
-    private UUID profileId;
+    private CompanyProfileDto profile;
 
 }

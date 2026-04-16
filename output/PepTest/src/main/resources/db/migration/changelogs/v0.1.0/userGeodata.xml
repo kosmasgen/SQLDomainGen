@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/userGeodata.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="create-user-geodata-table-and-audit" author="kosmasgenaris@knowledge.gr">
+        <createTable tableName="user_geodata" schemaName="pep_schema">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" primaryKeyName="user_geodata_pkey" nullable="false"/>
+            </column>
+            <column name="chamber_id" type="INTEGER">
+            </column>
+            <column name="company_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="latitude" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="longitude" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+
+
+
+
+        <addForeignKeyConstraint
+                                 baseTableName="user_geodata"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_user_geodata_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                baseTableSchemaName="pep_schema"
+                                referencedTableSchemaName="pep_schema"/>
+
+        <createTable tableName="user_geodata_aud" schemaName="audit">
+            <column name="id" type="UUID"/>
+            <column name="chamber_id" type="INTEGER"/>
+            <column name="company_id" type="UUID"/>
+            <column name="username" type="TEXT"/>
+            <column name="latitude" type="VARCHAR(255)"/>
+            <column name="longitude" type="VARCHAR(255)"/>
+            <column name="date_created" type="TIMESTAMP"/>
+            <column name="last_updated" type="TIMESTAMP"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+        </createTable>
+
+        <addPrimaryKey tableName="user_geodata_aud"
+                       columnNames="id, rev"
+                       constraintName="pk_user_geodata_aud"
+                       schemaName="audit"/>
+
+        <addForeignKeyConstraint baseTableName="user_geodata_aud"
+                                 baseColumnNames="rev"
+                                 constraintName="fk_user_geodata_aud_revinfo"
+                                 referencedTableName="REVINFO"
+                                 referencedColumnNames="REV"
+                                 baseTableSchemaName="audit"
+                                 referencedTableSchemaName="audit"/>
+
+    </changeSet>
+
+</databaseChangeLog>

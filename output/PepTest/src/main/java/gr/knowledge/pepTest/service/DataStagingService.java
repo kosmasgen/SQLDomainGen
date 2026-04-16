@@ -9,15 +9,13 @@ import java.util.List;
 public interface DataStagingService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all data stagings.
      * @return non-null list of {@link DataStagingDto}
      */
-    List<DataStagingDto> getAllDataStaging();
+    List<DataStagingDto> getAllDataStagings();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link DataStagingDto}
      */
@@ -25,7 +23,6 @@ public interface DataStagingService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link DataStagingDto}
      */
@@ -33,19 +30,16 @@ public interface DataStagingService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link DataStagingDto}
      */
     DataStagingDto updateDataStaging(Long id, DataStagingDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteDataStaging(Long id);

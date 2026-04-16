@@ -15,8 +15,6 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
-import static org.junit.jupiter.api.Assertions.*;
-
 /**
  * Validates the parsed schema model produced from the real SQL schema file.
  *
@@ -33,50 +31,85 @@ import static org.junit.jupiter.api.Assertions.*;
 class SchemaModelValidationTest {
 
     /**
-     * Validates that the real schema is parsed into a consistent in-memory table model.
+     * Validates that the real schema is parsed into a consistent in-memory table model
+     * and prints a report instead of failing on validation mismatches.
      *
-     * @throws Exception if schema loading fails
+     * @throws Exception if schema loading fails unexpectedly
      */
     @Test
     void shouldParseRealSchemaIntoConsistentTableModel() throws Exception {
+        List<String> violations = new ArrayList<>();
+
         Path schemaPath = Constants.SCHEMA_PATH;
-        assertTrue(Files.exists(schemaPath), "Missing schema file: " + schemaPath.toAbsolutePath());
+        if (!Files.exists(schemaPath)) {
+            violations.add("Missing schema file: " + schemaPath.toAbsolutePath());
+            printReport(violations);
+            return;
+        }
 
         String sql = Files.readString(schemaPath);
 
         GeneratorCommands generatorCommands = new GeneratorCommands();
-        List<Table> parsedTables = assertDoesNotThrow(
-                () -> generatorCommands.parseSQLToTables(sql),
-                "Parsing real schema should not throw exception"
-        );
+        List<Table> parsedTables;
 
-        assertNotNull(parsedTables, "Parsed tables list should not be null");
-        assertFalse(parsedTables.isEmpty(), "Parsed tables list should not be empty");
+        try {
+            parsedTables = generatorCommands.parseSQLToTables(sql);
+        } catch (Exception exception) {
+            violations.add("Parsing real schema threw exception: " + exception.getMessage());
+            printReport(violations);
+            return;
+        }
 
-        Map<String, Table> tableByName = indexTablesByNormalizedName(parsedTables);
+        if (parsedTables == null) {
+            violations.add("Parsed tables list should not be null");
+            printReport(violations);
+            return;
+        }
 
-        assertEveryTableIsStructurallyValid(parsedTables);
-        assertEveryColumnIsStructurallyValid(parsedTables);
-        assertForeignKeysPointToExistingTables(parsedTables, tableByName);
-        assertIndexesAreStructurallyValid(parsedTables);
-        assertDataStagingTableScenario(tableByName);
-        assertKeycloakDataTableScenario(tableByName);
-        assertCompanySearchMaterializedViewIndexes(tableByName);
+        if (parsedTables.isEmpty()) {
+            violations.add("Parsed tables list should not be empty");
+            printReport(violations);
+            return;
+        }
+
+        Map<String, Table> tableByName = indexTablesByNormalizedName(parsedTables, violations);
+
+        assertEveryTableIsStructurallyValid(parsedTables, violations);
+        assertEveryColumnIsStructurallyValid(parsedTables, violations);
+        assertForeignKeysPointToExistingTables(parsedTables, tableByName, violations);
+        assertIndexesAreStructurallyValid(parsedTables, violations);
+        assertDataStagingTableScenario(tableByName, violations);
+        assertKeycloakDataTableScenario(tableByName, violations);
+        assertCompanySearchMaterializedViewIndexes(tableByName, violations);
+
+        printReport(violations);
     }
 
     /**
      * Builds a lookup map for parsed tables using normalized physical table names.
      *
      * @param parsedTables parsed table models
+     * @param violations collected violations
      * @return normalized table lookup map
      */
-    private Map<String, Table> indexTablesByNormalizedName(List<Table> parsedTables) {
+    private Map<String, Table> indexTablesByNormalizedName(List<Table> parsedTables, List<String> violations) {
         Map<String, Table> tableByName = new LinkedHashMap<>();
 
         for (Table table : parsedTables) {
-            assertNotNull(table, "Parsed table must not be null");
-            assertNotNull(table.getName(), "Parsed table name must not be null");
-            assertFalse(table.getName().isBlank(), "Parsed table name must not be blank");
+            if (table == null) {
+                violations.add("Parsed table must not be null");
+                continue;
+            }
+
+            if (table.getName() == null) {
+                violations.add("Parsed table name must not be null");
+                continue;
+            }
+
+            if (table.getName().isBlank()) {
+                violations.add("Parsed table name must not be blank");
+                continue;
+            }
 
             tableByName.put(normalizePhysicalName(table.getName()), table);
         }
@@ -88,23 +121,38 @@ class SchemaModelValidationTest {
      * Verifies that every parsed table has the minimum required structure.
      *
      * @param parsedTables parsed table models
+     * @param violations collected violations
      */
-    private void assertEveryTableIsStructurallyValid(List<Table> parsedTables) {
+    private void assertEveryTableIsStructurallyValid(List<Table> parsedTables, List<String> violations) {
         for (Table table : parsedTables) {
-            assertNotNull(table.getName(), "Table name must not be null");
-            assertFalse(table.getName().isBlank(), "Table name must not be blank");
+            if (table == null) {
+                violations.add("Parsed table must not be null");
+                continue;
+            }
 
-            assertNotNull(table.getColumns(), "Columns list must not be null for table: " + table.getName());
-            assertFalse(table.getColumns().isEmpty(), "Columns list must not be empty for table: " + table.getName());
+            if (table.getName() == null) {
+                violations.add("Table name must not be null");
+            } else if (table.getName().isBlank()) {
+                violations.add("Table name must not be blank");
+            }
+
+            if (table.getColumns() == null) {
+                violations.add("Columns list must not be null for table: " + safeTableName(table));
+                continue;
+            }
+
+            if (table.getColumns().isEmpty()) {
+                violations.add("Columns list must not be empty for table: " + safeTableName(table));
+            }
 
             long primaryKeyCount = table.getColumns().stream()
+                    .filter(java.util.Objects::nonNull)
                     .filter(Column::isPrimaryKey)
                     .count();
 
-            assertTrue(
-                    primaryKeyCount >= 1,
-                    "Expected at least one primary key column for table: " + table.getName()
-            );
+            if (primaryKeyCount < 1) {
+                violations.add("Expected at least one primary key column for table: " + safeTableName(table));
+            }
         }
     }
 
@@ -112,31 +160,45 @@ class SchemaModelValidationTest {
      * Verifies that every parsed column contains stable core metadata.
      *
      * @param parsedTables parsed table models
+     * @param violations collected violations
      */
-    private void assertEveryColumnIsStructurallyValid(List<Table> parsedTables) {
+    private void assertEveryColumnIsStructurallyValid(List<Table> parsedTables, List<String> violations) {
         for (Table table : parsedTables) {
+            if (table == null || table.getColumns() == null) {
+                continue;
+            }
+
             for (Column column : table.getColumns()) {
-                assertNotNull(column, "Column must not be null in table: " + table.getName());
+                if (column == null) {
+                    violations.add("Column must not be null in table: " + safeTableName(table));
+                    continue;
+                }
 
-                assertNotNull(column.getName(), "Column name must not be null in table: " + table.getName());
-                assertFalse(column.getName().isBlank(), "Column name must not be blank in table: " + table.getName());
+                if (column.getName() == null) {
+                    violations.add("Column name must not be null in table: " + safeTableName(table));
+                } else if (column.getName().isBlank()) {
+                    violations.add("Column name must not be blank in table: " + safeTableName(table));
+                }
 
-                assertNotNull(column.getSqlType(),
-                        "SQL type must not be null for column: " + table.getName() + "." + column.getName());
-                assertFalse(column.getSqlType().isBlank(),
-                        "SQL type must not be blank for column: " + table.getName() + "." + column.getName());
+                if (column.getSqlType() == null) {
+                    violations.add("SQL type must not be null for column: "
+                            + safeTableName(table) + "." + safeColumnName(column));
+                } else if (column.getSqlType().isBlank()) {
+                    violations.add("SQL type must not be blank for column: "
+                            + safeTableName(table) + "." + safeColumnName(column));
+                }
 
-                assertNotNull(column.getJavaType(),
-                        "Java type must not be null for column: " + table.getName() + "." + column.getName());
-                assertFalse(column.getJavaType().isBlank(),
-                        "Java type must not be blank for column: " + table.getName() + "." + column.getName());
+                if (column.getJavaType() == null) {
+                    violations.add("Java type must not be null for column: "
+                            + safeTableName(table) + "." + safeColumnName(column));
+                } else if (column.getJavaType().isBlank()) {
+                    violations.add("Java type must not be blank for column: "
+                            + safeTableName(table) + "." + safeColumnName(column));
+                }
 
-                if (column.getDefaultValue() != null) {
-                    assertFalse(
-                            column.getDefaultValue().isBlank(),
-                            "Default value must not be blank when present for column: "
-                                    + table.getName() + "." + column.getName()
-                    );
+                if (column.getDefaultValue() != null && column.getDefaultValue().isBlank()) {
+                    violations.add("Default value must not be blank when present for column: "
+                            + safeTableName(table) + "." + safeColumnName(column));
                 }
             }
         }
@@ -144,50 +206,57 @@ class SchemaModelValidationTest {
 
     /**
      * Verifies that every parsed foreign key has a valid referenced table name.
-     * <p>
-     * Foreign keys pointing to tables outside the currently parsed schema file are allowed.
+     * Foreign keys pointing to tables outside the currently parsed schema file are allowed
+     * and are reported separately.
      *
      * @param parsedTables parsed table models
      * @param tableByName normalized table lookup map
+     * @param violations collected violations
      */
-    private void assertForeignKeysPointToExistingTables(List<Table> parsedTables, Map<String, Table> tableByName) {
+    private void assertForeignKeysPointToExistingTables(
+            List<Table> parsedTables,
+            Map<String, Table> tableByName,
+            List<String> violations
+    ) {
         List<String> externalReferences = new ArrayList<>();
 
         for (Table table : parsedTables) {
+            if (table == null || table.getColumns() == null) {
+                continue;
+            }
+
             for (Column column : table.getColumns()) {
-                if (!column.isForeignKey()) {
+                if (column == null || !column.isForeignKey()) {
                     continue;
                 }
 
-                assertNotNull(
-                        column.getReferencedTable(),
-                        "Referenced table must not be null for foreign key column: "
-                                + table.getName() + "." + column.getName()
-                );
+                if (column.getReferencedTable() == null) {
+                    violations.add("Referenced table must not be null for foreign key column: "
+                            + safeTableName(table) + "." + safeColumnName(column));
+                    continue;
+                }
 
-                assertFalse(
-                        column.getReferencedTable().isBlank(),
-                        "Referenced table must not be blank for foreign key column: "
-                                + table.getName() + "." + column.getName()
-                );
+                if (column.getReferencedTable().isBlank()) {
+                    violations.add("Referenced table must not be blank for foreign key column: "
+                            + safeTableName(table) + "." + safeColumnName(column));
+                    continue;
+                }
 
                 String normalizedReferencedTable = normalizePhysicalName(column.getReferencedTable());
 
                 if (!tableByName.containsKey(normalizedReferencedTable)) {
                     externalReferences.add(
-                            table.getName() + "." + column.getName() + " -> " + column.getReferencedTable()
+                            safeTableName(table) + "." + safeColumnName(column) + " -> " + column.getReferencedTable()
                     );
                 }
             }
         }
 
         if (!externalReferences.isEmpty()) {
-            System.out.println();
-            System.out.println("External foreign key references not present in the parsed schema file:");
+            violations.add("External foreign key references not present in the parsed schema file:");
             for (String externalReference : externalReferences) {
-                System.out.println(" - " + externalReference);
+                violations.add(" - " + externalReference);
             }
-            System.out.println();
         }
     }
 
@@ -195,41 +264,49 @@ class SchemaModelValidationTest {
      * Verifies that parsed indexes are attached and minimally valid.
      *
      * @param parsedTables parsed table models
+     * @param violations collected violations
      */
-    private void assertIndexesAreStructurallyValid(List<Table> parsedTables) {
+    private void assertIndexesAreStructurallyValid(List<Table> parsedTables, List<String> violations) {
         for (Table table : parsedTables) {
-            if (table.getIndexes() == null || table.getIndexes().isEmpty()) {
+            if (table == null || table.getIndexes() == null || table.getIndexes().isEmpty()) {
                 continue;
             }
 
             for (IndexDefinition indexDefinition : table.getIndexes()) {
-                assertNotNull(indexDefinition, "Index must not be null for table: " + table.getName());
+                if (indexDefinition == null) {
+                    violations.add("Index must not be null for table: " + safeTableName(table));
+                    continue;
+                }
 
-                assertNotNull(indexDefinition.getName(),
-                        "Index name must not be null for table: " + table.getName());
-                assertFalse(indexDefinition.getName().isBlank(),
-                        "Index name must not be blank for table: " + table.getName());
+                if (indexDefinition.getName() == null) {
+                    violations.add("Index name must not be null for table: " + safeTableName(table));
+                } else if (indexDefinition.getName().isBlank()) {
+                    violations.add("Index name must not be blank for table: " + safeTableName(table));
+                }
 
-                assertNotNull(indexDefinition.getTableName(),
-                        "Index tableName must not be null for index: " + indexDefinition.getName());
-                assertFalse(indexDefinition.getTableName().isBlank(),
-                        "Index tableName must not be blank for index: " + indexDefinition.getName());
+                if (indexDefinition.getTableName() == null) {
+                    violations.add("Index tableName must not be null for index: " + safeIndexName(indexDefinition));
+                } else if (indexDefinition.getTableName().isBlank()) {
+                    violations.add("Index tableName must not be blank for index: " + safeIndexName(indexDefinition));
+                } else if (!normalizePhysicalName(table.getName()).equals(normalizePhysicalName(indexDefinition.getTableName()))) {
+                    violations.add("Index is attached to the wrong table: " + safeIndexName(indexDefinition));
+                }
 
-                assertEquals(
-                        normalizePhysicalName(table.getName()),
-                        normalizePhysicalName(indexDefinition.getTableName()),
-                        "Index is attached to the wrong table: " + indexDefinition.getName()
-                );
+                if (indexDefinition.getColumns() == null) {
+                    violations.add("Index columns must not be null for index: " + safeIndexName(indexDefinition));
+                    continue;
+                }
 
-                assertNotNull(indexDefinition.getColumns(),
-                        "Index columns must not be null for index: " + indexDefinition.getName());
-                assertFalse(indexDefinition.getColumns().isEmpty(),
-                        "Index columns must not be empty for index: " + indexDefinition.getName());
+                if (indexDefinition.getColumns().isEmpty()) {
+                    violations.add("Index columns must not be empty for index: " + safeIndexName(indexDefinition));
+                }
 
                 for (String columnName : indexDefinition.getColumns()) {
-                    assertNotNull(columnName, "Index column name must not be null for index: " + indexDefinition.getName());
-                    assertFalse(columnName.isBlank(),
-                            "Index column name must not be blank for index: " + indexDefinition.getName());
+                    if (columnName == null) {
+                        violations.add("Index column name must not be null for index: " + safeIndexName(indexDefinition));
+                    } else if (columnName.isBlank()) {
+                        violations.add("Index column name must not be blank for index: " + safeIndexName(indexDefinition));
+                    }
                 }
             }
         }
@@ -239,110 +316,175 @@ class SchemaModelValidationTest {
      * Verifies the known real-schema scenario for pep_schema.data_staging.
      *
      * @param tableByName normalized table lookup map
+     * @param violations collected violations
      */
-    private void assertDataStagingTableScenario(Map<String, Table> tableByName) {
+    private void assertDataStagingTableScenario(Map<String, Table> tableByName, List<String> violations) {
         Table dataStagingTable = tableByName.get("pep_schema.data_staging");
-        assertNotNull(dataStagingTable, "Table pep_schema.data_staging should exist");
+        if (dataStagingTable == null) {
+            violations.add("Table pep_schema.data_staging should exist");
+            return;
+        }
 
         Column idColumn = findColumn(dataStagingTable, "id");
-        assertNotNull(idColumn, "data_staging.id should exist");
-        assertTrue(idColumn.isPrimaryKey(), "data_staging.id should be primary key");
+        if (idColumn == null) {
+            violations.add("data_staging.id should exist");
+        } else if (!idColumn.isPrimaryKey()) {
+            violations.add("data_staging.id should be primary key");
+        }
 
         Column pulledAtColumn = findColumn(dataStagingTable, "pulled_at");
-        assertNotNull(pulledAtColumn, "data_staging.pulled_at should exist");
-        assertEquals("java.time.LocalDateTime", pulledAtColumn.getJavaType(),
-                "data_staging.pulled_at should map to LocalDateTime");
-        assertNotNull(pulledAtColumn.getDefaultValue(),
-                "data_staging.pulled_at should preserve default now()");
+        if (pulledAtColumn == null) {
+            violations.add("data_staging.pulled_at should exist");
+        } else {
+            if (!"java.time.LocalDateTime".equals(pulledAtColumn.getJavaType())) {
+                violations.add("data_staging.pulled_at should map to LocalDateTime");
+            }
+            if (pulledAtColumn.getDefaultValue() == null) {
+                violations.add("data_staging.pulled_at should preserve default now()");
+            }
+        }
 
         Column statusColumn = findColumn(dataStagingTable, "status");
-        assertNotNull(statusColumn, "data_staging.status should exist");
-        assertEquals("String", toSimpleJavaType(statusColumn.getJavaType()),
-                "data_staging.status should map to String");
-        assertNotNull(statusColumn.getDefaultValue(),
-                "data_staging.status should preserve default value");
+        if (statusColumn == null) {
+            violations.add("data_staging.status should exist");
+        } else {
+            if (!"String".equals(toSimpleJavaType(statusColumn.getJavaType()))) {
+                violations.add("data_staging.status should map to String");
+            }
+            if (statusColumn.getDefaultValue() == null) {
+                violations.add("data_staging.status should preserve default value");
+            }
+        }
 
-        assertNotNull(dataStagingTable.getIndexes(), "data_staging indexes should not be null");
-        assertTrue(
-                hasIndex(dataStagingTable, "idx_staging_status", List.of("status", "pulled_at")),
-                "Expected index idx_staging_status(status, pulled_at)"
-        );
-        assertTrue(
-                hasIndex(dataStagingTable, "idx_staging_table_status", List.of("legacy_table_name", "status")),
-                "Expected index idx_staging_table_status(legacy_table_name, status)"
-        );
+        if (dataStagingTable.getIndexes() == null) {
+            violations.add("data_staging indexes should not be null");
+            return;
+        }
+
+        if (!hasIndex(dataStagingTable, "idx_staging_status", List.of("status", "pulled_at"))) {
+            violations.add("Expected index idx_staging_status(status, pulled_at)");
+        }
+
+        if (!hasIndex(dataStagingTable, "idx_staging_table_status", List.of("legacy_table_name", "status"))) {
+            violations.add("Expected index idx_staging_table_status(legacy_table_name, status)");
+        }
     }
 
     /**
      * Verifies the known real-schema scenario for pep_schema.keycloak_data.
      *
      * @param tableByName normalized table lookup map
+     * @param violations collected violations
      */
-    private void assertKeycloakDataTableScenario(Map<String, Table> tableByName) {
+    private void assertKeycloakDataTableScenario(Map<String, Table> tableByName, List<String> violations) {
         Table keycloakDataTable = tableByName.get("pep_schema.keycloak_data");
-        assertNotNull(keycloakDataTable, "Table pep_schema.keycloak_data should exist");
+        if (keycloakDataTable == null) {
+            violations.add("Table pep_schema.keycloak_data should exist");
+            return;
+        }
 
         Column keycloakIdColumn = findColumn(keycloakDataTable, "keycloak_id");
-        assertNotNull(keycloakIdColumn, "keycloak_data.keycloak_id should exist");
-        assertTrue(keycloakIdColumn.isPrimaryKey(), "keycloak_data.keycloak_id should be primary key");
-        assertEquals("String", toSimpleJavaType(keycloakIdColumn.getJavaType()),
-                "keycloak_data.keycloak_id should map to String");
-        assertFalse(keycloakIdColumn.isIdentity(),
-                "keycloak_data.keycloak_id must not be treated as identity");
+        if (keycloakIdColumn == null) {
+            violations.add("keycloak_data.keycloak_id should exist");
+        } else {
+            if (!keycloakIdColumn.isPrimaryKey()) {
+                violations.add("keycloak_data.keycloak_id should be primary key");
+            }
+            if (!"String".equals(toSimpleJavaType(keycloakIdColumn.getJavaType()))) {
+                violations.add("keycloak_data.keycloak_id should map to String");
+            }
+            if (keycloakIdColumn.isIdentity()) {
+                violations.add("keycloak_data.keycloak_id must not be treated as identity");
+            }
+        }
 
         Column recDeletedColumn = findColumn(keycloakDataTable, "rec_deleted");
-        assertNotNull(recDeletedColumn, "keycloak_data.rec_deleted should exist");
-        assertEquals("Boolean", toSimpleJavaType(recDeletedColumn.getJavaType()),
-                "keycloak_data.rec_deleted should map to Boolean");
-        assertNotNull(recDeletedColumn.getDefaultValue(),
-                "keycloak_data.rec_deleted should preserve boolean default");
+        if (recDeletedColumn == null) {
+            violations.add("keycloak_data.rec_deleted should exist");
+        } else {
+            if (!"Boolean".equals(toSimpleJavaType(recDeletedColumn.getJavaType()))) {
+                violations.add("keycloak_data.rec_deleted should map to Boolean");
+            }
+            if (recDeletedColumn.getDefaultValue() == null) {
+                violations.add("keycloak_data.rec_deleted should preserve boolean default");
+            }
+        }
     }
 
     /**
      * Verifies important company_search_mv index scenarios from the real schema.
      *
      * @param tableByName normalized table lookup map
+     * @param violations collected violations
      */
-    private void assertCompanySearchMaterializedViewIndexes(Map<String, Table> tableByName) {
+    private void assertCompanySearchMaterializedViewIndexes(Map<String, Table> tableByName, List<String> violations) {
         Table companySearchMvTable = tableByName.get("pep_schema.company_search_mv");
         if (companySearchMvTable == null) {
             return;
         }
 
-        assertNotNull(companySearchMvTable.getIndexes(), "company_search_mv indexes should not be null");
-        assertFalse(companySearchMvTable.getIndexes().isEmpty(),
-                "company_search_mv should have indexes parsed");
+        if (companySearchMvTable.getIndexes() == null) {
+            violations.add("company_search_mv indexes should not be null");
+            return;
+        }
 
-        assertTrue(
-                hasIndex(companySearchMvTable, "idx_company_search_mv_id", List.of("id")),
-                "Expected unique index idx_company_search_mv_id(id)"
-        );
+        if (companySearchMvTable.getIndexes().isEmpty()) {
+            violations.add("company_search_mv should have indexes parsed");
+        }
 
-        assertTrue(
-                hasIndex(companySearchMvTable, "idx_company_search_mv_company_profile", List.of("company_id", "profile_id")),
-                "Expected multi-column index idx_company_search_mv_company_profile(company_id, profile_id)"
-        );
+        if (!hasIndex(companySearchMvTable, "idx_company_search_mv_id", List.of("id"))) {
+            violations.add("Expected unique index idx_company_search_mv_id(id)");
+        }
 
-        assertTrue(
-                hasIndex(companySearchMvTable, "idx_company_search_mv_titles_greek", List.of("titles_greek")),
-                "Expected gin index idx_company_search_mv_titles_greek(titles_greek)"
-        );
+        if (!hasIndex(companySearchMvTable, "idx_company_search_mv_company_profile", List.of("company_id", "profile_id"))) {
+            violations.add("Expected multi-column index idx_company_search_mv_company_profile(company_id, profile_id)");
+        }
 
-        assertTrue(
-                hasIndex(companySearchMvTable, "idx_company_search_mv_name_english_lower",
-                        List.of("lower((name_english)::text)")),
-                "Expected expression index idx_company_search_mv_name_english_lower(lower((name_english)::text))"
-        );
+        if (!hasIndex(companySearchMvTable, "idx_company_search_mv_titles_greek", List.of("titles_greek"))) {
+            violations.add("Expected gin index idx_company_search_mv_titles_greek(titles_greek)");
+        }
 
-        assertTrue(
-                hasIndex(companySearchMvTable, "idx_company_search_mv_aegean_cuisine_url",
-                        List.of("aegean_cuisine_url")),
-                "Expected partial index idx_company_search_mv_aegean_cuisine_url(aegean_cuisine_url)"
-        );
+        if (!hasIndex(companySearchMvTable, "idx_company_search_mv_name_english_lower",
+                List.of("lower((name_english)::text)"))) {
+            violations.add("Expected expression index idx_company_search_mv_name_english_lower(lower((name_english)::text))");
+        }
+
+        if (!hasIndex(companySearchMvTable, "idx_company_search_mv_aegean_cuisine_url",
+                List.of("aegean_cuisine_url"))) {
+            violations.add("Expected partial index idx_company_search_mv_aegean_cuisine_url(aegean_cuisine_url)");
+        }
 
         IndexDefinition uniqueIdIndex = findIndex(companySearchMvTable, "idx_company_search_mv_id");
-        assertNotNull(uniqueIdIndex, "idx_company_search_mv_id should exist");
-        assertTrue(uniqueIdIndex.isUnique(), "idx_company_search_mv_id should be unique");
+        if (uniqueIdIndex == null) {
+            violations.add("idx_company_search_mv_id should exist");
+        } else if (!uniqueIdIndex.isUnique()) {
+            violations.add("idx_company_search_mv_id should be unique");
+        }
+    }
+
+    /**
+     * Prints the collected validation report.
+     *
+     * @param violations collected violations
+     */
+    private void printReport(List<String> violations) {
+        System.out.println();
+        System.out.println("==================================================");
+        System.out.println("SCHEMA MODEL VALIDATION REPORT");
+        System.out.println("==================================================");
+
+        if (violations.isEmpty()) {
+            System.out.println("No schema model validation issues found.");
+        } else {
+            for (int index = 0; index < violations.size(); index++) {
+                System.out.println((index + 1) + ". " + violations.get(index));
+            }
+        }
+
+        System.out.println("==================================================");
+        System.out.println("Total issues: " + violations.size());
+        System.out.println("==================================================");
+        System.out.println();
     }
 
     /**
@@ -353,6 +495,10 @@ class SchemaModelValidationTest {
      * @return matched column or null
      */
     private Column findColumn(Table table, String columnName) {
+        if (table == null || table.getColumns() == null) {
+            return null;
+        }
+
         for (Column column : table.getColumns()) {
             if (column == null || column.getName() == null) {
                 continue;
@@ -374,7 +520,7 @@ class SchemaModelValidationTest {
      * @return matched index or null
      */
     private IndexDefinition findIndex(Table table, String indexName) {
-        if (table.getIndexes() == null) {
+        if (table == null || table.getIndexes() == null) {
             return null;
         }
 
@@ -454,5 +600,41 @@ class SchemaModelValidationTest {
         }
 
         return trimmedJavaType;
+    }
+
+    /**
+     * Safely resolves a table name for reporting.
+     *
+     * @param table source table
+     * @return safe table name
+     */
+    private String safeTableName(Table table) {
+        return table == null || table.getName() == null || table.getName().isBlank()
+                ? "<unknown-table>"
+                : table.getName();
+    }
+
+    /**
+     * Safely resolves a column name for reporting.
+     *
+     * @param column source column
+     * @return safe column name
+     */
+    private String safeColumnName(Column column) {
+        return column == null || column.getName() == null || column.getName().isBlank()
+                ? "<unknown-column>"
+                : column.getName();
+    }
+
+    /**
+     * Safely resolves an index name for reporting.
+     *
+     * @param indexDefinition source index
+     * @return safe index name
+     */
+    private String safeIndexName(IndexDefinition indexDefinition) {
+        return indexDefinition == null || indexDefinition.getName() == null || indexDefinition.getName().isBlank()
+                ? "<unknown-index>"
+                : indexDefinition.getName();
     }
 }

@@ -3,10 +3,10 @@ package gr.knowledge.pepTest.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "corporate_status_view_rules")
 @Getter
 @Setter
@@ -16,7 +16,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class CorporateStatusViewRules {
 
     @EmbeddedId
-    private CorporateStatusViewRulesPK id;
+    private CorporateStatusViewRulesKey id;
 
     @MapsId("corporateStatusId")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -34,11 +34,9 @@ public class CorporateStatusViewRules {
     @Column(name = "show_contact_info")
     private Boolean showContactInfo;
 
-    @CreationTimestamp
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 

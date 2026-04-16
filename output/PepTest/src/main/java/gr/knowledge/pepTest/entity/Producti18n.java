@@ -3,10 +3,10 @@ package gr.knowledge.pepTest.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "producti18n")
 @Getter
 @Setter
@@ -16,12 +16,12 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class Producti18n {
 
     @EmbeddedId
-    private Producti18nPK id;
+    private Producti18nKey id;
 
     @Column(name = "version", nullable = false)
     private Integer version;
 
-    @Column(name = "description", length = 255, nullable = false)
+    @Column(name = "description", length = 500, nullable = false)
     private String description;
 
     @Column(name = "chamber_i18n_id", nullable = false)
@@ -37,18 +37,16 @@ public class Producti18n {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
-    @Column(name = "short_description", length = 255)
+    @Column(name = "short_description", length = 35)
     private String shortDescription;
 
-    @CreationTimestamp
     @Column(name = "date_created", nullable = false, updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
 }

@@ -5,6 +5,10 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
+/**
+ * Repository for {@link CompanyArticleFile} entity.
+ * Provides basic CRUD operations using JpaRepository.
+ */
 @Repository
 public interface CompanyArticleFileRepository extends JpaRepository<CompanyArticleFile, UUID> {
 }

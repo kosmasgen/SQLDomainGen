@@ -5,10 +5,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "company_file")
 @Getter
 @Setter
@@ -18,42 +18,41 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class CompanyFile {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "id", nullable = false)
     private UUID id;
 
     @Column(name = "chamber_id")
     private Integer chamberId;
 
-    @Column(name = "file_name", length = 255, nullable = false)
+    @Column(name = "file_name", length = 100, nullable = false)
     private String fileName;
 
     @Column(name = "file_size", nullable = false)
     private Integer fileSize;
 
-    @Column(name = "blob_uri", length = 255, nullable = false)
+    @Column(name = "blob_uri", length = 2000, nullable = false)
     private String blobUri;
 
     @Column(name = "order_seq", nullable = false)
     private Integer orderSeq;
 
-    @Column(name = "rec_deleted")
-    private Boolean recDeleted;
+    @Column(name = "recdeleted")
+    private Boolean recdeleted;
 
     @CreationTimestamp
     @Column(name = "date_created", nullable = false, updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
-    @Column(name = "company_id", nullable = false)
-    private UUID companyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
 
-    @Column(name = "language_id")
-    private UUID languageId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "language_id")
+    private Languages language;
 
     @Column(name = "is_logo")
     private Boolean isLogo;
@@ -61,10 +60,11 @@ public class CompanyFile {
     @Column(name = "is_background")
     private Boolean isBackground;
 
-    @Column(name = "company_profile_id")
-    private UUID companyProfileId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_profile_id")
+    private CompanyProfile companyProfile;
 
     @Column(name = "is_embedded", nullable = false)
-    private Boolean isEmbedded = false;
+    private Boolean isEmbedded;
 
 }

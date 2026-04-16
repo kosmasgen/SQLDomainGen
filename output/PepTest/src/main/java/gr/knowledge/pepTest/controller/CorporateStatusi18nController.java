@@ -2,142 +2,120 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.CorporateStatusi18nDto;
 import gr.knowledge.pepTest.service.CorporateStatusi18nService;
-import gr.knowledge.pepTest.entity.CorporateStatusi18nPK;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing CorporateStatusi18n resources.
+ * REST controller for managing Corporate Statusi18n resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "CorporateStatusi18n", description = "CorporateStatusi18n API")
-@RequestMapping("/api/corporate-statusi18ns")
+@Tag(name = "Corporate Statusi18n", description = "Corporate Statusi18n API")
+@RequestMapping("/api/corporate-statusi18n")
 public class CorporateStatusi18nController {
 
     private final CorporateStatusi18nService corporateStatusi18nService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all corporate statusi18ns.
      * @return list of CorporateStatusi18nDto
      */
-    @Operation(summary = "Get all CorporateStatusi18n")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all corporate statusi18ns")
     @GetMapping
     public ResponseEntity<List<CorporateStatusi18nDto>> getAll() {
-        log.info("Fetching all corporatestatusi18n records.");
-        return ResponseEntity.ok(corporateStatusi18nService.getAllCorporateStatusi18n());
+        return ResponseEntity.ok(corporateStatusi18nService.getAllCorporateStatusi18ns());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the corporate statusi18n record by id.
+     * @param corporateStatusId corporate status id identifier
+     * @param languageId language id identifier
      * @return CorporateStatusi18nDto
      */
-    @Operation(summary = "Get CorporateStatusi18n by id")
+    @Operation(summary = "Get Corporate Statusi18n by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @GetMapping("/by-id")
+    @GetMapping("/{corporateStatusId}/{languageId}")
     public ResponseEntity<CorporateStatusi18nDto> getById(
-            @Parameter(description = "corporate_status_id", required = true)
-            @RequestParam(name = "corporate_status_id") UUID corporateStatusId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId) {
-        CorporateStatusi18nPK id = buildCorporateStatusi18nId(corporateStatusId, languageId);
-        log.info("Fetching corporatestatusi18n with composite id: {}", id);
-        return ResponseEntity.ok(corporateStatusi18nService.getCorporateStatusi18nById(id));
+            @Parameter(description = "corporate status id identifier", required = true)
+            @PathVariable UUID corporateStatusId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId) {
+        return ResponseEntity.ok(corporateStatusi18nService.getCorporateStatusi18nById(corporateStatusId, languageId));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new corporate statusi18n record.
+     * @param dto corporate statusi18n payload
      * @return created CorporateStatusi18nDto
      */
-    @Operation(summary = "Create CorporateStatusi18n")
+    @Operation(summary = "Create Corporate Statusi18n")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<CorporateStatusi18nDto> create(@RequestBody CorporateStatusi18nDto dto) {
-        log.info("Creating corporatestatusi18n.");
+    public ResponseEntity<CorporateStatusi18nDto> create(
+            @Valid @RequestBody CorporateStatusi18nDto dto) {
         CorporateStatusi18nDto created = corporateStatusi18nService.createCorporateStatusi18n(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing corporate statusi18n record.
+     * Only fields that are not null in the request are updated.
+     * @param corporateStatusId corporate status id identifier
+     * @param languageId language id identifier
+     * @param dto partial corporate statusi18n payload
      * @return updated CorporateStatusi18nDto
      */
-    @Operation(summary = "Update CorporateStatusi18n")
+    @Operation(summary = "Patch Corporate Statusi18n")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/by-id")
-    public ResponseEntity<CorporateStatusi18nDto> update(
-            @Parameter(description = "corporate_status_id", required = true)
-            @RequestParam(name = "corporate_status_id") UUID corporateStatusId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId,
+    @PatchMapping("/{corporateStatusId}/{languageId}")
+    public ResponseEntity<CorporateStatusi18nDto> patch(
+            @Parameter(description = "corporate status id identifier", required = true)
+            @PathVariable UUID corporateStatusId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId,
             @RequestBody CorporateStatusi18nDto dto) {
-        CorporateStatusi18nPK id = buildCorporateStatusi18nId(corporateStatusId, languageId);
-        log.info("Updating corporatestatusi18n with composite id: {}", id);
-        return ResponseEntity.ok(corporateStatusi18nService.updateCorporateStatusi18n(id, dto));
+        return ResponseEntity.ok(corporateStatusi18nService.updateCorporateStatusi18n(corporateStatusId, languageId, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an corporate statusi18n record by id.
+     * @param corporateStatusId corporate status id identifier
+     * @param languageId language id identifier
      * @return no content
      */
-    @Operation(summary = "Delete CorporateStatusi18n")
+    @Operation(summary = "Delete Corporate Statusi18n")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @DeleteMapping("/by-id")
+    @DeleteMapping("/{corporateStatusId}/{languageId}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "corporate_status_id", required = true)
-            @RequestParam(name = "corporate_status_id") UUID corporateStatusId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId) {
-        CorporateStatusi18nPK id = buildCorporateStatusi18nId(corporateStatusId, languageId);
-        log.info("Deleting corporatestatusi18n with composite id: {}", id);
-        corporateStatusi18nService.deleteCorporateStatusi18n(id);
+            @Parameter(description = "corporate status id identifier", required = true)
+            @PathVariable UUID corporateStatusId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId) {
+        corporateStatusi18nService.deleteCorporateStatusi18n(corporateStatusId, languageId);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Builds composite id object for CorporateStatusi18n.
-     */
-    private CorporateStatusi18nPK buildCorporateStatusi18nId(UUID corporateStatusId, UUID languageId) {
-        CorporateStatusi18nPK id = new CorporateStatusi18nPK();
-        id.setCorporateStatusId(corporateStatusId);
-        id.setLanguageId(languageId);
-        return id;
-    }
 }

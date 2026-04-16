@@ -2,20 +2,17 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.SyncrunsDto;
 import gr.knowledge.pepTest.service.SyncrunsService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
 import java.util.List;
 
 /**
@@ -26,48 +23,41 @@ import java.util.List;
 @RequiredArgsConstructor
 @Log4j2
 @Tag(name = "Syncruns", description = "Syncruns API")
-@RequestMapping("/api/syncrunss")
+@RequestMapping("/api/syncruns")
 public class SyncrunsController {
 
     private final SyncrunsService syncrunsService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all syncrunses.
      * @return list of SyncrunsDto
      */
-    @Operation(summary = "Get all Syncruns")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all syncrunses")
     @GetMapping
     public ResponseEntity<List<SyncrunsDto>> getAll() {
-        log.info("Fetching all syncruns records.");
-        return ResponseEntity.ok(syncrunsService.getAllSyncruns());
+        return ResponseEntity.ok(syncrunsService.getAllSyncrunses());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the syncruns record by id.
+     * @param id syncruns identifier
      * @return SyncrunsDto
      */
     @Operation(summary = "Get Syncruns by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<SyncrunsDto> getById(
-            @Parameter(description = "Syncruns id", required = true)
+            @Parameter(description = "syncruns identifier", required = true)
             @PathVariable Long id) {
-        log.info("Fetching syncruns with id: {}", id);
         return ResponseEntity.ok(syncrunsService.getSyncrunsById(id));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new syncruns record.
+     * @param dto syncruns payload
      * @return created SyncrunsDto
      */
     @Operation(summary = "Create Syncruns")
@@ -75,48 +65,47 @@ public class SyncrunsController {
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<SyncrunsDto> create(@RequestBody SyncrunsDto dto) {
-        log.info("Creating syncruns.");
+    public ResponseEntity<SyncrunsDto> create(
+            @Valid @RequestBody SyncrunsDto dto) {
         SyncrunsDto created = syncrunsService.createSyncruns(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing syncruns record.
+     * Only fields that are not null in the request are updated.
+     * @param id syncruns identifier
+     * @param dto partial syncruns payload
      * @return updated SyncrunsDto
      */
-    @Operation(summary = "Update Syncruns")
+    @Operation(summary = "Patch Syncruns")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<SyncrunsDto> update(
-            @Parameter(description = "Syncruns id", required = true)
+    @PatchMapping("/{id}")
+    public ResponseEntity<SyncrunsDto> patch(
+            @Parameter(description = "syncruns identifier", required = true)
             @PathVariable Long id,
             @RequestBody SyncrunsDto dto) {
-        log.info("Updating syncruns with id: {}", id);
         return ResponseEntity.ok(syncrunsService.updateSyncruns(id, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an syncruns record by id.
+     * @param id syncruns identifier
      * @return no content
      */
     @Operation(summary = "Delete Syncruns")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "Syncruns id", required = true)
+            @Parameter(description = "syncruns identifier", required = true)
             @PathVariable Long id) {
-        log.info("Deleting syncruns with id: {}", id);
         syncrunsService.deleteSyncruns(id);
         return ResponseEntity.noContent().build();
     }
+
 }

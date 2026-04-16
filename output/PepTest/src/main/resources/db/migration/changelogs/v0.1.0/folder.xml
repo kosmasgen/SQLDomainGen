@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/folder.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="create-folder-table-and-audit" author="kosmasgenaris@knowledge.gr">
+        <createTable tableName="folder" schemaName="pep_schema">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" primaryKeyName="pk_folder" nullable="false"/>
+            </column>
+            <column name="descr" type="TEXT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="uri" type="VARCHAR(2000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recdeleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+
+
+
+
+
+        <createTable tableName="folder_aud" schemaName="audit">
+            <column name="id" type="UUID"/>
+            <column name="descr" type="TEXT"/>
+            <column name="uri" type="VARCHAR(2000)"/>
+            <column name="date_created" type="TIMESTAMP"/>
+            <column name="last_updated" type="TIMESTAMP"/>
+            <column name="recdeleted" type="BOOLEAN"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+        </createTable>
+
+        <addPrimaryKey tableName="folder_aud"
+                       columnNames="id, rev"
+                       constraintName="pk_folder_aud"
+                       schemaName="audit"/>
+
+        <addForeignKeyConstraint baseTableName="folder_aud"
+                                 baseColumnNames="rev"
+                                 constraintName="fk_folder_aud_revinfo"
+                                 referencedTableName="REVINFO"
+                                 referencedColumnNames="REV"
+                                 baseTableSchemaName="audit"
+                                 referencedTableSchemaName="audit"/>
+
+    </changeSet>
+
+</databaseChangeLog>

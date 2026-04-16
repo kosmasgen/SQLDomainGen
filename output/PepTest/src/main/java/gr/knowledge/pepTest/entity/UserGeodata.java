@@ -5,10 +5,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "user_geodata")
 @Getter
 @Setter
@@ -18,31 +18,30 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class UserGeodata {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
 
     @Column(name = "chamber_id")
     private Integer chamberId;
 
-    @Column(name = "company_id", nullable = false)
-    private UUID companyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
 
-    @Column(name = "username", nullable = false)
+    @Column(name = "username", columnDefinition = "text", nullable = false)
     private String username;
 
-    @Column(name = "latitude", length = 255, nullable = false)
+    @Column(name = "latitude", nullable = false)
     private String latitude;
 
-    @Column(name = "longitude", length = 255, nullable = false)
+    @Column(name = "longitude", nullable = false)
     private String longitude;
 
     @CreationTimestamp
     @Column(name = "date_created", nullable = false, updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 

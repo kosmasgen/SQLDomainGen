@@ -2,23 +2,19 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.Producti18nDto;
 import gr.knowledge.pepTest.service.Producti18nService;
-import gr.knowledge.pepTest.entity.Producti18nPK;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * REST controller for managing Producti18n resources.
@@ -28,51 +24,44 @@ import java.util.List;
 @RequiredArgsConstructor
 @Log4j2
 @Tag(name = "Producti18n", description = "Producti18n API")
-@RequestMapping("/api/producti18ns")
+@RequestMapping("/api/producti18n")
 public class Producti18nController {
 
     private final Producti18nService producti18nService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all producti18ns.
      * @return list of Producti18nDto
      */
-    @Operation(summary = "Get all Producti18n")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all producti18ns")
     @GetMapping
     public ResponseEntity<List<Producti18nDto>> getAll() {
-        log.info("Fetching all producti18n records.");
-        return ResponseEntity.ok(producti18nService.getAllProducti18n());
+        return ResponseEntity.ok(producti18nService.getAllProducti18ns());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the producti18n record by id.
+     * @param languageId language id identifier
+     * @param productId product id identifier
      * @return Producti18nDto
      */
     @Operation(summary = "Get Producti18n by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @GetMapping("/by-id")
+    @GetMapping("/{languageId}/{productId}")
     public ResponseEntity<Producti18nDto> getById(
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId,
-            @Parameter(description = "product_id", required = true)
-            @RequestParam(name = "product_id") UUID productId) {
-        Producti18nPK id = buildProducti18nId(languageId, productId);
-        log.info("Fetching producti18n with composite id: {}", id);
-        return ResponseEntity.ok(producti18nService.getProducti18nById(id));
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId,
+            @Parameter(description = "product id identifier", required = true)
+            @PathVariable UUID productId) {
+        return ResponseEntity.ok(producti18nService.getProducti18nById(languageId, productId));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new producti18n record.
+     * @param dto producti18n payload
      * @return created Producti18nDto
      */
     @Operation(summary = "Create Producti18n")
@@ -80,64 +69,53 @@ public class Producti18nController {
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<Producti18nDto> create(@RequestBody Producti18nDto dto) {
-        log.info("Creating producti18n.");
+    public ResponseEntity<Producti18nDto> create(
+            @Valid @RequestBody Producti18nDto dto) {
         Producti18nDto created = producti18nService.createProducti18n(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing producti18n record.
+     * Only fields that are not null in the request are updated.
+     * @param languageId language id identifier
+     * @param productId product id identifier
+     * @param dto partial producti18n payload
      * @return updated Producti18nDto
      */
-    @Operation(summary = "Update Producti18n")
+    @Operation(summary = "Patch Producti18n")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/by-id")
-    public ResponseEntity<Producti18nDto> update(
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId,
-            @Parameter(description = "product_id", required = true)
-            @RequestParam(name = "product_id") UUID productId,
+    @PatchMapping("/{languageId}/{productId}")
+    public ResponseEntity<Producti18nDto> patch(
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId,
+            @Parameter(description = "product id identifier", required = true)
+            @PathVariable UUID productId,
             @RequestBody Producti18nDto dto) {
-        Producti18nPK id = buildProducti18nId(languageId, productId);
-        log.info("Updating producti18n with composite id: {}", id);
-        return ResponseEntity.ok(producti18nService.updateProducti18n(id, dto));
+        return ResponseEntity.ok(producti18nService.updateProducti18n(languageId, productId, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an producti18n record by id.
+     * @param languageId language id identifier
+     * @param productId product id identifier
      * @return no content
      */
     @Operation(summary = "Delete Producti18n")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @DeleteMapping("/by-id")
+    @DeleteMapping("/{languageId}/{productId}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId,
-            @Parameter(description = "product_id", required = true)
-            @RequestParam(name = "product_id") UUID productId) {
-        Producti18nPK id = buildProducti18nId(languageId, productId);
-        log.info("Deleting producti18n with composite id: {}", id);
-        producti18nService.deleteProducti18n(id);
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId,
+            @Parameter(description = "product id identifier", required = true)
+            @PathVariable UUID productId) {
+        producti18nService.deleteProducti18n(languageId, productId);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Builds composite id object for Producti18n.
-     */
-    private Producti18nPK buildProducti18nId(UUID languageId, UUID productId) {
-        Producti18nPK id = new Producti18nPK();
-        id.setLanguageId(languageId);
-        id.setProductId(productId);
-        return id;
-    }
 }

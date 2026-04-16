@@ -5,12 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.dto.CompanyProfileDto;
 
 /**
  * Data transfer object for CompanyFavourites.
@@ -22,26 +22,22 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CompanyFavouritesDto {
 
-    @NotNull
     private UUID id;
 
     @NotNull
-    private UUID companyId;
+    private CompanyDto company;
 
     @NotNull
-    private UUID favouriteCompanyId;
+    private CompanyDto favouriteCompany;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
-    @Size(max = 255)
     private String notes;
 
-    private UUID favouriteProfileId;
+    private CompanyProfileDto favouriteProfile;
 
 }

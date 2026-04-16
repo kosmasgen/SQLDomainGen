@@ -5,18 +5,17 @@ import gr.knowledge.pepTest.mapper.StatsExpenseMapper;
 import gr.knowledge.pepTest.entity.StatsExpense;
 import gr.knowledge.pepTest.repository.StatsExpenseRepository;
 import gr.knowledge.pepTest.service.StatsExpenseService;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
 import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code StatsExpense} domain operations.
+ * Service implementation for {@code Stats Expense} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -28,75 +27,118 @@ public class StatsExpenseServiceImpl implements StatsExpenseService {
     private final StatsExpenseMapper statsExpenseMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link StatsExpenseDto}
+     * Retrieves all stats expenses records.
+     * @return list of StatsExpenseDto
      */
     @Override
-    public List<StatsExpenseDto> getAllStatsExpense() {
-        log.info("Fetching all stats-expense.");
-        return statsExpenseMapper.toDTO(statsExpenseRepository.findAll());
+    public List<StatsExpenseDto> getAllStatsExpenses() {
+        log.info("Fetching all stats expenses records.");
+        return statsExpenseMapper.toDTOList(statsExpenseRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link StatsExpenseDto}
+     * Retrieves a stats expense record by id.
+     * @param id the stats expense id
+     * @return StatsExpenseDto
      */
     @Override
     public StatsExpenseDto getStatsExpenseById(UUID id) {
-        log.info("Fetching stats-expense with id: {}", id);
-        StatsExpense entity = statsExpenseRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "StatsExpense not found with id: " + id));
-        return statsExpenseMapper.toDTO(entity);
+        log.info("Fetching stats expense with id: {}", id);
+
+        StatsExpense existingEntity = findStatsExpenseByIdOrThrow(id);
+        return statsExpenseMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new stats expense record.
      * @param dto input payload
      * @return created {@link StatsExpenseDto}
      */
     @Override
     public StatsExpenseDto createStatsExpense(StatsExpenseDto dto) {
-        log.info("Creating stats-expense.");
+        log.info("Creating stats expense.");
+
+        validateStatsExpenseCreateUniqueConstraints(dto);
+
         StatsExpense entity = statsExpenseMapper.toEntity(dto);
-        StatsExpense saved = statsExpenseRepository.save(entity);
-        return statsExpenseMapper.toDTO(saved);
+        StatsExpense savedEntity = statsExpenseRepository.save(entity);
+
+        return statsExpenseMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing stats expense record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param id the stats expense id
+     * @param dto input payload with partial fields
      * @return updated {@link StatsExpenseDto}
      */
     @Override
     public StatsExpenseDto updateStatsExpense(UUID id, StatsExpenseDto dto) {
-        log.info("Updating stats-expense with id: {}", id);
-        statsExpenseRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "StatsExpense not found with id: " + id));
-        StatsExpense entity = statsExpenseMapper.toEntity(dto);
-        entity.setId(id);
-        StatsExpense saved = statsExpenseRepository.save(entity);
-        return statsExpenseMapper.toDTO(saved);
+        log.info("Updating stats expense with id: {}", id);
+
+        StatsExpense existingEntity = findStatsExpenseByIdOrThrow(id);
+        statsExpenseMapper.partialUpdate(existingEntity, dto);
+        StatsExpense savedEntity = statsExpenseRepository.save(existingEntity);
+
+        return statsExpenseMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a stats expense record by id.
+     * @param id the stats expense id
      */
     @Override
     public void deleteStatsExpense(UUID id) {
-        log.info("Deleting stats-expense with id: {}", id);
-        statsExpenseRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "StatsExpense not found with id: " + id));
+        log.info("Deleting stats expense with id: {}", id);
+
+        findStatsExpenseByIdOrThrow(id);
         statsExpenseRepository.deleteById(id);
     }
+
+    /**
+     * Validates unique constraints for create operations.
+     * @param dto input payload
+     */
+    private void validateStatsExpenseCreateUniqueConstraints(StatsExpenseDto dto) {
+
+        if (dto == null) {
+            return;
+        }
+
+        if (dto.getChamberId() != null && dto.getAccountSumId() != null && statsExpenseRepository.existsByChamberIdAndAccountSumId(dto.getChamberId(), dto.getAccountSumId())) {
+            throw GeneratedRuntimeException.builder()
+                    .code(ErrorCodes.BAD_REQUEST)
+                    .entity("StatsExpense")
+                    .message("StatsExpense already exists with " + "chamberId=" + dto.getChamberId() + ", " + "accountSumId=" + dto.getAccountSumId())
+                    .build();
+        }
+    }
+
+    /**
+     * Finds an existing stats expense record by id or throws an exception.
+     * @param id the stats expense id
+     * @return existing StatsExpense entity
+     */
+    private StatsExpense findStatsExpenseByIdOrThrow(UUID id) {
+        return statsExpenseRepository.findById(id)
+                .orElseThrow(() -> createStatsExpenseNotFoundException(id));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the stats expense entity.
+     @param id the stats expense id
+     @return runtime exception
+     */
+    private RuntimeException createStatsExpenseNotFoundException(UUID id) {
+        log.warn("StatsExpense not found with id: {}", id);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("StatsExpense")
+                .message("StatsExpense not found with id: " + id)
+                .build();
+    }
+
 }

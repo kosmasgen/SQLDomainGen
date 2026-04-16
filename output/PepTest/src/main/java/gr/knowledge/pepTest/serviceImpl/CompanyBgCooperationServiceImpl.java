@@ -5,18 +5,17 @@ import gr.knowledge.pepTest.mapper.CompanyBgCooperationMapper;
 import gr.knowledge.pepTest.entity.CompanyBgCooperation;
 import gr.knowledge.pepTest.repository.CompanyBgCooperationRepository;
 import gr.knowledge.pepTest.service.CompanyBgCooperationService;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
 import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code CompanyBgCooperation} domain operations.
+ * Service implementation for {@code Company Bg Cooperation} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -28,75 +27,97 @@ public class CompanyBgCooperationServiceImpl implements CompanyBgCooperationServ
     private final CompanyBgCooperationMapper companyBgCooperationMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link CompanyBgCooperationDto}
+     * Retrieves all company bg cooperations records.
+     * @return list of CompanyBgCooperationDto
      */
     @Override
-    public List<CompanyBgCooperationDto> getAllCompanyBgCooperation() {
-        log.info("Fetching all company-bg-cooperation.");
-        return companyBgCooperationMapper.toDTO(companyBgCooperationRepository.findAll());
+    public List<CompanyBgCooperationDto> getAllCompanyBgCooperations() {
+        log.info("Fetching all company bg cooperations records.");
+        return companyBgCooperationMapper.toDTOList(companyBgCooperationRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link CompanyBgCooperationDto}
+     * Retrieves a company bg cooperation record by id.
+     * @param id the company bg cooperation id
+     * @return CompanyBgCooperationDto
      */
     @Override
     public CompanyBgCooperationDto getCompanyBgCooperationById(UUID id) {
-        log.info("Fetching company-bg-cooperation with id: {}", id);
-        CompanyBgCooperation entity = companyBgCooperationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyBgCooperation not found with id: " + id));
-        return companyBgCooperationMapper.toDTO(entity);
+        log.info("Fetching company bg cooperation with id: {}", id);
+
+        CompanyBgCooperation existingEntity = findCompanyBgCooperationByIdOrThrow(id);
+        return companyBgCooperationMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new company bg cooperation record.
      * @param dto input payload
      * @return created {@link CompanyBgCooperationDto}
      */
     @Override
     public CompanyBgCooperationDto createCompanyBgCooperation(CompanyBgCooperationDto dto) {
-        log.info("Creating company-bg-cooperation.");
+        log.info("Creating company bg cooperation.");
+
         CompanyBgCooperation entity = companyBgCooperationMapper.toEntity(dto);
-        CompanyBgCooperation saved = companyBgCooperationRepository.save(entity);
-        return companyBgCooperationMapper.toDTO(saved);
+        CompanyBgCooperation savedEntity = companyBgCooperationRepository.save(entity);
+
+        return companyBgCooperationMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing company bg cooperation record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param id the company bg cooperation id
+     * @param dto input payload with partial fields
      * @return updated {@link CompanyBgCooperationDto}
      */
     @Override
     public CompanyBgCooperationDto updateCompanyBgCooperation(UUID id, CompanyBgCooperationDto dto) {
-        log.info("Updating company-bg-cooperation with id: {}", id);
-        companyBgCooperationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyBgCooperation not found with id: " + id));
-        CompanyBgCooperation entity = companyBgCooperationMapper.toEntity(dto);
-        entity.setId(id);
-        CompanyBgCooperation saved = companyBgCooperationRepository.save(entity);
-        return companyBgCooperationMapper.toDTO(saved);
+        log.info("Updating company bg cooperation with id: {}", id);
+
+        CompanyBgCooperation existingEntity = findCompanyBgCooperationByIdOrThrow(id);
+        companyBgCooperationMapper.partialUpdate(existingEntity, dto);
+        CompanyBgCooperation savedEntity = companyBgCooperationRepository.save(existingEntity);
+
+        return companyBgCooperationMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a company bg cooperation record by id.
+     * @param id the company bg cooperation id
      */
     @Override
     public void deleteCompanyBgCooperation(UUID id) {
-        log.info("Deleting company-bg-cooperation with id: {}", id);
-        companyBgCooperationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyBgCooperation not found with id: " + id));
+        log.info("Deleting company bg cooperation with id: {}", id);
+
+        findCompanyBgCooperationByIdOrThrow(id);
         companyBgCooperationRepository.deleteById(id);
     }
+
+    /**
+     * Finds an existing company bg cooperation record by id or throws an exception.
+     * @param id the company bg cooperation id
+     * @return existing CompanyBgCooperation entity
+     */
+    private CompanyBgCooperation findCompanyBgCooperationByIdOrThrow(UUID id) {
+        return companyBgCooperationRepository.findById(id)
+                .orElseThrow(() -> createCompanyBgCooperationNotFoundException(id));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the company bg cooperation entity.
+     @param id the company bg cooperation id
+     @return runtime exception
+     */
+    private RuntimeException createCompanyBgCooperationNotFoundException(UUID id) {
+        log.warn("CompanyBgCooperation not found with id: {}", id);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("CompanyBgCooperation")
+                .message("CompanyBgCooperation not found with id: " + id)
+                .build();
+    }
+
 }

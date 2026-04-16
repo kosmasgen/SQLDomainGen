@@ -4,11 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "product")
 @Getter
 @Setter
@@ -18,8 +17,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class Product {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -32,24 +30,22 @@ public class Product {
     @Column(name = "version", nullable = false)
     private Integer version;
 
-    @Column(name = "cd", length = 255, nullable = false)
+    @Column(name = "cd", length = 20, nullable = false)
     private String cd;
 
-    @Column(name = "cd_gemi", length = 255)
+    @Column(name = "cd_gemi")
     private String cdGemi;
 
-    @CreationTimestamp
     @Column(name = "date_created", nullable = false, updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
     @Column(name = "parent_product_id")
     private Long parentProductId;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
 }

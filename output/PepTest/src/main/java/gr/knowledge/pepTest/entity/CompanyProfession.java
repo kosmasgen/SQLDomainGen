@@ -2,15 +2,15 @@ package gr.knowledge.pepTest.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
-@Table(name = "company_profession")
+@Audited
+@Table(name = "company_profession", uniqueConstraints = @UniqueConstraint(columnNames = {"chamber_id", "chamber_company_profession_id"}))
 @Getter
 @Setter
 @Builder
@@ -19,8 +19,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class CompanyProfession {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -30,14 +29,17 @@ public class CompanyProfession {
     @Column(name = "chamber_company_profession_id")
     private Integer chamberCompanyProfessionId;
 
-    @Column(name = "company_id", nullable = false)
-    private UUID companyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
 
-    @Column(name = "profession_id", nullable = false)
-    private UUID professionId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profession_id", nullable = false)
+    private Profession profession;
 
-    @Column(name = "profession_kind_id")
-    private UUID professionKindId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profession_kind_id")
+    private ProfessionKind professionKind;
 
     @CreationTimestamp
     @Column(name = "date_created", updatable = false)
@@ -46,21 +48,21 @@ public class CompanyProfession {
     @Column(name = "from_date")
     private LocalDateTime fromDate;
 
-    @UpdateTimestamp
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
     @Column(name = "to_date")
     private LocalDateTime toDate;
 
-    @Column(name = "profile_id")
-    private UUID profileId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id")
+    private CompanyProfile profile;
 
     @Column(name = "gemi_id")
-    private BigDecimal gemiId;
+    private BigInteger gemiId;
 
     @Column(name = "gemi_date_created")
     private LocalDateTime gemiDateCreated;

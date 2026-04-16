@@ -5,18 +5,17 @@ import gr.knowledge.pepTest.mapper.ExportCompProdCountryMapper;
 import gr.knowledge.pepTest.entity.ExportCompProdCountry;
 import gr.knowledge.pepTest.repository.ExportCompProdCountryRepository;
 import gr.knowledge.pepTest.service.ExportCompProdCountryService;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
 import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code ExportCompProdCountry} domain operations.
+ * Service implementation for {@code Export Comp Prod Country} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -28,75 +27,97 @@ public class ExportCompProdCountryServiceImpl implements ExportCompProdCountrySe
     private final ExportCompProdCountryMapper exportCompProdCountryMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link ExportCompProdCountryDto}
+     * Retrieves all export comp prod countries records.
+     * @return list of ExportCompProdCountryDto
      */
     @Override
-    public List<ExportCompProdCountryDto> getAllExportCompProdCountry() {
-        log.info("Fetching all export-comp-prod-country.");
-        return exportCompProdCountryMapper.toDTO(exportCompProdCountryRepository.findAll());
+    public List<ExportCompProdCountryDto> getAllExportCompProdCountries() {
+        log.info("Fetching all export comp prod countries records.");
+        return exportCompProdCountryMapper.toDTOList(exportCompProdCountryRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link ExportCompProdCountryDto}
+     * Retrieves a export comp prod country record by id.
+     * @param id the export comp prod country id
+     * @return ExportCompProdCountryDto
      */
     @Override
     public ExportCompProdCountryDto getExportCompProdCountryById(UUID id) {
-        log.info("Fetching export-comp-prod-country with id: {}", id);
-        ExportCompProdCountry entity = exportCompProdCountryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ExportCompProdCountry not found with id: " + id));
-        return exportCompProdCountryMapper.toDTO(entity);
+        log.info("Fetching export comp prod country with id: {}", id);
+
+        ExportCompProdCountry existingEntity = findExportCompProdCountryByIdOrThrow(id);
+        return exportCompProdCountryMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new export comp prod country record.
      * @param dto input payload
      * @return created {@link ExportCompProdCountryDto}
      */
     @Override
     public ExportCompProdCountryDto createExportCompProdCountry(ExportCompProdCountryDto dto) {
-        log.info("Creating export-comp-prod-country.");
+        log.info("Creating export comp prod country.");
+
         ExportCompProdCountry entity = exportCompProdCountryMapper.toEntity(dto);
-        ExportCompProdCountry saved = exportCompProdCountryRepository.save(entity);
-        return exportCompProdCountryMapper.toDTO(saved);
+        ExportCompProdCountry savedEntity = exportCompProdCountryRepository.save(entity);
+
+        return exportCompProdCountryMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing export comp prod country record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param id the export comp prod country id
+     * @param dto input payload with partial fields
      * @return updated {@link ExportCompProdCountryDto}
      */
     @Override
     public ExportCompProdCountryDto updateExportCompProdCountry(UUID id, ExportCompProdCountryDto dto) {
-        log.info("Updating export-comp-prod-country with id: {}", id);
-        exportCompProdCountryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ExportCompProdCountry not found with id: " + id));
-        ExportCompProdCountry entity = exportCompProdCountryMapper.toEntity(dto);
-        entity.setId(id);
-        ExportCompProdCountry saved = exportCompProdCountryRepository.save(entity);
-        return exportCompProdCountryMapper.toDTO(saved);
+        log.info("Updating export comp prod country with id: {}", id);
+
+        ExportCompProdCountry existingEntity = findExportCompProdCountryByIdOrThrow(id);
+        exportCompProdCountryMapper.partialUpdate(existingEntity, dto);
+        ExportCompProdCountry savedEntity = exportCompProdCountryRepository.save(existingEntity);
+
+        return exportCompProdCountryMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a export comp prod country record by id.
+     * @param id the export comp prod country id
      */
     @Override
     public void deleteExportCompProdCountry(UUID id) {
-        log.info("Deleting export-comp-prod-country with id: {}", id);
-        exportCompProdCountryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "ExportCompProdCountry not found with id: " + id));
+        log.info("Deleting export comp prod country with id: {}", id);
+
+        findExportCompProdCountryByIdOrThrow(id);
         exportCompProdCountryRepository.deleteById(id);
     }
+
+    /**
+     * Finds an existing export comp prod country record by id or throws an exception.
+     * @param id the export comp prod country id
+     * @return existing ExportCompProdCountry entity
+     */
+    private ExportCompProdCountry findExportCompProdCountryByIdOrThrow(UUID id) {
+        return exportCompProdCountryRepository.findById(id)
+                .orElseThrow(() -> createExportCompProdCountryNotFoundException(id));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the export comp prod country entity.
+     @param id the export comp prod country id
+     @return runtime exception
+     */
+    private RuntimeException createExportCompProdCountryNotFoundException(UUID id) {
+        log.warn("ExportCompProdCountry not found with id: {}", id);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("ExportCompProdCountry")
+                .message("ExportCompProdCountry not found with id: " + id)
+                .build();
+    }
+
 }

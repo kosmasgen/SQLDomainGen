@@ -2,122 +2,111 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.IncomeTypeDto;
 import gr.knowledge.pepTest.service.IncomeTypeService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing IncomeType resources.
+ * REST controller for managing Income Type resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "IncomeType", description = "IncomeType API")
-@RequestMapping("/api/income-types")
+@Tag(name = "Income Type", description = "Income Type API")
+@RequestMapping("/api/income-type")
 public class IncomeTypeController {
 
     private final IncomeTypeService incomeTypeService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all income types.
      * @return list of IncomeTypeDto
      */
-    @Operation(summary = "Get all IncomeType")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all income types")
     @GetMapping
     public ResponseEntity<List<IncomeTypeDto>> getAll() {
-        log.info("Fetching all incometype records.");
-        return ResponseEntity.ok(incomeTypeService.getAllIncomeType());
+        return ResponseEntity.ok(incomeTypeService.getAllIncomeTypes());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the income type record by id.
+     * @param id income type identifier
      * @return IncomeTypeDto
      */
-    @Operation(summary = "Get IncomeType by id")
+    @Operation(summary = "Get Income Type by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<IncomeTypeDto> getById(
-            @Parameter(description = "IncomeType id", required = true)
+            @Parameter(description = "income type identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Fetching incometype with id: {}", id);
         return ResponseEntity.ok(incomeTypeService.getIncomeTypeById(id));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new income type record.
+     * @param dto income type payload
      * @return created IncomeTypeDto
      */
-    @Operation(summary = "Create IncomeType")
+    @Operation(summary = "Create Income Type")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<IncomeTypeDto> create(@RequestBody IncomeTypeDto dto) {
-        log.info("Creating incometype.");
+    public ResponseEntity<IncomeTypeDto> create(
+            @Valid @RequestBody IncomeTypeDto dto) {
         IncomeTypeDto created = incomeTypeService.createIncomeType(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing income type record.
+     * Only fields that are not null in the request are updated.
+     * @param id income type identifier
+     * @param dto partial income type payload
      * @return updated IncomeTypeDto
      */
-    @Operation(summary = "Update IncomeType")
+    @Operation(summary = "Patch Income Type")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<IncomeTypeDto> update(
-            @Parameter(description = "IncomeType id", required = true)
+    @PatchMapping("/{id}")
+    public ResponseEntity<IncomeTypeDto> patch(
+            @Parameter(description = "income type identifier", required = true)
             @PathVariable UUID id,
             @RequestBody IncomeTypeDto dto) {
-        log.info("Updating incometype with id: {}", id);
         return ResponseEntity.ok(incomeTypeService.updateIncomeType(id, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an income type record by id.
+     * @param id income type identifier
      * @return no content
      */
-    @Operation(summary = "Delete IncomeType")
+    @Operation(summary = "Delete Income Type")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "IncomeType id", required = true)
+            @Parameter(description = "income type identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Deleting incometype with id: {}", id);
         incomeTypeService.deleteIncomeType(id);
         return ResponseEntity.noContent().build();
     }
+
 }

@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.CompanyProfessionDto;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code CompanyProfession} domain operations.
@@ -10,15 +10,13 @@ import java.util.List;
 public interface CompanyProfessionService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all company professions.
      * @return non-null list of {@link CompanyProfessionDto}
      */
-    List<CompanyProfessionDto> getAllCompanyProfession();
+    List<CompanyProfessionDto> getAllCompanyProfessions();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link CompanyProfessionDto}
      */
@@ -26,7 +24,6 @@ public interface CompanyProfessionService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link CompanyProfessionDto}
      */
@@ -34,19 +31,16 @@ public interface CompanyProfessionService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link CompanyProfessionDto}
      */
     CompanyProfessionDto updateCompanyProfession(UUID id, CompanyProfessionDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteCompanyProfession(UUID id);

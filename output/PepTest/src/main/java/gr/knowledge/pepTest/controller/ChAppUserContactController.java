@@ -2,122 +2,111 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.ChAppUserContactDto;
 import gr.knowledge.pepTest.service.ChAppUserContactService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing ChAppUserContact resources.
+ * REST controller for managing Ch App User Contact resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "ChAppUserContact", description = "ChAppUserContact API")
-@RequestMapping("/api/ch-app-user-contacts")
+@Tag(name = "Ch App User Contact", description = "Ch App User Contact API")
+@RequestMapping("/api/ch-app-user-contact")
 public class ChAppUserContactController {
 
     private final ChAppUserContactService chAppUserContactService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all ch app user contacts.
      * @return list of ChAppUserContactDto
      */
-    @Operation(summary = "Get all ChAppUserContact")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all ch app user contacts")
     @GetMapping
     public ResponseEntity<List<ChAppUserContactDto>> getAll() {
-        log.info("Fetching all chappusercontact records.");
-        return ResponseEntity.ok(chAppUserContactService.getAllChAppUserContact());
+        return ResponseEntity.ok(chAppUserContactService.getAllChAppUserContacts());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the ch app user contact record by id.
+     * @param id ch app user contact identifier
      * @return ChAppUserContactDto
      */
-    @Operation(summary = "Get ChAppUserContact by id")
+    @Operation(summary = "Get Ch App User Contact by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<ChAppUserContactDto> getById(
-            @Parameter(description = "ChAppUserContact id", required = true)
+            @Parameter(description = "ch app user contact identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Fetching chappusercontact with id: {}", id);
         return ResponseEntity.ok(chAppUserContactService.getChAppUserContactById(id));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new ch app user contact record.
+     * @param dto ch app user contact payload
      * @return created ChAppUserContactDto
      */
-    @Operation(summary = "Create ChAppUserContact")
+    @Operation(summary = "Create Ch App User Contact")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<ChAppUserContactDto> create(@RequestBody ChAppUserContactDto dto) {
-        log.info("Creating chappusercontact.");
+    public ResponseEntity<ChAppUserContactDto> create(
+            @Valid @RequestBody ChAppUserContactDto dto) {
         ChAppUserContactDto created = chAppUserContactService.createChAppUserContact(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing ch app user contact record.
+     * Only fields that are not null in the request are updated.
+     * @param id ch app user contact identifier
+     * @param dto partial ch app user contact payload
      * @return updated ChAppUserContactDto
      */
-    @Operation(summary = "Update ChAppUserContact")
+    @Operation(summary = "Patch Ch App User Contact")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<ChAppUserContactDto> update(
-            @Parameter(description = "ChAppUserContact id", required = true)
+    @PatchMapping("/{id}")
+    public ResponseEntity<ChAppUserContactDto> patch(
+            @Parameter(description = "ch app user contact identifier", required = true)
             @PathVariable UUID id,
             @RequestBody ChAppUserContactDto dto) {
-        log.info("Updating chappusercontact with id: {}", id);
         return ResponseEntity.ok(chAppUserContactService.updateChAppUserContact(id, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an ch app user contact record by id.
+     * @param id ch app user contact identifier
      * @return no content
      */
-    @Operation(summary = "Delete ChAppUserContact")
+    @Operation(summary = "Delete Ch App User Contact")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "ChAppUserContact id", required = true)
+            @Parameter(description = "ch app user contact identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Deleting chappusercontact with id: {}", id);
         chAppUserContactService.deleteChAppUserContact(id);
         return ResponseEntity.noContent().build();
     }
+
 }

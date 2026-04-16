@@ -12,9 +12,6 @@ import java.util.Map;
 @Log4j2
 public class TypeMapper {
 
-    private static final String JAVA_BIG_DECIMAL = "java.math.BigDecimal";
-    private static final String JAVA_STRING = "String";
-    private static final String JAVA_LOCAL_DATE_TIME = "java.time.LocalDateTime";
 
     private static final Map<String, String> sqlToJavaTypeMap = new HashMap<>();
 
@@ -41,27 +38,28 @@ public class TypeMapper {
         sqlToJavaTypeMap.put("BIGSERIAL", "Long");
         sqlToJavaTypeMap.put("SMALLSERIAL", "Short");
 
-        sqlToJavaTypeMap.put("DECIMAL", JAVA_BIG_DECIMAL);
-        sqlToJavaTypeMap.put("NUMERIC", JAVA_BIG_DECIMAL);
-        sqlToJavaTypeMap.put("FLOAT", JAVA_BIG_DECIMAL);
-        sqlToJavaTypeMap.put("DOUBLE", JAVA_BIG_DECIMAL);
-        sqlToJavaTypeMap.put("DOUBLE PRECISION", JAVA_BIG_DECIMAL);
+        sqlToJavaTypeMap.put("DECIMAL", Constants.JAVA_BIG_DECIMAL);
+        sqlToJavaTypeMap.put("NUMERIC", Constants.JAVA_BIG_DECIMAL);
+        sqlToJavaTypeMap.put("FLOAT", Constants.JAVA_BIG_DECIMAL);
+        sqlToJavaTypeMap.put("DOUBLE", Constants.JAVA_BIG_DECIMAL);
+        sqlToJavaTypeMap.put("DOUBLE PRECISION", Constants.JAVA_BIG_DECIMAL);
         sqlToJavaTypeMap.put("REAL", "Double");
 
-        sqlToJavaTypeMap.put("CHAR", JAVA_STRING);
-        sqlToJavaTypeMap.put("VARCHAR", JAVA_STRING);
-        sqlToJavaTypeMap.put("TEXT", JAVA_STRING);
-        sqlToJavaTypeMap.put("JSON", JAVA_STRING);
-        sqlToJavaTypeMap.put("JSONB", JAVA_STRING);
+        sqlToJavaTypeMap.put("CHAR", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("BPCHAR", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("VARCHAR", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("TEXT", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("JSON", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("JSONB", Constants.JAVA_STRING);
 
         sqlToJavaTypeMap.put("DATE", "java.time.LocalDate");
         sqlToJavaTypeMap.put("TIME", "java.time.LocalTime");
         sqlToJavaTypeMap.put("TIME WITHOUT TIME ZONE", "java.time.LocalTime");
         sqlToJavaTypeMap.put("TIME WITH TIME ZONE", "java.time.OffsetTime");
-        sqlToJavaTypeMap.put("TIMESTAMP", JAVA_LOCAL_DATE_TIME);
-        sqlToJavaTypeMap.put("TIMESTAMP WITHOUT TIME ZONE", JAVA_LOCAL_DATE_TIME);
+        sqlToJavaTypeMap.put("TIMESTAMP", Constants.JAVA_LOCAL_DATE_TIME);
+        sqlToJavaTypeMap.put("TIMESTAMP WITHOUT TIME ZONE", Constants.JAVA_LOCAL_DATE_TIME);
         sqlToJavaTypeMap.put("TIMESTAMP WITH TIME ZONE", "java.time.OffsetDateTime");
-        sqlToJavaTypeMap.put("DATETIME", JAVA_LOCAL_DATE_TIME);
+        sqlToJavaTypeMap.put("DATETIME", Constants.JAVA_LOCAL_DATE_TIME);
 
         sqlToJavaTypeMap.put("BLOB", "byte[]");
         sqlToJavaTypeMap.put("BYTEA", "byte[]");
@@ -72,43 +70,20 @@ public class TypeMapper {
 
         sqlToJavaTypeMap.put("UUID", "java.util.UUID");
         sqlToJavaTypeMap.put("ARRAY", "java.util.List<?>");
-        sqlToJavaTypeMap.put("MONEY", JAVA_BIG_DECIMAL);
-        sqlToJavaTypeMap.put("ENUM", JAVA_STRING);
-        sqlToJavaTypeMap.put("CITEXT", JAVA_STRING);
-        sqlToJavaTypeMap.put("TSVECTOR", JAVA_STRING);
-        sqlToJavaTypeMap.put("INET", JAVA_STRING);
-        sqlToJavaTypeMap.put("CIDR", JAVA_STRING);
-        sqlToJavaTypeMap.put("MACADDR", JAVA_STRING);
-        sqlToJavaTypeMap.put("XML", JAVA_STRING);
-        sqlToJavaTypeMap.put("PG_LSN", JAVA_STRING);
-        sqlToJavaTypeMap.put("VARBIT", JAVA_STRING);
-        sqlToJavaTypeMap.put("TRIGGER", JAVA_STRING);
-        sqlToJavaTypeMap.put("INTERVAL", JAVA_STRING);
+        sqlToJavaTypeMap.put("MONEY", Constants.JAVA_BIG_DECIMAL);
+        sqlToJavaTypeMap.put("ENUM", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("CITEXT", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("TSVECTOR", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("INET", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("CIDR", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("MACADDR", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("XML", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("PG_LSN", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("VARBIT", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("TRIGGER", Constants.JAVA_STRING);
+        sqlToJavaTypeMap.put("INTERVAL", Constants.JAVA_STRING);
     }
 
-    /**
-     * Maps a raw SQL type string to a Java type.
-     *
-     * @param sqlType the SQL type
-     * @return the Java type
-     */
-    public static String mapToJavaType(String sqlType) {
-        if (sqlType == null || sqlType.isEmpty()) {
-            log.error("SQL type cannot be null or empty");
-            throw new IllegalArgumentException("SQL type cannot be null or empty");
-        }
-
-        String baseType = normalizeBaseType(sqlType);
-        String javaType = sqlToJavaTypeMap.getOrDefault(baseType, JAVA_STRING);
-
-        if (!sqlToJavaTypeMap.containsKey(baseType)) {
-            log.warn("No specific mapping found for SQL type '{}'. Defaulting to 'String'.", baseType);
-        } else {
-            log.info("Mapping SQL type '{}' to Java type '{}'", baseType, javaType);
-        }
-
-        return javaType;
-    }
 
     /**
      * Maps a column definition to a Java type.
@@ -133,7 +108,25 @@ public class TypeMapper {
             return mapNumericColumn(column, normalizedSqlType);
         }
 
-        String javaType = sqlToJavaTypeMap.getOrDefault(baseType, JAVA_STRING);
+        if ("CHAR".equals(baseType) || "BPCHAR".equals(baseType)) {
+            int length = column.getLength();
+
+            if (length == 0 && normalizedSqlType.contains("(") && normalizedSqlType.contains(")")) {
+                try {
+                    String charArguments = normalizedSqlType.substring(
+                            normalizedSqlType.indexOf('(') + 1,
+                            normalizedSqlType.indexOf(')')
+                    );
+                    length = Integer.parseInt(charArguments.trim());
+                } catch (Exception exception) {
+                    log.warn("Failed to parse char length from sqlType '{}'", column.getSqlType(), exception);
+                }
+            }
+
+            return length == 1 ? "Character" : Constants.JAVA_STRING;
+        }
+
+        String javaType = sqlToJavaTypeMap.getOrDefault(baseType, Constants.JAVA_STRING);
 
         if (!sqlToJavaTypeMap.containsKey(baseType)) {
             log.warn("No specific mapping found for SQL type '{}'. Defaulting to 'String'.", baseType);
@@ -198,7 +191,7 @@ public class TypeMapper {
         String normalizedSqlType = sqlType.trim().toUpperCase().replaceAll("\\s+", " ");
         String baseType = normalizedSqlType.split("\\(")[0].trim();
 
-        baseType = baseType.replaceAll("\\[\\]", "");
+        baseType = baseType.replaceAll("\\[]", "");
         baseType = baseType.split("\\s+")[0];
 
         if (baseType.contains(" GENERATED ALWAYS AS IDENTITY")
@@ -210,7 +203,7 @@ public class TypeMapper {
     }
 
     /**
-     * Maps NUMERIC and DECIMAL columns to the most appropriate Java numeric type.
+     * Maps NUMERIC and DECIMAL columns to the safest Java numeric type.
      *
      * @param column the column metadata
      * @param normalizedSqlType the normalized SQL type
@@ -218,9 +211,8 @@ public class TypeMapper {
      */
     private static String mapNumericColumn(Column column, String normalizedSqlType) {
         int scale = column.getScale();
-        int precision = column.getPrecision();
 
-        if (precision == 0 && scale == 0 && normalizedSqlType.contains("(") && normalizedSqlType.contains(")")) {
+        if (scale == 0 && normalizedSqlType.contains("(") && normalizedSqlType.contains(")")) {
             try {
                 String numericArguments = normalizedSqlType.substring(
                         normalizedSqlType.indexOf('(') + 1,
@@ -229,32 +221,16 @@ public class TypeMapper {
 
                 String[] numericParts = numericArguments.split(",");
 
-                if (numericParts.length > 0 && !numericParts[0].trim().isEmpty()) {
-                    precision = Integer.parseInt(numericParts[0].trim());
-                }
-
                 if (numericParts.length > 1 && !numericParts[1].trim().isEmpty()) {
                     scale = Integer.parseInt(numericParts[1].trim());
                 }
             } catch (Exception exception) {
-                log.warn("Failed to parse precision/scale from sqlType '{}'", column.getSqlType(), exception);
+                log.warn("Failed to parse scale from sqlType '{}'", column.getSqlType(), exception);
             }
         }
 
         if (scale > 0) {
             return "java.math.BigDecimal";
-        }
-
-        if (column.isPrimaryKey() || column.isIdentity()) {
-            return "Long";
-        }
-
-        if (precision > 0 && precision <= 9) {
-            return "Integer";
-        }
-
-        if (precision > 9 && precision <= 19) {
-            return "Long";
         }
 
         return "java.math.BigInteger";

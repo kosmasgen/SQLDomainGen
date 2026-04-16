@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/exportCompProdCountry.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="create-export-comp-prod-country-table-and-audit" author="kosmasgenaris@knowledge.gr">
+        <createTable tableName="export_comp_prod_country" schemaName="pep_schema">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" primaryKeyName="export_comp_prod_country_pkey" nullable="false"/>
+            </column>
+            <column name="export_company_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="country_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="date_created" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="last_updated" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recdeleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="exp_year" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="product_id" type="UUID">
+            </column>
+        </createTable>
+
+
+        <sql><![CDATA[
+            ALTER TABLE pep_schema.export_comp_prod_country
+            ADD CONSTRAINT export_comp_prod_country_year_check CHECK (((exp_year >= 1800) AND (exp_year <= 2100)));
+        ]]></sql>
+
+
+
+        <addForeignKeyConstraint
+                                 baseTableName="export_comp_prod_country"
+                                 baseColumnNames="export_company_id"
+                                 constraintName="fk_export_comp_prod_country_export_company"
+                                 referencedTableName="export_company"
+                                 referencedColumnNames="id"
+                                baseTableSchemaName="pep_schema"
+                                referencedTableSchemaName="pep_schema"/>
+        <addForeignKeyConstraint
+                                 baseTableName="export_comp_prod_country"
+                                 baseColumnNames="country_id"
+                                 constraintName="fk_export_comp_prod_country_country"
+                                 referencedTableName="country"
+                                 referencedColumnNames="id"
+                                baseTableSchemaName="pep_schema"
+                                referencedTableSchemaName="pep_schema"/>
+        <addForeignKeyConstraint
+                                 baseTableName="export_comp_prod_country"
+                                 baseColumnNames="product_id"
+                                 constraintName="fk_export_comp_prod_country_product"
+                                 referencedTableName="product"
+                                 referencedColumnNames="id"
+                                baseTableSchemaName="pep_schema"
+                                referencedTableSchemaName="pep_schema"/>
+
+        <createTable tableName="export_comp_prod_country_aud" schemaName="audit">
+            <column name="id" type="UUID"/>
+            <column name="export_company_id" type="UUID"/>
+            <column name="country_id" type="UUID"/>
+            <column name="date_created" type="TIMESTAMP"/>
+            <column name="last_updated" type="TIMESTAMP"/>
+            <column name="recdeleted" type="BOOLEAN"/>
+            <column name="exp_year" type="INTEGER"/>
+            <column name="product_id" type="UUID"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+        </createTable>
+
+        <addPrimaryKey tableName="export_comp_prod_country_aud"
+                       columnNames="id, rev"
+                       constraintName="pk_export_comp_prod_country_aud"
+                       schemaName="audit"/>
+
+        <addForeignKeyConstraint baseTableName="export_comp_prod_country_aud"
+                                 baseColumnNames="rev"
+                                 constraintName="fk_export_comp_prod_country_aud_revinfo"
+                                 referencedTableName="REVINFO"
+                                 referencedColumnNames="REV"
+                                 baseTableSchemaName="audit"
+                                 referencedTableSchemaName="audit"/>
+
+    </changeSet>
+
+</databaseChangeLog>

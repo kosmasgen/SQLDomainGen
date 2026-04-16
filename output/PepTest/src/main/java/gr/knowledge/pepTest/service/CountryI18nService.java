@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.CountryI18nDto;
-import gr.knowledge.pepTest.entity.CountryI18nPK;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code CountryI18n} domain operations.
@@ -10,23 +10,21 @@ import java.util.List;
 public interface CountryI18nService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all country i18ns.
      * @return non-null list of {@link CountryI18nDto}
      */
-    List<CountryI18nDto> getAllCountryI18n();
+    List<CountryI18nDto> getAllCountryI18ns();
 
     /**
      * Retrieves a record by id.
-     *
-     * @param id the record id
+     * @param countryId the country_id value
+     * @param languageId the language_id value
      * @return the matching {@link CountryI18nDto}
      */
-    CountryI18nDto getCountryI18nById(CountryI18nPK id);
+    CountryI18nDto getCountryI18nById(UUID countryId, UUID languageId);
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link CountryI18nDto}
      */
@@ -34,20 +32,19 @@ public interface CountryI18nService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param countryId the country_id value
+     * @param languageId the language_id value
+     * @param dto input payload with partial fields
      * @return updated {@link CountryI18nDto}
      */
-    CountryI18nDto updateCountryI18n(CountryI18nPK id, CountryI18nDto dto);
+    CountryI18nDto updateCountryI18n(UUID countryId, UUID languageId, CountryI18nDto dto);
 
     /**
      * Deletes a record by id.
-     *
-     * @param id the record id
+     * @param countryId the country_id value
+     * @param languageId the language_id value
      */
-    void deleteCountryI18n(CountryI18nPK id);
+    void deleteCountryI18n(UUID countryId, UUID languageId);
 }

@@ -3,9 +3,10 @@ package gr.knowledge.pepTest.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalTime;
-import java.util.UUID;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "working_hours")
 @Getter
 @Setter
@@ -19,10 +20,11 @@ public class WorkingHours {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "company_id", nullable = false)
-    private UUID companyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private Company company;
 
-    @Column(name = "day_of_week", length = 255, nullable = false)
+    @Column(name = "day_of_week", length = 20, nullable = false)
     private String dayOfWeek;
 
     @Column(name = "opening_time")
@@ -32,9 +34,10 @@ public class WorkingHours {
     private LocalTime closingTime;
 
     @Column(name = "is_closed", nullable = false)
-    private Boolean isClosed = false;
+    private Boolean isClosed;
 
-    @Column(name = "profile_id")
-    private UUID profileId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "profile_id")
+    private CompanyProfile profile;
 
 }

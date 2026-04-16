@@ -5,11 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.entity.CompanyStatusViewRulesKey;
+import gr.knowledge.pepTest.dto.CompanyStatusDto;
 import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.CompanyViewRulesDto;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for CompanyStatusViewRules.
@@ -21,11 +22,13 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CompanyStatusViewRulesDto {
 
-    @NotNull
-    private UUID companyStatusId;
+    private CompanyStatusViewRulesKey id;
 
     @NotNull
-    private UUID companyViewRulesId;
+    private CompanyStatusDto companyStatus;
+
+    @NotNull
+    private CompanyViewRulesDto companyViewRules;
 
     private Boolean excludeCompanies;
 

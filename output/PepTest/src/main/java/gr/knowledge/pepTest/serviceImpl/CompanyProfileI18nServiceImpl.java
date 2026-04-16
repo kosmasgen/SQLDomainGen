@@ -5,18 +5,18 @@ import gr.knowledge.pepTest.mapper.CompanyProfileI18nMapper;
 import gr.knowledge.pepTest.entity.CompanyProfileI18n;
 import gr.knowledge.pepTest.repository.CompanyProfileI18nRepository;
 import gr.knowledge.pepTest.service.CompanyProfileI18nService;
-import gr.knowledge.pepTest.entity.CompanyProfileI18nPK;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
+import gr.knowledge.pepTest.entity.CompanyProfileI18nKey;
+import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code CompanyProfileI18n} domain operations.
+ * Service implementation for {@code Company Profile I18n} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -28,75 +28,159 @@ public class CompanyProfileI18nServiceImpl implements CompanyProfileI18nService 
     private final CompanyProfileI18nMapper companyProfileI18nMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link CompanyProfileI18nDto}
+     * Retrieves all company profile i18ns records.
+     * @return list of CompanyProfileI18nDto
      */
     @Override
-    public List<CompanyProfileI18nDto> getAllCompanyProfileI18n() {
-        log.info("Fetching all company-profile-i18n.");
-        return companyProfileI18nMapper.toDTO(companyProfileI18nRepository.findAll());
+    public List<CompanyProfileI18nDto> getAllCompanyProfileI18ns() {
+        log.info("Fetching all company profile i18ns records.");
+        return companyProfileI18nMapper.toDTOList(companyProfileI18nRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link CompanyProfileI18nDto}
+     * Retrieves a company profile i18n record by id.
+     * @param companyProfileId the companyProfileId value
+     * @param languageId the languageId value
+     * @return CompanyProfileI18nDto
      */
     @Override
-    public CompanyProfileI18nDto getCompanyProfileI18nById(CompanyProfileI18nPK id) {
-        log.info("Fetching company-profile-i18n with id: {}", id);
-        CompanyProfileI18n entity = companyProfileI18nRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyProfileI18n not found with id: " + id));
-        return companyProfileI18nMapper.toDTO(entity);
+    public CompanyProfileI18nDto getCompanyProfileI18nById(UUID companyProfileId, UUID languageId) {
+
+        String compositeId = buildCompositeId(companyProfileId, languageId);
+        log.info("Fetching company profile i18n with composite id: {}", compositeId);
+
+        CompanyProfileI18n existingEntity = findCompanyProfileI18nByIdOrThrow(companyProfileId, languageId);
+        return companyProfileI18nMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new company profile i18n record.
      * @param dto input payload
      * @return created {@link CompanyProfileI18nDto}
      */
     @Override
     public CompanyProfileI18nDto createCompanyProfileI18n(CompanyProfileI18nDto dto) {
-        log.info("Creating company-profile-i18n.");
+        log.info("Creating company profile i18n.");
+
+        validateCompanyProfileI18nDoesNotExist(dto);
+
         CompanyProfileI18n entity = companyProfileI18nMapper.toEntity(dto);
-        CompanyProfileI18n saved = companyProfileI18nRepository.save(entity);
-        return companyProfileI18nMapper.toDTO(saved);
+        CompanyProfileI18n savedEntity = companyProfileI18nRepository.save(entity);
+
+        return companyProfileI18nMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing company profile i18n record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param companyProfileId the companyProfileId value
+     * @param languageId the languageId value
+     * @param dto input payload with partial fields
      * @return updated {@link CompanyProfileI18nDto}
      */
     @Override
-    public CompanyProfileI18nDto updateCompanyProfileI18n(CompanyProfileI18nPK id, CompanyProfileI18nDto dto) {
-        log.info("Updating company-profile-i18n with id: {}", id);
-        companyProfileI18nRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyProfileI18n not found with id: " + id));
-        CompanyProfileI18n entity = companyProfileI18nMapper.toEntity(dto);
-        entity.setId(id);
-        CompanyProfileI18n saved = companyProfileI18nRepository.save(entity);
-        return companyProfileI18nMapper.toDTO(saved);
+    public CompanyProfileI18nDto updateCompanyProfileI18n(UUID companyProfileId, UUID languageId, CompanyProfileI18nDto dto) {
+        String compositeId = buildCompositeId(companyProfileId, languageId);
+
+        log.info("Updating company profile i18n with composite id: {}", compositeId);
+
+        CompanyProfileI18n existingEntity = findCompanyProfileI18nByIdOrThrow(companyProfileId, languageId);
+        companyProfileI18nMapper.partialUpdate(existingEntity, dto);
+        CompanyProfileI18n savedEntity = companyProfileI18nRepository.save(existingEntity);
+
+        return companyProfileI18nMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a company profile i18n record by id.
+     * @param companyProfileId the company_profile_id value
+     * @param languageId the language_id value
      */
     @Override
-    public void deleteCompanyProfileI18n(CompanyProfileI18nPK id) {
-        log.info("Deleting company-profile-i18n with id: {}", id);
-        companyProfileI18nRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyProfileI18n not found with id: " + id));
-        companyProfileI18nRepository.deleteById(id);
+    public void deleteCompanyProfileI18n(UUID companyProfileId, UUID languageId) {
+        String compositeId = buildCompositeId(companyProfileId, languageId);
+        log.info("Deleting company profile i18n with composite id: {}", compositeId);
+
+        findCompanyProfileI18nByIdOrThrow(companyProfileId, languageId);
+        companyProfileI18nRepository.deleteById(buildKey(companyProfileId, languageId));
     }
+
+    /**
+     * Finds an existing company profile i18n record by id or throws an exception.
+     * @param companyProfileId the companyProfileId value
+     * @param languageId the languageId value
+     * @return existing CompanyProfileI18n entity
+     */
+    private CompanyProfileI18n findCompanyProfileI18nByIdOrThrow(UUID companyProfileId, UUID languageId) {
+        return companyProfileI18nRepository.findById(buildKey(companyProfileId, languageId))
+                .orElseThrow(() -> createCompanyProfileI18nNotFoundException(companyProfileId, languageId));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the company profile i18n entity.
+     @param companyProfileId the company_profile_id value
+     @param languageId the language_id value
+     @return runtime exception
+     */
+    private RuntimeException createCompanyProfileI18nNotFoundException(UUID companyProfileId, UUID languageId) {
+        String compositeId = buildCompositeId(companyProfileId, languageId);
+        log.warn("CompanyProfileI18n not found with composite id: {}", compositeId);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("CompanyProfileI18n")
+                .message("CompanyProfileI18n not found with composite id: " + compositeId)
+                .build();
+    }
+
+    /**
+     * Validates that a company profile i18n record does not already exist.
+     * @param dto input payload
+     * @throws GeneratedRuntimeException if the entity already exists
+     */
+    private void validateCompanyProfileI18nDoesNotExist(CompanyProfileI18nDto dto) {
+        if (dto == null || (dto.getId() != null ? dto.getId().getCompanyProfileId() : null) == null || (dto.getId() != null ? dto.getId().getLanguageId() : null) == null) {
+            return;
+        }
+
+        CompanyProfileI18nKey key = buildKey((dto.getId() != null ? dto.getId().getCompanyProfileId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+
+        if (companyProfileI18nRepository.existsById(key)) {
+            String compositeId = buildCompositeId((dto.getId() != null ? dto.getId().getCompanyProfileId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+            log.warn("CompanyProfileI18n already exists with composite id: {}", compositeId);
+
+            throw GeneratedRuntimeException.builder()
+                    .code(ErrorCodes.BAD_REQUEST)
+                    .entity("CompanyProfileI18n")
+                    .message("CompanyProfileI18n already exists with composite id: " + compositeId)
+                    .build();
+        }
+    }
+
+    /**
+     * Builds the composite key.
+     *
+     * @param companyProfileId the companyProfileId value
+     * @param languageId the languageId value
+     * @return populated {@link CompanyProfileI18nKey}
+     */
+    private CompanyProfileI18nKey buildKey(UUID companyProfileId, UUID languageId) {
+        CompanyProfileI18nKey key = new CompanyProfileI18nKey();
+        key.setCompanyProfileId(companyProfileId);
+        key.setLanguageId(languageId);
+        return key;
+    }
+
+    /**
+     * Builds the composite id string.
+     *
+     * @param companyProfileId the companyProfileId value
+     * @param languageId the languageId value
+     * @return composite id string
+     */
+    private String buildCompositeId(UUID companyProfileId, UUID languageId) {
+        return "companyProfileId=" + companyProfileId + ", " + "languageId=" + languageId;
+    }
+
 }

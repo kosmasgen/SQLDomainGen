@@ -5,14 +5,18 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import jakarta.validation.constraints.Size;
+import java.math.BigInteger;
+import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.dto.MunicipalityDto;
+import gr.knowledge.pepTest.dto.ChamberDepartmentDto;
+import gr.knowledge.pepTest.dto.CompanyStatusDto;
+import gr.knowledge.pepTest.dto.CorporateStatusDto;
+import gr.knowledge.pepTest.dto.BusinessLocationDto;
+import gr.knowledge.pepTest.dto.CountryDto;
 
 /**
  * Data transfer object for Company.
@@ -24,21 +28,20 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CompanyDto {
 
-    @NotNull
     private UUID id;
 
-    @Size(max = 255)
+    @Size(max = 9)
     private String afm;
 
-    private BigDecimal am;
+    private BigInteger am;
 
-    private BigDecimal gemiId;
+    private BigInteger gemiId;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 1000)
     private String coName;
 
-    private BigDecimal chamberCompanyId;
+    private BigInteger chamberCompanyId;
 
     @NotNull
     private Integer chamberId;
@@ -49,14 +52,14 @@ public class CompanyDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateInterruption;
 
-    private BigDecimal member;
+    private BigInteger member;
 
-    @Size(max = 255)
+    @Size(max = 1)
     private String recType;
 
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String addressCity;
 
     @Size(max = 255)
@@ -65,9 +68,9 @@ public class CompanyDto {
     @Size(max = 255)
     private String addressLongitude;
 
-    private UUID addressMunicipalityPriId;
+    private MunicipalityDto addressMunicipalityPri;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String addressRegion;
 
     @Size(max = 255)
@@ -76,39 +79,36 @@ public class CompanyDto {
     @Size(max = 255)
     private String addressStreetNumber;
 
-    @Size(max = 255)
+    @Size(max = 12)
     private String addressZipCode;
 
-    private BigDecimal branchTypeId;
+    private BigInteger branchTypeId;
 
-    private UUID chamberDepartmentId;
+    private ChamberDepartmentDto chamberDepartment;
 
-    private BigDecimal chamberGemiResponsibleId;
+    private BigInteger chamberGemiResponsibleId;
 
-    @Size(max = 255)
+    @Size(max = 1000)
     private String coNameNrm;
 
-    private UUID companyStatusId;
+    private CompanyStatusDto companyStatus;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 100)
     private String contactEmail;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String contactMobile;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 20)
     private String contactPhone1;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 20)
     private String contactPhone2;
 
-    @Size(max = 255)
+    @Size(max = 100)
     private String contactUrl;
 
-    private UUID corporateStatusId;
+    private CorporateStatusDto corporateStatus;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
@@ -122,10 +122,9 @@ public class CompanyDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateRegistered;
 
-    @Size(max = 255)
+    @Size(max = 12)
     private String gemiNumber;
 
-    @Size(max = 255)
     private String objective;
 
     private Boolean receiveNewsletter;
@@ -139,7 +138,7 @@ public class CompanyDto {
     @NotNull
     private Boolean showBusinessGuide;
 
-    private UUID businessLocationId;
+    private BusinessLocationDto businessLocation;
 
     private Boolean hasActiveProfiles;
 
@@ -148,12 +147,11 @@ public class CompanyDto {
     @Size(max = 255)
     private String responsibleName;
 
-    private UUID addressCountryId;
+    private CountryDto addressCountry;
 
-    private BigDecimal addressZoomLevel;
+    private BigInteger addressZoomLevel;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 20)
     private String contactPhone3;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -162,18 +160,17 @@ public class CompanyDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime foundationDate;
 
-    private BigDecimal meCriteria1Id;
+    private BigInteger meCriteria1Id;
 
-    private BigDecimal meCriteria2Id;
+    private BigInteger meCriteria2Id;
 
-    private BigDecimal meCriteria3Id;
+    private BigInteger meCriteria3Id;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime memberDues;
 
     private UUID jbUuid;
 
-    @Size(max = 255)
     private String jbDescription;
 
     private Long jbNumberEmployees;
@@ -182,7 +179,6 @@ public class CompanyDto {
     private String jbMotto;
 
     @Size(max = 255)
-    @Pattern(regexp = ".*")
     private String jbEmail;
 
     @Size(max = 255)
@@ -206,7 +202,6 @@ public class CompanyDto {
 
     private Boolean jbIsvalid;
 
-    @Size(max = 255)
     private String jbActivationStatus;
 
 }

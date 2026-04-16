@@ -5,14 +5,13 @@ import gr.knowledge.pepTest.mapper.CountryMapper;
 import gr.knowledge.pepTest.entity.Country;
 import gr.knowledge.pepTest.repository.CountryRepository;
 import gr.knowledge.pepTest.service.CountryService;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
 import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
@@ -28,75 +27,118 @@ public class CountryServiceImpl implements CountryService {
     private final CountryMapper countryMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link CountryDto}
+     * Retrieves all countries records.
+     * @return list of CountryDto
      */
     @Override
-    public List<CountryDto> getAllCountry() {
-        log.info("Fetching all country.");
-        return countryMapper.toDTO(countryRepository.findAll());
+    public List<CountryDto> getAllCountries() {
+        log.info("Fetching all countries records.");
+        return countryMapper.toDTOList(countryRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link CountryDto}
+     * Retrieves a country record by id.
+     * @param id the country id
+     * @return CountryDto
      */
     @Override
     public CountryDto getCountryById(UUID id) {
         log.info("Fetching country with id: {}", id);
-        Country entity = countryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Country not found with id: " + id));
-        return countryMapper.toDTO(entity);
+
+        Country existingEntity = findCountryByIdOrThrow(id);
+        return countryMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new country record.
      * @param dto input payload
      * @return created {@link CountryDto}
      */
     @Override
     public CountryDto createCountry(CountryDto dto) {
         log.info("Creating country.");
+
+        validateCountryCreateUniqueConstraints(dto);
+
         Country entity = countryMapper.toEntity(dto);
-        Country saved = countryRepository.save(entity);
-        return countryMapper.toDTO(saved);
+        Country savedEntity = countryRepository.save(entity);
+
+        return countryMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing country record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param id the country id
+     * @param dto input payload with partial fields
      * @return updated {@link CountryDto}
      */
     @Override
     public CountryDto updateCountry(UUID id, CountryDto dto) {
         log.info("Updating country with id: {}", id);
-        countryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Country not found with id: " + id));
-        Country entity = countryMapper.toEntity(dto);
-        entity.setId(id);
-        Country saved = countryRepository.save(entity);
-        return countryMapper.toDTO(saved);
+
+        Country existingEntity = findCountryByIdOrThrow(id);
+        countryMapper.partialUpdate(existingEntity, dto);
+        Country savedEntity = countryRepository.save(existingEntity);
+
+        return countryMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a country record by id.
+     * @param id the country id
      */
     @Override
     public void deleteCountry(UUID id) {
         log.info("Deleting country with id: {}", id);
-        countryRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Country not found with id: " + id));
+
+        findCountryByIdOrThrow(id);
         countryRepository.deleteById(id);
     }
+
+    /**
+     * Validates unique constraints for create operations.
+     * @param dto input payload
+     */
+    private void validateCountryCreateUniqueConstraints(CountryDto dto) {
+
+        if (dto == null) {
+            return;
+        }
+
+        if (dto.getChamberId() != null && dto.getChamberCountryId() != null && countryRepository.existsByChamberIdAndChamberCountryId(dto.getChamberId(), dto.getChamberCountryId())) {
+            throw GeneratedRuntimeException.builder()
+                    .code(ErrorCodes.BAD_REQUEST)
+                    .entity("Country")
+                    .message("Country already exists with " + "chamberId=" + dto.getChamberId() + ", " + "chamberCountryId=" + dto.getChamberCountryId())
+                    .build();
+        }
+    }
+
+    /**
+     * Finds an existing country record by id or throws an exception.
+     * @param id the country id
+     * @return existing Country entity
+     */
+    private Country findCountryByIdOrThrow(UUID id) {
+        return countryRepository.findById(id)
+                .orElseThrow(() -> createCountryNotFoundException(id));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the country entity.
+     @param id the country id
+     @return runtime exception
+     */
+    private RuntimeException createCountryNotFoundException(UUID id) {
+        log.warn("Country not found with id: {}", id);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("Country")
+                .message("Country not found with id: " + id)
+                .build();
+    }
+
 }

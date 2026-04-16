@@ -5,11 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import gr.knowledge.pepTest.dto.ExportCompanyDto;
+import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.CountryDto;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.dto.ProductDto;
 
 /**
  * Data transfer object for ExportCompProdCountry.
@@ -21,29 +23,26 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ExportCompProdCountryDto {
 
-    @NotNull
     private UUID id;
 
     @NotNull
-    private UUID exportCompanyId;
+    private ExportCompanyDto exportCompany;
 
     @NotNull
-    private UUID countryId;
+    private CountryDto country;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
     @NotNull
     private Integer expYear;
 
-    private UUID productId;
+    private ProductDto product;
 
 }

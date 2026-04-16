@@ -5,10 +5,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "company_bg_cooperation_i18n")
 @Getter
 @Setter
@@ -18,29 +18,28 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class CompanyBgCooperationI18n {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "description", length = 255)
+    @Column(name = "description", length = 1000)
     private String description;
 
     @CreationTimestamp
     @Column(name = "date_created", nullable = false, updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
-    @Column(name = "cooperation_id", nullable = false)
-    private UUID cooperationId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "cooperation_id", nullable = false)
+    private CompanyBgCooperation cooperation;
 
-    @Column(name = "language_id", nullable = false)
-    private UUID languageId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "language_id", nullable = false)
+    private Languages language;
 
 }

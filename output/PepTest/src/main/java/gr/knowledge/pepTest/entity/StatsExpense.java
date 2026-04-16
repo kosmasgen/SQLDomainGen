@@ -3,13 +3,14 @@ package gr.knowledge.pepTest.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
-@Table(name = "stats_expense")
+@Audited
+@Table(name = "stats_expense", uniqueConstraints = @UniqueConstraint(columnNames = {"chamber_id", "account_sum_id"}))
 @Getter
 @Setter
 @Builder
@@ -18,8 +19,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class StatsExpense {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -27,25 +27,24 @@ public class StatsExpense {
     private Integer chamberId;
 
     @Column(name = "account_sum_id", nullable = false)
-    private BigDecimal accountSumId;
+    private BigInteger accountSumId;
 
-    @Column(name = "cd_use", length = 255, nullable = false)
+    @Column(name = "cd_use", length = 4, nullable = false)
     private String cdUse;
 
-    @Column(name = "group_descr", length = 255)
+    @Column(name = "group_descr", length = 300)
     private String groupDescr;
 
-    @Column(name = "mm", length = 255, nullable = false)
+    @Column(name = "mm", length = 2, nullable = false)
     private String mm;
 
-    @Column(name = "amount")
+    @Column(name = "amount", precision = 19, scale = 2)
     private BigDecimal amount;
 
-    @UpdateTimestamp
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
-    @Column(name = "rec_deleted")
-    private BigDecimal recDeleted;
+    @Column(name = "recdeleted")
+    private BigInteger recdeleted;
 
 }

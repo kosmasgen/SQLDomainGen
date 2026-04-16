@@ -5,13 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.math.BigInteger;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.time.LocalDate;
+import gr.knowledge.pepTest.dto.TemporaryCompanyTitleDto;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.dto.LanguagesDto;
+import jakarta.validation.constraints.Size;
+import java.time.LocalDate;
 
 /**
  * Data transfer object for TemporaryCompanyTitlei18n.
@@ -23,33 +24,30 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TemporaryCompanyTitlei18nDto {
 
-    @NotNull
-    private Long id;
+    private BigInteger id;
 
     @NotNull
-    private BigDecimal version;
+    private BigInteger version;
 
     @NotNull
-    private BigDecimal companyTitleId;
+    private TemporaryCompanyTitleDto companyTitle;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
     @NotNull
-    private BigDecimal languageId;
+    private LanguagesDto language;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private BigDecimal recDeleted;
+    private BigInteger recdeleted;
 
-    @Size(max = 255)
+    @Size(max = 1000)
     private String title;
 
-    private BigDecimal gemiId;
+    private BigInteger gemiId;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate gemiDateCreated;

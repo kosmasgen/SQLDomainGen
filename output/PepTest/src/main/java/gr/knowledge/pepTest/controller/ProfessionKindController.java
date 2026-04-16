@@ -2,122 +2,111 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.ProfessionKindDto;
 import gr.knowledge.pepTest.service.ProfessionKindService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing ProfessionKind resources.
+ * REST controller for managing Profession Kind resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "ProfessionKind", description = "ProfessionKind API")
-@RequestMapping("/api/profession-kinds")
+@Tag(name = "Profession Kind", description = "Profession Kind API")
+@RequestMapping("/api/profession-kind")
 public class ProfessionKindController {
 
     private final ProfessionKindService professionKindService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all profession kinds.
      * @return list of ProfessionKindDto
      */
-    @Operation(summary = "Get all ProfessionKind")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all profession kinds")
     @GetMapping
     public ResponseEntity<List<ProfessionKindDto>> getAll() {
-        log.info("Fetching all professionkind records.");
-        return ResponseEntity.ok(professionKindService.getAllProfessionKind());
+        return ResponseEntity.ok(professionKindService.getAllProfessionKinds());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the profession kind record by id.
+     * @param id profession kind identifier
      * @return ProfessionKindDto
      */
-    @Operation(summary = "Get ProfessionKind by id")
+    @Operation(summary = "Get Profession Kind by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<ProfessionKindDto> getById(
-            @Parameter(description = "ProfessionKind id", required = true)
+            @Parameter(description = "profession kind identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Fetching professionkind with id: {}", id);
         return ResponseEntity.ok(professionKindService.getProfessionKindById(id));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new profession kind record.
+     * @param dto profession kind payload
      * @return created ProfessionKindDto
      */
-    @Operation(summary = "Create ProfessionKind")
+    @Operation(summary = "Create Profession Kind")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<ProfessionKindDto> create(@RequestBody ProfessionKindDto dto) {
-        log.info("Creating professionkind.");
+    public ResponseEntity<ProfessionKindDto> create(
+            @Valid @RequestBody ProfessionKindDto dto) {
         ProfessionKindDto created = professionKindService.createProfessionKind(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing profession kind record.
+     * Only fields that are not null in the request are updated.
+     * @param id profession kind identifier
+     * @param dto partial profession kind payload
      * @return updated ProfessionKindDto
      */
-    @Operation(summary = "Update ProfessionKind")
+    @Operation(summary = "Patch Profession Kind")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<ProfessionKindDto> update(
-            @Parameter(description = "ProfessionKind id", required = true)
+    @PatchMapping("/{id}")
+    public ResponseEntity<ProfessionKindDto> patch(
+            @Parameter(description = "profession kind identifier", required = true)
             @PathVariable UUID id,
             @RequestBody ProfessionKindDto dto) {
-        log.info("Updating professionkind with id: {}", id);
         return ResponseEntity.ok(professionKindService.updateProfessionKind(id, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an profession kind record by id.
+     * @param id profession kind identifier
      * @return no content
      */
-    @Operation(summary = "Delete ProfessionKind")
+    @Operation(summary = "Delete Profession Kind")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "ProfessionKind id", required = true)
+            @Parameter(description = "profession kind identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Deleting professionkind with id: {}", id);
         professionKindService.deleteProfessionKind(id);
         return ResponseEntity.noContent().build();
     }
+
 }

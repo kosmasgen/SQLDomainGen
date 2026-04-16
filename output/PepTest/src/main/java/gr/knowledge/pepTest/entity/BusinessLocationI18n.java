@@ -4,9 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "business_location_i18n")
 @Getter
 @Setter
@@ -16,24 +17,23 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class BusinessLocationI18n {
 
     @EmbeddedId
-    private BusinessLocationI18nPK id;
+    private BusinessLocationI18nKey id;
 
-    @Column(name = "description", length = 255, nullable = false)
+    @Column(name = "description", nullable = false)
     private String description;
 
-    @Column(name = "code", length = 255, nullable = false)
+    @Column(name = "code", nullable = false)
     private String code;
 
     @CreationTimestamp
     @Column(name = "date_created", nullable = false, updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
     @MapsId("businessLocationId")
     @ManyToOne(fetch = FetchType.LAZY)

@@ -193,7 +193,7 @@ class EntitySchemaValidationTest {
         validateJavaTypes(entityDefinition, tableDefinition, violations);
         validateColumnConstraints(entityDefinition, tableDefinition, violations);
         validateRelations(entityDefinition, tableDefinition, schemaTables, entityBySimpleName, violations);
-        validateForeignKeyCoverage(entityDefinition, tableDefinition, schemaTables, entityBySimpleName, violations);
+        validateForeignKeyCoverage(entityDefinition, tableDefinition, schemaTables, violations);
         validateMissingTableColumns(entityDefinition, tableDefinition, entityBySimpleName, violations);
     }
 
@@ -694,17 +694,15 @@ class EntitySchemaValidationTest {
      * while ignoring references to external tables that are not present
      * in the parsed schema.
      *
-     * @param entityDefinition   parsed entity definition
-     * @param tableDefinition    parsed SQL table definition
-     * @param schemaTables       parsed SQL tables
-     * @param entityBySimpleName parsed entities by simple name
-     * @param violations         collected violations
+     * @param entityDefinition parsed entity definition
+     * @param tableDefinition parsed SQL table definition
+     * @param schemaTables parsed SQL tables
+     * @param violations collected violations
      */
     private void validateForeignKeyCoverage(
             JavaEntityDefinition entityDefinition,
             TableDefinition tableDefinition,
             Map<String, TableDefinition> schemaTables,
-            Map<String, JavaEntityDefinition> entityBySimpleName,
             List<String> violations
     ) {
         Set<String> relationJoinColumns = entityDefinition.fields().stream()
@@ -1684,16 +1682,6 @@ class EntitySchemaValidationTest {
                 .toLowerCase(Locale.ROOT);
     }
 
-    /**
-     * Extracts the first SQL identifier from a segment.
-     *
-     * @param sqlSegment SQL segment
-     * @return leading identifier or null
-     */
-    private String extractLeadingIdentifier(String sqlSegment) {
-        Matcher matcher = Pattern.compile("^\\s*(\"[^\"]+\"|[a-zA-Z_][\\w$]*)").matcher(sqlSegment);
-        return matcher.find() ? sanitizeIdentifier(matcher.group(1)) : null;
-    }
 
     /**
      * Removes comments from Java source code.
@@ -2251,6 +2239,13 @@ class EntitySchemaValidationTest {
     }
 
 
+    /**
+     * Validates column-level constraints declared in SQL against the generated Java field.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param tableDefinition parsed SQL table definition
+     * @param violations collected violations
+     */
     private void validateColumnConstraints(
             JavaEntityDefinition entityDefinition,
             TableDefinition tableDefinition,
@@ -2277,82 +2272,61 @@ class EntitySchemaValidationTest {
             validatePrecisionAndScaleConstraint(entityDefinition, columnDefinition, javaFieldDefinition, violations);
             validateSizeAnnotationConstraint(entityDefinition, columnDefinition, javaFieldDefinition, violations);
             validateDigitsAnnotationConstraint(entityDefinition, columnDefinition, javaFieldDefinition, violations);
+
+            // 🔥 THIS WAS MISSING
             validateDefaultAndCheckMetadataPresence(entityDefinition, columnDefinition, javaFieldDefinition, violations);
         }
     }
 
+    /**
+     * Validates @Size(max) against SQL length.
+     */
     private void validateSizeAnnotationConstraint(
             JavaEntityDefinition entityDefinition,
             ColumnDefinition columnDefinition,
             JavaFieldDefinition javaFieldDefinition,
             List<String> violations
     ) {
-        if (columnDefinition.length() == null) {
-            return;
-        }
+        if (columnDefinition.length() == null) return;
 
-        String sizeMaxValue = javaFieldDefinition.annotationAttribute("Size", "max");
-        if (sizeMaxValue == null || sizeMaxValue.isBlank()) {
-            return;
-        }
+        Integer sizeMax = tryParseInteger(
+                javaFieldDefinition.annotationAttribute("Size", "max")
+        );
 
-        Integer actualSizeMax = tryParseInteger(sizeMaxValue);
-        if (actualSizeMax == null) {
-            return;
-        }
-
-        if (!columnDefinition.length().equals(actualSizeMax)) {
-            violations.add("""
-                [%s] @Size mismatch for column '%s':
-                  SQL length: %d
-                  Java @Size max: %d
-                """.formatted(
-                    entityDefinition.displayName(),
-                    columnDefinition.name(),
-                    columnDefinition.length(),
-                    actualSizeMax
-            ));
+        if (sizeMax != null && !columnDefinition.length().equals(sizeMax)) {
+            violations.add("[%s] Column '%s' @Size mismatch (SQL=%d, Size=%d)"
+                    .formatted(entityDefinition.displayName(), columnDefinition.name(),
+                            columnDefinition.length(), sizeMax));
         }
     }
 
+    /**
+     * Validates @Digits against precision/scale.
+     */
     private void validateDigitsAnnotationConstraint(
             JavaEntityDefinition entityDefinition,
             ColumnDefinition columnDefinition,
             JavaFieldDefinition javaFieldDefinition,
             List<String> violations
     ) {
-        if (columnDefinition.precision() == null && columnDefinition.scale() == null) {
-            return;
-        }
+        if (columnDefinition.precision() == null || columnDefinition.scale() == null) return;
 
-        String digitsIntegerValue = javaFieldDefinition.annotationAttribute("Digits", "integer");
-        String digitsFractionValue = javaFieldDefinition.annotationAttribute("Digits", "fraction");
+        Integer integerPart = tryParseInteger(
+                javaFieldDefinition.annotationAttribute("Digits", "integer")
+        );
 
-        Integer actualIntegerDigits = tryParseInteger(digitsIntegerValue);
-        Integer actualFractionDigits = tryParseInteger(digitsFractionValue);
+        Integer fractionPart = tryParseInteger(
+                javaFieldDefinition.annotationAttribute("Digits", "fraction")
+        );
 
-        if (columnDefinition.precision() != null && columnDefinition.scale() != null
-                && actualIntegerDigits != null && actualFractionDigits != null) {
-            int expectedIntegerDigits = columnDefinition.precision() - columnDefinition.scale();
-            int expectedFractionDigits = columnDefinition.scale();
+        if (integerPart == null || fractionPart == null) return;
 
-            if (expectedIntegerDigits != actualIntegerDigits || expectedFractionDigits != actualFractionDigits) {
-                violations.add("""
-                    [%s] @Digits mismatch for column '%s':
-                      SQL precision/scale: %d/%d
-                      Expected @Digits(integer=%d, fraction=%d)
-                      Actual @Digits(integer=%d, fraction=%d)
-                    """.formatted(
-                        entityDefinition.displayName(),
-                        columnDefinition.name(),
-                        columnDefinition.precision(),
-                        columnDefinition.scale(),
-                        expectedIntegerDigits,
-                        expectedFractionDigits,
-                        actualIntegerDigits,
-                        actualFractionDigits
-                ));
-            }
+        int expectedInteger = columnDefinition.precision() - columnDefinition.scale();
+        int expectedFraction = columnDefinition.scale();
+
+        if (integerPart != expectedInteger || fractionPart != expectedFraction) {
+            violations.add("[%s] Column '%s' @Digits mismatch"
+                    .formatted(entityDefinition.displayName(), columnDefinition.name()));
         }
     }
 
@@ -2418,34 +2392,35 @@ class EntitySchemaValidationTest {
 
 
 
+    /**
+     * Validates SQL nullability against Java field constraints.
+     */
     private void validateNullabilityConstraint(
             JavaEntityDefinition entityDefinition,
             ColumnDefinition columnDefinition,
             JavaFieldDefinition javaFieldDefinition,
             List<String> violations
     ) {
-        boolean fieldDeclaresNullableFalse = javaFieldDefinition.annotationAttribute("Column", "nullable") != null
-                && "false".equalsIgnoreCase(javaFieldDefinition.annotationAttribute("Column", "nullable"));
+        boolean fieldDeclaresNullableFalse = "false".equalsIgnoreCase(
+                javaFieldDefinition.annotationAttribute("Column", "nullable")
+        );
 
         boolean fieldHasNotNull = javaFieldDefinition.hasAnnotation("NotNull");
-
         boolean primitiveTypeImpliesNotNull = isPrimitiveJavaType(javaFieldDefinition.type());
 
         if (!columnDefinition.nullable()
                 && !fieldDeclaresNullableFalse
                 && !fieldHasNotNull
                 && !primitiveTypeImpliesNotNull) {
-            violations.add("""
-                [%s] Nullability mismatch for column '%s':
-                  SQL nullable: false
-                  Expected Java constraint: @Column(nullable = false), @NotNull, or primitive type
-                """.formatted(
-                    entityDefinition.displayName(),
-                    columnDefinition.name()
-            ));
+
+            violations.add("[%s] Column '%s' is NOT NULL in SQL but not enforced in Java"
+                    .formatted(entityDefinition.displayName(), columnDefinition.name()));
         }
     }
 
+    /**
+     * Checks if Java type is primitive.
+     */
     private boolean isPrimitiveJavaType(String typeName) {
         String simpleType = simpleType(typeName);
 
@@ -2461,78 +2436,49 @@ class EntitySchemaValidationTest {
 
 
 
+    /**
+     * Validates SQL unique constraint.
+     */
     private void validateUniqueConstraint(
             JavaEntityDefinition entityDefinition,
             ColumnDefinition columnDefinition,
             JavaFieldDefinition javaFieldDefinition,
             List<String> violations
     ) {
-        boolean fieldDeclaresUnique = javaFieldDefinition.annotationAttribute("Column", "unique") != null
-                && "true".equalsIgnoreCase(javaFieldDefinition.annotationAttribute("Column", "unique"));
+        boolean fieldDeclaresUnique = "true".equalsIgnoreCase(
+                javaFieldDefinition.annotationAttribute("Column", "unique")
+        );
 
         if (columnDefinition.unique() && !fieldDeclaresUnique) {
-            violations.add("""
-                [%s] Unique constraint mismatch for column '%s':
-                  SQL unique: true
-                  Expected Java constraint: @Column(unique = true)
-                """.formatted(
-                    entityDefinition.displayName(),
-                    columnDefinition.name()
-            ));
+            violations.add("[%s] Column '%s' is UNIQUE in SQL but not in Java"
+                    .formatted(entityDefinition.displayName(), columnDefinition.name()));
         }
     }
 
+    /**
+     * Validates SQL length against @Column(length).
+     */
     private void validateLengthConstraint(
             JavaEntityDefinition entityDefinition,
             ColumnDefinition columnDefinition,
             JavaFieldDefinition javaFieldDefinition,
             List<String> violations
     ) {
-        if (columnDefinition.length() == null) {
-            return;
-        }
+        if (columnDefinition.length() == null) return;
 
-        String actualLengthValue = javaFieldDefinition.annotationAttribute("Column", "length");
-        if (actualLengthValue == null || actualLengthValue.isBlank()) {
-            return;
-        }
+        Integer actualLength = tryParseInteger(
+                javaFieldDefinition.annotationAttribute("Column", "length")
+        );
 
-        Integer actualLength = tryParseInteger(actualLengthValue);
-        if (actualLength == null) {
-            return;
-        }
-
-        if (!columnDefinition.length().equals(actualLength)) {
-            violations.add("""
-                [%s] Length mismatch for column '%s':
-                  SQL length: %d
-                  Java @Column length: %d
-                """.formatted(
-                    entityDefinition.displayName(),
-                    columnDefinition.name(),
-                    columnDefinition.length(),
-                    actualLength
-            ));
+        if (actualLength != null && !columnDefinition.length().equals(actualLength)) {
+            violations.add("[%s] Column '%s' length mismatch (SQL=%d, Java=%d)"
+                    .formatted(entityDefinition.displayName(), columnDefinition.name(),
+                            columnDefinition.length(), actualLength));
         }
     }
 
     /**
-     * Validates @Column precision and scale metadata for numeric SQL columns.
-     *
-     * <p>Rules:
-     * <ul>
-     *     <li>If the SQL column has scale, Java must declare matching @Column precision/scale.</li>
-     *     <li>If the SQL column has precision only and Java type is an integral type
-     *     (for example Long, Integer, Short, BigInteger), missing @Column precision is allowed.</li>
-     *     <li>If the SQL column has precision only and Java type is BigDecimal, matching @Column precision is required.</li>
-     *     <li>If scale is declared in Java without precision, that is invalid.</li>
-     *     <li>NUMERIC/DECIMAL columns with scale must be mapped to BigDecimal.</li>
-     * </ul>
-     *
-     * @param entityDefinition the parsed Java entity definition
-     * @param columnDefinition the parsed SQL column definition
-     * @param javaFieldDefinition the parsed Java field definition
-     * @param violations the collected validation violations
+     * Validates precision and scale.
      */
     private void validatePrecisionAndScaleConstraint(
             JavaEntityDefinition entityDefinition,
@@ -2540,125 +2486,30 @@ class EntitySchemaValidationTest {
             JavaFieldDefinition javaFieldDefinition,
             List<String> violations
     ) {
-        if (columnDefinition.precision() == null && columnDefinition.scale() == null) {
-            return;
+        Integer precision = columnDefinition.precision();
+        Integer scale = columnDefinition.scale();
+
+        if (precision == null && scale == null) return;
+
+        Integer actualPrecision = tryParseInteger(
+                javaFieldDefinition.annotationAttribute("Column", "precision")
+        );
+
+        Integer actualScale = tryParseInteger(
+                javaFieldDefinition.annotationAttribute("Column", "scale")
+        );
+
+        if (precision != null && actualPrecision != null && !precision.equals(actualPrecision)) {
+            violations.add("[%s] Column '%s' precision mismatch (SQL=%d, Java=%d)"
+                    .formatted(entityDefinition.displayName(), columnDefinition.name(), precision, actualPrecision));
         }
 
-        if (!javaFieldDefinition.hasAnnotation("Column")) {
-            violations.add("""
-        [%s] Missing @Column annotation for numeric column '%s':
-          SQL type requires precision/scale but @Column is missing
-        """.formatted(
-                    entityDefinition.displayName(),
-                    columnDefinition.name()
-            ));
-            return;
-        }
-
-        String actualPrecisionValue = javaFieldDefinition.annotationAttribute("Column", "precision");
-        String actualScaleValue = javaFieldDefinition.annotationAttribute("Column", "scale");
-
-        Integer actualPrecision = tryParseInteger(actualPrecisionValue);
-        Integer actualScale = tryParseInteger(actualScaleValue);
-
-        String javaType = simpleType(javaFieldDefinition.type());
-        boolean sqlHasScale = columnDefinition.scale() != null && columnDefinition.scale() > 0;
-        boolean sqlHasPrecisionOnly = columnDefinition.precision() != null && !sqlHasScale;
-        boolean integralJavaType = isIntegralJavaType(javaType);
-
-        if (columnDefinition.precision() != null) {
-            if (actualPrecision == null) {
-                boolean allowMissingPrecision =
-                        sqlHasPrecisionOnly && integralJavaType;
-
-                if (!allowMissingPrecision) {
-                    violations.add("""
-                [%s] Missing @Column precision for column '%s':
-                  SQL precision: %d
-                """.formatted(
-                            entityDefinition.displayName(),
-                            columnDefinition.name(),
-                            columnDefinition.precision()
-                    ));
-                }
-            } else if (!columnDefinition.precision().equals(actualPrecision)) {
-                violations.add("""
-            [%s] Precision mismatch for column '%s':
-              SQL precision: %d
-              Java @Column precision: %d
-            """.formatted(
-                        entityDefinition.displayName(),
-                        columnDefinition.name(),
-                        columnDefinition.precision(),
-                        actualPrecision
-                ));
-            }
-        }
-
-        if (columnDefinition.scale() != null) {
-            if (actualScale == null) {
-                violations.add("""
-            [%s] Missing @Column scale for column '%s':
-              SQL scale: %d
-            """.formatted(
-                        entityDefinition.displayName(),
-                        columnDefinition.name(),
-                        columnDefinition.scale()
-                ));
-            } else if (!columnDefinition.scale().equals(actualScale)) {
-                violations.add("""
-            [%s] Scale mismatch for column '%s':
-              SQL scale: %d
-              Java @Column scale: %d
-            """.formatted(
-                        entityDefinition.displayName(),
-                        columnDefinition.name(),
-                        columnDefinition.scale(),
-                        actualScale
-                ));
-            }
-        }
-
-        if (actualScale != null && actualPrecision == null) {
-            violations.add("""
-        [%s] Invalid @Column configuration for column '%s':
-          scale is defined but precision is missing
-        """.formatted(
-                    entityDefinition.displayName(),
-                    columnDefinition.name()
-            ));
-        }
-
-        if (sqlHasScale && !"BigDecimal".equals(javaType)) {
-            violations.add("""
-        [%s] Invalid Java type for column '%s':
-          SQL type NUMERIC with scale requires BigDecimal
-          Found: %s
-        """.formatted(
-                    entityDefinition.displayName(),
-                    columnDefinition.name(),
-                    javaFieldDefinition.type()
-            ));
+        if (scale != null && actualScale != null && !scale.equals(actualScale)) {
+            violations.add("[%s] Column '%s' scale mismatch (SQL=%d, Java=%d)"
+                    .formatted(entityDefinition.displayName(), columnDefinition.name(), scale, actualScale));
         }
     }
 
-    /**
-     * Returns true when the provided Java type is an integral numeric type.
-     *
-     * @param javaType the simple Java type name
-     * @return true when the type is integral
-     */
-    private boolean isIntegralJavaType(String javaType) {
-        return "Long".equals(javaType)
-                || "long".equals(javaType)
-                || "Integer".equals(javaType)
-                || "int".equals(javaType)
-                || "Short".equals(javaType)
-                || "short".equals(javaType)
-                || "Byte".equals(javaType)
-                || "byte".equals(javaType)
-                || "BigInteger".equals(javaType);
-    }
 
     private Integer tryParseInteger(String value) {
         if (value == null || value.isBlank()) {

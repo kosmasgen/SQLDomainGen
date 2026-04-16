@@ -4,12 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
-@Table(name = "income_type")
+@Audited
+@Table(name = "income_type", uniqueConstraints = @UniqueConstraint(columnNames = {"chamber_id", "chamber_type_id"}))
 @Getter
 @Setter
 @Builder
@@ -18,8 +17,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class IncomeType {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -29,17 +27,15 @@ public class IncomeType {
     @Column(name = "chamber_type_id", nullable = false)
     private Integer chamberTypeId;
 
-    @Column(name = "description", length = 255, nullable = false)
+    @Column(name = "description", nullable = false)
     private String description;
 
-    @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
-    @Column(name = "rec_deleted")
-    private Boolean recDeleted;
+    @Column(name = "recdeleted")
+    private Boolean recdeleted;
 
-    @CreationTimestamp
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
 

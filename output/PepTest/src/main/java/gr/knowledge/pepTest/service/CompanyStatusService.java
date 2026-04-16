@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.CompanyStatusDto;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code CompanyStatus} domain operations.
@@ -10,15 +10,13 @@ import java.util.List;
 public interface CompanyStatusService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all company statuses.
      * @return non-null list of {@link CompanyStatusDto}
      */
-    List<CompanyStatusDto> getAllCompanyStatus();
+    List<CompanyStatusDto> getAllCompanyStatuses();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link CompanyStatusDto}
      */
@@ -26,7 +24,6 @@ public interface CompanyStatusService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link CompanyStatusDto}
      */
@@ -34,19 +31,16 @@ public interface CompanyStatusService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link CompanyStatusDto}
      */
     CompanyStatusDto updateCompanyStatus(UUID id, CompanyStatusDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteCompanyStatus(UUID id);

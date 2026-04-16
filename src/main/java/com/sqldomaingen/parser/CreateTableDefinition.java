@@ -1,9 +1,9 @@
 package com.sqldomaingen.parser;
 
 import com.sqldomaingen.model.Column;
+import com.sqldomaingen.model.CompositeKeyDefinition;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.model.UniqueConstraint;
-import com.sqldomaingen.util.NamingConverter;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,6 +24,22 @@ public class CreateTableDefinition {
     private List<String> constraints = new ArrayList<>();
     private List<UniqueConstraint> compositeUniqueConstraints = new ArrayList<>();
 
+    /**
+     * Processes one CREATE TABLE statement and converts it to the internal table model.
+     *
+     * <p>This method extracts:
+     * <ul>
+     *     <li>physical table name</li>
+     *     <li>column definitions</li>
+     *     <li>table-level primary keys</li>
+     *     <li>table-level unique constraints</li>
+     *     <li>table-level foreign keys</li>
+     *     <li>table-level check constraints</li>
+     * </ul>
+     *
+     * @param ctx the CREATE TABLE parse context
+     * @return populated {@link Table}
+     */
     public Table processCreateTable(PostgreSQLParser.CreateTableStatementContext ctx) {
         log.info("Parse tree (CreateTableStatement): \n{}", ctx.toStringTree());
         log.info("processCreateTable() - START | ctx: {}", ctx);
@@ -40,23 +56,155 @@ public class CreateTableDefinition {
         this.columnDefinitions = extractColumnDefinitions(ctx);
         log.info("Column definitions AFTER extraction | count={}", this.columnDefinitions.size());
 
-        // Apply table-level PRIMARY KEY constraints to the corresponding columns.
         if (ctx.tableConstraint() != null) {
             for (PostgreSQLParser.TableConstraintContext constraintCtx : ctx.tableConstraint()) {
                 extractPrimaryKeyConstraint(constraintCtx);
             }
         }
 
-        // Apply table-level UNIQUE constraints before resolving FK relationships.
         extractUniqueConstraints(ctx);
-
-        // Extract table-level FOREIGN KEY constraints and mark FK columns accordingly.
         extractForeignKeyConstraints(ctx);
+        extractCheckConstraints(ctx);
 
         Table table = toTable();
         log.info("processCreateTable() - END | Generated Table: {}", table.getName());
 
         return table;
+    }
+
+    /**
+     * Extracts table-level CHECK constraints and stores them as raw table constraints.
+     *
+     * <p>The generated constraint text is preserved in a Liquibase-friendly raw form,
+     * for example:
+     * <ul>
+     *     <li>{@code CONSTRAINT chk_company_or_person CHECK ((company_id IS NOT NULL) OR (person_id IS NOT NULL))}</li>
+     *     <li>{@code CHECK (year >= 1900)}</li>
+     * </ul>
+     *
+     * @param ctx the CREATE TABLE parse context
+     */
+    public void extractCheckConstraints(PostgreSQLParser.CreateTableStatementContext ctx) {
+        log.info("extractCheckConstraints() - START");
+
+        if (ctx == null || ctx.tableConstraint() == null || ctx.tableConstraint().isEmpty()) {
+            log.info("extractCheckConstraints() - END (no table constraints)");
+            return;
+        }
+
+        for (PostgreSQLParser.TableConstraintContext tableConstraintContext : ctx.tableConstraint()) {
+            if (tableConstraintContext == null) {
+                continue;
+            }
+
+            String constraintText = tableConstraintContext.getText();
+            if (constraintText == null || constraintText.isBlank()) {
+                continue;
+            }
+
+            String normalizedConstraintText = constraintText
+                    .replace("\"", "")
+                    .replaceAll("\\s+", "")
+                    .toUpperCase(java.util.Locale.ROOT);
+
+            if (!normalizedConstraintText.contains("CHECK")) {
+                continue;
+            }
+
+            String checkConstraintDefinition = extractCheckConstraintDefinition(constraintText);
+            if (checkConstraintDefinition == null || checkConstraintDefinition.isBlank()) {
+                log.warn("CHECK constraint detected but could not be extracted: {}", constraintText);
+                continue;
+            }
+
+            this.constraints.add(checkConstraintDefinition);
+            log.info("Table-level CHECK extracted: {}", checkConstraintDefinition);
+        }
+
+        log.info("extractCheckConstraints() - END");
+    }
+
+    /**
+     * Extracts a normalized table-level CHECK constraint definition.
+     *
+     * <p>This method supports compact parser text returned by {@code ctx.getText()},
+     * where whitespace is usually removed, and restores the SQL spacing required
+     * for PostgreSQL CHECK expressions.
+     *
+     * @param constraintText raw table constraint text
+     * @return normalized CHECK constraint definition or {@code null} when not parseable
+     */
+    private String extractCheckConstraintDefinition(String constraintText) {
+        if (constraintText == null || constraintText.isBlank()) {
+            return null;
+        }
+
+        String compactConstraintText = constraintText
+                .replace("\"", "")
+                .replaceAll("\\s+", "")
+                .trim();
+
+        String upperConstraintText = compactConstraintText.toUpperCase(java.util.Locale.ROOT);
+        int checkIndex = upperConstraintText.indexOf("CHECK(");
+
+        if (checkIndex < 0) {
+            return null;
+        }
+
+        String constraintName = extractNamedConstraintName(compactConstraintText);
+        String rawCheckExpression = compactConstraintText.substring(checkIndex + "CHECK".length()).trim();
+
+        if (rawCheckExpression.isBlank()) {
+            return null;
+        }
+
+        String normalizedCheckExpression = normalizeCheckExpression(rawCheckExpression);
+
+        if (constraintName != null && !constraintName.isBlank()) {
+            return "CONSTRAINT " + constraintName + " CHECK " + normalizedCheckExpression;
+        }
+
+        return "CHECK " + normalizedCheckExpression;
+    }
+
+    /**
+     * Restores SQL spacing inside a compact CHECK expression extracted from parser text.
+     *
+     * <p>This method focuses on PostgreSQL boolean predicates and common operators
+     * that become invalid when parser text removes whitespace, for example:
+     * <ul>
+     *     <li>{@code company_idISNOTNULL -> company_id IS NOT NULL}</li>
+     *     <li>{@code person_idISNULL -> person_id IS NULL}</li>
+     *     <li>{@code aANDb -> a AND b}</li>
+     *     <li>{@code x>=1 -> x >= 1}</li>
+     * </ul>
+     *
+     * @param expression compact CHECK expression
+     * @return normalized SQL CHECK expression
+     */
+    private String normalizeCheckExpression(String expression) {
+        if (expression == null || expression.isBlank()) {
+            return expression;
+        }
+
+        String normalizedExpression = expression;
+
+        normalizedExpression = normalizedExpression.replaceAll("(?i)ISNOTNULL", " IS NOT NULL");
+        normalizedExpression = normalizedExpression.replaceAll("(?i)ISNULL", " IS NULL");
+        normalizedExpression = normalizedExpression.replaceAll("(?i)NOTNULL", " NOT NULL");
+        normalizedExpression = normalizedExpression.replaceAll("(?i)NOTIN", " NOT IN");
+        normalizedExpression = normalizedExpression.replaceAll("(?i)BETWEEN", " BETWEEN ");
+        normalizedExpression = normalizedExpression.replaceAll("(?i)AND", " AND ");
+        normalizedExpression = normalizedExpression.replaceAll("(?i)OR", " OR ");
+        normalizedExpression = normalizedExpression.replaceAll("(?i)IN\\(", " IN (");
+        normalizedExpression = normalizedExpression.replaceAll("(?i)NOTIN\\(", " NOT IN (");
+
+        normalizedExpression = normalizedExpression.replaceAll("\\s*(>=|<=|<>|!=|=|>|<)\\s*", " $1 ");
+        normalizedExpression = normalizedExpression.replaceAll("\\(\\s+", "(");
+        normalizedExpression = normalizedExpression.replaceAll("\\s+\\)", ")");
+        normalizedExpression = normalizedExpression.replaceAll("\\s+", " ").trim();
+
+        return normalizedExpression;
     }
 
     /**
@@ -104,6 +252,19 @@ public class CreateTableDefinition {
         return extractedColumns;
     }
 
+    /**
+     * Extracts a table-level PRIMARY KEY constraint and applies it
+     * to the matching column definitions.
+     *
+     * <p>This method also preserves the original constraint name when the SQL
+     * declares a named constraint, for example:
+     * <ul>
+     *     <li>{@code CONSTRAINT pk_audit_trail PRIMARY KEY (id)}</li>
+     *     <li>{@code PRIMARY KEY (id)}</li>
+     * </ul>
+     *
+     * @param ctx the table constraint parse context
+     */
     private void extractPrimaryKeyConstraint(PostgreSQLParser.TableConstraintContext ctx) {
         log.info("extractPrimaryKeyConstraint() - START");
 
@@ -113,49 +274,63 @@ public class CreateTableDefinition {
             return;
         }
 
-        // Handle table-level primary key declarations, including named constraints:
-        //   PRIMARY KEY (col1, col2, ...)
-        //   CONSTRAINT pk_name PRIMARY KEY (col1, col2, ...)
         String constraintText = ctx.getText();
-        boolean isPrimaryKey =
-                ctx.PRIMARY_KEY() != null ||
-                        (constraintText != null && constraintText.toUpperCase().contains("PRIMARYKEY"));
+        String normalizedConstraintText = constraintText == null
+                ? ""
+                : constraintText.replace("\"", "").replaceAll("\\s+", "").toUpperCase(java.util.Locale.ROOT);
 
-        if (isPrimaryKey) {
-            log.debug("PRIMARY KEY constraint found.");
+        boolean primaryKeyConstraint =
+                ctx.PRIMARY_KEY() != null || normalizedConstraintText.contains("PRIMARYKEY");
 
-            if (ctx.columnNameList() != null && !ctx.columnNameList().isEmpty()) {
-                String primaryKeyColumns = ctx.columnNameList().get(0).getText();
+        if (!primaryKeyConstraint) {
+            log.info("extractPrimaryKeyConstraint() - END");
+            return;
+        }
 
-                for (String primaryKeyColumn : primaryKeyColumns.replace("(", "").replace(")", "").split(",")) {
-                    primaryKeyColumn = primaryKeyColumn.replace("\"", "").trim();
+        String constraintName = extractNamedConstraintName(constraintText);
 
-                    boolean found = false;
-                    for (ColumnDefinition column : columnDefinitions) {
-                        if (column.getColumnName().equalsIgnoreCase(primaryKeyColumn)) {
-                            column.setPrimaryKey(true);
-                            column.setNullable(false);
-                            found = true;
-                            log.info("PRIMARY KEY applied to column: {}", column.getColumnName());
-                            break;
+        if (ctx.columnNameList() == null || ctx.columnNameList().isEmpty()) {
+            log.warn("PRIMARY KEY constraint found but no column list was detected.");
+            log.info("extractPrimaryKeyConstraint() - END");
+            return;
+        }
+
+        List<String> primaryKeyColumns = ctx.columnNameList().get(0).columnName().stream()
+                .map(columnNameContext -> columnNameContext.getText().replace("\"", "").trim())
+                .filter(columnName -> !columnName.isBlank())
+                .toList();
+
+        for (String primaryKeyColumn : primaryKeyColumns) {
+            columnDefinitions.stream()
+                    .filter(columnDefinition -> columnDefinition.getColumnName().equalsIgnoreCase(primaryKeyColumn))
+                    .findFirst()
+                    .ifPresentOrElse(columnDefinition -> {
+                        columnDefinition.setPrimaryKey(true);
+                        columnDefinition.setNullable(false);
+
+                        if (constraintName != null && !constraintName.isBlank()) {
+                            columnDefinition.setPrimaryKeyConstraintName(constraintName);
                         }
-                    }
 
-                    if (!found) {
-                        log.warn("PRIMARY KEY column '{}' not found in extracted column definitions.", primaryKeyColumn);
-                    }
-                }
-            } else {
-                log.warn("PRIMARY KEY constraint found but no column list was detected.");
-            }
+                        log.info("PRIMARY KEY applied to column '{}' (constraintName={})",
+                                columnDefinition.getColumnName(),
+                                columnDefinition.getPrimaryKeyConstraintName());
+                    }, () -> log.warn("PRIMARY KEY column '{}' not found in extracted column definitions.",
+                            primaryKeyColumn));
         }
 
         log.info("extractPrimaryKeyConstraint() - END");
     }
 
     /**
-     * Extracts table-level foreign key constraints and applies them
+     * Extracts table-level FOREIGN KEY constraints and applies them
      * to the corresponding column definitions.
+     *
+     * <p>This method also preserves the original foreign key constraint name
+     * when the SQL declares one, for example:
+     * <ul>
+     *     <li>{@code CONSTRAINT fk_audit_trail_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)}</li>
+     * </ul>
      *
      * @param ctx the CREATE TABLE parse context
      */
@@ -189,6 +364,8 @@ public class CreateTableDefinition {
             if (!foreignKeyConstraint) {
                 continue;
             }
+
+            String constraintName = extractNamedConstraintName(constraintText);
 
             List<PostgreSQLParser.ColumnNameListContext> columnNameLists = tableConstraintContext.columnNameList();
             if (columnNameLists == null || columnNameLists.isEmpty()) {
@@ -251,10 +428,15 @@ public class CreateTableDefinition {
                             columnDefinition.setOnDelete(onDeleteAction);
                             columnDefinition.setOnUpdate(onUpdateAction);
 
-                            log.info("Foreign key applied: {} -> {}.{}",
+                            if (constraintName != null && !constraintName.isBlank()) {
+                                columnDefinition.setForeignKeyConstraintName(constraintName);
+                            }
+
+                            log.info("Foreign key applied: {} -> {}.{} (constraintName={})",
                                     sourceColumn,
                                     referencedTable,
-                                    referencedColumn);
+                                    referencedColumn,
+                                    columnDefinition.getForeignKeyConstraintName());
 
                             if (onDeleteAction != null) {
                                 log.info("ON DELETE applied to column '{}': {}", sourceColumn, onDeleteAction);
@@ -270,6 +452,60 @@ public class CreateTableDefinition {
         }
 
         log.info("extractForeignKeyConstraints() - END");
+    }
+
+    /**
+     * Extracts an explicitly declared table-level constraint name.
+     *
+     * <p>This method supports compact parser text returned by {@code ctx.getText()},
+     * where whitespace is typically removed.
+     *
+     * <p>Examples:
+     * <ul>
+     *     <li>{@code CONSTRAINTpk_audit_trailPRIMARYKEY(id)} -> {@code pk_audit_trail}</li>
+     *     <li>{@code CONSTRAINTfk_audit_trail_companyFOREIGNKEY(company_id)REFERENCESpep_schema.company(id)} -> {@code fk_audit_trail_company}</li>
+     *     <li>{@code CONSTRAINTexport_comp_prod_country_year_checkCHECK((exp_year>=1800))} -> {@code export_comp_prod_country_year_check}</li>
+     *     <li>{@code PRIMARYKEY(id)} -> {@code null}</li>
+     * </ul>
+     *
+     * @param constraintText raw table constraint text
+     * @return the extracted constraint name or {@code null} when no explicit name exists
+     */
+    private String extractNamedConstraintName(String constraintText) {
+        if (constraintText == null || constraintText.isBlank()) {
+            return null;
+        }
+
+        String compactConstraintText = constraintText
+                .replace("\"", "")
+                .replaceAll("\\s+", "")
+                .trim();
+
+        String upperConstraintText = compactConstraintText.toUpperCase(java.util.Locale.ROOT);
+
+        int constraintIndex = upperConstraintText.indexOf("CONSTRAINT");
+        if (constraintIndex < 0) {
+            return null;
+        }
+
+        int nameStartIndex = constraintIndex + "CONSTRAINT".length();
+        int endIndex = Integer.MAX_VALUE;
+
+        String[] keywords = {"PRIMARYKEY(", "FOREIGNKEY(", "UNIQUE(", "CHECK("};
+
+        for (String keyword : keywords) {
+            int keywordIndex = upperConstraintText.indexOf(keyword, nameStartIndex);
+            if (keywordIndex >= 0) {
+                endIndex = Math.min(endIndex, keywordIndex);
+            }
+        }
+
+        if (endIndex == Integer.MAX_VALUE || endIndex <= nameStartIndex) {
+            return null;
+        }
+
+        String extractedName = compactConstraintText.substring(nameStartIndex, endIndex).trim();
+        return extractedName.isBlank() ? null : extractedName;
     }
 
 
@@ -461,11 +697,6 @@ public class CreateTableDefinition {
     }
 
 
-    /**
-     * Converts this parser result into the internal {@link Table} model.
-     *
-     * @return populated table model
-     */
     public Table toTable() {
         log.info("toTable() - START | tableName={}", this.tableName);
 
@@ -480,11 +711,36 @@ public class CreateTableDefinition {
         table.addConstraints(this.constraints);
         table.setUniqueConstraints(new ArrayList<>(this.compositeUniqueConstraints));
 
+
+        List<ColumnDefinition> pkColumns = getCompositePrimaryKeyColumns();
+        if (pkColumns.size() > 1) {
+            CompositeKeyDefinition compositeKey = new CompositeKeyDefinition();
+            compositeKey.setName(table.getName() + "Key");
+            compositeKey.setColumns(
+                    pkColumns.stream()
+                            .map(ColumnDefinition::toColumn)
+                            .toList()
+            );
+
+            table.setCompositeKey(compositeKey);
+        }
+
         log.info("toTable() - END | Table '{}' with {} columns and {} composite unique constraints.",
                 table.getName(),
                 columns.size(),
                 table.getUniqueConstraints().size());
 
         return table;
+    }
+
+    /**
+     * Detects if the table has a composite primary key.
+     *
+     * @return list of primary key columns when composite, otherwise empty list
+     */
+    private List<ColumnDefinition> getCompositePrimaryKeyColumns() {
+        return columnDefinitions.stream()
+                .filter(ColumnDefinition::isPrimaryKey)
+                .toList();
     }
 }

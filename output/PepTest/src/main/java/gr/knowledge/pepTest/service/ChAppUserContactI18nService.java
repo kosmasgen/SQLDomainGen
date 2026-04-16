@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.ChAppUserContactI18nDto;
-import gr.knowledge.pepTest.entity.ChAppUserContactI18nPK;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code ChAppUserContactI18n} domain operations.
@@ -10,23 +10,21 @@ import java.util.List;
 public interface ChAppUserContactI18nService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all ch app user contact i18ns.
      * @return non-null list of {@link ChAppUserContactI18nDto}
      */
-    List<ChAppUserContactI18nDto> getAllChAppUserContactI18n();
+    List<ChAppUserContactI18nDto> getAllChAppUserContactI18ns();
 
     /**
      * Retrieves a record by id.
-     *
-     * @param id the record id
+     * @param chAppUserContactId the ch_app_user_contact_id value
+     * @param languageId the language_id value
      * @return the matching {@link ChAppUserContactI18nDto}
      */
-    ChAppUserContactI18nDto getChAppUserContactI18nById(ChAppUserContactI18nPK id);
+    ChAppUserContactI18nDto getChAppUserContactI18nById(UUID chAppUserContactId, UUID languageId);
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link ChAppUserContactI18nDto}
      */
@@ -34,20 +32,19 @@ public interface ChAppUserContactI18nService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param chAppUserContactId the ch_app_user_contact_id value
+     * @param languageId the language_id value
+     * @param dto input payload with partial fields
      * @return updated {@link ChAppUserContactI18nDto}
      */
-    ChAppUserContactI18nDto updateChAppUserContactI18n(ChAppUserContactI18nPK id, ChAppUserContactI18nDto dto);
+    ChAppUserContactI18nDto updateChAppUserContactI18n(UUID chAppUserContactId, UUID languageId, ChAppUserContactI18nDto dto);
 
     /**
      * Deletes a record by id.
-     *
-     * @param id the record id
+     * @param chAppUserContactId the ch_app_user_contact_id value
+     * @param languageId the language_id value
      */
-    void deleteChAppUserContactI18n(ChAppUserContactI18nPK id);
+    void deleteChAppUserContactI18n(UUID chAppUserContactId, UUID languageId);
 }

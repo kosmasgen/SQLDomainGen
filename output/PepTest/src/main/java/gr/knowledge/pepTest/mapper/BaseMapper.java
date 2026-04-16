@@ -1,7 +1,13 @@
 package gr.knowledge.pepTest.mapper;
 
+import jakarta.persistence.EmbeddedId;
+import jakarta.persistence.Id;
 import org.modelmapper.ModelMapper;
 
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -35,11 +41,17 @@ public abstract class BaseMapper<E, D> {
     /**
      * Converts a list of entities to DTOs.
      *
-     * @param entities source entities
+     * @param entityList source entities
      * @return mapped dto list
      */
-    public List<D> toDTO(List<E> entities) {
-        return entities.stream().map(this::toDTO).toList();
+    public List<D> toDTOList(List<E> entityList) {
+        if (entityList == null || entityList.isEmpty()) {
+            return List.of();
+        }
+
+        return entityList.stream()
+                .map(this::toDTO)
+                .toList();
     }
 
     /**
@@ -55,10 +67,93 @@ public abstract class BaseMapper<E, D> {
     /**
      * Converts a list of DTOs to entities.
      *
-     * @param dtos source dtos
+     * @param dtoList source dto list
      * @return mapped entity list
      */
-    public List<E> toEntity(List<D> dtos) {
-        return dtos.stream().map(this::toEntity).toList();
+    public List<E> toEntityList(List<D> dtoList) {
+        if (dtoList == null || dtoList.isEmpty()) {
+            return List.of();
+        }
+
+        return dtoList.stream()
+                .map(this::toEntity)
+                .toList();
+    }
+
+    /**
+     * Applies non-null values from DTO into an existing entity.
+     * Primary key fields are not modified.
+     *
+     * @param entity target entity already loaded from persistence
+     * @param dto source dto containing partial values
+     */
+    public void partialUpdate(E entity, D dto) {
+        if (entity == null || dto == null) {
+            return;
+        }
+
+        E patchSource = modelMapper.map(dto, entityClass);
+        mergeNonNullFields(patchSource, entity);
+    }
+
+    /**
+     * Copies non-null field values from source entity to target entity.
+     *
+     * @param source source entity with patch values
+     * @param target target entity to update
+     */
+    private void mergeNonNullFields(E source, E target) {
+        for (Field field : getAllFields(entityClass)) {
+            if (shouldSkipField(field)) {
+                continue;
+            }
+
+            try {
+                field.setAccessible(true);
+                Object value = field.get(source);
+
+                if (value != null) {
+                    field.set(target, value);
+                }
+            } catch (IllegalAccessException exception) {
+                throw new IllegalStateException(
+                        "Failed to apply partial update for field: " + field.getName(),
+                        exception
+                );
+            }
+        }
+    }
+
+    /**
+     * Collects all declared fields from the given class hierarchy.
+     *
+     * @param type root entity class
+     * @return collected fields
+     */
+    private List<Field> getAllFields(Class<?> type) {
+        List<Field> fields = new ArrayList<>();
+        Class<?> currentType = type;
+
+        while (currentType != null && currentType != Object.class) {
+            Collections.addAll(fields, currentType.getDeclaredFields());
+            currentType = currentType.getSuperclass();
+        }
+
+        return fields;
+    }
+
+    /**
+     * Checks whether the field should be skipped during partial update.
+     *
+     * @param field entity field
+     * @return true when the field must not be updated
+     */
+    private boolean shouldSkipField(Field field) {
+        int modifiers = field.getModifiers();
+
+        return Modifier.isStatic(modifiers)
+                || Modifier.isFinal(modifiers)
+                || field.isAnnotationPresent(Id.class)
+                || field.isAnnotationPresent(EmbeddedId.class);
     }
 }

@@ -4,10 +4,11 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
-@Table(name = "professioni18n")
+@Audited
+@Table(name = "professioni18n", uniqueConstraints = @UniqueConstraint(columnNames = {"profession_id", "chamber_i18n_id"}))
 @Getter
 @Setter
 @Builder
@@ -16,7 +17,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class Professioni18n {
 
     @EmbeddedId
-    private Professioni18nPK id;
+    private Professioni18nKey id;
 
     @MapsId("professionId")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,17 +29,16 @@ public class Professioni18n {
     @JoinColumn(name = "language_id", nullable = false)
     private Languages language;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
-    @Column(name = "description", length = 255, nullable = false)
+    @Column(name = "description", length = 500, nullable = false)
     private String description;
 
     @CreationTimestamp
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 

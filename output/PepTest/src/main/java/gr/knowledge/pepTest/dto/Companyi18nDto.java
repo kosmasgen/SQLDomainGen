@@ -5,12 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.entity.Companyi18nKey;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for Companyi18n.
@@ -22,19 +23,18 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Companyi18nDto {
 
-    @NotNull
-    private UUID companyId;
+    private Companyi18nKey id;
 
     @NotNull
-    private UUID languageId;
+    private CompanyDto company;
 
     @NotNull
-    private Integer chamberI18nId;
+    private LanguagesDto language;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String city;
 
-    @Size(max = 255)
+    @Size(max = 1000)
     private String coName;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -43,13 +43,12 @@ public class Companyi18nDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
-    @Size(max = 255)
     private String objective;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
-    @Size(max = 255)
+    @Size(max = 60)
     private String street;
 
     @Size(max = 255)

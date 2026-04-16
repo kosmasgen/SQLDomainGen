@@ -5,12 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.entity.MunicipalityI18nKey;
+import gr.knowledge.pepTest.dto.MunicipalityDto;
 import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for MunicipalityI18n.
@@ -22,11 +23,13 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MunicipalityI18nDto {
 
-    @NotNull
-    private UUID municipalityId;
+    private MunicipalityI18nKey id;
 
     @NotNull
-    private UUID languageId;
+    private MunicipalityDto municipality;
+
+    @NotNull
+    private LanguagesDto language;
 
     @NotNull
     @Size(max = 255)
@@ -39,7 +42,7 @@ public class MunicipalityI18nDto {
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
     private Integer chamberI18nId;
 

@@ -85,12 +85,14 @@ public class LiquibaseGenerator {
      * @param author liquibase author
      */
     private void generateTableChangelogFiles(Path versionDir, List<Table> tables, boolean overwrite, String author) {
+        Set<String> availableTableReferences = buildAvailableTableReferences(tables);
+
         for (Table table : tables) {
             String fileName = toTableChangelogFileName(table.getName());
 
             GeneratorSupport.writeFile(
                     versionDir.resolve(fileName),
-                    buildTableChangelogContent(table, DEFAULT_VERSION, author),
+                    buildTableChangelogContent(table, DEFAULT_VERSION, author, availableTableReferences),
                     overwrite
             );
         }
@@ -102,9 +104,15 @@ public class LiquibaseGenerator {
      * @param table parsed table
      * @param version Liquibase changelog version
      * @param author liquibase author
+     * @param availableTableReferences available parsed table references
      * @return generated table changelog XML
      */
-    private String buildTableChangelogContent(Table table, String version, String author) {
+    private String buildTableChangelogContent(
+            Table table,
+            String version,
+            String author,
+            Set<String> availableTableReferences
+    ) {
         String resolvedAuthor = resolveLiquibaseAuthor(author);
         String tableName = normalizeTableName(table.getName());
         String changelogFileName = toTableChangelogFileName(table.getName());
@@ -114,23 +122,26 @@ public class LiquibaseGenerator {
         StringBuilder builder = new StringBuilder();
 
         builder.append("""
-        <?xml version="1.0" encoding="utf-8"?>
-        <databaseChangeLog
-                logicalFilePath="%s/%s"
-                xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="%s/%s"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
 
-        """.formatted(version, changelogFileName));
+""".formatted(version, changelogFileName));
 
         builder.append("""
-            <changeSet id="%s" author="%s">
-        """.formatted(changeSetId, resolvedAuthor));
+    <changeSet id="%s" author="%s">
+""".formatted(changeSetId, resolvedAuthor));
 
         appendMainTableCreateBlock(builder, tableName, table);
         builder.append("\n");
 
         appendGeneratedStoredColumnsBlock(builder, tableName, table);
+        builder.append("\n");
+
+        appendMainTableCheckConstraints(builder, table);
         builder.append("\n");
 
         appendMainTableUniqueConstraints(builder, tableName, table);
@@ -139,7 +150,7 @@ public class LiquibaseGenerator {
         appendMainTableIndexes(builder, tableName, table);
         builder.append("\n");
 
-        appendMainTableForeignKeys(builder, tableName, table);
+        appendMainTableForeignKeys(builder, tableName, table, availableTableReferences);
         builder.append("\n");
 
         appendAuditTableCreateBlock(builder, auditTableName, table);
@@ -152,13 +163,74 @@ public class LiquibaseGenerator {
 
         builder.append("""
 
-            </changeSet>
+    </changeSet>
 
-        </databaseChangeLog>
-        """);
+</databaseChangeLog>
+""");
 
         return builder.toString();
     }
+
+    /**
+     * Appends table-level CHECK constraints for the main table.
+     *
+     * <p>The parser stores table-level check constraints as raw SQL fragments
+     * inside {@link Table#getConstraints()}. This method renders them as
+     * PostgreSQL ALTER TABLE statements so named and unnamed checks can both
+     * be preserved.
+     *
+     * @param builder XML builder
+     * @param table parsed table
+     */
+    private void appendMainTableCheckConstraints(StringBuilder builder, Table table) {
+        if (table == null || table.getConstraints() == null || table.getConstraints().isEmpty()) {
+            return;
+        }
+
+        String qualifiedTableName = buildQualifiedTableName(table.getName());
+
+        for (String constraint : table.getConstraints()) {
+            if (constraint == null || constraint.isBlank()) {
+                continue;
+            }
+
+            String normalizedConstraint = constraint
+                    .replaceAll("\\s+", "")
+                    .toUpperCase(java.util.Locale.ROOT);
+
+            if (!normalizedConstraint.contains("CHECK")) {
+                continue;
+            }
+
+            builder.append("""
+        <sql><![CDATA[
+            ALTER TABLE %s
+            ADD %s;
+        ]]></sql>
+""".formatted(
+                    qualifiedTableName,
+                    constraint.trim()
+            ));
+        }
+    }
+
+    /**
+     * Builds the fully qualified table name when a schema exists.
+     *
+     * @param rawTableName raw table name, optionally schema-qualified
+     * @return schema-qualified table name when available, otherwise plain table name
+     */
+    private String buildQualifiedTableName(String rawTableName) {
+        String schemaName = extractSchemaNameFromTable(rawTableName);
+        String tableName = normalizeTableName(rawTableName);
+
+        if (schemaName == null || schemaName.isBlank()) {
+            return tableName;
+        }
+
+        return schemaName + "." + tableName;
+    }
+
 
     /**
      * Appends foreign key constraints for the main table.
@@ -170,8 +242,14 @@ public class LiquibaseGenerator {
      * @param builder XML builder
      * @param tableName physical table name without schema
      * @param table parsed table
+     * @param availableTableReferences available parsed table references
      */
-    private void appendMainTableForeignKeys(StringBuilder builder, String tableName, Table table) {
+    private void appendMainTableForeignKeys(
+            StringBuilder builder,
+            String tableName,
+            Table table,
+            Set<String> availableTableReferences
+    ) {
         String rawTableName = table.getName();
 
         for (Column column : table.getColumns()) {
@@ -179,8 +257,105 @@ public class LiquibaseGenerator {
                 continue;
             }
 
-            appendMainTableForeignKey(builder, tableName, rawTableName, column);
+            appendMainTableForeignKey(
+                    builder,
+                    tableName,
+                    rawTableName,
+                    column,
+                    availableTableReferences
+            );
         }
+    }
+
+    /**
+     * Builds the set of available parsed table references.
+     *
+     * <p>Both schema-qualified and plain table names are stored so foreign key checks
+     * can match references declared with or without schema prefixes.
+     *
+     * @param tables parsed tables
+     * @return available table references
+     */
+    private Set<String> buildAvailableTableReferences(List<Table> tables) {
+        Set<String> availableTableReferences = new java.util.LinkedHashSet<>();
+
+        if (tables == null) {
+            return availableTableReferences;
+        }
+
+        for (Table table : tables) {
+            if (table == null || table.getName() == null || table.getName().isBlank()) {
+                continue;
+            }
+
+            String canonicalReference = canonicalizeTableReference(table.getName());
+            String plainTableName = normalizeIdentifier(normalizeTableName(table.getName()));
+
+            if (!canonicalReference.isBlank()) {
+                availableTableReferences.add(canonicalReference);
+            }
+
+            if (!plainTableName.isBlank()) {
+                availableTableReferences.add(plainTableName);
+            }
+        }
+
+        return availableTableReferences;
+    }
+
+    /**
+     * Checks whether the referenced table exists in the parsed schema.
+     *
+     * @param referencedTableRaw referenced raw table name
+     * @param availableTableReferences available parsed table references
+     * @return true when the referenced table exists
+     */
+    private boolean isReferencedTableAvailable(String referencedTableRaw, Set<String> availableTableReferences) {
+        if (referencedTableRaw == null || referencedTableRaw.isBlank()) {
+            return false;
+        }
+
+        if (availableTableReferences == null || availableTableReferences.isEmpty()) {
+            return false;
+        }
+
+        String canonicalReference = canonicalizeTableReference(referencedTableRaw);
+        String plainTableName = normalizeIdentifier(extractTableNameOnly(referencedTableRaw));
+
+        return (!canonicalReference.isBlank() && availableTableReferences.contains(canonicalReference))
+                || (!plainTableName.isBlank() && availableTableReferences.contains(plainTableName));
+    }
+
+    /**
+     * Canonicalizes a table reference so comparisons remain stable.
+     *
+     * @param tableReference raw table reference
+     * @return canonical table reference
+     */
+    private String canonicalizeTableReference(String tableReference) {
+        if (tableReference == null || tableReference.isBlank()) {
+            return "";
+        }
+
+        String trimmedTableReference = tableReference.trim();
+        int dotIndex = trimmedTableReference.lastIndexOf('.');
+
+        if (dotIndex <= 0) {
+            return normalizeIdentifier(trimmedTableReference);
+        }
+
+        String schemaName = normalizeIdentifier(trimmedTableReference.substring(0, dotIndex));
+        String tableName = normalizeIdentifier(trimmedTableReference.substring(dotIndex + 1));
+
+        if (schemaName.isBlank()) {
+            return tableName;
+        }
+
+        if (tableName.isBlank()) {
+            return "";
+        }
+
+        return schemaName + "." + tableName;
     }
 
     /**
@@ -190,45 +365,107 @@ public class LiquibaseGenerator {
      * base table, while using the normalized table name for the baseTableName
      * Liquibase attribute.
      *
+     * <p>If the referenced table does not exist in the parsed schema, the column is
+     * still generated in the createTable block, but the foreign key relation is skipped.
+     *
      * @param builder XML builder
      * @param tableName physical table name without schema
      * @param rawTableName raw table name, optionally schema-qualified
      * @param column parsed foreign key column
+     * @param availableTableReferences available parsed table references
      */
-    private void appendMainTableForeignKey(StringBuilder builder,
-                                           String tableName,
-                                           String rawTableName,
-                                           Column column) {
+    private void appendMainTableForeignKey(
+            StringBuilder builder,
+            String tableName,
+            String rawTableName,
+            Column column,
+            Set<String> availableTableReferences
+    ) {
         String baseColumnName = normalizeIdentifier(column.getName());
         String referencedTableRaw = column.getReferencedTable();
         String referencedColumnName = normalizeIdentifier(resolveReferencedColumnName(column));
 
-        if (referencedTableRaw == null || referencedTableRaw.isBlank()
-                 || referencedColumnName.isBlank()) {
+        if (referencedTableRaw == null || referencedTableRaw.isBlank() || referencedColumnName.isBlank()) {
+            return;
+        }
+
+        if (!isReferencedTableAvailable(referencedTableRaw, availableTableReferences)) {
+            log.warn(
+                    "Skipping foreign key for table '{}' column '{}' because referenced table '{}' was not found in parsed schema.",
+                    rawTableName,
+                    baseColumnName,
+                    referencedTableRaw
+            );
             return;
         }
 
         String referencedSchemaName = extractSchemaName(referencedTableRaw);
         String referencedTableName = normalizeIdentifier(extractTableNameOnly(referencedTableRaw));
-        String constraintName = buildForeignKeyConstraintName(tableName, baseColumnName);
+        String constraintName = resolveForeignKeyConstraintName(tableName, baseColumnName, column);
 
-        builder.append("""
-        <addForeignKeyConstraint baseTableName="%s"
-                                 baseColumnNames="%s"
-                                 constraintName="%s"
-                                 referencedTableName="%s"
-                                 referencedColumnNames="%s"%s%s%s%s/>
-""".formatted(
-                escapeXml(tableName),
-                escapeXml(baseColumnName),
-                escapeXml(constraintName),
-                escapeXml(referencedTableName),
-                escapeXml(referencedColumnName),
-                buildBaseTableSchemaAttribute(rawTableName),
-                buildReferencedTableSchemaAttribute(referencedSchemaName),
-                buildOnDeleteAttribute(column),
-                buildOnUpdateAttribute(column)
-        ));
+        builder.append("        <addForeignKeyConstraint")
+                .append("\n                                 baseTableName=\"")
+                .append(escapeXml(tableName))
+                .append("\"")
+                .append("\n                                 baseColumnNames=\"")
+                .append(escapeXml(baseColumnName))
+                .append("\"")
+                .append("\n                                 constraintName=\"")
+                .append(escapeXml(constraintName))
+                .append("\"")
+                .append("\n                                 referencedTableName=\"")
+                .append(escapeXml(referencedTableName))
+                .append("\"")
+                .append("\n                                 referencedColumnNames=\"")
+                .append(escapeXml(referencedColumnName))
+                .append("\"");
+
+        String baseTableSchemaAttribute = buildBaseTableSchemaAttribute(rawTableName);
+        if (!baseTableSchemaAttribute.isBlank()) {
+            builder.append("\n                                ")
+                    .append(baseTableSchemaAttribute.trim());
+        }
+
+        String referencedTableSchemaAttribute = buildReferencedTableSchemaAttribute(referencedSchemaName);
+        if (!referencedTableSchemaAttribute.isBlank()) {
+            builder.append("\n                                ")
+                    .append(referencedTableSchemaAttribute.trim());
+        }
+
+        String onDeleteAttribute = buildOnDeleteAttribute(column);
+        if (!onDeleteAttribute.isBlank()) {
+            builder.append("\n                                ")
+                    .append(onDeleteAttribute.trim());
+        }
+
+        String onUpdateAttribute = buildOnUpdateAttribute(column);
+        if (!onUpdateAttribute.isBlank()) {
+            builder.append("\n                                ")
+                    .append(onUpdateAttribute.trim());
+        }
+
+        builder.append("/>\n");
+    }
+
+    /**
+     * Resolves the foreign key constraint name for the given column.
+     *
+     * <p>When the parser has preserved the original database constraint name,
+     * that value is used. Otherwise, a deterministic fallback name is generated.
+     *
+     * @param tableName physical table name without schema
+     * @param columnName physical base column name
+     * @param column parsed foreign key column
+     * @return resolved foreign key constraint name
+     */
+    private String resolveForeignKeyConstraintName(String tableName, String columnName, Column column) {
+        if (column != null
+                && column.getForeignKeyConstraintName() != null
+                && !column.getForeignKeyConstraintName().isBlank()) {
+            return normalizeIdentifier(column.getForeignKeyConstraintName());
+        }
+
+        return buildForeignKeyConstraintName(tableName, columnName);
     }
 
     /**
@@ -312,6 +549,7 @@ public class LiquibaseGenerator {
         boolean primaryKey = column.isPrimaryKey();
         boolean unique = column.isUnique();
         boolean autoIncrement = column.isIdentity();
+        String primaryKeyConstraintName = resolvePrimaryKeyConstraintName(column);
 
         String defaultAttribute = buildDefaultValueAttribute(column);
 
@@ -333,6 +571,12 @@ public class LiquibaseGenerator {
 
             if (primaryKey) {
                 builder.append(" primaryKey=\"true\"");
+
+                if (primaryKeyConstraintName != null && !primaryKeyConstraintName.isBlank()) {
+                    builder.append(" primaryKeyName=\"")
+                            .append(escapeXml(primaryKeyConstraintName))
+                            .append("\"");
+                }
             }
 
             if (unique) {
@@ -347,6 +591,26 @@ public class LiquibaseGenerator {
         }
 
         builder.append("            </column>\n");
+    }
+
+    /**
+     * Resolves the primary key constraint name for the given column.
+     *
+     * <p>When the parser has preserved the original database constraint name,
+     * that value is used. Otherwise, no explicit primary key name is emitted
+     * inside the createTable column constraints block.
+     *
+     * @param column parsed column
+     * @return resolved primary key constraint name or {@code null}
+     */
+    private String resolvePrimaryKeyConstraintName(Column column) {
+        if (column == null
+                || column.getPrimaryKeyConstraintName() == null
+                || column.getPrimaryKeyConstraintName().isBlank()) {
+            return null;
+        }
+
+        return normalizeIdentifier(column.getPrimaryKeyConstraintName());
     }
 
 
@@ -1129,6 +1393,7 @@ public class LiquibaseGenerator {
         }
     }
 
+
     /**
      * Normalizes a PostgreSQL SQL type into a Liquibase-safe type.
      *
@@ -1141,6 +1406,12 @@ public class LiquibaseGenerator {
      *     <li>{@code serial} -> {@code INTEGER}</li>
      *     <li>{@code character varying(20)} -> {@code VARCHAR(20)}</li>
      *     <li>{@code charactervarying(20)} -> {@code VARCHAR(20)}</li>
+     *     <li>{@code bpchar(1)} -> {@code CHAR(1)}</li>
+     *     <li>{@code char(2000)} -> {@code CHAR(2000)}</li>
+     *     <li>{@code character(5)} -> {@code CHAR(5)}</li>
+     *     <li>{@code bpchar} -> {@code CHAR}</li>
+     *     <li>{@code char} -> {@code CHAR}</li>
+     *     <li>{@code text} -> {@code TEXT}</li>
      *     <li>{@code timestamp(6)} -> {@code TIMESTAMP}</li>
      * </ul>
      *
@@ -1198,6 +1469,22 @@ public class LiquibaseGenerator {
             return normalized.replaceFirst("bpchar", "char").toUpperCase();
         }
 
+        if (normalized.equals("char")) {
+            return "CHAR";
+        }
+
+        if (normalized.startsWith("char(")) {
+            return normalized.toUpperCase();
+        }
+
+        if (normalized.equals("character")) {
+            return "CHAR";
+        }
+
+        if (normalized.startsWith("character(")) {
+            return normalized.replaceFirst("character", "char").toUpperCase();
+        }
+
         if (normalized.startsWith("character varying")) {
             return normalized.replaceFirst("character varying", "varchar").toUpperCase();
         }
@@ -1206,12 +1493,18 @@ public class LiquibaseGenerator {
             return normalized.replaceFirst("charactervarying", "varchar").toUpperCase();
         }
 
+        if (normalized.equals("text")) {
+            return "TEXT";
+        }
+
         if (normalized.startsWith("timestamp")) {
             return "TIMESTAMP";
         }
 
         return normalized.toUpperCase();
     }
+
+
 
     /**
      * Appends raw SQL statements for generated stored columns after the main table

@@ -5,12 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.LanguagesDto;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.dto.CompanyProfileDto;
 
 /**
  * Data transfer object for CompanyYpArticle.
@@ -22,40 +23,35 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CompanyYpArticleDto {
 
-    @NotNull
     private UUID id;
 
     private Integer chamberId;
 
     @NotNull
-    private UUID companyId;
+    private CompanyDto company;
 
-    @Size(max = 255)
     private String title;
 
-    @Size(max = 255)
     private String html;
 
-    private UUID languageId;
+    private LanguagesDto language;
 
     @NotNull
     private Integer orderSeq;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
     @NotNull
     private Boolean isPublished;
 
     @NotNull
-    private UUID companyProfileId;
+    private CompanyProfileDto companyProfile;
 
 }

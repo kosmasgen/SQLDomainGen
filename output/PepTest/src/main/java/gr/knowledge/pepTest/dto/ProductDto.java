@@ -5,12 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for Product.
@@ -22,7 +21,6 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProductDto {
 
-    @NotNull
     private UUID id;
 
     private Integer chamberId;
@@ -34,23 +32,21 @@ public class ProductDto {
     private Integer version;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 20)
     private String cd;
 
     @Size(max = 255)
     private String cdGemi;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
     private Long parentProductId;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
 }

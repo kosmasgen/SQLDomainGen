@@ -2,142 +2,120 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.CompanyYpArticleI18nDto;
 import gr.knowledge.pepTest.service.CompanyYpArticleI18nService;
-import gr.knowledge.pepTest.entity.CompanyYpArticleI18nPK;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing CompanyYpArticleI18n resources.
+ * REST controller for managing Company Yp Article I18n resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "CompanyYpArticleI18n", description = "CompanyYpArticleI18n API")
-@RequestMapping("/api/company-yp-article-i18ns")
+@Tag(name = "Company Yp Article I18n", description = "Company Yp Article I18n API")
+@RequestMapping("/api/company-yp-article-i18n")
 public class CompanyYpArticleI18nController {
 
     private final CompanyYpArticleI18nService companyYpArticleI18nService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all company yp article i18ns.
      * @return list of CompanyYpArticleI18nDto
      */
-    @Operation(summary = "Get all CompanyYpArticleI18n")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all company yp article i18ns")
     @GetMapping
     public ResponseEntity<List<CompanyYpArticleI18nDto>> getAll() {
-        log.info("Fetching all companyyparticlei18n records.");
-        return ResponseEntity.ok(companyYpArticleI18nService.getAllCompanyYpArticleI18n());
+        return ResponseEntity.ok(companyYpArticleI18nService.getAllCompanyYpArticleI18ns());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the company yp article i18n record by id.
+     * @param companyArticleId company article id identifier
+     * @param languageId language id identifier
      * @return CompanyYpArticleI18nDto
      */
-    @Operation(summary = "Get CompanyYpArticleI18n by id")
+    @Operation(summary = "Get Company Yp Article I18n by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @GetMapping("/by-id")
+    @GetMapping("/{companyArticleId}/{languageId}")
     public ResponseEntity<CompanyYpArticleI18nDto> getById(
-            @Parameter(description = "company_article_id", required = true)
-            @RequestParam(name = "company_article_id") UUID companyArticleId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId) {
-        CompanyYpArticleI18nPK id = buildCompanyYpArticleI18nId(companyArticleId, languageId);
-        log.info("Fetching companyyparticlei18n with composite id: {}", id);
-        return ResponseEntity.ok(companyYpArticleI18nService.getCompanyYpArticleI18nById(id));
+            @Parameter(description = "company article id identifier", required = true)
+            @PathVariable UUID companyArticleId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId) {
+        return ResponseEntity.ok(companyYpArticleI18nService.getCompanyYpArticleI18nById(companyArticleId, languageId));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new company yp article i18n record.
+     * @param dto company yp article i18n payload
      * @return created CompanyYpArticleI18nDto
      */
-    @Operation(summary = "Create CompanyYpArticleI18n")
+    @Operation(summary = "Create Company Yp Article I18n")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<CompanyYpArticleI18nDto> create(@RequestBody CompanyYpArticleI18nDto dto) {
-        log.info("Creating companyyparticlei18n.");
+    public ResponseEntity<CompanyYpArticleI18nDto> create(
+            @Valid @RequestBody CompanyYpArticleI18nDto dto) {
         CompanyYpArticleI18nDto created = companyYpArticleI18nService.createCompanyYpArticleI18n(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing company yp article i18n record.
+     * Only fields that are not null in the request are updated.
+     * @param companyArticleId company article id identifier
+     * @param languageId language id identifier
+     * @param dto partial company yp article i18n payload
      * @return updated CompanyYpArticleI18nDto
      */
-    @Operation(summary = "Update CompanyYpArticleI18n")
+    @Operation(summary = "Patch Company Yp Article I18n")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/by-id")
-    public ResponseEntity<CompanyYpArticleI18nDto> update(
-            @Parameter(description = "company_article_id", required = true)
-            @RequestParam(name = "company_article_id") UUID companyArticleId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId,
+    @PatchMapping("/{companyArticleId}/{languageId}")
+    public ResponseEntity<CompanyYpArticleI18nDto> patch(
+            @Parameter(description = "company article id identifier", required = true)
+            @PathVariable UUID companyArticleId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId,
             @RequestBody CompanyYpArticleI18nDto dto) {
-        CompanyYpArticleI18nPK id = buildCompanyYpArticleI18nId(companyArticleId, languageId);
-        log.info("Updating companyyparticlei18n with composite id: {}", id);
-        return ResponseEntity.ok(companyYpArticleI18nService.updateCompanyYpArticleI18n(id, dto));
+        return ResponseEntity.ok(companyYpArticleI18nService.updateCompanyYpArticleI18n(companyArticleId, languageId, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an company yp article i18n record by id.
+     * @param companyArticleId company article id identifier
+     * @param languageId language id identifier
      * @return no content
      */
-    @Operation(summary = "Delete CompanyYpArticleI18n")
+    @Operation(summary = "Delete Company Yp Article I18n")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @DeleteMapping("/by-id")
+    @DeleteMapping("/{companyArticleId}/{languageId}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "company_article_id", required = true)
-            @RequestParam(name = "company_article_id") UUID companyArticleId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId) {
-        CompanyYpArticleI18nPK id = buildCompanyYpArticleI18nId(companyArticleId, languageId);
-        log.info("Deleting companyyparticlei18n with composite id: {}", id);
-        companyYpArticleI18nService.deleteCompanyYpArticleI18n(id);
+            @Parameter(description = "company article id identifier", required = true)
+            @PathVariable UUID companyArticleId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId) {
+        companyYpArticleI18nService.deleteCompanyYpArticleI18n(companyArticleId, languageId);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Builds composite id object for CompanyYpArticleI18n.
-     */
-    private CompanyYpArticleI18nPK buildCompanyYpArticleI18nId(UUID companyArticleId, UUID languageId) {
-        CompanyYpArticleI18nPK id = new CompanyYpArticleI18nPK();
-        id.setCompanyArticleId(companyArticleId);
-        id.setLanguageId(languageId);
-        return id;
-    }
 }

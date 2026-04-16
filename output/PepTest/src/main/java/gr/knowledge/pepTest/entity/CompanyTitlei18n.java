@@ -3,11 +3,11 @@ package gr.knowledge.pepTest.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
-@Table(name = "company_titlei18n")
+@Audited
+@Table(name = "company_titlei18n", uniqueConstraints = @UniqueConstraint(columnNames = {"company_title_id", "chamber_i18n_id"}))
 @Getter
 @Setter
 @Builder
@@ -16,7 +16,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class CompanyTitlei18n {
 
     @EmbeddedId
-    private CompanyTitlei18nPK id;
+    private CompanyTitlei18nKey id;
 
     @MapsId("companyTitleId")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -28,18 +28,16 @@ public class CompanyTitlei18n {
     @JoinColumn(name = "language_id", nullable = false)
     private Languages language;
 
-    @Column(name = "title", length = 255)
+    @Column(name = "title", length = 1000)
     private String title;
 
-    @CreationTimestamp
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
 }

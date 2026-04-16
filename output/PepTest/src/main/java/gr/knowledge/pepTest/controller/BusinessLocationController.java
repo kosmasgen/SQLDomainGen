@@ -2,122 +2,111 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.BusinessLocationDto;
 import gr.knowledge.pepTest.service.BusinessLocationService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing BusinessLocation resources.
+ * REST controller for managing Business Location resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "BusinessLocation", description = "BusinessLocation API")
-@RequestMapping("/api/business-locations")
+@Tag(name = "Business Location", description = "Business Location API")
+@RequestMapping("/api/business-location")
 public class BusinessLocationController {
 
     private final BusinessLocationService businessLocationService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all business locations.
      * @return list of BusinessLocationDto
      */
-    @Operation(summary = "Get all BusinessLocation")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all business locations")
     @GetMapping
     public ResponseEntity<List<BusinessLocationDto>> getAll() {
-        log.info("Fetching all businesslocation records.");
-        return ResponseEntity.ok(businessLocationService.getAllBusinessLocation());
+        return ResponseEntity.ok(businessLocationService.getAllBusinessLocations());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the business location record by id.
+     * @param id business location identifier
      * @return BusinessLocationDto
      */
-    @Operation(summary = "Get BusinessLocation by id")
+    @Operation(summary = "Get Business Location by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<BusinessLocationDto> getById(
-            @Parameter(description = "BusinessLocation id", required = true)
+            @Parameter(description = "business location identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Fetching businesslocation with id: {}", id);
         return ResponseEntity.ok(businessLocationService.getBusinessLocationById(id));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new business location record.
+     * @param dto business location payload
      * @return created BusinessLocationDto
      */
-    @Operation(summary = "Create BusinessLocation")
+    @Operation(summary = "Create Business Location")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<BusinessLocationDto> create(@RequestBody BusinessLocationDto dto) {
-        log.info("Creating businesslocation.");
+    public ResponseEntity<BusinessLocationDto> create(
+            @Valid @RequestBody BusinessLocationDto dto) {
         BusinessLocationDto created = businessLocationService.createBusinessLocation(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing business location record.
+     * Only fields that are not null in the request are updated.
+     * @param id business location identifier
+     * @param dto partial business location payload
      * @return updated BusinessLocationDto
      */
-    @Operation(summary = "Update BusinessLocation")
+    @Operation(summary = "Patch Business Location")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<BusinessLocationDto> update(
-            @Parameter(description = "BusinessLocation id", required = true)
+    @PatchMapping("/{id}")
+    public ResponseEntity<BusinessLocationDto> patch(
+            @Parameter(description = "business location identifier", required = true)
             @PathVariable UUID id,
             @RequestBody BusinessLocationDto dto) {
-        log.info("Updating businesslocation with id: {}", id);
         return ResponseEntity.ok(businessLocationService.updateBusinessLocation(id, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an business location record by id.
+     * @param id business location identifier
      * @return no content
      */
-    @Operation(summary = "Delete BusinessLocation")
+    @Operation(summary = "Delete Business Location")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "BusinessLocation id", required = true)
+            @Parameter(description = "business location identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Deleting businesslocation with id: {}", id);
         businessLocationService.deleteBusinessLocation(id);
         return ResponseEntity.noContent().build();
     }
+
 }

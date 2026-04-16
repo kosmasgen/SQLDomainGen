@@ -5,12 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import jakarta.validation.constraints.NotNull;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.Size;
 
 /**
  * Data transfer object for CompanyBgCooperation.
@@ -22,29 +22,26 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CompanyBgCooperationDto {
 
-    @NotNull
     private UUID id;
 
     private Integer chamberId;
 
     @NotNull
-    private UUID companyId;
+    private CompanyDto company;
 
     @NotNull
-    private UUID coopCompanyId;
+    private CompanyDto coopCompany;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String cooperationStatus;
 
 }

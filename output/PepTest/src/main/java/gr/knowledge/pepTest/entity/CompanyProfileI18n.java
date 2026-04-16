@@ -4,9 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "company_profile_i18n")
 @Getter
 @Setter
@@ -16,7 +17,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class CompanyProfileI18n {
 
     @EmbeddedId
-    private CompanyProfileI18nPK id;
+    private CompanyProfileI18nKey id;
 
     @MapsId("companyProfileId")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -31,27 +32,26 @@ public class CompanyProfileI18n {
     @Column(name = "rec_deleted", nullable = false)
     private Boolean recDeleted;
 
-    @Column(name = "name", length = 255)
+    @Column(name = "name", length = 1000)
     private String name;
 
-    @Column(name = "address_city", length = 255)
+    @Column(name = "address_city", length = 50)
     private String addressCity;
 
-    @Column(name = "address_region", length = 255)
+    @Column(name = "address_region", length = 50)
     private String addressRegion;
 
-    @Column(name = "address_street", length = 255)
+    @Column(name = "address_street", length = 100)
     private String addressStreet;
 
     @CreationTimestamp
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
-    @Column(name = "objective")
+    @Column(name = "objective", columnDefinition = "text")
     private String objective;
 
 }

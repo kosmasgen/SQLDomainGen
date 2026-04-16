@@ -5,12 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.entity.CountryI18nKey;
+import gr.knowledge.pepTest.dto.CountryDto;
 import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for CountryI18n.
@@ -22,14 +23,16 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CountryI18nDto {
 
-    @NotNull
-    private UUID countryId;
+    private CountryI18nKey id;
 
     @NotNull
-    private UUID languageId;
+    private CountryDto country;
 
     @NotNull
-    @Size(max = 255)
+    private LanguagesDto language;
+
+    @NotNull
+    @Size(max = 400)
     private String description;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -39,7 +42,7 @@ public class CountryI18nDto {
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
     private Integer chamberCountryI18nId;
 

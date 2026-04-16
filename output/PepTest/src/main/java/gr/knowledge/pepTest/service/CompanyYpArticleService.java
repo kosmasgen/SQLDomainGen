@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.CompanyYpArticleDto;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code CompanyYpArticle} domain operations.
@@ -10,15 +10,13 @@ import java.util.List;
 public interface CompanyYpArticleService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all company yp articles.
      * @return non-null list of {@link CompanyYpArticleDto}
      */
-    List<CompanyYpArticleDto> getAllCompanyYpArticle();
+    List<CompanyYpArticleDto> getAllCompanyYpArticles();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link CompanyYpArticleDto}
      */
@@ -26,7 +24,6 @@ public interface CompanyYpArticleService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link CompanyYpArticleDto}
      */
@@ -34,19 +31,16 @@ public interface CompanyYpArticleService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link CompanyYpArticleDto}
      */
     CompanyYpArticleDto updateCompanyYpArticle(UUID id, CompanyYpArticleDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteCompanyYpArticle(UUID id);

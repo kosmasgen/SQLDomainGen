@@ -42,6 +42,8 @@ public class Column {
     private int scale;
     private String mappedBy;
     private String fieldName;
+    private String primaryKeyConstraintName;
+    private String foreignKeyConstraintName;
 
 
 }

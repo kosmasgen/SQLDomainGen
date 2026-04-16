@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.ChamberDepartmenti18nDto;
-import gr.knowledge.pepTest.entity.ChamberDepartmenti18nPK;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code ChamberDepartmenti18n} domain operations.
@@ -10,23 +10,21 @@ import java.util.List;
 public interface ChamberDepartmenti18nService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all chamber departmenti18ns.
      * @return non-null list of {@link ChamberDepartmenti18nDto}
      */
-    List<ChamberDepartmenti18nDto> getAllChamberDepartmenti18n();
+    List<ChamberDepartmenti18nDto> getAllChamberDepartmenti18ns();
 
     /**
      * Retrieves a record by id.
-     *
-     * @param id the record id
+     * @param departmentId the department_id value
+     * @param languageId the language_id value
      * @return the matching {@link ChamberDepartmenti18nDto}
      */
-    ChamberDepartmenti18nDto getChamberDepartmenti18nById(ChamberDepartmenti18nPK id);
+    ChamberDepartmenti18nDto getChamberDepartmenti18nById(UUID departmentId, UUID languageId);
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link ChamberDepartmenti18nDto}
      */
@@ -34,20 +32,19 @@ public interface ChamberDepartmenti18nService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param departmentId the department_id value
+     * @param languageId the language_id value
+     * @param dto input payload with partial fields
      * @return updated {@link ChamberDepartmenti18nDto}
      */
-    ChamberDepartmenti18nDto updateChamberDepartmenti18n(ChamberDepartmenti18nPK id, ChamberDepartmenti18nDto dto);
+    ChamberDepartmenti18nDto updateChamberDepartmenti18n(UUID departmentId, UUID languageId, ChamberDepartmenti18nDto dto);
 
     /**
      * Deletes a record by id.
-     *
-     * @param id the record id
+     * @param departmentId the department_id value
+     * @param languageId the language_id value
      */
-    void deleteChamberDepartmenti18n(ChamberDepartmenti18nPK id);
+    void deleteChamberDepartmenti18n(UUID departmentId, UUID languageId);
 }

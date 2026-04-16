@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/main.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <include file="audit.xml" relativeToChangelogFile="true" />
+    <include file="bgPoi.xml" relativeToChangelogFile="true" />
+    <include file="businessLocation.xml" relativeToChangelogFile="true" />
+    <include file="chamberDepartment.xml" relativeToChangelogFile="true" />
+    <include file="companyContactMessage.xml" relativeToChangelogFile="true" />
+    <include file="companyStatus.xml" relativeToChangelogFile="true" />
+    <include file="companyViewRules.xml" relativeToChangelogFile="true" />
+    <include file="companyStatusViewRules.xml" relativeToChangelogFile="true" />
+    <include file="corporateStatus.xml" relativeToChangelogFile="true" />
+    <include file="corporateStatusViewRules.xml" relativeToChangelogFile="true" />
+    <include file="country.xml" relativeToChangelogFile="true" />
+    <include file="dataStaging.xml" relativeToChangelogFile="true" />
+    <include file="folder.xml" relativeToChangelogFile="true" />
+    <include file="incomeGemiPayment.xml" relativeToChangelogFile="true" />
+    <include file="incomePaymentMethod.xml" relativeToChangelogFile="true" />
+    <include file="incomeType.xml" relativeToChangelogFile="true" />
+    <include file="incomeTransaction.xml" relativeToChangelogFile="true" />
+    <include file="languages.xml" relativeToChangelogFile="true" />
+    <include file="bgPoiI18n.xml" relativeToChangelogFile="true" />
+    <include file="businessLocationI18n.xml" relativeToChangelogFile="true" />
+    <include file="chamberDepartmenti18n.xml" relativeToChangelogFile="true" />
+    <include file="companyStatusi18n.xml" relativeToChangelogFile="true" />
+    <include file="corporateStatusi18n.xml" relativeToChangelogFile="true" />
+    <include file="countryI18n.xml" relativeToChangelogFile="true" />
+    <include file="municipality.xml" relativeToChangelogFile="true" />
+    <include file="company.xml" relativeToChangelogFile="true" />
+    <include file="chamberAppUser.xml" relativeToChangelogFile="true" />
+    <include file="chAppUserContact.xml" relativeToChangelogFile="true" />
+    <include file="chAppUserContactI18n.xml" relativeToChangelogFile="true" />
+    <include file="companyBgCooperation.xml" relativeToChangelogFile="true" />
+    <include file="companyBgCooperationI18n.xml" relativeToChangelogFile="true" />
+    <include file="companyProfile.xml" relativeToChangelogFile="true" />
+    <include file="auditTrail.xml" relativeToChangelogFile="true" />
+    <include file="companyFavourites.xml" relativeToChangelogFile="true" />
+    <include file="companyFile.xml" relativeToChangelogFile="true" />
+    <include file="companyProfileI18n.xml" relativeToChangelogFile="true" />
+    <include file="companyTitle.xml" relativeToChangelogFile="true" />
+    <include file="companyTitlei18n.xml" relativeToChangelogFile="true" />
+    <include file="companyYpArticle.xml" relativeToChangelogFile="true" />
+    <include file="companyArticleFile.xml" relativeToChangelogFile="true" />
+    <include file="companyYpArticleI18n.xml" relativeToChangelogFile="true" />
+    <include file="companyYpFile.xml" relativeToChangelogFile="true" />
+    <include file="companyYpPhoto.xml" relativeToChangelogFile="true" />
+    <include file="companyi18n.xml" relativeToChangelogFile="true" />
+    <include file="exportCompany.xml" relativeToChangelogFile="true" />
+    <include file="municipalityI18n.xml" relativeToChangelogFile="true" />
+    <include file="product.xml" relativeToChangelogFile="true" />
+    <include file="exportCompProdCountry.xml" relativeToChangelogFile="true" />
+    <include file="producti18n.xml" relativeToChangelogFile="true" />
+    <include file="professionFriendlyCategory.xml" relativeToChangelogFile="true" />
+    <include file="professionKind.xml" relativeToChangelogFile="true" />
+    <include file="professionKindi18n.xml" relativeToChangelogFile="true" />
+    <include file="professionSystem.xml" relativeToChangelogFile="true" />
+    <include file="profession.xml" relativeToChangelogFile="true" />
+    <include file="companyProfession.xml" relativeToChangelogFile="true" />
+    <include file="professioni18n.xml" relativeToChangelogFile="true" />
+    <include file="statsExpense.xml" relativeToChangelogFile="true" />
+    <include file="statusHistory.xml" relativeToChangelogFile="true" />
+    <include file="syncWatermarks.xml" relativeToChangelogFile="true" />
+    <include file="syncruns.xml" relativeToChangelogFile="true" />
+    <include file="syncrunsErrorLog.xml" relativeToChangelogFile="true" />
+    <include file="temporaryCompany.xml" relativeToChangelogFile="true" />
+    <include file="temporaryCompanyProfession.xml" relativeToChangelogFile="true" />
+    <include file="temporaryCompanyTitle.xml" relativeToChangelogFile="true" />
+    <include file="temporaryCompanyTitlei18n.xml" relativeToChangelogFile="true" />
+    <include file="temporaryCompanyi18n.xml" relativeToChangelogFile="true" />
+    <include file="userContactinfo.xml" relativeToChangelogFile="true" />
+    <include file="userGeodata.xml" relativeToChangelogFile="true" />
+    <include file="workingHours.xml" relativeToChangelogFile="true" />
+
+</databaseChangeLog>

@@ -112,15 +112,14 @@ public final class NamingConverter {
     }
 
     /**
-     * Converts a snake_case or simple singular name to a naive plural camelCase form.
-     *
-     * <p>This method does not apply English pluralization rules. It only appends
-     * {@code s} when the generated camelCase result does not already end with {@code s}.
+     * Converts a snake_case or simple singular name to a plural camelCase form.
      *
      * <p>Examples:
      * <ul>
      *     <li>{@code course_student -> courseStudents}</li>
      *     <li>{@code student -> students}</li>
+     *     <li>{@code company -> companies}</li>
+     *     <li>{@code company_status -> companyStatuses}</li>
      * </ul>
      *
      * @param input the source value
@@ -132,17 +131,146 @@ public final class NamingConverter {
             return null;
         }
 
-        if (singular.isEmpty()) {
+        if (singular.isBlank()) {
             return singular;
         }
 
-        String normalizedValue = Character.toLowerCase(singular.charAt(0)) + singular.substring(1);
+        String normalizedValue = decapitalizeFirstLetter(singular);
+        return pluralizeLastCamelCaseSegment(normalizedValue);
+    }
 
-        if (normalizedValue.endsWith("s")) {
-            return normalizedValue;
+    /**
+     * Pluralizes only the last segment of a camelCase value.
+     *
+     * <p>Examples:
+     * <ul>
+     *     <li>{@code company -> companies}</li>
+     *     <li>{@code companyStatus -> companyStatuses}</li>
+     *     <li>{@code bgPoi -> bgPois}</li>
+     * </ul>
+     *
+     * @param value the camelCase value
+     * @return the value with its last segment pluralized
+     */
+    private static String pluralizeLastCamelCaseSegment(String value) {
+        if (value == null || value.isBlank()) {
+            return value;
         }
 
-        return normalizedValue + "s";
+        int lastSegmentStart = 0;
+        for (int index = 1; index < value.length(); index++) {
+            if (Character.isUpperCase(value.charAt(index))) {
+                lastSegmentStart = index;
+            }
+        }
+
+        String prefix = value.substring(0, lastSegmentStart);
+        String lastSegment = value.substring(lastSegmentStart);
+
+        return prefix + pluralizeWord(lastSegment);
+    }
+
+    /**
+     * Applies simple English pluralization rules to a single word.
+     *
+     * <p>Supported rules:
+     * <ul>
+     *     <li>consonant + y -> ies</li>
+     *     <li>s, x, z, ch, sh -> es</li>
+     *     <li>default -> s</li>
+     * </ul>
+     *
+     * @param word the singular word
+     * @return pluralized word
+     */
+    private static String pluralizeWord(String word) {
+        if (word == null || word.isBlank()) {
+            return word;
+        }
+
+        String lowerCaseWord = word.toLowerCase();
+
+        if (lowerCaseWord.endsWith("y") && word.length() > 1 && isConsonant(word.charAt(word.length() - 2))) {
+            return word.substring(0, word.length() - 1) + "ies";
+        }
+
+        if (lowerCaseWord.endsWith("s")
+                || lowerCaseWord.endsWith("x")
+                || lowerCaseWord.endsWith("z")
+                || lowerCaseWord.endsWith("ch")
+                || lowerCaseWord.endsWith("sh")) {
+            return word + "es";
+        }
+
+        return word + "s";
+    }
+
+    /**
+     * Returns true when the provided character is an English consonant.
+     *
+     * @param value the source character
+     * @return true when the character is a consonant
+     */
+    private static boolean isConsonant(char value) {
+        char lowerCaseValue = Character.toLowerCase(value);
+        return Character.isLetter(lowerCaseValue)
+                && lowerCaseValue != 'a'
+                && lowerCaseValue != 'e'
+                && lowerCaseValue != 'i'
+                && lowerCaseValue != 'o'
+                && lowerCaseValue != 'u';
+    }
+
+    /**
+     * Converts a camelCase or PascalCase string to plural kebab-case.
+     *
+     * <p>Examples:
+     * <ul>
+     *     <li>{@code Company -> companies}</li>
+     *     <li>{@code BgPoi -> bg-pois}</li>
+     *     <li>{@code CompanyStatus -> company-statuses}</li>
+     * </ul>
+     *
+     * @param input the input value
+     * @return the plural kebab-case value, or the original value when null or blank
+     */
+    public static String toKebabCasePlural(String input) {
+        String singular = toKebabCase(input);
+        if (singular == null || singular.isBlank()) {
+            return singular;
+        }
+
+        return pluralizeLastSeparatedSegment(singular, "-");
+    }
+
+    /**
+     * Pluralizes only the last segment of a separated value.
+     *
+     * <p>Examples:
+     * <ul>
+     *     <li>{@code company -> companies}</li>
+     *     <li>{@code company-status -> company-statuses}</li>
+     *     <li>{@code bg-poi -> bg-pois}</li>
+     * </ul>
+     *
+     * @param value the separated value
+     * @param separator the segment separator
+     * @return the value with its last segment pluralized
+     */
+    private static String pluralizeLastSeparatedSegment(String value, String separator) {
+        if (value == null || value.isBlank()) {
+            return value;
+        }
+
+        int lastSeparatorIndex = value.lastIndexOf(separator);
+        if (lastSeparatorIndex < 0) {
+            return pluralizeWord(value);
+        }
+
+        String prefix = value.substring(0, lastSeparatorIndex + separator.length());
+        String lastSegment = value.substring(lastSeparatorIndex + separator.length());
+
+        return prefix + pluralizeWord(lastSegment);
     }
 
     /**
@@ -196,7 +324,6 @@ public final class NamingConverter {
 
     /**
      * Converts a database column name to a safe Java field name.
-     *
      * Handles:
      * - snake_case -> camelCase
      * - invalid characters
@@ -230,12 +357,12 @@ public final class NamingConverter {
         // ensure first letter is lowercase
         camelCase = decapitalizeFirstLetter(camelCase);
 
-        // ❗ critical: if starts with digit → prefix
+        // critical: if starts with digit → prefix
         if (!Character.isJavaIdentifierStart(camelCase.charAt(0))) {
             camelCase = "field" + capitalizeFirstLetter(camelCase);
         }
 
-        // ❗ ensure all chars are valid
+        //  ensure all chars are valid
         StringBuilder safeName = new StringBuilder();
         for (char c : camelCase.toCharArray()) {
             if (Character.isJavaIdentifierPart(c)) {
@@ -245,12 +372,51 @@ public final class NamingConverter {
 
         String result = safeName.toString();
 
-        // ❗ reserved keywords protection
+        //  reserved keywords protection
         if (isJavaKeyword(result)) {
             result = "field" + capitalizeFirstLetter(result);
         }
 
         return result;
+    }
+
+    /**
+     * Converts a lowercase human-readable label to title case.
+     *
+     * <p>Examples:
+     * <ul>
+     *     <li>{@code company -> Company}</li>
+     *     <li>{@code company article files -> Company Article Files}</li>
+     * </ul>
+     *
+     * @param lowerLabel lowercase human-readable label
+     * @return title-case label, or an empty string when the input is null or blank
+     */
+    public static String buildTitleCaseLabel(String lowerLabel) {
+        if (lowerLabel == null || lowerLabel.isBlank()) {
+            return "";
+        }
+
+        String[] parts = lowerLabel.split("\\s+");
+        StringBuilder builder = new StringBuilder();
+
+        for (int index = 0; index < parts.length; index++) {
+            String part = parts[index];
+            if (part.isBlank()) {
+                continue;
+            }
+
+            builder.append(Character.toUpperCase(part.charAt(0)));
+            if (part.length() > 1) {
+                builder.append(part.substring(1));
+            }
+
+            if (index < parts.length - 1) {
+                builder.append(" ");
+            }
+        }
+
+        return builder.toString();
     }
 
 

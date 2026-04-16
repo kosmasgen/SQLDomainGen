@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.FolderDto;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code Folder} domain operations.
@@ -10,15 +10,13 @@ import java.util.List;
 public interface FolderService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all folders.
      * @return non-null list of {@link FolderDto}
      */
-    List<FolderDto> getAllFolder();
+    List<FolderDto> getAllFolders();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link FolderDto}
      */
@@ -26,7 +24,6 @@ public interface FolderService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link FolderDto}
      */
@@ -34,19 +31,16 @@ public interface FolderService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link FolderDto}
      */
     FolderDto updateFolder(UUID id, FolderDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteFolder(UUID id);

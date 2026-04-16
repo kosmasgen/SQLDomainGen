@@ -9,6 +9,8 @@ import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.tree.ParseTreeWalker;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 @Getter
 @Setter
@@ -38,6 +40,8 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
     private boolean manyToMany = false;
     private boolean isIdentity = false;
     private String identityGeneration;
+    private String primaryKeyConstraintName;
+    private String foreignKeyConstraintName;
 
     /**
      * Builds a {@link ColumnDefinition} by walking the ANTLR parse context with this listener.
@@ -155,13 +159,24 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
      */
     @Override
     public void enterConstraint(PostgreSQLParser.ConstraintContext ctx) {
-        String rawConstraintText = ctx.getText().toUpperCase(java.util.Locale.ROOT);
-        String normalizedConstraintText = rawConstraintText.replaceAll("\\s+", "");
+        String rawConstraintText = ctx.getText();
+        String normalizedConstraintText = rawConstraintText
+                .toUpperCase(java.util.Locale.ROOT)
+                .replaceAll("\\s+", "");
+
+        String constraintName = extractConstraintName(rawConstraintText);
 
         if (normalizedConstraintText.contains("PRIMARYKEY")) {
             this.primaryKey = true;
             this.nullable = false;
-            log.info("Column '{}' marked as PRIMARY KEY", this.columnName);
+
+            if (constraintName != null && !constraintName.isBlank()) {
+                this.primaryKeyConstraintName = constraintName;
+            }
+
+            log.info("Column '{}' marked as PRIMARY KEY (constraintName={})",
+                    this.columnName,
+                    this.primaryKeyConstraintName);
         }
 
         if (normalizedConstraintText.contains("NOTNULL")) {
@@ -185,20 +200,66 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
             this.checkConstraint = extractCheckConstraint(ctx);
         }
 
-        if (normalizedConstraintText.contains("REFERENCES")) {
+        if (normalizedConstraintText.contains("REFERENCES") || normalizedConstraintText.contains("FOREIGNKEY")) {
             this.foreignKey = true;
+
+            if (constraintName != null && !constraintName.isBlank()) {
+                this.foreignKeyConstraintName = constraintName;
+            }
+
             extractForeignKeyDetails(ctx);
         }
 
-        log.debug("Constraints extracted for '{}' -> pk={}, nullable={}, unique={}, manyToMany={}, default={}, check={}, fk={}",
+        log.debug(
+                "Constraints extracted for '{}' -> pk={}, pkName={}, nullable={}, unique={}, manyToMany={}, default={}, check={}, fk={}, fkName={}",
                 this.columnName,
                 this.primaryKey,
+                this.primaryKeyConstraintName,
                 this.nullable,
                 this.unique,
                 this.manyToMany,
                 this.defaultValue,
                 this.checkConstraint,
-                this.foreignKey);
+                this.foreignKey,
+                this.foreignKeyConstraintName
+        );
+    }
+
+    /**
+     * Extracts an optional SQL constraint name from the raw constraint text.
+     *
+     * <p>This method supports compact parser text where whitespace may be removed,
+     * for example:
+     * <ul>
+     *     <li>{@code CONSTRAINTpk_audit_trailPRIMARYKEY(id)}</li>
+     *     <li>{@code CONSTRAINTfk_audit_trail_companyREFERENCESpep_schema.company(id)}</li>
+     *     <li>{@code CONSTRAINT"fk audit trail company"REFERENCESpep_schema.company(id)}</li>
+     * </ul>
+     *
+     * @param rawConstraintText raw parser constraint text
+     * @return resolved constraint name or {@code null} when no explicit name exists
+     */
+    private String extractConstraintName(String rawConstraintText) {
+        if (rawConstraintText == null || rawConstraintText.isBlank()) {
+            return null;
+        }
+
+        String compactConstraintText = rawConstraintText.trim().replaceAll("\\s+", "");
+
+        Matcher quotedMatcher = Pattern.compile("(?i)^CONSTRAINT\"([^\"]+)\"").matcher(compactConstraintText);
+        if (quotedMatcher.find()) {
+            return quotedMatcher.group(1).trim();
+        }
+
+        Matcher unquotedMatcher = Pattern.compile(
+                "(?i)^CONSTRAINT([A-Za-z0-9_\\.]+?)(PRIMARYKEY|FOREIGNKEY|REFERENCES|UNIQUE|CHECK|NOTNULL|DEFAULT)"
+        ).matcher(compactConstraintText);
+
+        if (unquotedMatcher.find()) {
+            return unquotedMatcher.group(1).trim();
+        }
+
+        return null;
     }
 
     /**
@@ -412,6 +473,8 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
 
     /**
      * Converts this definition to the internal {@link Column} model used by the generator.
+     *
+     * @return populated {@link Column}
      */
     public Column toColumn() {
         log.info("Converting ColumnDefinition -> Column | name='{}'", this.columnName);
@@ -425,6 +488,7 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
         column.setPrecision(this.precision);
         column.setScale(this.scale);
         column.setPrimaryKey(this.primaryKey);
+        column.setPrimaryKeyConstraintName(this.primaryKeyConstraintName);
         column.setNullable(this.nullable);
         column.setDefaultValue(this.defaultValue);
         column.setUnique(this.unique);
@@ -439,14 +503,22 @@ public class ColumnDefinition extends PostgreSQLBaseListener {
 
         if (this.foreignKey) {
             column.setForeignKey(true);
+            column.setForeignKeyConstraintName(this.foreignKeyConstraintName);
             column.setReferencedTable(this.referencedTable);
             column.setReferencedColumn(this.referencedColumn);
 
-            log.debug("FK column mapped: '{}' -> {}.{} (mappedBy={})",
-                    this.columnName, this.referencedTable, this.referencedColumn, this.mappedBy);
+            log.debug("FK column mapped: '{}' -> {}.{} (fkConstraintName={}, mappedBy={})",
+                    this.columnName,
+                    this.referencedTable,
+                    this.referencedColumn,
+                    this.foreignKeyConstraintName,
+                    this.mappedBy);
 
-            log.info("Column is a FOREIGN KEY: {} -> {}.{}",
-                    column.getName(), column.getReferencedTable(), column.getReferencedColumn());
+            log.info("Column is a FOREIGN KEY: {} -> {}.{} (constraintName={})",
+                    column.getName(),
+                    column.getReferencedTable(),
+                    column.getReferencedColumn(),
+                    column.getForeignKeyConstraintName());
         }
 
         return column;

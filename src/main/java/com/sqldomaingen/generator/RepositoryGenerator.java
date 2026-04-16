@@ -2,29 +2,40 @@ package com.sqldomaingen.generator;
 
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
+import com.sqldomaingen.model.UniqueConstraint;
+import com.sqldomaingen.util.GeneratorSupport;
+import com.sqldomaingen.util.JavaTypeSupport;
 import com.sqldomaingen.util.NamingConverter;
 import com.sqldomaingen.util.PackageResolver;
+import com.sqldomaingen.util.PrimaryKeySupport;
 import lombok.extern.log4j.Log4j2;
 
-import com.sqldomaingen.util.GeneratorSupport;
 import java.nio.file.Path;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
+/**
+ * Generates Spring Data JPA repositories for parsed tables.
+ */
 @Log4j2
 public class RepositoryGenerator {
-
-
 
     /**
      * Generates Spring Data JPA repositories for all tables.
      *
-     * @param tables      parsed SQL tables
-     * @param outputDir   base output directory (project root) where src/main/java will be created
-     * @param basePackage base package (e.g. gr.knowledge.schoolmanagement)
-     * @param overwrite   overwrite existing files
+     * @param tables parsed SQL tables
+     * @param outputDir base output directory
+     * @param basePackage base Java package
+     * @param overwrite overwrite existing files when true
      */
-    public void generateRepositories(List<Table> tables, String outputDir, String basePackage, boolean overwrite) {
+    public void generateRepositories(
+            List<Table> tables,
+            String outputDir,
+            String basePackage,
+            boolean overwrite
+    ) {
         Objects.requireNonNull(tables, "tables must not be null");
         Objects.requireNonNull(outputDir, "outputDir must not be null");
         Objects.requireNonNull(basePackage, "basePackage must not be null");
@@ -42,11 +53,15 @@ public class RepositoryGenerator {
             GeneratorSupport.writeFile(filePath, repositoryCode, overwrite);
         }
 
-        log.info(" Repository generation completed. Output directory: {}", repositoriesDir.toAbsolutePath());
+        log.info("Repository generation completed. Output directory: {}", repositoriesDir.toAbsolutePath());
     }
 
     /**
-     * Backwards-compatible overload (defaults to overwrite = true).
+     * Backwards-compatible overload that overwrites existing files.
+     *
+     * @param tables parsed SQL tables
+     * @param outputDir base output directory
+     * @param basePackage base Java package
      */
     public void generateRepositories(List<Table> tables, String outputDir, String basePackage) {
         generateRepositories(tables, outputDir, basePackage, true);
@@ -54,10 +69,6 @@ public class RepositoryGenerator {
 
     /**
      * Generates repository code for a single table.
-     * Output:
-     * package {basePackage}.repository;
-     * import {basePackage}.entity.{Entity};
-     * public interface {Entity}Repository extends Jpa Repository<{Entity}, {PK}> {}
      *
      * @param table table metadata
      * @param basePackage base Java package
@@ -71,123 +82,553 @@ public class RepositoryGenerator {
                 GeneratorSupport.normalizeTableName(table.getName())
         );
         String repositoryName = entityName + "Repository";
-
         String repositoryPackage = PackageResolver.resolvePackageName(basePackage, "repository");
         String entityPackage = PackageResolver.resolvePackageName(basePackage, "entity");
 
-        TypeRef pkTypeRef = detectPrimaryKeyTypeRef(table, entityName, entityPackage);
+        TypeRef primaryKeyTypeRef = resolvePrimaryKeyTypeRef(table, entityName, entityPackage);
+        Set<String> importLines = collectRepositoryImports(entityPackage, entityName, primaryKeyTypeRef, table);
 
         StringBuilder builder = new StringBuilder();
 
-        builder.append("package ").append(repositoryPackage).append(";\n\n");
-        builder.append("import ").append(entityPackage).append(".").append(entityName).append(";\n");
-        builder.append("import org.springframework.data.jpa.repository.JpaRepository;\n");
-        builder.append("import org.springframework.stereotype.Repository;\n");
-
-        if (pkTypeRef.importLine() != null) {
-            builder.append(pkTypeRef.importLine()).append("\n");
-        }
-
-        builder.append("\n");
-
-        builder.append("@Repository\n");
-        builder.append("public interface ").append(repositoryName)
-                .append(" extends JpaRepository<")
-                .append(entityName).append(", ").append(pkTypeRef.simpleName()).append("> {\n");
+        appendPackage(builder, repositoryPackage);
+        appendImports(builder, importLines);
+        appendRepositoryJavaDoc(builder, entityName, hasCustomRepositoryMethods(table));
+        appendRepositoryDeclaration(builder, repositoryName, entityName, primaryKeyTypeRef.simpleName());
+        appendExistsByMethodsForUniqueColumns(builder, table);
+        appendExistsByMethodsForCompositeUniqueConstraints(builder, table);
         builder.append("}\n");
 
         return builder.toString();
     }
 
     /**
-     * Returns all primary key columns defined for the given table.
-     *
-     * @param table table metadata
-     * @return list of primary key columns
-     */
-    private static List<Column> getPrimaryKeyColumns(Table table) {
-        Objects.requireNonNull(table, "table must not be null");
-
-        return table.getColumns().stream()
-                .filter(Objects::nonNull)
-                .filter(Column::isPrimaryKey)
-                .toList();
-    }
-
-    /**
-     * Determines whether the table uses a composite primary key.
-     *
-     * @param table table metadata
-     * @return true when the table has more than one primary key column
-     */
-    private static boolean hasCompositePrimaryKey(Table table) {
-        return getPrimaryKeyColumns(table).size() > 1;
-    }
-
-
-    /**
-     * Resolves the primary key type reference for repository generation.
+     * Resolves the primary key type reference for the repository.
      *
      * @param table table metadata
      * @param entityName entity simple name
      * @param entityPackage entity package name
-     * @return primary key type reference containing simple type name and optional import
+     * @return primary key type reference
      */
-    private static TypeRef detectPrimaryKeyTypeRef(Table table, String entityName, String entityPackage) {
-        Objects.requireNonNull(table, "table must not be null");
-        Objects.requireNonNull(entityName, "entityName must not be null");
-        Objects.requireNonNull(entityPackage, "entityPackage must not be null");
+    private TypeRef resolvePrimaryKeyTypeRef(Table table, String entityName, String entityPackage) {
+        PrimaryKeySupport.TypeRef primaryKeyTypeRef =
+                PrimaryKeySupport.resolvePrimaryKeyTypeRef(table, entityName, entityPackage);
 
-        if (hasCompositePrimaryKey(table)) {
-            String pkClassName = entityName + "PK";
-            return new TypeRef(pkClassName, "import " + entityPackage + "." + pkClassName + ";");
-        }
-
-        List<Column> pkColumns = getPrimaryKeyColumns(table);
-        if (pkColumns.isEmpty()) {
-            throw new IllegalStateException("No Primary Key found for table: " + table.getName());
-        }
-
-        Column primaryKeyColumn = pkColumns.get(0);
-
-        String rawType = primaryKeyColumn.getJavaType();
-        if (rawType == null || rawType.isBlank()) {
-            return new TypeRef("Long", null);
-        }
-
-        String normalizedType = rawType.trim();
-
-        if ("UUID".equalsIgnoreCase(normalizedType)
-                || "java.util.UUID".equals(normalizedType)
-                || normalizedType.endsWith(".UUID")) {
-            return new TypeRef("UUID", "import java.util.UUID;");
-        }
-
-        if ("BigDecimal".equals(normalizedType) || "java.math.BigDecimal".equals(normalizedType)) {
-            return new TypeRef("BigDecimal", "import java.math.BigDecimal;");
-        }
-
-        if ("long".equalsIgnoreCase(normalizedType) || "java.lang.Long".equals(normalizedType)) {
-            return new TypeRef("Long", null);
-        }
-        if ("int".equalsIgnoreCase(normalizedType) || "java.lang.Integer".equals(normalizedType)) {
-            return new TypeRef("Integer", null);
-        }
-        if ("short".equalsIgnoreCase(normalizedType) || "java.lang.Short".equals(normalizedType)) {
-            return new TypeRef("Short", null);
-        }
-        if ("byte".equalsIgnoreCase(normalizedType) || "java.lang.Byte".equals(normalizedType)) {
-            return new TypeRef("Byte", null);
-        }
-
-        if (normalizedType.contains(".")) {
-            String simpleTypeName = normalizedType.substring(normalizedType.lastIndexOf('.') + 1);
-            return new TypeRef(simpleTypeName, "import " + normalizedType + ";");
-        }
-
-        return new TypeRef(normalizedType, null);
+        return new TypeRef(primaryKeyTypeRef.simpleName(), primaryKeyTypeRef.importLine());
     }
 
+    /**
+     * Returns whether the repository will contain custom unique-based query methods.
+     *
+     * @param table table metadata
+     * @return true when at least one eligible unique definition exists
+     */
+    private boolean hasCustomRepositoryMethods(Table table) {
+        return !getEligibleInlineUniqueColumns(table).isEmpty()
+                || !getEligibleCompositeUniqueConstraints(table).isEmpty();
+    }
+
+    /**
+     * Returns all eligible inline unique columns.
+     *
+     * @param table table metadata
+     * @return eligible inline unique columns
+     */
+    private List<Column> getEligibleInlineUniqueColumns(Table table) {
+        return table.getColumns().stream()
+                .filter(column -> !isNotEligibleInlineUniqueColumn(column))
+                .toList();
+    }
+
+    /**
+     * Returns all eligible composite unique constraints.
+     *
+     * @param table table metadata
+     * @return eligible composite unique constraints
+     */
+    private List<UniqueConstraint> getEligibleCompositeUniqueConstraints(Table table) {
+        if (table.getUniqueConstraints() == null || table.getUniqueConstraints().isEmpty()) {
+            return List.of();
+        }
+
+        return table.getUniqueConstraints().stream()
+                .filter(uniqueConstraint -> !isNotEligibleCompositeUniqueConstraint(table, uniqueConstraint))
+                .toList();
+    }
+
+    /**
+     * Appends existsBy methods for columns marked as inline unique.
+     *
+     * @param builder target source builder
+     * @param table table metadata
+     */
+    private void appendExistsByMethodsForUniqueColumns(StringBuilder builder, Table table) {
+        Objects.requireNonNull(builder, "builder must not be null");
+        Objects.requireNonNull(table, "table must not be null");
+
+        for (Column column : getEligibleInlineUniqueColumns(table)) {
+            appendExistsByMethodForSingleColumn(builder, table, column);
+        }
+    }
+
+    /**
+     * Returns whether the given column is NOT eligible for inline existsBy method generation.
+     *
+     * @param column table column
+     * @return true when the column is NOT eligible
+     */
+    private boolean isNotEligibleInlineUniqueColumn(Column column) {
+        return column == null
+                || !column.isUnique()
+                || isUnsupportedForDerivedQuery(column.getJavaType());
+    }
+
+    /**
+     * Appends a single existsBy method for one unique column.
+     *
+     * @param builder target source builder
+     * @param table table metadata
+     * @param column unique column
+     */
+    private void appendExistsByMethodForSingleColumn(StringBuilder builder, Table table, Column column) {
+        String parameterName = toParameterName(column.getName());
+
+        appendExistsMethodJavaDoc(builder, List.of(parameterName));
+
+        builder.append("    boolean ")
+                .append(buildExistsByMethodName(table, List.of(column.getName())))
+                .append("(")
+                .append(JavaTypeSupport.resolveSimpleType(column.getJavaType()))
+                .append(" ")
+                .append(parameterName)
+                .append(");\n");
+    }
+
+    /**
+     * Appends the package declaration.
+     *
+     * @param builder target source builder
+     * @param repositoryPackage repository package name
+     */
+    private void appendPackage(StringBuilder builder, String repositoryPackage) {
+        builder.append("package ").append(repositoryPackage).append(";\n\n");
+    }
+
+    /**
+     * Appends import lines in deterministic order.
+     *
+     * @param builder target source builder
+     * @param importLines ordered import lines
+     */
+    private void appendImports(StringBuilder builder, Set<String> importLines) {
+        for (String importLine : importLines) {
+            builder.append(importLine).append("\n");
+        }
+        builder.append("\n");
+    }
+
+    /**
+     * Appends the repository interface declaration.
+     *
+     * @param builder target source builder
+     * @param repositoryName repository simple name
+     * @param entityName entity simple name
+     * @param primaryKeyType primary key simple type name
+     */
+    private void appendRepositoryDeclaration(
+            StringBuilder builder,
+            String repositoryName,
+            String entityName,
+            String primaryKeyType
+    ) {
+        builder.append("@Repository\n");
+        builder.append("public interface ").append(repositoryName)
+                .append(" extends JpaRepository<")
+                .append(entityName)
+                .append(", ")
+                .append(primaryKeyType)
+                .append("> {\n");
+    }
+
+    /**
+     * Collects all import lines required by the generated repository.
+     *
+     * @param entityPackage entity package name
+     * @param entityName entity simple name
+     * @param primaryKeyTypeRef resolved primary key type reference
+     * @param table table metadata
+     * @return ordered unique import lines
+     */
+    private Set<String> collectRepositoryImports(
+            String entityPackage,
+            String entityName,
+            TypeRef primaryKeyTypeRef,
+            Table table
+    ) {
+        Set<String> importLines = new LinkedHashSet<>();
+
+        importLines.add("import " + entityPackage + "." + entityName + ";");
+        importLines.add("import org.springframework.data.jpa.repository.JpaRepository;");
+        importLines.add("import org.springframework.stereotype.Repository;");
+
+        if (primaryKeyTypeRef.importLine() != null && !primaryKeyTypeRef.importLine().isBlank()) {
+            importLines.add(primaryKeyTypeRef.importLine());
+        }
+
+        addUniqueMethodImports(importLines, table);
+
+        return importLines;
+    }
+
+    /**
+     * Adds import lines required by generated unique-query methods.
+     *
+     * @param importLines ordered import collection
+     * @param table table metadata
+     */
+    private void addUniqueMethodImports(Set<String> importLines, Table table) {
+        addInlineUniqueMethodImports(importLines, table);
+        addCompositeUniqueMethodImports(importLines, table);
+    }
+
+    /**
+     * Adds import lines required by inline unique methods.
+     *
+     * @param importLines ordered import collection
+     * @param table table metadata
+     */
+    private void addInlineUniqueMethodImports(Set<String> importLines, Table table) {
+        for (Column column : getEligibleInlineUniqueColumns(table)) {
+            addDerivedQueryTypeImport(importLines, column.getJavaType());
+        }
+    }
+
+    /**
+     * Adds import lines required by composite unique methods.
+     *
+     * @param importLines ordered import collection
+     * @param table table metadata
+     */
+    private void addCompositeUniqueMethodImports(Set<String> importLines, Table table) {
+        for (UniqueConstraint uniqueConstraint : getEligibleCompositeUniqueConstraints(table)) {
+            for (String columnName : uniqueConstraint.getColumns()) {
+                Column column = findColumnByName(table, columnName);
+                if (column == null) {
+                    continue;
+                }
+
+                addDerivedQueryTypeImport(importLines, column.getJavaType());
+            }
+        }
+    }
+
+    /**
+     * Adds a single derived-query type import when needed.
+     *
+     * @param importLines ordered import collection
+     * @param javaType full or simple Java type
+     */
+    private void addDerivedQueryTypeImport(Set<String> importLines, String javaType) {
+        if (isUnsupportedForDerivedQuery(javaType)) {
+            return;
+        }
+
+        String importLine = JavaTypeSupport.resolveImportLine(javaType);
+        if (importLine != null && !importLine.isBlank()) {
+            importLines.add(importLine);
+        }
+    }
+
+    /**
+     * Appends existsBy methods for composite unique constraints.
+     *
+     * @param builder target source builder
+     * @param table table metadata
+     */
+    private void appendExistsByMethodsForCompositeUniqueConstraints(StringBuilder builder, Table table) {
+        Objects.requireNonNull(builder, "builder must not be null");
+        Objects.requireNonNull(table, "table must not be null");
+
+        for (UniqueConstraint uniqueConstraint : getEligibleCompositeUniqueConstraints(table)) {
+            String methodSignature = buildCompositeExistsByMethodSignature(table, uniqueConstraint);
+            if (methodSignature == null || methodSignature.isBlank()) {
+                continue;
+            }
+
+            List<String> parameterNames = uniqueConstraint.getColumns().stream()
+                    .map(this::toParameterName)
+                    .toList();
+
+            appendExistsMethodJavaDoc(builder, parameterNames);
+
+            builder.append("    ")
+                    .append(methodSignature)
+                    .append("\n");
+        }
+    }
+
+    /**
+     * Returns whether the given composite unique constraint is NOT eligible
+     * for repository method generation.
+     *
+     * @param table table metadata
+     * @param uniqueConstraint unique constraint metadata
+     * @return true when the constraint is NOT eligible
+     */
+    private boolean isNotEligibleCompositeUniqueConstraint(Table table, UniqueConstraint uniqueConstraint) {
+        return !isValidCompositeUniqueConstraint(uniqueConstraint)
+                || containsUnsupportedDerivedQueryType(table, uniqueConstraint);
+    }
+
+    /**
+     * Builds an existsBy method signature for a composite unique constraint.
+     *
+     * @param table table metadata
+     * @param uniqueConstraint composite unique constraint
+     * @return repository method signature or null when generation is not possible
+     */
+    private String buildCompositeExistsByMethodSignature(Table table, UniqueConstraint uniqueConstraint) {
+        StringBuilder parameters = new StringBuilder();
+        boolean first = true;
+
+        for (String columnName : uniqueConstraint.getColumns()) {
+            Column column = findColumnByName(table, columnName);
+            if (column == null) {
+                return null;
+            }
+
+            String javaType = column.getJavaType();
+            if (isUnsupportedForDerivedQuery(javaType)) {
+                return null;
+            }
+
+            if (!first) {
+                parameters.append(", ");
+            }
+
+            parameters.append(JavaTypeSupport.resolveSimpleType(javaType))
+                    .append(" ")
+                    .append(toParameterName(column.getName()));
+
+            first = false;
+        }
+
+        if (parameters.isEmpty()) {
+            return null;
+        }
+
+        return "boolean "
+                + buildExistsByMethodName(table, uniqueConstraint.getColumns())
+                + "("
+                + parameters
+                + ");";
+    }
+
+    /**
+     * Returns true when the given composite unique constraint can produce a repository method.
+     *
+     * @param uniqueConstraint unique constraint metadata
+     * @return true when the constraint is non-null and contains at least two columns
+     */
+    private boolean isValidCompositeUniqueConstraint(UniqueConstraint uniqueConstraint) {
+        return uniqueConstraint != null
+                && uniqueConstraint.getColumns() != null
+                && uniqueConstraint.getColumns().size() >= 2;
+    }
+
+    /**
+     * Returns true when at least one participating column uses an unsupported derived-query type.
+     *
+     * @param table table metadata
+     * @param uniqueConstraint composite unique constraint
+     * @return true when method generation should be skipped
+     */
+    private boolean containsUnsupportedDerivedQueryType(Table table, UniqueConstraint uniqueConstraint) {
+        for (String columnName : uniqueConstraint.getColumns()) {
+            Column column = findColumnByName(table, columnName);
+            if (column == null || isUnsupportedForDerivedQuery(column.getJavaType())) {
+                return true;
+            }
+        }
+
+        return false;
+    }
+
+    /**
+     * Builds an existsBy method name from one or more column names.
+     *
+     * @param table table metadata
+     * @param columnNames participating column names
+     * @return generated method name
+     */
+    private String buildExistsByMethodName(Table table, List<String> columnNames) {
+        StringBuilder methodName = new StringBuilder("existsBy");
+        boolean first = true;
+
+        for (String columnName : columnNames) {
+            if (columnName == null || columnName.isBlank()) {
+                continue;
+            }
+
+            if (!first) {
+                methodName.append("And");
+            }
+
+            methodName.append(resolvePropertyPath(table, columnName));
+            first = false;
+        }
+
+        return methodName.toString();
+    }
+
+    /**
+     * Converts a column name to a Java parameter name.
+     *
+     * @param columnName database column name
+     * @return camelCase parameter name
+     */
+    private String toParameterName(String columnName) {
+        return NamingConverter.toCamelCase(columnName);
+    }
+
+    /**
+     * Finds a column in the table by its name.
+     *
+     * @param table table metadata
+     * @param columnName target column name
+     * @return matching column or null when not found
+     */
+    private Column findColumnByName(Table table, String columnName) {
+        if (columnName == null || columnName.isBlank()) {
+            return null;
+        }
+
+        return table.getColumns().stream()
+                .filter(Objects::nonNull)
+                .filter(column -> columnName.equalsIgnoreCase(column.getName()))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Determines whether a Java type is unsupported for Spring Data derived query methods.
+     *
+     * @param javaType full or simple Java type
+     * @return true when method generation should be skipped
+     */
+    private boolean isUnsupportedForDerivedQuery(String javaType) {
+        if (javaType == null || javaType.isBlank()) {
+            return true;
+        }
+
+        String normalizedType = javaType.trim();
+
+        return normalizedType.equals("byte[]")
+                || normalizedType.contains("List")
+                || normalizedType.contains("Map")
+                || normalizedType.contains("Set");
+    }
+
+    /**
+     * Appends Javadoc for repository interface.
+     *
+     * @param builder target source builder
+     * @param entityName entity simple name
+     * @param hasCustomMethods whether repository contains custom methods
+     */
+    private void appendRepositoryJavaDoc(StringBuilder builder, String entityName, boolean hasCustomMethods) {
+        builder.append("/**\n");
+        builder.append(" * Repository for {@link ").append(entityName).append("} entity.\n");
+
+        if (hasCustomMethods) {
+            builder.append(" * Provides database access methods for ").append(entityName).append(".\n");
+        } else {
+            builder.append(" * Provides basic CRUD operations using JpaRepository.\n");
+        }
+
+        builder.append(" */\n");
+    }
+
+    /**
+     * Appends Javadoc for an existsBy repository method.
+     *
+     * @param builder target source builder
+     * @param parameterNames repository method parameter names
+     */
+    private void appendExistsMethodJavaDoc(StringBuilder builder, List<String> parameterNames) {
+        builder.append("\n    /**\n");
+        builder.append("     * Checks if an entity exists with the given ")
+                .append(buildParameterDescription(parameterNames))
+                .append(".\n");
+        builder.append("     *\n");
+
+        for (String parameterName : parameterNames) {
+            builder.append("     * @param ")
+                    .append(parameterName)
+                    .append(" value to check\n");
+        }
+
+        builder.append("     * @return true if exists, false otherwise\n");
+        builder.append("     */\n");
+    }
+
+    /**
+     * Builds a human-readable parameter description for Javadoc.
+     *
+     * @param parameters parameter names
+     * @return formatted description
+     */
+    private String buildParameterDescription(List<String> parameters) {
+        if (parameters == null || parameters.isEmpty()) {
+            return "";
+        }
+
+        if (parameters.size() == 1) {
+            return parameters.get(0);
+        }
+
+        if (parameters.size() == 2) {
+            return parameters.get(0) + " and " + parameters.get(1);
+        }
+
+        return String.join(", ", parameters.subList(0, parameters.size() - 1))
+                + " and "
+                + parameters.get(parameters.size() - 1);
+    }
+
+    /**
+     * Resolves the derived-query property path for a column.
+     *
+     * @param table table metadata
+     * @param columnName column name
+     * @return repository property path
+     */
+    private String resolvePropertyPath(Table table, String columnName) {
+        if (PrimaryKeySupport.hasCompositePrimaryKey(table) && isPrimaryKeyColumn(table, columnName)) {
+            return "Id" + NamingConverter.toPascalCase(
+                    NamingConverter.toCamelCase(columnName)
+            );
+        }
+
+        return NamingConverter.toPascalCase(
+                NamingConverter.toCamelCase(columnName)
+        );
+    }
+
+    /**
+     * Returns whether the given column is part of the table primary key.
+     *
+     * @param table table metadata
+     * @param columnName column name
+     * @return true when the column belongs to the primary key
+     */
+    private boolean isPrimaryKeyColumn(Table table, String columnName) {
+        if (columnName == null || columnName.isBlank()) {
+            return false;
+        }
+
+        return PrimaryKeySupport.getPrimaryKeyColumns(table).stream()
+                .anyMatch(primaryKeyColumn -> columnName.equalsIgnoreCase(primaryKeyColumn.getName()));
+    }
 
     /**
      * Holds a resolved type name and its optional import line.

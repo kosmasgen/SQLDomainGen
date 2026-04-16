@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/temporaryCompanyTitle.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="create-temporary-company-title-table-and-audit" author="kosmasgenaris@knowledge.gr">
+        <createTable tableName="temporary_company_title" schemaName="pep_schema">
+            <column name="id" type="NUMERIC(19)">
+                <constraints primaryKey="true" primaryKeyName="pk_temporary_company_title" nullable="false"/>
+            </column>
+            <column name="version" type="NUMERIC(19)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="NUMERIC(19)">
+            </column>
+            <column name="company_preregistration_id" type="NUMERIC(19)">
+            </column>
+            <column name="date_created" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="from_date" type="TIMESTAMP">
+            </column>
+            <column name="last_updated" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="order_seq" type="NUMERIC">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recdeleted" type="NUMERIC(19)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="title" type="VARCHAR(1000)">
+            </column>
+            <column name="title_latin" type="VARCHAR(255)">
+            </column>
+            <column name="title_nrm" type="VARCHAR(1000)">
+            </column>
+            <column name="title_status_id" type="NUMERIC(19)">
+            </column>
+            <column name="to_date" type="TIMESTAMP">
+            </column>
+            <column name="gemi_id" type="NUMERIC(19)">
+            </column>
+            <column name="gemi_date_created" type="DATE">
+            </column>
+            <column name="gemi_last_updated" type="DATE">
+            </column>
+        </createTable>
+
+
+
+
+
+
+        <createTable tableName="temporary_company_title_aud" schemaName="audit">
+            <column name="id" type="NUMERIC(19)"/>
+            <column name="version" type="NUMERIC(19)"/>
+            <column name="company_id" type="NUMERIC(19)"/>
+            <column name="company_preregistration_id" type="NUMERIC(19)"/>
+            <column name="date_created" type="TIMESTAMP"/>
+            <column name="from_date" type="TIMESTAMP"/>
+            <column name="last_updated" type="TIMESTAMP"/>
+            <column name="order_seq" type="NUMERIC"/>
+            <column name="recdeleted" type="NUMERIC(19)"/>
+            <column name="title" type="VARCHAR(1000)"/>
+            <column name="title_latin" type="VARCHAR(255)"/>
+            <column name="title_nrm" type="VARCHAR(1000)"/>
+            <column name="title_status_id" type="NUMERIC(19)"/>
+            <column name="to_date" type="TIMESTAMP"/>
+            <column name="gemi_id" type="NUMERIC(19)"/>
+            <column name="gemi_date_created" type="DATE"/>
+            <column name="gemi_last_updated" type="DATE"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+        </createTable>
+
+        <addPrimaryKey tableName="temporary_company_title_aud"
+                       columnNames="id, rev"
+                       constraintName="pk_temporary_company_title_aud"
+                       schemaName="audit"/>
+
+        <addForeignKeyConstraint baseTableName="temporary_company_title_aud"
+                                 baseColumnNames="rev"
+                                 constraintName="fk_temporary_company_title_aud_revinfo"
+                                 referencedTableName="REVINFO"
+                                 referencedColumnNames="REV"
+                                 baseTableSchemaName="audit"
+                                 referencedTableSchemaName="audit"/>
+
+    </changeSet>
+
+</databaseChangeLog>

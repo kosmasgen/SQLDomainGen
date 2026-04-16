@@ -5,18 +5,17 @@ import gr.knowledge.pepTest.mapper.IncomeTypeMapper;
 import gr.knowledge.pepTest.entity.IncomeType;
 import gr.knowledge.pepTest.repository.IncomeTypeRepository;
 import gr.knowledge.pepTest.service.IncomeTypeService;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
 import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code IncomeType} domain operations.
+ * Service implementation for {@code Income Type} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -28,75 +27,118 @@ public class IncomeTypeServiceImpl implements IncomeTypeService {
     private final IncomeTypeMapper incomeTypeMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link IncomeTypeDto}
+     * Retrieves all income types records.
+     * @return list of IncomeTypeDto
      */
     @Override
-    public List<IncomeTypeDto> getAllIncomeType() {
-        log.info("Fetching all income-type.");
-        return incomeTypeMapper.toDTO(incomeTypeRepository.findAll());
+    public List<IncomeTypeDto> getAllIncomeTypes() {
+        log.info("Fetching all income types records.");
+        return incomeTypeMapper.toDTOList(incomeTypeRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link IncomeTypeDto}
+     * Retrieves a income type record by id.
+     * @param id the income type id
+     * @return IncomeTypeDto
      */
     @Override
     public IncomeTypeDto getIncomeTypeById(UUID id) {
-        log.info("Fetching income-type with id: {}", id);
-        IncomeType entity = incomeTypeRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "IncomeType not found with id: " + id));
-        return incomeTypeMapper.toDTO(entity);
+        log.info("Fetching income type with id: {}", id);
+
+        IncomeType existingEntity = findIncomeTypeByIdOrThrow(id);
+        return incomeTypeMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new income type record.
      * @param dto input payload
      * @return created {@link IncomeTypeDto}
      */
     @Override
     public IncomeTypeDto createIncomeType(IncomeTypeDto dto) {
-        log.info("Creating income-type.");
+        log.info("Creating income type.");
+
+        validateIncomeTypeCreateUniqueConstraints(dto);
+
         IncomeType entity = incomeTypeMapper.toEntity(dto);
-        IncomeType saved = incomeTypeRepository.save(entity);
-        return incomeTypeMapper.toDTO(saved);
+        IncomeType savedEntity = incomeTypeRepository.save(entity);
+
+        return incomeTypeMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing income type record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param id the income type id
+     * @param dto input payload with partial fields
      * @return updated {@link IncomeTypeDto}
      */
     @Override
     public IncomeTypeDto updateIncomeType(UUID id, IncomeTypeDto dto) {
-        log.info("Updating income-type with id: {}", id);
-        incomeTypeRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "IncomeType not found with id: " + id));
-        IncomeType entity = incomeTypeMapper.toEntity(dto);
-        entity.setId(id);
-        IncomeType saved = incomeTypeRepository.save(entity);
-        return incomeTypeMapper.toDTO(saved);
+        log.info("Updating income type with id: {}", id);
+
+        IncomeType existingEntity = findIncomeTypeByIdOrThrow(id);
+        incomeTypeMapper.partialUpdate(existingEntity, dto);
+        IncomeType savedEntity = incomeTypeRepository.save(existingEntity);
+
+        return incomeTypeMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a income type record by id.
+     * @param id the income type id
      */
     @Override
     public void deleteIncomeType(UUID id) {
-        log.info("Deleting income-type with id: {}", id);
-        incomeTypeRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "IncomeType not found with id: " + id));
+        log.info("Deleting income type with id: {}", id);
+
+        findIncomeTypeByIdOrThrow(id);
         incomeTypeRepository.deleteById(id);
     }
+
+    /**
+     * Validates unique constraints for create operations.
+     * @param dto input payload
+     */
+    private void validateIncomeTypeCreateUniqueConstraints(IncomeTypeDto dto) {
+
+        if (dto == null) {
+            return;
+        }
+
+        if (dto.getChamberId() != null && dto.getChamberTypeId() != null && incomeTypeRepository.existsByChamberIdAndChamberTypeId(dto.getChamberId(), dto.getChamberTypeId())) {
+            throw GeneratedRuntimeException.builder()
+                    .code(ErrorCodes.BAD_REQUEST)
+                    .entity("IncomeType")
+                    .message("IncomeType already exists with " + "chamberId=" + dto.getChamberId() + ", " + "chamberTypeId=" + dto.getChamberTypeId())
+                    .build();
+        }
+    }
+
+    /**
+     * Finds an existing income type record by id or throws an exception.
+     * @param id the income type id
+     * @return existing IncomeType entity
+     */
+    private IncomeType findIncomeTypeByIdOrThrow(UUID id) {
+        return incomeTypeRepository.findById(id)
+                .orElseThrow(() -> createIncomeTypeNotFoundException(id));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the income type entity.
+     @param id the income type id
+     @return runtime exception
+     */
+    private RuntimeException createIncomeTypeNotFoundException(UUID id) {
+        log.warn("IncomeType not found with id: {}", id);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("IncomeType")
+                .message("IncomeType not found with id: " + id)
+                .build();
+    }
+
 }

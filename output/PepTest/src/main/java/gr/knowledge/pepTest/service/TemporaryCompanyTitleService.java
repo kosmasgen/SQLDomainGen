@@ -2,6 +2,7 @@ package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.TemporaryCompanyTitleDto;
 import java.util.List;
+import java.math.BigInteger;
 
 /**
  * Service contract for {@code TemporaryCompanyTitle} domain operations.
@@ -9,23 +10,20 @@ import java.util.List;
 public interface TemporaryCompanyTitleService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all temporary company titles.
      * @return non-null list of {@link TemporaryCompanyTitleDto}
      */
-    List<TemporaryCompanyTitleDto> getAllTemporaryCompanyTitle();
+    List<TemporaryCompanyTitleDto> getAllTemporaryCompanyTitles();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link TemporaryCompanyTitleDto}
      */
-    TemporaryCompanyTitleDto getTemporaryCompanyTitleById(Long id);
+    TemporaryCompanyTitleDto getTemporaryCompanyTitleById(BigInteger id);
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link TemporaryCompanyTitleDto}
      */
@@ -33,20 +31,17 @@ public interface TemporaryCompanyTitleService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link TemporaryCompanyTitleDto}
      */
-    TemporaryCompanyTitleDto updateTemporaryCompanyTitle(Long id, TemporaryCompanyTitleDto dto);
+    TemporaryCompanyTitleDto updateTemporaryCompanyTitle(BigInteger id, TemporaryCompanyTitleDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
-    void deleteTemporaryCompanyTitle(Long id);
+    void deleteTemporaryCompanyTitle(BigInteger id);
 }

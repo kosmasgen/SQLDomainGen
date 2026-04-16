@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.ProfessionSystemDto;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code ProfessionSystem} domain operations.
@@ -10,15 +10,13 @@ import java.util.List;
 public interface ProfessionSystemService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all profession systems.
      * @return non-null list of {@link ProfessionSystemDto}
      */
-    List<ProfessionSystemDto> getAllProfessionSystem();
+    List<ProfessionSystemDto> getAllProfessionSystems();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link ProfessionSystemDto}
      */
@@ -26,7 +24,6 @@ public interface ProfessionSystemService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link ProfessionSystemDto}
      */
@@ -34,19 +31,16 @@ public interface ProfessionSystemService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link ProfessionSystemDto}
      */
     ProfessionSystemDto updateProfessionSystem(UUID id, ProfessionSystemDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteProfessionSystem(UUID id);

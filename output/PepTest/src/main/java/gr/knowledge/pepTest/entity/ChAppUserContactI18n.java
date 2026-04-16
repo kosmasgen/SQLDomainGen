@@ -4,9 +4,10 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "ch_app_user_contact_i18n")
 @Getter
 @Setter
@@ -16,7 +17,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class ChAppUserContactI18n {
 
     @EmbeddedId
-    private ChAppUserContactI18nPK id;
+    private ChAppUserContactI18nKey id;
 
     @MapsId("chAppUserContactId")
     @ManyToOne(fetch = FetchType.LAZY)
@@ -32,17 +33,16 @@ public class ChAppUserContactI18n {
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
-    @Column(name = "city", length = 255)
+    @Column(name = "city", length = 50)
     private String city;
 
-    @Column(name = "street", length = 255)
+    @Column(name = "street")
     private String street;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
 }

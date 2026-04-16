@@ -5,12 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for CompanyYpPhoto.
@@ -22,45 +22,41 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CompanyYpPhotoDto {
 
-    @NotNull
     private UUID id;
 
     @NotNull
     private Integer chamberId;
 
     @NotNull
-    private UUID companyId;
+    private CompanyDto company;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 100)
     private String fileName;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 100)
     private String mimeType;
 
     @NotNull
     private Integer fileSize;
 
-    @NotNull
-    private Boolean isLogo;
-
-    @NotNull
-    @Size(max = 255)
-    private String blobUri;
+    private String title;
 
     @NotNull
     private Integer orderSeq;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
+
+    @NotNull
+    @Size(max = 2000)
+    private String blobUri;
 
 }

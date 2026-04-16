@@ -5,13 +5,14 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import jakarta.validation.constraints.NotNull;
+import java.math.BigInteger;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import gr.knowledge.pepTest.dto.CompanyStatusDto;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.Size;
 
 /**
  * Data transfer object for StatusHistory.
@@ -23,30 +24,27 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class StatusHistoryDto {
 
-    @NotNull
     private UUID id;
 
     @NotNull
     private Integer chamberId;
 
     @NotNull
-    private BigDecimal chamberStatusHistoryId;
+    private BigInteger chamberStatusHistoryId;
 
     @NotNull
-    private UUID companyId;
+    private CompanyDto company;
 
     @NotNull
-    private UUID companyStatusId;
+    private CompanyStatusDto companyStatus;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
-    @Size(max = 255)
+    @Size(max = 256)
     private String notes;
 
     @NotNull
@@ -58,9 +56,9 @@ public class StatusHistoryDto {
     private LocalDateTime startDt;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
-    private BigDecimal gemiId;
+    private BigInteger gemiId;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime gemiDateCreated;
@@ -68,7 +66,7 @@ public class StatusHistoryDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime gemiLastUpdated;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String actionNo;
 
 }

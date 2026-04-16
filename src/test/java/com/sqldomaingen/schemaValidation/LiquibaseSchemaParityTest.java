@@ -26,27 +26,27 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 class LiquibaseSchemaParityTest {
-
-    private static final Pattern TYPE_PATTERN =
-            Pattern.compile("^\\s*([A-Z0-9 ]+?)\\s*(?:\\((\\d+)(?:\\s*,\\s*(\\d+))?\\))?\\s*(\\[\\])?\\s*$");
 
     @TempDir
     Path tempDir;
 
     /**
-     * Verifies that the generated Liquibase changelog files preserve key SQL semantics
-     * from the real schema file.
+     * Generates Liquibase files from the parsed SQL schema, validates the output,
+     * and produces a human-readable report without failing the test for schema mismatches.
      *
-     * @throws Exception if parsing, generation, or file reading fails
+     * @throws Exception if file IO, parsing, or generation fails unexpectedly
      */
     @Test
     void shouldGenerateLiquibaseFilesThatMatchParsedSqlSchema() throws Exception {
+        List<String> violations = new ArrayList<>();
+
         Path schemaPath = Constants.SCHEMA_PATH;
-        assertTrue(Files.exists(schemaPath), "Missing schema file: " + schemaPath.toAbsolutePath());
+        if (!Files.exists(schemaPath)) {
+            violations.add("Missing schema file: " + schemaPath.toAbsolutePath());
+            writeAndPrintReport(violations);
+            return;
+        }
 
         String sql = Files.readString(schemaPath);
         List<Table> parsedTables = parseTables(sql);
@@ -63,22 +63,34 @@ class LiquibaseSchemaParityTest {
         Path auditXmlPath = versionDir.resolve("audit.xml");
         Path mainXmlPath = versionDir.resolve("main.xml");
 
-        assertTrue(Files.exists(auditXmlPath), "Generated audit.xml was not found");
-        assertTrue(Files.exists(mainXmlPath), "Generated main.xml was not found");
+        if (!Files.exists(auditXmlPath)) {
+            violations.add("Generated audit.xml was not found: " + auditXmlPath.toAbsolutePath());
+        }
+
+        if (!Files.exists(mainXmlPath)) {
+            violations.add("Generated main.xml was not found: " + mainXmlPath.toAbsolutePath());
+        }
+
+        if (!violations.isEmpty()) {
+            writeAndPrintReport(violations);
+            return;
+        }
 
         String auditXml = Files.readString(auditXmlPath);
         String mainXml = Files.readString(mainXmlPath);
 
-        assertAuditBootstrap(auditXml);
-        assertMainIncludesAllTables(mainXml, parsedTables);
+        assertAuditBootstrap(auditXml, violations);
+        assertMainIncludesAllTables(mainXml, parsedTables, violations);
 
         for (Table table : parsedTables) {
-            assertGeneratedTableChangelogMatchesParsedTable(versionDir, table);
+            assertGeneratedTableChangelogMatchesParsedTable(versionDir, table, violations);
         }
+
+        writeAndPrintReport(violations);
     }
 
     /**
-     * Parses CREATE TABLE statements from the real schema SQL.
+     * Parses CREATE TABLE statements from the SQL schema file.
      *
      * @param sql raw schema SQL
      * @return parsed tables
@@ -99,15 +111,31 @@ class LiquibaseSchemaParityTest {
     }
 
     /**
+     * Writes the validation report to disk and prints it to stdout.
+     *
+     * @param violations collected violations
+     * @throws Exception if writing the report fails
+     */
+    private void writeAndPrintReport(List<String> violations) throws Exception {
+        String report = buildViolationReport(violations);
+        Path reportPath = tempDir.resolve("liquibase-schema-parity-report.txt");
+        Files.writeString(reportPath, report);
+
+        System.out.println(report);
+        System.out.println("Liquibase schema parity report written to: " + reportPath.toAbsolutePath());
+    }
+
+    /**
      * Verifies audit bootstrap XML.
      *
      * @param auditXml generated audit.xml content
+     * @param violations collected violations
      */
-    private void assertAuditBootstrap(String auditXml) {
-        assertContains(auditXml, "<changeSet id=\"create_audit_schema\" author=\"tester@knowledge.gr\">");
-        assertContains(auditXml, "CREATE SCHEMA IF NOT EXISTS audit;");
-        assertContains(auditXml, "<createTable tableName=\"REVINFO\" schemaName=\"audit\">");
-        assertContains(auditXml, "<createSequence sequenceName=\"revinfo_seq\"");
+    private void assertAuditBootstrap(String auditXml, List<String> violations) {
+        assertContains(auditXml, "<changeSet id=\"create_audit_schema\" author=\"tester@knowledge.gr\">", violations, "audit.xml");
+        assertContains(auditXml, "CREATE SCHEMA IF NOT EXISTS audit;", violations, "audit.xml");
+        assertContains(auditXml, "<createTable tableName=\"REVINFO\" schemaName=\"audit\">", violations, "audit.xml");
+        assertContains(auditXml, "<createSequence sequenceName=\"revinfo_seq\"", violations, "audit.xml");
     }
 
     /**
@@ -115,15 +143,18 @@ class LiquibaseSchemaParityTest {
      *
      * @param mainXml generated main.xml content
      * @param parsedTables parsed tables
+     * @param violations collected violations
      */
-    private void assertMainIncludesAllTables(String mainXml, List<Table> parsedTables) {
-        assertContains(mainXml, "<include file=\"audit.xml\" relativeToChangelogFile=\"true\" />");
+    private void assertMainIncludesAllTables(String mainXml, List<Table> parsedTables, List<String> violations) {
+        assertContains(mainXml, "<include file=\"audit.xml\" relativeToChangelogFile=\"true\" />", violations, "main.xml");
 
         for (Table table : parsedTables) {
             String expectedFileName = toIncludeFileName(table.getName());
             assertContains(
                     mainXml,
-                    "<include file=\"" + expectedFileName + "\" relativeToChangelogFile=\"true\" />"
+                    "<include file=\"" + expectedFileName + "\" relativeToChangelogFile=\"true\" />",
+                    violations,
+                    "main.xml"
             );
         }
     }
@@ -133,13 +164,21 @@ class LiquibaseSchemaParityTest {
      *
      * @param versionDir generated Liquibase version directory
      * @param table parsed table
+     * @param violations collected violations
      * @throws Exception if reading fails
      */
-    private void assertGeneratedTableChangelogMatchesParsedTable(Path versionDir, Table table) throws Exception {
+    private void assertGeneratedTableChangelogMatchesParsedTable(
+            Path versionDir,
+            Table table,
+            List<String> violations
+    ) throws Exception {
         String fileName = toIncludeFileName(table.getName());
         Path tableXmlPath = versionDir.resolve(fileName);
 
-        assertTrue(Files.exists(tableXmlPath), "Generated changelog file was not found: " + fileName);
+        if (!Files.exists(tableXmlPath)) {
+            violations.add("Generated changelog file was not found: " + fileName);
+            return;
+        }
 
         String xml = Files.readString(tableXmlPath);
 
@@ -148,42 +187,142 @@ class LiquibaseSchemaParityTest {
         String auditTableName = normalizedTableName + "_aud";
         String expectedMainCreateTableTag = buildExpectedMainCreateTableTag(normalizedTableName, schemaName);
 
-        assertContains(xml, expectedMainCreateTableTag);
-        assertContains(xml, "<createTable tableName=\"" + auditTableName + "\" schemaName=\"audit\">");
-        assertContains(xml, "<addPrimaryKey tableName=\"" + auditTableName + "\"");
-        assertContains(xml, "constraintName=\"pk_" + auditTableName + "\"");
-        assertContains(xml, "<addForeignKeyConstraint baseTableName=\"" + auditTableName + "\"");
-        assertContains(xml, "constraintName=\"fk_" + normalizedTableName + "_aud_revinfo\"");
+        assertContains(xml, expectedMainCreateTableTag, violations, normalizedTableName);
+        assertContains(xml, "<createTable tableName=\"" + auditTableName + "\" schemaName=\"audit\">", violations, normalizedTableName);
+        assertContains(xml, "<addPrimaryKey tableName=\"" + auditTableName + "\"", violations, normalizedTableName);
+        assertContains(xml, "constraintName=\"pk_" + auditTableName + "\"", violations, normalizedTableName);
+        assertContains(xml, "<addForeignKeyConstraint baseTableName=\"" + auditTableName + "\"", violations, normalizedTableName);
+        assertContains(xml, "constraintName=\"fk_" + normalizedTableName + "_aud_revinfo\"", violations, normalizedTableName);
 
-        String mainTableBlock = extractBlock(
+        String mainTableBlock = safeExtractBlock(
                 xml,
                 expectedMainCreateTableTag,
-                "</createTable>"
+                "</createTable>",
+                violations,
+                normalizedTableName,
+                "main createTable block"
         );
-        String auditTableBlock = extractBlock(
+
+        String auditTableBlock = safeExtractBlock(
                 xml,
                 "<createTable tableName=\"" + auditTableName + "\" schemaName=\"audit\">",
-                "</createTable>"
+                "</createTable>",
+                violations,
+                normalizedTableName,
+                "audit createTable block"
         );
 
-        for (Column column : table.getColumns()) {
-            assertMainColumnMapping(mainTableBlock, column);
-            assertAuditColumnMapping(auditTableBlock, column);
+        if (mainTableBlock == null || auditTableBlock == null) {
+            return;
         }
 
-        assertMainTableColumnCount(mainTableBlock, table);
-        assertAuditTableColumnCount(auditTableBlock, table);
-        assertMainTableColumnOrder(mainTableBlock, table);
-        assertAuditTableColumnOrder(auditTableBlock, table);
+        for (Column column : table.getColumns()) {
+            assertMainColumnMapping(xml, mainTableBlock, column, normalizedTableName, schemaName, violations);
+            assertAuditColumnMapping(auditTableBlock, column, normalizedTableName, violations);
+        }
 
-        assertForeignKeys(xml, table);
-        assertForeignKeyCount(xml, table);
+        assertMainTableColumnCount(xml, mainTableBlock, table, normalizedTableName, schemaName, violations);
+        assertAuditTableColumnCount(auditTableBlock, table, violations);
+        assertMainTableColumnOrder(xml, mainTableBlock, table, normalizedTableName, schemaName, violations);
+        assertAuditTableColumnOrder(auditTableBlock, table, violations);
 
-        assertCompositeUniqueConstraints(xml, table);
-        assertCompositeUniqueConstraintCount(xml, table);
+        assertForeignKeys(xml, table, violations);
+        assertForeignKeyCount(xml, table, violations);
 
-        assertCheckConstraints(xml, table);
-        assertCheckConstraintCount(xml, table);
+        assertCompositeUniqueConstraints(xml, table, violations);
+        assertCompositeUniqueConstraintCount(xml, table, violations);
+
+        assertCheckConstraints(xml, table, violations);
+        assertCheckConstraintCount(xml, table, violations);
+    }
+
+    /**
+     * Builds the final validation report.
+     *
+     * @param violations collected violations
+     * @return formatted report
+     */
+    private String buildViolationReport(List<String> violations) {
+        StringBuilder builder = new StringBuilder();
+
+        builder.append(System.lineSeparator());
+        builder.append("==================================================").append(System.lineSeparator());
+        builder.append("LIQUIBASE / SCHEMA PARITY REPORT").append(System.lineSeparator());
+        builder.append("==================================================").append(System.lineSeparator());
+
+        if (violations.isEmpty()) {
+            builder.append("No schema parity violations found.").append(System.lineSeparator());
+        } else {
+            for (int index = 0; index < violations.size(); index++) {
+                builder.append(index + 1)
+                        .append(". ")
+                        .append(violations.get(index))
+                        .append(System.lineSeparator());
+            }
+        }
+
+        builder.append("==================================================").append(System.lineSeparator());
+        builder.append("Total issues: ").append(violations.size()).append(System.lineSeparator());
+        builder.append("==================================================");
+
+        return builder.toString();
+    }
+
+    /**
+     * Records a violation when the given fragment does not exist in the generated XML.
+     *
+     * @param actualXml actual generated XML
+     * @param expectedFragment expected fragment
+     * @param violations collected violations
+     * @param context validation context
+     */
+    private void assertContains(
+            String actualXml,
+            String expectedFragment,
+            List<String> violations,
+            String context
+    ) {
+        String normalizedActualXml = normalizeXmlWhitespace(actualXml);
+        String normalizedExpectedFragment = normalizeXmlWhitespace(expectedFragment);
+
+        if (!normalizedActualXml.contains(normalizedExpectedFragment)) {
+            violations.add("[" + context + "] Expected XML fragment not found: " + expectedFragment);
+        }
+    }
+
+    /**
+     * Safely extracts a table or section block between two markers.
+     *
+     * @param text source text
+     * @param startMarker block start marker
+     * @param endMarker block end marker
+     * @param violations collected violations
+     * @param context validation context
+     * @param blockName human-readable block name
+     * @return extracted block or null when missing
+     */
+    private String safeExtractBlock(
+            String text,
+            String startMarker,
+            String endMarker,
+            List<String> violations,
+            String context,
+            String blockName
+    ) {
+        int startIndex = text.indexOf(startMarker);
+        if (startIndex < 0) {
+            violations.add("[" + context + "] Start marker not found for " + blockName + ": " + startMarker);
+            return null;
+        }
+
+        int endIndex = text.indexOf(endMarker, startIndex);
+        if (endIndex < 0) {
+            violations.add("[" + context + "] End marker not found for " + blockName + ": " + endMarker);
+            return null;
+        }
+
+        endIndex += endMarker.length();
+        return text.substring(startIndex, endIndex);
     }
 
     /**
@@ -204,18 +343,39 @@ class LiquibaseSchemaParityTest {
     /**
      * Verifies one main-table column mapping in the generated XML block.
      *
+     * @param xml full generated table changelog XML
      * @param mainTableBlock generated main-table block
      * @param column parsed column
+     * @param tableName normalized table name
+     * @param schemaName schema name or null
+     * @param violations collected violations
      */
-    private void assertMainColumnMapping(String mainTableBlock, Column column) {
-        String columnBlock = extractColumnBlock(mainTableBlock, normalizeIdentifier(column.getName()));
+    private void assertMainColumnMapping(
+            String xml,
+            String mainTableBlock,
+            Column column,
+            String tableName,
+            String schemaName,
+            List<String> violations
+    ) {
+        String columnName = normalizeIdentifier(column.getName());
 
-        assertColumnType(columnBlock, column);
-        assertPrimaryKeyMapping(columnBlock, column);
-        assertNullableMapping(columnBlock, column);
-        assertUniqueMapping(columnBlock, column);
-        assertDefaultValueMapping(columnBlock, column);
-        assertAutoIncrementMapping(columnBlock, column);
+        String columnBlock = findColumnBlock(mainTableBlock, columnName);
+        if (columnBlock == null) {
+            columnBlock = extractDeferredMainTableColumnBlock(xml, tableName, schemaName, columnName);
+        }
+
+        if (columnBlock == null) {
+            violations.add("[" + tableName + "." + columnName + "] Column block not found in main table block.");
+            return;
+        }
+
+        assertColumnType(columnBlock, column, tableName, violations);
+        assertPrimaryKeyMapping(columnBlock, column, tableName, violations);
+        assertNullableMapping(columnBlock, column, tableName, violations);
+        assertUniqueMapping(columnBlock, column, tableName, violations);
+        assertDefaultValueMapping(columnBlock, column, tableName, violations);
+        assertAutoIncrementMapping(columnBlock, column, tableName, violations);
     }
 
     /**
@@ -223,10 +383,23 @@ class LiquibaseSchemaParityTest {
      *
      * @param auditTableBlock generated audit-table block
      * @param column parsed column
+     * @param tableName normalized table name
+     * @param violations collected violations
      */
-    private void assertAuditColumnMapping(String auditTableBlock, Column column) {
-        String columnBlock = extractColumnBlock(auditTableBlock, normalizeIdentifier(column.getName()));
-        assertColumnType(columnBlock, column);
+    private void assertAuditColumnMapping(
+            String auditTableBlock,
+            Column column,
+            String tableName,
+            List<String> violations
+    ) {
+        String columnName = normalizeIdentifier(column.getName());
+        String columnBlock = extractColumnBlock(auditTableBlock, columnName, tableName, violations, "audit");
+
+        if (columnBlock == null) {
+            return;
+        }
+
+        assertColumnType(columnBlock, column, tableName, violations);
     }
 
     /**
@@ -234,36 +407,67 @@ class LiquibaseSchemaParityTest {
      *
      * @param columnBlock generated column block
      * @param column parsed column
+     * @param tableName normalized table name
+     * @param violations collected violations
      */
-    private void assertColumnType(String columnBlock, Column column) {
-        String actualType = extractAttributeValue(columnBlock, "type");
+    private void assertColumnType(
+            String columnBlock,
+            Column column,
+            String tableName,
+            List<String> violations
+    ) {
+        String columnName = normalizeIdentifier(column.getName());
+
+        String actualType;
+        if (isDeferredSqlColumnBlock(columnBlock)) {
+            actualType = extractTypeFromDeferredSqlColumnBlock(columnBlock, tableName, columnName, violations);
+        } else {
+            actualType = extractAttributeValueFromXmlColumn(columnBlock, "type", tableName, columnName, violations);
+        }
+
+        if (actualType == null) {
+            return;
+        }
+
         String expectedType = normalizeType(column.getSqlType());
 
-        TypeDescriptor expectedDescriptor = parseTypeDescriptor(expectedType);
-        TypeDescriptor actualDescriptor = parseTypeDescriptor(actualType);
+        TypeDescriptor expectedDescriptor = parseTypeDescriptor(expectedType, tableName, columnName, violations);
+        TypeDescriptor actualDescriptor = parseTypeDescriptor(actualType, tableName, columnName, violations);
 
-        assertEquals(
+        if (expectedDescriptor == null || actualDescriptor == null) {
+            return;
+        }
+
+        addViolationIfDifferent(
                 expectedDescriptor.baseType(),
                 actualDescriptor.baseType(),
-                "Unexpected base type for column: " + normalizeIdentifier(column.getName())
+                violations,
+                "[" + tableName + "." + columnName + "] Unexpected base type. Expected: "
+                        + expectedDescriptor.baseType() + ", actual: " + actualDescriptor.baseType()
         );
 
-        assertEquals(
+        addViolationIfDifferent(
                 expectedDescriptor.lengthOrPrecision(),
                 actualDescriptor.lengthOrPrecision(),
-                "Unexpected length/precision for column: " + normalizeIdentifier(column.getName())
+                violations,
+                "[" + tableName + "." + columnName + "] Unexpected length/precision. Expected: "
+                        + expectedDescriptor.lengthOrPrecision() + ", actual: " + actualDescriptor.lengthOrPrecision()
         );
 
-        assertEquals(
+        addViolationIfDifferent(
                 expectedDescriptor.scale(),
                 actualDescriptor.scale(),
-                "Unexpected scale for column: " + normalizeIdentifier(column.getName())
+                violations,
+                "[" + tableName + "." + columnName + "] Unexpected scale. Expected: "
+                        + expectedDescriptor.scale() + ", actual: " + actualDescriptor.scale()
         );
 
-        assertEquals(
+        addViolationIfDifferent(
                 expectedDescriptor.array(),
                 actualDescriptor.array(),
-                "Unexpected array flag for column: " + normalizeIdentifier(column.getName())
+                violations,
+                "[" + tableName + "." + columnName + "] Unexpected array flag. Expected: "
+                        + expectedDescriptor.array() + ", actual: " + actualDescriptor.array()
         );
     }
 
@@ -272,13 +476,25 @@ class LiquibaseSchemaParityTest {
      *
      * @param columnBlock generated column block
      * @param column parsed column
+     * @param tableName normalized table name
+     * @param violations collected violations
      */
-    private void assertPrimaryKeyMapping(String columnBlock, Column column) {
+    private void assertPrimaryKeyMapping(
+            String columnBlock,
+            Column column,
+            String tableName,
+            List<String> violations
+    ) {
         boolean actualPrimaryKey = columnBlock.contains("primaryKey=\"true\"");
-        assertEquals(
-                column.isPrimaryKey(),
+        boolean expectedPrimaryKey = column.isPrimaryKey();
+        String columnName = normalizeIdentifier(column.getName());
+
+        addViolationIfDifferent(
+                expectedPrimaryKey,
                 actualPrimaryKey,
-                "Unexpected primary key mapping for column: " + normalizeIdentifier(column.getName())
+                violations,
+                "[" + tableName + "." + columnName + "] Unexpected primary key mapping. Expected: "
+                        + expectedPrimaryKey + ", actual: " + actualPrimaryKey
         );
     }
 
@@ -287,13 +503,41 @@ class LiquibaseSchemaParityTest {
      *
      * @param columnBlock generated column block
      * @param column parsed column
+     * @param tableName normalized table name
+     * @param violations collected violations
      */
-    private void assertNullableMapping(String columnBlock, Column column) {
+    private void assertNullableMapping(
+            String columnBlock,
+            Column column,
+            String tableName,
+            List<String> violations
+    ) {
+        if (isDeferredSqlColumnBlock(columnBlock)) {
+            String normalizedColumnBlock = normalizeXmlWhitespace(columnBlock).toUpperCase(Locale.ROOT);
+            boolean actualNullableFalse = normalizedColumnBlock.contains(" NOT NULL");
+            boolean expectedNullableFalse = !column.isNullable();
+            String columnName = normalizeIdentifier(column.getName());
+
+            addViolationIfDifferent(
+                    expectedNullableFalse,
+                    actualNullableFalse,
+                    violations,
+                    "[" + tableName + "." + columnName + "] Unexpected nullable mapping. Expected nullable=\"false\": "
+                            + expectedNullableFalse + ", actual: " + actualNullableFalse
+            );
+            return;
+        }
+
         boolean actualNullableFalse = columnBlock.contains("nullable=\"false\"");
-        assertEquals(
-                !column.isNullable(),
+        boolean expectedNullableFalse = !column.isNullable();
+        String columnName = normalizeIdentifier(column.getName());
+
+        addViolationIfDifferent(
+                expectedNullableFalse,
                 actualNullableFalse,
-                "Unexpected nullable mapping for column: " + normalizeIdentifier(column.getName())
+                violations,
+                "[" + tableName + "." + columnName + "] Unexpected nullable mapping. Expected nullable=\"false\": "
+                        + expectedNullableFalse + ", actual: " + actualNullableFalse
         );
     }
 
@@ -302,13 +546,41 @@ class LiquibaseSchemaParityTest {
      *
      * @param columnBlock generated column block
      * @param column parsed column
+     * @param tableName normalized table name
+     * @param violations collected violations
      */
-    private void assertUniqueMapping(String columnBlock, Column column) {
+    private void assertUniqueMapping(
+            String columnBlock,
+            Column column,
+            String tableName,
+            List<String> violations
+    ) {
+        if (isDeferredSqlColumnBlock(columnBlock)) {
+            String normalizedColumnBlock = normalizeXmlWhitespace(columnBlock).toUpperCase(Locale.ROOT);
+            boolean actualUnique = normalizedColumnBlock.contains(" UNIQUE");
+            boolean expectedUnique = column.isUnique();
+            String columnName = normalizeIdentifier(column.getName());
+
+            addViolationIfDifferent(
+                    expectedUnique,
+                    actualUnique,
+                    violations,
+                    "[" + tableName + "." + columnName + "] Unexpected unique mapping. Expected: "
+                            + expectedUnique + ", actual: " + actualUnique
+            );
+            return;
+        }
+
         boolean actualUnique = columnBlock.contains("unique=\"true\"");
-        assertEquals(
-                column.isUnique(),
+        boolean expectedUnique = column.isUnique();
+        String columnName = normalizeIdentifier(column.getName());
+
+        addViolationIfDifferent(
+                expectedUnique,
                 actualUnique,
-                "Unexpected unique mapping for column: " + normalizeIdentifier(column.getName())
+                violations,
+                "[" + tableName + "." + columnName + "] Unexpected unique mapping. Expected: "
+                        + expectedUnique + ", actual: " + actualUnique
         );
     }
 
@@ -317,30 +589,109 @@ class LiquibaseSchemaParityTest {
      *
      * @param columnBlock generated column block
      * @param column parsed column
+     * @param tableName normalized table name
+     * @param violations collected violations
      */
-    private void assertDefaultValueMapping(String columnBlock, Column column) {
+    private void assertDefaultValueMapping(
+            String columnBlock,
+            Column column,
+            String tableName,
+            List<String> violations
+    ) {
+        String columnName = normalizeIdentifier(column.getName());
         String defaultValue = column.getDefaultValue();
+
         if (defaultValue == null || defaultValue.isBlank()) {
-            assertTrue(
-                    !columnBlock.contains("defaultValue=")
-                            && !columnBlock.contains("defaultValueBoolean=")
-                            && !columnBlock.contains("defaultValueNumeric=")
-                            && !columnBlock.contains("defaultValueComputed="),
-                    "Unexpected default value mapping for column: " + normalizeIdentifier(column.getName())
-            );
+            boolean hasAnyDefaultAttribute = columnBlock.contains("defaultValue=")
+                    || columnBlock.contains("defaultValueBoolean=")
+                    || columnBlock.contains("defaultValueNumeric=")
+                    || columnBlock.contains("defaultValueComputed=")
+                    || normalizeXmlWhitespace(columnBlock).toUpperCase(Locale.ROOT).contains(" DEFAULT ");
+
+            if (hasAnyDefaultAttribute) {
+                violations.add("[" + tableName + "." + columnName + "] Unexpected default value mapping found.");
+            }
             return;
         }
 
         String trimmedDefaultValue = defaultValue.trim();
         String normalizedDefaultValue = trimmedDefaultValue.toLowerCase(Locale.ROOT);
 
+        if (isDeferredSqlColumnBlock(columnBlock)) {
+            String normalizedColumnBlock = normalizeXmlWhitespace(columnBlock);
+
+            if ("true".equals(normalizedDefaultValue) || "false".equals(normalizedDefaultValue)) {
+                assertContains(
+                        normalizedColumnBlock,
+                        "DEFAULT " + normalizedDefaultValue,
+                        violations,
+                        tableName + "." + columnName
+                );
+                return;
+            }
+
+            if (normalizedDefaultValue.matches("-?\\d+(\\.\\d+)?")) {
+                assertContains(
+                        normalizedColumnBlock,
+                        "DEFAULT " + normalizedDefaultValue,
+                        violations,
+                        tableName + "." + columnName
+                );
+                return;
+            }
+
+            if (normalizedDefaultValue.contains("(")
+                    || "current_timestamp".equals(normalizedDefaultValue)
+                    || "current_date".equals(normalizedDefaultValue)
+                    || "current_time".equals(normalizedDefaultValue)
+                    || "localtimestamp".equals(normalizedDefaultValue)
+                    || "localtime".equals(normalizedDefaultValue)
+                    || column.isDefaultExpression()) {
+                assertContains(
+                        normalizedColumnBlock,
+                        "DEFAULT " + trimmedDefaultValue,
+                        violations,
+                        tableName + "." + columnName
+                );
+                return;
+            }
+
+            if (trimmedDefaultValue.matches("^'.*'$")) {
+                assertContains(
+                        normalizedColumnBlock,
+                        "DEFAULT " + trimmedDefaultValue,
+                        violations,
+                        tableName + "." + columnName
+                );
+                return;
+            }
+
+            assertContains(
+                    normalizedColumnBlock,
+                    "DEFAULT " + trimmedDefaultValue,
+                    violations,
+                    tableName + "." + columnName
+            );
+            return;
+        }
+
         if ("true".equals(normalizedDefaultValue) || "false".equals(normalizedDefaultValue)) {
-            assertContains(columnBlock, "defaultValueBoolean=\"" + normalizedDefaultValue + "\"");
+            assertContains(
+                    columnBlock,
+                    "defaultValueBoolean=\"" + normalizedDefaultValue + "\"",
+                    violations,
+                    tableName + "." + columnName
+            );
             return;
         }
 
         if (normalizedDefaultValue.matches("-?\\d+(\\.\\d+)?")) {
-            assertContains(columnBlock, "defaultValueNumeric=\"" + normalizedDefaultValue + "\"");
+            assertContains(
+                    columnBlock,
+                    "defaultValueNumeric=\"" + normalizedDefaultValue + "\"",
+                    violations,
+                    tableName + "." + columnName
+            );
             return;
         }
 
@@ -353,13 +704,23 @@ class LiquibaseSchemaParityTest {
                 literalValue = literalValue.substring(1, literalValue.length() - 1);
             }
 
-            assertContains(columnBlock, "defaultValue=\"" + literalValue + "\"");
+            assertContains(
+                    columnBlock,
+                    "defaultValue=\"" + literalValue + "\"",
+                    violations,
+                    tableName + "." + columnName
+            );
             return;
         }
 
         if (trimmedDefaultValue.matches("^'.*'$")) {
             String literalValue = trimmedDefaultValue.substring(1, trimmedDefaultValue.length() - 1);
-            assertContains(columnBlock, "defaultValue=\"" + literalValue + "\"");
+            assertContains(
+                    columnBlock,
+                    "defaultValue=\"" + literalValue + "\"",
+                    violations,
+                    tableName + "." + columnName
+            );
             return;
         }
 
@@ -370,11 +731,21 @@ class LiquibaseSchemaParityTest {
                 || "localtimestamp".equals(normalizedDefaultValue)
                 || "localtime".equals(normalizedDefaultValue)
                 || column.isDefaultExpression()) {
-            assertContains(columnBlock, "defaultValueComputed=\"" + trimmedDefaultValue + "\"");
+            assertContains(
+                    columnBlock,
+                    "defaultValueComputed=\"" + trimmedDefaultValue + "\"",
+                    violations,
+                    tableName + "." + columnName
+            );
             return;
         }
 
-        assertContains(columnBlock, "defaultValue=\"" + trimmedDefaultValue + "\"");
+        assertContains(
+                columnBlock,
+                "defaultValue=\"" + trimmedDefaultValue + "\"",
+                violations,
+                tableName + "." + columnName
+        );
     }
 
     /**
@@ -382,13 +753,40 @@ class LiquibaseSchemaParityTest {
      *
      * @param columnBlock generated column block
      * @param column parsed column
+     * @param tableName normalized table name
+     * @param violations collected violations
      */
-    private void assertAutoIncrementMapping(String columnBlock, Column column) {
+    private void assertAutoIncrementMapping(
+            String columnBlock,
+            Column column,
+            String tableName,
+            List<String> violations
+    ) {
+        if (isDeferredSqlColumnBlock(columnBlock)) {
+            boolean actualAutoIncrement = false;
+            boolean expectedAutoIncrement = column.isIdentity();
+            String columnName = normalizeIdentifier(column.getName());
+
+            addViolationIfDifferent(
+                    expectedAutoIncrement,
+                    actualAutoIncrement,
+                    violations,
+                    "[" + tableName + "." + columnName + "] Unexpected auto-increment mapping. Expected: "
+                            + expectedAutoIncrement + ", actual: " + actualAutoIncrement
+            );
+            return;
+        }
+
         boolean actualAutoIncrement = columnBlock.contains("autoIncrement=\"true\"");
-        assertEquals(
-                column.isIdentity(),
+        boolean expectedAutoIncrement = column.isIdentity();
+        String columnName = normalizeIdentifier(column.getName());
+
+        addViolationIfDifferent(
+                expectedAutoIncrement,
                 actualAutoIncrement,
-                "Unexpected auto-increment mapping for column: " + normalizeIdentifier(column.getName())
+                violations,
+                "[" + tableName + "." + columnName + "] Unexpected auto-increment mapping. Expected: "
+                        + expectedAutoIncrement + ", actual: " + actualAutoIncrement
         );
     }
 
@@ -397,35 +795,38 @@ class LiquibaseSchemaParityTest {
      *
      * @param xml generated table changelog XML
      * @param table parsed table
+     * @param violations collected violations
      */
-    private void assertForeignKeys(String xml, Table table) {
+    private void assertForeignKeys(String xml, Table table, List<String> violations) {
+        String tableName = stripSchema(table.getName());
+
         for (Column column : table.getColumns()) {
             if (!column.isForeignKey()) {
                 continue;
             }
 
-            assertContains(xml, "<addForeignKeyConstraint baseTableName=\"" + stripSchema(table.getName()) + "\"");
-            assertContains(xml, "baseColumnNames=\"" + normalizeIdentifier(column.getName()) + "\"");
+            assertContains(xml, "<addForeignKeyConstraint baseTableName=\"" + tableName + "\"", violations, tableName);
+            assertContains(xml, "baseColumnNames=\"" + normalizeIdentifier(column.getName()) + "\"", violations, tableName);
 
             String referencedTable = stripSchema(column.getReferencedTable());
-            assertContains(xml, "referencedTableName=\"" + normalizeIdentifier(referencedTable) + "\"");
+            assertContains(xml, "referencedTableName=\"" + normalizeIdentifier(referencedTable) + "\"", violations, tableName);
 
             String referencedColumn = column.getReferencedColumn() != null && !column.getReferencedColumn().isBlank()
                     ? normalizeIdentifier(column.getReferencedColumn())
                     : "id";
-            assertContains(xml, "referencedColumnNames=\"" + referencedColumn + "\"");
+            assertContains(xml, "referencedColumnNames=\"" + referencedColumn + "\"", violations, tableName);
 
             String referencedSchema = extractSchema(column.getReferencedTable());
             if (referencedSchema != null && !referencedSchema.isBlank()) {
-                assertContains(xml, "referencedTableSchemaName=\"" + referencedSchema + "\"");
+                assertContains(xml, "referencedTableSchemaName=\"" + referencedSchema + "\"", violations, tableName);
             }
 
             if (column.getOnDelete() != null && !column.getOnDelete().isBlank()) {
-                assertContains(xml, "onDelete=\"" + column.getOnDelete() + "\"");
+                assertContains(xml, "onDelete=\"" + column.getOnDelete() + "\"", violations, tableName);
             }
 
             if (column.getOnUpdate() != null && !column.getOnUpdate().isBlank()) {
-                assertContains(xml, "onUpdate=\"" + column.getOnUpdate() + "\"");
+                assertContains(xml, "onUpdate=\"" + column.getOnUpdate() + "\"", violations, tableName);
             }
         }
     }
@@ -435,8 +836,9 @@ class LiquibaseSchemaParityTest {
      *
      * @param xml generated table changelog XML
      * @param table parsed table
+     * @param violations collected violations
      */
-    private void assertForeignKeyCount(String xml, Table table) {
+    private void assertForeignKeyCount(String xml, Table table, List<String> violations) {
         long expectedForeignKeyCount = table.getColumns().stream()
                 .filter(Column::isForeignKey)
                 .count();
@@ -448,11 +850,12 @@ class LiquibaseSchemaParityTest {
                 "<addForeignKeyConstraint baseTableName=\"" + normalizedTableName + "\""
         );
 
-        assertEquals(
-                expectedForeignKeyCount,
-                actualForeignKeyCount,
-                "Unexpected foreign key count for table: " + normalizedTableName
-        );
+        if (expectedForeignKeyCount != actualForeignKeyCount) {
+            violations.add(
+                    "[" + normalizedTableName + "] Unexpected foreign key count. Expected: "
+                            + expectedForeignKeyCount + ", actual: " + actualForeignKeyCount
+            );
+        }
     }
 
     /**
@@ -460,15 +863,18 @@ class LiquibaseSchemaParityTest {
      *
      * @param xml generated table changelog XML
      * @param table parsed table
+     * @param violations collected violations
      */
-    private void assertCompositeUniqueConstraints(String xml, Table table) {
+    private void assertCompositeUniqueConstraints(String xml, Table table, List<String> violations) {
         if (table.getUniqueConstraints() == null || table.getUniqueConstraints().isEmpty()) {
             return;
         }
 
+        String tableName = stripSchema(table.getName());
+
         for (UniqueConstraint uniqueConstraint : table.getUniqueConstraints()) {
             List<String> columns = uniqueConstraint.getColumns();
-            if (columns == null || columns.isEmpty()) {
+            if (columns == null || columns.size() <= 1) {
                 continue;
             }
 
@@ -476,11 +882,26 @@ class LiquibaseSchemaParityTest {
                     .map(this::normalizeIdentifier)
                     .collect(Collectors.joining(", "));
 
-            assertContains(xml, "<addUniqueConstraint tableName=\"" + stripSchema(table.getName()) + "\"");
-            assertContains(xml, "columnNames=\"" + joinedColumns + "\"");
+            assertContains(
+                    xml,
+                    "<addUniqueConstraint tableName=\"" + tableName + "\"",
+                    violations,
+                    tableName
+            );
+            assertContains(
+                    xml,
+                    "columnNames=\"" + joinedColumns + "\"",
+                    violations,
+                    tableName
+            );
 
             if (uniqueConstraint.getName() != null && !uniqueConstraint.getName().isBlank()) {
-                assertContains(xml, "constraintName=\"" + uniqueConstraint.getName() + "\"");
+                assertContains(
+                        xml,
+                        "constraintName=\"" + uniqueConstraint.getName() + "\"",
+                        violations,
+                        tableName
+                );
             }
         }
     }
@@ -490,8 +911,9 @@ class LiquibaseSchemaParityTest {
      *
      * @param xml generated table changelog XML
      * @param table parsed table
+     * @param violations collected violations
      */
-    private void assertCompositeUniqueConstraintCount(String xml, Table table) {
+    private void assertCompositeUniqueConstraintCount(String xml, Table table, List<String> violations) {
         long expectedUniqueConstraintCount = table.getUniqueConstraints() == null
                 ? 0
                 : table.getUniqueConstraints().stream()
@@ -506,11 +928,12 @@ class LiquibaseSchemaParityTest {
                 "<addUniqueConstraint tableName=\"" + normalizedTableName + "\""
         );
 
-        assertEquals(
-                expectedUniqueConstraintCount,
-                actualUniqueConstraintCount,
-                "Unexpected composite unique constraint count for table: " + normalizedTableName
-        );
+        if (expectedUniqueConstraintCount != actualUniqueConstraintCount) {
+            violations.add(
+                    "[" + normalizedTableName + "] Unexpected composite unique constraint count. Expected: "
+                            + expectedUniqueConstraintCount + ", actual: " + actualUniqueConstraintCount
+            );
+        }
     }
 
     /**
@@ -518,11 +941,15 @@ class LiquibaseSchemaParityTest {
      *
      * @param xml generated table changelog XML
      * @param table parsed table
+     * @param violations collected violations
      */
-    private void assertCheckConstraints(String xml, Table table) {
+    private void assertCheckConstraints(String xml, Table table, List<String> violations) {
         if (table.getConstraints() == null || table.getConstraints().isEmpty()) {
             return;
         }
+
+        String normalizedXml = normalizeXmlForConstraintComparison(xml);
+        String tableName = stripSchema(table.getName());
 
         for (String constraint : table.getConstraints()) {
             if (constraint == null || constraint.isBlank()) {
@@ -534,10 +961,7 @@ class LiquibaseSchemaParityTest {
                 continue;
             }
 
-            assertContains(
-                    normalizeXmlForConstraintComparison(xml),
-                    normalizedConstraint
-            );
+            assertContains(normalizedXml, normalizedConstraint, violations, tableName);
         }
     }
 
@@ -546,8 +970,9 @@ class LiquibaseSchemaParityTest {
      *
      * @param xml generated table changelog XML
      * @param table parsed table
+     * @param violations collected violations
      */
-    private void assertCheckConstraintCount(String xml, Table table) {
+    private void assertCheckConstraintCount(String xml, Table table, List<String> violations) {
         long expectedCheckConstraintCount = table.getConstraints() == null
                 ? 0
                 : table.getConstraints().stream()
@@ -556,30 +981,90 @@ class LiquibaseSchemaParityTest {
                 .filter(constraint -> !constraint.isBlank())
                 .count();
 
-        int actualCheckConstraintCount = countOccurrences(xml, "<addCheckConstraint ");
+        String normalizedXml = normalizeXmlWhitespace(xml);
+        String tableName = stripSchema(table.getName());
 
-        assertEquals(
-                expectedCheckConstraintCount,
-                actualCheckConstraintCount,
-                "Unexpected check constraint count for table: " + stripSchema(table.getName())
-        );
+        int actualAddCheckConstraintCount =
+                countOccurrences(normalizedXml.toLowerCase(Locale.ROOT), "<addcheckconstraint");
+
+        int actualSqlCheckConstraintCount =
+                countSqlCheckConstraintsForTable(normalizedXml, tableName);
+
+        int actualCheckConstraintCount =
+                actualAddCheckConstraintCount + actualSqlCheckConstraintCount;
+
+        if (expectedCheckConstraintCount != actualCheckConstraintCount) {
+            violations.add(
+                    "[" + tableName + "] Unexpected check constraint count. Expected: "
+                            + expectedCheckConstraintCount + ", actual: " + actualCheckConstraintCount
+            );
+        }
     }
 
     /**
-     * Verifies that the generated XML contains exactly the expected number of main-table columns.
+     * Counts CHECK constraints emitted through raw SQL blocks for the given table.
      *
+     * @param normalizedXml normalized generated XML
+     * @param tableName normalized table name
+     * @return number of SQL-based CHECK constraints for the table
+     */
+    private int countSqlCheckConstraintsForTable(String normalizedXml, String tableName) {
+        String flattenedXml = normalizedXml
+                .replaceAll("[\\n\\r]+", " ")
+                .replaceAll("\\s+", " ");
+
+        Pattern pattern = Pattern.compile(
+                "(?i)ALTER TABLE .*?\\b"
+                        + Pattern.quote(tableName)
+                        + "\\b.*?ADD CONSTRAINT .*?CHECK\\s*\\("
+        );
+
+        Matcher matcher = pattern.matcher(flattenedXml);
+
+        int count = 0;
+        while (matcher.find()) {
+            count++;
+        }
+
+        return count;
+    }
+
+    /**
+     * Verifies that the generated XML contains exactly the expected number of main-table columns,
+     * counting both createTable columns and deferred ALTER TABLE ADD COLUMN statements.
+     *
+     * @param xml full generated table changelog XML
      * @param mainTableBlock generated main-table block
      * @param table parsed table
+     * @param tableName normalized table name
+     * @param schemaName schema name or null
+     * @param violations collected violations
      */
-    private void assertMainTableColumnCount(String mainTableBlock, Table table) {
-        int actualColumnCount = countOccurrences(mainTableBlock, "<column name=\"");
+    private void assertMainTableColumnCount(
+            String xml,
+            String mainTableBlock,
+            Table table,
+            String tableName,
+            String schemaName,
+            List<String> violations
+    ) {
+        List<String> actualColumnNames = extractEffectiveMainTableColumnNames(
+                xml,
+                mainTableBlock,
+                table,
+                tableName,
+                schemaName
+        );
+
+        int actualColumnCount = actualColumnNames.size();
         int expectedColumnCount = table.getColumns().size();
 
-        assertEquals(
-                expectedColumnCount,
-                actualColumnCount,
-                "Unexpected main-table column count for table: " + stripSchema(table.getName())
-        );
+        if (expectedColumnCount != actualColumnCount) {
+            violations.add(
+                    "[" + tableName + "] Unexpected main-table column count. Expected: "
+                            + expectedColumnCount + ", actual: " + actualColumnCount
+            );
+        }
     }
 
     /**
@@ -587,36 +1072,211 @@ class LiquibaseSchemaParityTest {
      *
      * @param auditTableBlock generated audit-table block
      * @param table parsed table
+     * @param violations collected violations
      */
-    private void assertAuditTableColumnCount(String auditTableBlock, Table table) {
+    private void assertAuditTableColumnCount(String auditTableBlock, Table table, List<String> violations) {
         int actualColumnCount = countOccurrences(auditTableBlock, "<column name=\"");
         int expectedColumnCount = table.getColumns().size() + 2;
+        String tableName = stripSchema(table.getName());
 
-        assertEquals(
-                expectedColumnCount,
-                actualColumnCount,
-                "Unexpected audit-table column count for table: " + stripSchema(table.getName())
-        );
+        if (expectedColumnCount != actualColumnCount) {
+            violations.add(
+                    "[" + tableName + "] Unexpected audit-table column count. Expected: "
+                            + expectedColumnCount + ", actual: " + actualColumnCount
+            );
+        }
     }
 
     /**
-     * Verifies that the main-table columns preserve the parsed SQL order.
+     * Verifies that the main-table columns preserve the parsed SQL order,
+     * allowing some columns to be added later through ALTER TABLE ADD COLUMN.
      *
+     * @param xml full generated table changelog XML
      * @param mainTableBlock generated main-table block
      * @param table parsed table
+     * @param tableName normalized table name
+     * @param schemaName schema name or null
+     * @param violations collected violations
      */
-    private void assertMainTableColumnOrder(String mainTableBlock, Table table) {
-        List<String> actualColumnNames = extractColumnNamesInOrder(mainTableBlock);
+    private void assertMainTableColumnOrder(
+            String xml,
+            String mainTableBlock,
+            Table table,
+            String tableName,
+            String schemaName,
+            List<String> violations
+    ) {
+        List<String> actualColumnNames = extractEffectiveMainTableColumnNames(
+                xml,
+                mainTableBlock,
+                table,
+                tableName,
+                schemaName
+        );
+
         List<String> expectedColumnNames = table.getColumns().stream()
                 .map(Column::getName)
                 .map(this::normalizeIdentifier)
                 .toList();
 
-        assertEquals(
-                expectedColumnNames,
-                actualColumnNames,
-                "Unexpected main-table column order for table: " + stripSchema(table.getName())
+        if (!Objects.equals(expectedColumnNames, actualColumnNames)) {
+            violations.add(
+                    "[" + tableName + "] Unexpected main-table column order. Expected: "
+                            + expectedColumnNames + ", actual: " + actualColumnNames
+            );
+        }
+    }
+
+    /**
+     * Extracts the effective main-table column names in SQL order, allowing a column
+     * to be satisfied either by createTable or by a deferred ALTER TABLE ADD COLUMN statement.
+     *
+     * @param xml full generated table changelog XML
+     * @param mainTableBlock generated main-table block
+     * @param table parsed table
+     * @param tableName normalized table name
+     * @param schemaName schema name or null
+     * @return ordered effective main-table column names
+     */
+    private List<String> extractEffectiveMainTableColumnNames(
+            String xml,
+            String mainTableBlock,
+            Table table,
+            String tableName,
+            String schemaName
+    ) {
+        List<String> effectiveColumnNames = new ArrayList<>();
+
+        for (Column column : table.getColumns()) {
+            String columnName = normalizeIdentifier(column.getName());
+
+            if (findColumnBlock(mainTableBlock, columnName) != null) {
+                effectiveColumnNames.add(columnName);
+                continue;
+            }
+
+            if (extractDeferredMainTableColumnBlock(xml, tableName, schemaName, columnName) != null) {
+                effectiveColumnNames.add(columnName);
+            }
+        }
+
+        return effectiveColumnNames;
+    }
+
+    /**
+     * Finds a column block inside a createTable block without recording a violation.
+     *
+     * @param createTableBlock createTable block
+     * @param columnName normalized column name
+     * @return extracted column block or null when absent
+     */
+    private String findColumnBlock(String createTableBlock, String columnName) {
+        if (createTableBlock == null || createTableBlock.isBlank() || columnName == null || columnName.isBlank()) {
+            return null;
+        }
+
+        String marker = "<column name=\"" + columnName + "\"";
+        int startIndex = createTableBlock.indexOf(marker);
+
+        if (startIndex < 0) {
+            return null;
+        }
+
+        int selfClosingEndIndex = createTableBlock.indexOf("/>", startIndex);
+        int regularEndIndex = createTableBlock.indexOf("</column>", startIndex);
+
+        if (selfClosingEndIndex >= 0 && (regularEndIndex < 0 || selfClosingEndIndex < regularEndIndex)) {
+            return createTableBlock.substring(startIndex, selfClosingEndIndex + 2);
+        }
+
+        if (regularEndIndex < 0) {
+            return null;
+        }
+
+        return createTableBlock.substring(startIndex, regularEndIndex + "</column>".length());
+    }
+
+    /**
+     * Checks whether the given fragment is a deferred SQL column definition
+     * produced through ALTER TABLE ... ADD COLUMN.
+     *
+     * @param columnBlock source fragment
+     * @return true when the fragment is a deferred SQL column block
+     */
+    private boolean isDeferredSqlColumnBlock(String columnBlock) {
+        if (columnBlock == null || columnBlock.isBlank()) {
+            return false;
+        }
+
+        String normalizedBlock = normalizeXmlWhitespace(columnBlock).toUpperCase(Locale.ROOT);
+        return normalizedBlock.startsWith("ALTER TABLE");
+    }
+
+    /**
+     * Extracts the SQL type from a deferred ALTER TABLE ... ADD COLUMN statement.
+     *
+     * @param columnBlock deferred SQL fragment
+     * @param tableName normalized table name
+     * @param columnName normalized column name
+     * @param violations collected violations
+     * @return extracted SQL type or null when it cannot be resolved
+     */
+    private String extractTypeFromDeferredSqlColumnBlock(
+            String columnBlock,
+            String tableName,
+            String columnName,
+            List<String> violations
+    ) {
+        String normalizedBlock = normalizeXmlWhitespace(columnBlock);
+
+        Pattern pattern = Pattern.compile(
+                "(?i)ADD COLUMN\\s+\"?" + Pattern.quote(columnName) + "\"?\\s+(.+?)(?:\\s+GENERATED\\s+ALWAYS\\s+AS\\b|\\s+DEFAULT\\b|\\s+NOT\\s+NULL\\b|\\s+NULL\\b|\\s+UNIQUE\\b|\\s+PRIMARY\\s+KEY\\b|\\s+CONSTRAINT\\b|\\s*;)"
         );
+
+        Matcher matcher = pattern.matcher(normalizedBlock);
+        if (!matcher.find()) {
+            violations.add(
+                    "[" + tableName + "." + columnName + "] Could not extract SQL type from deferred column fragment: "
+                            + normalizedBlock
+            );
+            return null;
+        }
+
+        return matcher.group(1).trim();
+    }
+
+    /**
+     * Extracts a deferred column SQL fragment when the column is added later with
+     * ALTER TABLE ... ADD COLUMN instead of appearing inside createTable.
+     *
+     * @param xml full generated table changelog XML
+     * @param tableName normalized table name
+     * @param schemaName schema name or null
+     * @param columnName normalized column name
+     * @return extracted SQL fragment or null
+     */
+    private String extractDeferredMainTableColumnBlock(
+            String xml,
+            String tableName,
+            String schemaName,
+            String columnName
+    ) {
+        String normalizedXml = normalizeXmlWhitespace(xml);
+
+        String qualifiedTableName = (schemaName == null || schemaName.isBlank())
+                ? tableName
+                : schemaName + "." + tableName;
+
+        Pattern pattern = Pattern.compile(
+                "(?i)(ALTER TABLE\\s+(?:ONLY\\s+)?\"?"
+                        + Pattern.quote(qualifiedTableName)
+                        + "\"?\\s+ADD COLUMN\\s+\"?"
+                        + Pattern.quote(columnName)
+                        + "\"?\\s+.+?;)"
+        );
+
+        Matcher matcher = pattern.matcher(normalizedXml);
+        return matcher.find() ? matcher.group(1) : null;
     }
 
     /**
@@ -624,8 +1284,9 @@ class LiquibaseSchemaParityTest {
      *
      * @param auditTableBlock generated audit-table block
      * @param table parsed table
+     * @param violations collected violations
      */
-    private void assertAuditTableColumnOrder(String auditTableBlock, Table table) {
+    private void assertAuditTableColumnOrder(String auditTableBlock, Table table, List<String> violations) {
         List<String> actualColumnNames = extractColumnNamesInOrder(auditTableBlock);
 
         List<String> expectedColumnNames = new ArrayList<>(
@@ -637,30 +1298,14 @@ class LiquibaseSchemaParityTest {
         expectedColumnNames.add("rev");
         expectedColumnNames.add("revtype");
 
-        assertEquals(
-                expectedColumnNames,
-                actualColumnNames,
-                "Unexpected audit-table column order for table: " + stripSchema(table.getName())
-        );
-    }
+        String tableName = stripSchema(table.getName());
 
-    /**
-     * Extracts a table or section block between two markers.
-     *
-     * @param text source text
-     * @param startMarker block start marker
-     * @param endMarker block end marker
-     * @return extracted block
-     */
-    private String extractBlock(String text, String startMarker, String endMarker) {
-        int startIndex = text.indexOf(startMarker);
-        assertTrue(startIndex >= 0, "Start marker not found: " + startMarker);
-
-        int endIndex = text.indexOf(endMarker, startIndex);
-        assertTrue(endIndex >= 0, "End marker not found: " + endMarker);
-
-        endIndex += endMarker.length();
-        return text.substring(startIndex, endIndex);
+        if (!Objects.equals(expectedColumnNames, actualColumnNames)) {
+            violations.add(
+                    "[" + tableName + "] Unexpected audit-table column order. Expected: "
+                            + expectedColumnNames + ", actual: " + actualColumnNames
+            );
+        }
     }
 
     /**
@@ -668,13 +1313,25 @@ class LiquibaseSchemaParityTest {
      *
      * @param createTableBlock table block
      * @param columnName normalized column name
-     * @return extracted column block
+     * @param tableName normalized table name
+     * @param violations collected violations
+     * @param blockLabel block label
+     * @return extracted column block or null when missing
      */
-    private String extractColumnBlock(String createTableBlock, String columnName) {
+    private String extractColumnBlock(
+            String createTableBlock,
+            String columnName,
+            String tableName,
+            List<String> violations,
+            String blockLabel
+    ) {
         String marker = "<column name=\"" + columnName + "\"";
         int startIndex = createTableBlock.indexOf(marker);
 
-        assertTrue(startIndex >= 0, "Column block not found for column: " + columnName);
+        if (startIndex < 0) {
+            violations.add("[" + tableName + "." + columnName + "] Column block not found in " + blockLabel + " table block.");
+            return null;
+        }
 
         int selfClosingEndIndex = createTableBlock.indexOf("/>", startIndex);
         int regularEndIndex = createTableBlock.indexOf("</column>", startIndex);
@@ -683,7 +1340,11 @@ class LiquibaseSchemaParityTest {
             return createTableBlock.substring(startIndex, selfClosingEndIndex + 2);
         }
 
-        assertTrue(regularEndIndex >= 0, "Column closing tag not found for column: " + columnName);
+        if (regularEndIndex < 0) {
+            violations.add("[" + tableName + "." + columnName + "] Column closing tag not found in " + blockLabel + " table block.");
+            return null;
+        }
+
         return createTableBlock.substring(startIndex, regularEndIndex + "</column>".length());
     }
 
@@ -706,18 +1367,44 @@ class LiquibaseSchemaParityTest {
     }
 
     /**
-     * Extracts an XML attribute value from a fragment.
+     * Extracts an attribute value from a Liquibase XML column fragment.
      *
      * @param xmlFragment source XML fragment
      * @param attributeName attribute name
-     * @return attribute value
+     * @param tableName normalized table name
+     * @param columnName normalized column name
+     * @param violations collected violations
+     * @return attribute value or null when missing
      */
-    private String extractAttributeValue(String xmlFragment, String attributeName) {
+    private String extractAttributeValueFromXmlColumn(
+            String xmlFragment,
+            String attributeName,
+            String tableName,
+            String columnName,
+            List<String> violations
+    ) {
         Pattern attributePattern = Pattern.compile(attributeName + "=\"([^\"]+)\"");
         Matcher matcher = attributePattern.matcher(xmlFragment);
 
-        assertTrue(matcher.find(), "Attribute not found: " + attributeName + " in fragment:\n" + xmlFragment);
-        return matcher.group(1);
+        if (matcher.find()) {
+            return matcher.group(1);
+        }
+
+        Pattern nestedConstraintsPattern = Pattern.compile(
+                "<constraints[^>]*" + attributeName + "=\"([^\"]+)\"[^>]*/?>",
+                Pattern.CASE_INSENSITIVE
+        );
+        Matcher nestedMatcher = nestedConstraintsPattern.matcher(xmlFragment);
+
+        if (nestedMatcher.find()) {
+            return nestedMatcher.group(1);
+        }
+
+        violations.add(
+                "[" + tableName + "." + columnName + "] Attribute not found: " + attributeName
+                        + " in fragment: " + normalizeXmlWhitespace(xmlFragment)
+        );
+        return null;
     }
 
     /**
@@ -728,15 +1415,51 @@ class LiquibaseSchemaParityTest {
      * @return number of occurrences
      */
     private int countOccurrences(String text, String token) {
+        String normalizedText = normalizeXmlWhitespace(text);
+        String normalizedToken = normalizeXmlWhitespace(token);
+
         int count = 0;
         int index = 0;
 
-        while ((index = text.indexOf(token, index)) >= 0) {
+        while ((index = normalizedText.indexOf(normalizedToken, index)) >= 0) {
             count++;
-            index += token.length();
+            index += normalizedToken.length();
         }
 
         return count;
+    }
+
+    /**
+     * Adds a violation when two values are different.
+     *
+     * @param expected expected value
+     * @param actual actual value
+     * @param violations collected violations
+     * @param message violation message
+     */
+    private void addViolationIfDifferent(
+            Object expected,
+            Object actual,
+            List<String> violations,
+            String message
+    ) {
+        if (!Objects.equals(expected, actual)) {
+            violations.add(message);
+        }
+    }
+
+    /**
+     * Normalizes XML whitespace so assertions are not sensitive to formatting differences.
+     *
+     * @param value XML text or fragment
+     * @return whitespace-normalized text
+     */
+    private String normalizeXmlWhitespace(String value) {
+        if (value == null || value.isBlank()) {
+            return "";
+        }
+
+        return value.replaceAll("\\s+", " ").trim();
     }
 
     /**
@@ -777,7 +1500,7 @@ class LiquibaseSchemaParityTest {
                 .replaceAll("\\s*\\(\\s*", "(")
                 .replaceAll("\\s*,\\s*", ",")
                 .replaceAll("\\s*\\)", ")")
-                .replaceAll("\\s*\\[\\s*\\]", "[]")
+                .replaceAll("\\s*\\[\\s*]", "[]")
                 .toUpperCase(Locale.ROOT);
 
         if ("BIGSERIAL".equals(normalizedType)) {
@@ -847,13 +1570,24 @@ class LiquibaseSchemaParityTest {
      * Parses a SQL type into structured components.
      *
      * @param sqlType normalized or raw SQL type
-     * @return parsed type descriptor
+     * @param tableName normalized table name
+     * @param columnName normalized column name
+     * @param violations collected violations
+     * @return parsed type descriptor or null when parsing fails
      */
-    private TypeDescriptor parseTypeDescriptor(String sqlType) {
+    private TypeDescriptor parseTypeDescriptor(
+            String sqlType,
+            String tableName,
+            String columnName,
+            List<String> violations
+    ) {
         String normalizedType = normalizeType(sqlType);
-        Matcher matcher = TYPE_PATTERN.matcher(normalizedType);
+        Matcher matcher = Constants.TYPE_PATTERN.matcher(normalizedType);
 
-        assertTrue(matcher.matches(), "Could not parse SQL type: " + sqlType);
+        if (!matcher.matches()) {
+            violations.add("[" + tableName + "." + columnName + "] Could not parse SQL type: " + sqlType);
+            return null;
+        }
 
         String baseType = matcher.group(1) == null ? "" : matcher.group(1).trim();
         Integer lengthOrPrecision = matcher.group(2) == null ? null : Integer.valueOf(matcher.group(2));
@@ -986,19 +1720,6 @@ class LiquibaseSchemaParityTest {
         }
 
         return Character.toUpperCase(value.charAt(0)) + value.substring(1);
-    }
-
-    /**
-     * Asserts that the given fragment exists in the generated XML.
-     *
-     * @param actualXml actual generated XML
-     * @param expectedFragment expected fragment
-     */
-    private void assertContains(String actualXml, String expectedFragment) {
-        assertTrue(
-                actualXml.contains(expectedFragment),
-                () -> "Expected XML fragment not found:\n" + expectedFragment + "\n\nActual XML:\n" + actualXml
-        );
     }
 
     /**

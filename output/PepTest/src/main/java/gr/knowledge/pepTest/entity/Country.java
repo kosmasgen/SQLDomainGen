@@ -5,11 +5,11 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
-@Table(name = "country")
+@Audited
+@Table(name = "country", uniqueConstraints = @UniqueConstraint(columnNames = {"chamber_id", "chamber_country_id"}))
 @Getter
 @Setter
 @Builder
@@ -18,8 +18,7 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class Country {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", nullable = false)
     private UUID id;
 
@@ -27,12 +26,11 @@ public class Country {
     @Column(name = "date_created", updatable = false)
     private LocalDateTime dateCreated;
 
-    @UpdateTimestamp
     @Column(name = "last_updated")
     private LocalDateTime lastUpdated;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private Boolean recDeleted = false;
+    @Column(name = "recdeleted", nullable = false)
+    private Boolean recdeleted;
 
     @Column(name = "chamber_id", nullable = false)
     private Integer chamberId;

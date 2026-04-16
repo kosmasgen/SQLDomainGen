@@ -9,15 +9,13 @@ import java.util.List;
 public interface WorkingHoursService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all working hourses.
      * @return non-null list of {@link WorkingHoursDto}
      */
-    List<WorkingHoursDto> getAllWorkingHours();
+    List<WorkingHoursDto> getAllWorkingHourses();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link WorkingHoursDto}
      */
@@ -25,7 +23,6 @@ public interface WorkingHoursService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link WorkingHoursDto}
      */
@@ -33,19 +30,16 @@ public interface WorkingHoursService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link WorkingHoursDto}
      */
     WorkingHoursDto updateWorkingHours(Long id, WorkingHoursDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteWorkingHours(Long id);

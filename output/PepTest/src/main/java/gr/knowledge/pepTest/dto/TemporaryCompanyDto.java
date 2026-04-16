@@ -5,14 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.math.BigInteger;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.time.LocalDate;
+import java.math.BigDecimal;
 
 /**
  * Data transfer object for TemporaryCompany.
@@ -24,16 +23,15 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class TemporaryCompanyDto {
 
-    @NotNull
-    private Long id;
+    private BigInteger id;
 
     @NotNull
-    private BigDecimal version;
+    private BigInteger version;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String addressCity;
 
-    private BigDecimal addressCountryId;
+    private BigInteger addressCountryId;
 
     @Size(max = 255)
     private String addressLatitude;
@@ -44,16 +42,16 @@ public class TemporaryCompanyDto {
     @Size(max = 255)
     private String addressMunicipalityAlt;
 
-    private BigDecimal addressMunicipalityPriId;
+    private BigInteger addressMunicipalityPriId;
 
-    private BigDecimal addressMunicipalitySecId;
+    private BigInteger addressMunicipalitySecId;
 
     @Size(max = 255)
     private String addressPoBox;
 
-    private BigDecimal addressPrefectureId;
+    private BigInteger addressPrefectureId;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String addressRegion;
 
     @Size(max = 255)
@@ -62,94 +60,88 @@ public class TemporaryCompanyDto {
     @Size(max = 255)
     private String addressStreetNumber;
 
-    @Size(max = 255)
+    @Size(max = 12)
     private String addressZipCode;
 
-    private BigDecimal addressZoomLevel;
+    private BigInteger addressZoomLevel;
 
-    private BigDecimal addressIndicId;
+    private BigInteger addressIndicId;
 
-    @Size(max = 255)
+    @Size(max = 9)
     private String afm;
 
-    private BigDecimal am;
+    private BigInteger am;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String armae;
 
-    @Size(max = 255)
+    @Size(max = 15)
     private String boardDur;
 
-    private BigDecimal branchTypeId;
+    private BigInteger branchTypeId;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime cancelDate;
 
-    private BigDecimal cancelReasonId;
+    private BigInteger cancelReasonId;
 
     @NotNull
-    private BigDecimal cd;
+    private BigInteger cd;
 
-    private BigDecimal chamberDepartmentId;
+    private BigInteger chamberDepartmentId;
 
-    private BigDecimal chamberGemiResponsibleId;
-
-    @NotNull
-    private BigDecimal chamberRegisteredId;
+    private BigInteger chamberGemiResponsibleId;
 
     @NotNull
-    @Size(max = 255)
+    private BigInteger chamberRegisteredId;
+
+    @NotNull
+    @Size(max = 1000)
     private String coName;
 
-    @Size(max = 255)
+    @Size(max = 1000)
     private String coNameNrm;
 
-    private BigDecimal comercRegCode;
+    private BigInteger comercRegCode;
 
-    private BigDecimal companyStatusId;
+    private BigInteger companyStatusId;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 100)
     private String contactEmail;
 
     @Size(max = 255)
     private String contactFacebook;
 
-    @Size(max = 255)
+    @Size(max = 20)
     private String contactFax;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String contactMobile;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 20)
     private String contactPhone1;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 20)
     private String contactPhone2;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 20)
     private String contactPhone3;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 15)
     private String contactPhoneArea;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String contactTelex;
 
     @Size(max = 255)
     private String contactTwitter;
 
-    @Size(max = 255)
+    @Size(max = 256)
     private String contactUrl;
 
     @NotNull
-    private BigDecimal corporateStatusId;
+    private BigInteger corporateStatusId;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
@@ -171,28 +163,25 @@ public class TemporaryCompanyDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime disputeDecDate;
 
-    @Size(max = 255)
+    @Size(max = 30)
     private String disputeNumber;
 
-    @Size(max = 255)
+    @Size(max = 30)
     private String edra;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 100)
     private String email2;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 100)
     private String email3;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 100)
     private String email4;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endfirstfy;
 
-    private BigDecimal euCommerce;
+    private BigInteger euCommerce;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime expManagementDt;
@@ -200,82 +189,80 @@ public class TemporaryCompanyDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime expireDate;
 
-    private BigDecimal financialYearId;
+    private BigInteger financialYearId;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime foundationDate;
 
-    private BigDecimal gemhOtherPerCd;
+    private BigInteger gemhOtherPerCd;
 
-    @Size(max = 255)
+    @Size(max = 12)
     private String gemiNumber;
 
-    @Size(max = 255)
+    @Size(max = 8)
     private String hp;
 
-    private BigDecimal indefinite;
+    private BigInteger indefinite;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastStateChangeDate;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime licenceExpDt;
 
-    @Size(max = 255)
+    @Size(max = 25)
     private String licenceNo;
 
     @NotNull
-    private BigDecimal mailAddress;
+    private BigInteger mailAddress;
 
-    @Size(max = 255)
+    @Size(max = 60)
     private String mailName;
 
-    private BigDecimal meCriteria1Id;
+    private BigInteger meCriteria1Id;
 
-    private BigDecimal meCriteria2Id;
+    private BigInteger meCriteria2Id;
 
-    private BigDecimal member;
+    private BigInteger member;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime memberDues;
 
-    private BigDecimal nationalityId;
+    private BigInteger nationalityId;
 
-    private BigDecimal nextam;
+    private BigInteger nextam;
 
-    @Size(max = 255)
     private String objective;
 
-    @Size(max = 255)
+    @Size(max = 10)
     private String oldam;
 
-    @Size(max = 255)
+    @Size(max = 500)
     private String pendency;
 
-    private BigDecimal pending;
+    private BigInteger pending;
 
-    private BigDecimal previousam;
+    private BigInteger previousam;
 
-    @Size(max = 255)
+    @Size(max = 1)
     private String recType;
 
     @NotNull
-    private BigDecimal recdeleted;
+    private BigInteger recdeleted;
 
-    private BigDecimal registrationTypeId;
+    private BigInteger registrationTypeId;
 
-    private BigDecimal saleTypeId;
+    private BigInteger saleTypeId;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime startfirstfy;
 
-    private BigDecimal subscrCat;
+    private BigInteger subscrCat;
 
-    private BigDecimal taxServiceId;
+    private BigInteger taxServiceId;
 
     @Size(max = 255)
     private String userIns;
@@ -283,14 +270,14 @@ public class TemporaryCompanyDto {
     @Size(max = 255)
     private String userLastUpd;
 
-    private BigDecimal voteDepartmentId;
+    private BigInteger voteDepartmentId;
 
-    private BigDecimal votes;
+    private BigInteger votes;
 
-    @Size(max = 255)
+    @Size(max = 15)
     private String managementDur;
 
-    private BigDecimal receiveNewsletter;
+    private BigInteger receiveNewsletter;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate gemiLastUpdated;
@@ -298,15 +285,15 @@ public class TemporaryCompanyDto {
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate gemiLastStateChangeDate;
 
-    @Size(max = 255)
+    @Size(max = 12)
     private String gemiParentGemiNumber;
 
-    private BigDecimal gemiMunicipalityId;
+    private BigInteger gemiMunicipalityId;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String gemiCity;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String gemiRegion;
 
     @Size(max = 255)
@@ -315,64 +302,57 @@ public class TemporaryCompanyDto {
     @Size(max = 255)
     private String gemiStreetNumber;
 
-    @Size(max = 255)
+    @Size(max = 12)
     private String gemiZipCode;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 120)
     private String gemiPhone1;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 15)
     private String gemiPhone2;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 15)
     private String gemiPhone3;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String gemiMobile;
 
-    @Size(max = 255)
+    @Size(max = 120)
     private String gemiFax;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 100)
     private String gemiEmail;
 
     @NotNull
-    private BigDecimal gemiCreated;
+    private BigInteger gemiCreated;
 
-    private BigDecimal gemiId;
+    private BigInteger gemiId;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate gemiDateCreated;
 
-    @Size(max = 255)
     private String article;
 
-    private BigDecimal showEmail;
+    private BigInteger showEmail;
 
-    private BigDecimal gemiId2;
+    private BigInteger gemiId2;
 
     @JsonFormat(pattern = "yyyy-MM-dd")
     private LocalDate voteDt;
 
-    @Size(max = 255)
-    private String voteFlag;
+    private Character voteFlag;
 
-    @Size(max = 255)
-    private String voteEtairiaFlag;
+    private Character voteEtairiaFlag;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime gemiDateIncorporated;
 
-    private BigDecimal meCriteria3Id;
+    private BigInteger meCriteria3Id;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateInterruption;
 
-    @Size(max = 255)
+    @Size(max = 300)
     private String cancelReasonDscr;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -384,64 +364,66 @@ public class TemporaryCompanyDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime endDtCorpStatus;
 
-    @Size(max = 255)
+    @Size(max = 30)
     private String bankruptNumber;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastChangeDate;
 
-    private BigDecimal nextCompanyId;
+    private BigInteger nextCompanyId;
 
-    private BigDecimal parentCompanyId;
+    private BigInteger parentCompanyId;
 
-    private BigDecimal previousCompanyId;
+    private BigInteger previousCompanyId;
 
-    private BigDecimal transferFlag;
+    private BigInteger transferFlag;
 
-    private BigDecimal transferAm;
+    private BigInteger transferAm;
 
-    private BigDecimal proegOccupationId;
+    private BigInteger proegOccupationId;
 
     private BigDecimal proegSubscrAmnt;
 
-    @Size(max = 255)
+    @Size(max = 4)
     private String proegSubscrYear;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime proegSubscrDate;
 
-    @Size(max = 255)
+    @Size(max = 300)
     private String proegSubscrNotes;
 
-    private BigDecimal migrCapitol;
+    private BigInteger migrCapitol;
 
     private BigDecimal migrCapitol2;
 
-    @Size(max = 255)
+    @Size(max = 1)
     private String migrManyChildrenFlag;
 
-    @Size(max = 255)
+    @Size(max = 1)
     private String migrAmeaFlag;
 
-    @Size(max = 255)
+    @Size(max = 1)
     private String migrYpokatFlag;
 
-    @Size(max = 255)
+    @Size(max = 1)
     private String migrThrasherFlag;
 
-    @Size(max = 255)
+    @Size(max = 1)
     private String migrLowCapitalFlag;
 
-    @Size(max = 255)
+    @Size(max = 1)
     private String migrSendTaxServFlag;
 
     @NotNull
-    private BigDecimal printKatastFlag;
+    private BigInteger printKatastFlag;
 
     @Size(max = 255)
     private String subscrCalcDate;
 
     @NotNull
-    private BigDecimal showBusinessGuide;
+    private BigInteger showBusinessGuide;
+
+    private Integer field7060;
 
 }

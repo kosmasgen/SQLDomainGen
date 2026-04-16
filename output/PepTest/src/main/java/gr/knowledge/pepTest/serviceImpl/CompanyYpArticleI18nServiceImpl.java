@@ -5,18 +5,18 @@ import gr.knowledge.pepTest.mapper.CompanyYpArticleI18nMapper;
 import gr.knowledge.pepTest.entity.CompanyYpArticleI18n;
 import gr.knowledge.pepTest.repository.CompanyYpArticleI18nRepository;
 import gr.knowledge.pepTest.service.CompanyYpArticleI18nService;
-import gr.knowledge.pepTest.entity.CompanyYpArticleI18nPK;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
+import gr.knowledge.pepTest.entity.CompanyYpArticleI18nKey;
+import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code CompanyYpArticleI18n} domain operations.
+ * Service implementation for {@code Company Yp Article I18n} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -28,75 +28,159 @@ public class CompanyYpArticleI18nServiceImpl implements CompanyYpArticleI18nServ
     private final CompanyYpArticleI18nMapper companyYpArticleI18nMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link CompanyYpArticleI18nDto}
+     * Retrieves all company yp article i18ns records.
+     * @return list of CompanyYpArticleI18nDto
      */
     @Override
-    public List<CompanyYpArticleI18nDto> getAllCompanyYpArticleI18n() {
-        log.info("Fetching all company-yp-article-i18n.");
-        return companyYpArticleI18nMapper.toDTO(companyYpArticleI18nRepository.findAll());
+    public List<CompanyYpArticleI18nDto> getAllCompanyYpArticleI18ns() {
+        log.info("Fetching all company yp article i18ns records.");
+        return companyYpArticleI18nMapper.toDTOList(companyYpArticleI18nRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link CompanyYpArticleI18nDto}
+     * Retrieves a company yp article i18n record by id.
+     * @param companyArticleId the companyArticleId value
+     * @param languageId the languageId value
+     * @return CompanyYpArticleI18nDto
      */
     @Override
-    public CompanyYpArticleI18nDto getCompanyYpArticleI18nById(CompanyYpArticleI18nPK id) {
-        log.info("Fetching company-yp-article-i18n with id: {}", id);
-        CompanyYpArticleI18n entity = companyYpArticleI18nRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyYpArticleI18n not found with id: " + id));
-        return companyYpArticleI18nMapper.toDTO(entity);
+    public CompanyYpArticleI18nDto getCompanyYpArticleI18nById(UUID companyArticleId, UUID languageId) {
+
+        String compositeId = buildCompositeId(companyArticleId, languageId);
+        log.info("Fetching company yp article i18n with composite id: {}", compositeId);
+
+        CompanyYpArticleI18n existingEntity = findCompanyYpArticleI18nByIdOrThrow(companyArticleId, languageId);
+        return companyYpArticleI18nMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new company yp article i18n record.
      * @param dto input payload
      * @return created {@link CompanyYpArticleI18nDto}
      */
     @Override
     public CompanyYpArticleI18nDto createCompanyYpArticleI18n(CompanyYpArticleI18nDto dto) {
-        log.info("Creating company-yp-article-i18n.");
+        log.info("Creating company yp article i18n.");
+
+        validateCompanyYpArticleI18nDoesNotExist(dto);
+
         CompanyYpArticleI18n entity = companyYpArticleI18nMapper.toEntity(dto);
-        CompanyYpArticleI18n saved = companyYpArticleI18nRepository.save(entity);
-        return companyYpArticleI18nMapper.toDTO(saved);
+        CompanyYpArticleI18n savedEntity = companyYpArticleI18nRepository.save(entity);
+
+        return companyYpArticleI18nMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing company yp article i18n record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param companyArticleId the companyArticleId value
+     * @param languageId the languageId value
+     * @param dto input payload with partial fields
      * @return updated {@link CompanyYpArticleI18nDto}
      */
     @Override
-    public CompanyYpArticleI18nDto updateCompanyYpArticleI18n(CompanyYpArticleI18nPK id, CompanyYpArticleI18nDto dto) {
-        log.info("Updating company-yp-article-i18n with id: {}", id);
-        companyYpArticleI18nRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyYpArticleI18n not found with id: " + id));
-        CompanyYpArticleI18n entity = companyYpArticleI18nMapper.toEntity(dto);
-        entity.setId(id);
-        CompanyYpArticleI18n saved = companyYpArticleI18nRepository.save(entity);
-        return companyYpArticleI18nMapper.toDTO(saved);
+    public CompanyYpArticleI18nDto updateCompanyYpArticleI18n(UUID companyArticleId, UUID languageId, CompanyYpArticleI18nDto dto) {
+        String compositeId = buildCompositeId(companyArticleId, languageId);
+
+        log.info("Updating company yp article i18n with composite id: {}", compositeId);
+
+        CompanyYpArticleI18n existingEntity = findCompanyYpArticleI18nByIdOrThrow(companyArticleId, languageId);
+        companyYpArticleI18nMapper.partialUpdate(existingEntity, dto);
+        CompanyYpArticleI18n savedEntity = companyYpArticleI18nRepository.save(existingEntity);
+
+        return companyYpArticleI18nMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a company yp article i18n record by id.
+     * @param companyArticleId the company_article_id value
+     * @param languageId the language_id value
      */
     @Override
-    public void deleteCompanyYpArticleI18n(CompanyYpArticleI18nPK id) {
-        log.info("Deleting company-yp-article-i18n with id: {}", id);
-        companyYpArticleI18nRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyYpArticleI18n not found with id: " + id));
-        companyYpArticleI18nRepository.deleteById(id);
+    public void deleteCompanyYpArticleI18n(UUID companyArticleId, UUID languageId) {
+        String compositeId = buildCompositeId(companyArticleId, languageId);
+        log.info("Deleting company yp article i18n with composite id: {}", compositeId);
+
+        findCompanyYpArticleI18nByIdOrThrow(companyArticleId, languageId);
+        companyYpArticleI18nRepository.deleteById(buildKey(companyArticleId, languageId));
     }
+
+    /**
+     * Finds an existing company yp article i18n record by id or throws an exception.
+     * @param companyArticleId the companyArticleId value
+     * @param languageId the languageId value
+     * @return existing CompanyYpArticleI18n entity
+     */
+    private CompanyYpArticleI18n findCompanyYpArticleI18nByIdOrThrow(UUID companyArticleId, UUID languageId) {
+        return companyYpArticleI18nRepository.findById(buildKey(companyArticleId, languageId))
+                .orElseThrow(() -> createCompanyYpArticleI18nNotFoundException(companyArticleId, languageId));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the company yp article i18n entity.
+     @param companyArticleId the company_article_id value
+     @param languageId the language_id value
+     @return runtime exception
+     */
+    private RuntimeException createCompanyYpArticleI18nNotFoundException(UUID companyArticleId, UUID languageId) {
+        String compositeId = buildCompositeId(companyArticleId, languageId);
+        log.warn("CompanyYpArticleI18n not found with composite id: {}", compositeId);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("CompanyYpArticleI18n")
+                .message("CompanyYpArticleI18n not found with composite id: " + compositeId)
+                .build();
+    }
+
+    /**
+     * Validates that a company yp article i18n record does not already exist.
+     * @param dto input payload
+     * @throws GeneratedRuntimeException if the entity already exists
+     */
+    private void validateCompanyYpArticleI18nDoesNotExist(CompanyYpArticleI18nDto dto) {
+        if (dto == null || (dto.getId() != null ? dto.getId().getCompanyArticleId() : null) == null || (dto.getId() != null ? dto.getId().getLanguageId() : null) == null) {
+            return;
+        }
+
+        CompanyYpArticleI18nKey key = buildKey((dto.getId() != null ? dto.getId().getCompanyArticleId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+
+        if (companyYpArticleI18nRepository.existsById(key)) {
+            String compositeId = buildCompositeId((dto.getId() != null ? dto.getId().getCompanyArticleId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+            log.warn("CompanyYpArticleI18n already exists with composite id: {}", compositeId);
+
+            throw GeneratedRuntimeException.builder()
+                    .code(ErrorCodes.BAD_REQUEST)
+                    .entity("CompanyYpArticleI18n")
+                    .message("CompanyYpArticleI18n already exists with composite id: " + compositeId)
+                    .build();
+        }
+    }
+
+    /**
+     * Builds the composite key.
+     *
+     * @param companyArticleId the companyArticleId value
+     * @param languageId the languageId value
+     * @return populated {@link CompanyYpArticleI18nKey}
+     */
+    private CompanyYpArticleI18nKey buildKey(UUID companyArticleId, UUID languageId) {
+        CompanyYpArticleI18nKey key = new CompanyYpArticleI18nKey();
+        key.setCompanyArticleId(companyArticleId);
+        key.setLanguageId(languageId);
+        return key;
+    }
+
+    /**
+     * Builds the composite id string.
+     *
+     * @param companyArticleId the companyArticleId value
+     * @param languageId the languageId value
+     * @return composite id string
+     */
+    private String buildCompositeId(UUID companyArticleId, UUID languageId) {
+        return "companyArticleId=" + companyArticleId + ", " + "languageId=" + languageId;
+    }
+
 }

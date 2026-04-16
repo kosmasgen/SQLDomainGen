@@ -18,6 +18,9 @@ import java.time.Instant;
 @AllArgsConstructor
 public class ErrorResponse {
 
+    @Schema(description = "Stable application error code", example = "VALIDATION_ERROR")
+    private String code;
+
     @Schema(description = "Error timestamp (UTC)", example = "2026-02-18T10:15:30Z")
     private Instant timestamp;
 

@@ -5,9 +5,10 @@ import lombok.*;
 import java.time.LocalDateTime;
 import java.util.UUID;
 import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.GenericGenerator;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "company_contact_message")
 @Getter
 @Setter
@@ -17,21 +18,19 @@ import org.hibernate.annotations.GenericGenerator;
 public class CompanyContactMessage {
 
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
     @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(name = "full_name", length = 255)
+    @Column(name = "full_name", length = 100)
     private String fullName;
 
-    @Column(name = "sender_email", length = 255)
+    @Column(name = "sender_email")
     private String senderEmail;
 
-    @Column(name = "subject", length = 255)
+    @Column(name = "subject", length = 150)
     private String subject;
 
-    @Column(name = "message", length = 255)
+    @Column(name = "message", length = 5000)
     private String message;
 
     @CreationTimestamp

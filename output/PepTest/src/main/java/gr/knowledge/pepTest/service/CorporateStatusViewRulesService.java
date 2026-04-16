@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.CorporateStatusViewRulesDto;
-import gr.knowledge.pepTest.entity.CorporateStatusViewRulesPK;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code CorporateStatusViewRules} domain operations.
@@ -10,23 +10,21 @@ import java.util.List;
 public interface CorporateStatusViewRulesService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all corporate status view ruleses.
      * @return non-null list of {@link CorporateStatusViewRulesDto}
      */
-    List<CorporateStatusViewRulesDto> getAllCorporateStatusViewRules();
+    List<CorporateStatusViewRulesDto> getAllCorporateStatusViewRuleses();
 
     /**
      * Retrieves a record by id.
-     *
-     * @param id the record id
+     * @param corporateStatusId the corporate_status_id value
+     * @param companyViewRulesId the company_view_rules_id value
      * @return the matching {@link CorporateStatusViewRulesDto}
      */
-    CorporateStatusViewRulesDto getCorporateStatusViewRulesById(CorporateStatusViewRulesPK id);
+    CorporateStatusViewRulesDto getCorporateStatusViewRulesById(UUID corporateStatusId, UUID companyViewRulesId);
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link CorporateStatusViewRulesDto}
      */
@@ -34,20 +32,19 @@ public interface CorporateStatusViewRulesService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param corporateStatusId the corporate_status_id value
+     * @param companyViewRulesId the company_view_rules_id value
+     * @param dto input payload with partial fields
      * @return updated {@link CorporateStatusViewRulesDto}
      */
-    CorporateStatusViewRulesDto updateCorporateStatusViewRules(CorporateStatusViewRulesPK id, CorporateStatusViewRulesDto dto);
+    CorporateStatusViewRulesDto updateCorporateStatusViewRules(UUID corporateStatusId, UUID companyViewRulesId, CorporateStatusViewRulesDto dto);
 
     /**
      * Deletes a record by id.
-     *
-     * @param id the record id
+     * @param corporateStatusId the corporate_status_id value
+     * @param companyViewRulesId the company_view_rules_id value
      */
-    void deleteCorporateStatusViewRules(CorporateStatusViewRulesPK id);
+    void deleteCorporateStatusViewRules(UUID corporateStatusId, UUID companyViewRulesId);
 }

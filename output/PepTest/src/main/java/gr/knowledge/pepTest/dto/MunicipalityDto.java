@@ -5,12 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
+import java.util.UUID;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import jakarta.validation.constraints.NotNull;
 
 /**
  * Data transfer object for Municipality.
@@ -22,7 +21,6 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class MunicipalityDto {
 
-    @NotNull
     private UUID id;
 
     private Long chamberId;
@@ -38,7 +36,7 @@ public class MunicipalityDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
     @NotNull
     @Size(max = 255)

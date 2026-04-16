@@ -5,11 +5,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for DataStaging.
@@ -21,11 +20,10 @@ import java.time.LocalDateTime;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class DataStagingDto {
 
-    @NotNull
     private Long id;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 100)
     private String legacyTableName;
 
     @NotNull
@@ -33,7 +31,6 @@ public class DataStagingDto {
     private String legacyRecordId;
 
     @NotNull
-    @Size(max = 255)
     private String rawData;
 
     @NotNull
@@ -45,7 +42,7 @@ public class DataStagingDto {
     private LocalDateTime pulledAt;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 20)
     private String status;
 
 }

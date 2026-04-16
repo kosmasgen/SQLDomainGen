@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.ChAppUserContactDto;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code ChAppUserContact} domain operations.
@@ -10,15 +10,13 @@ import java.util.List;
 public interface ChAppUserContactService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all ch app user contacts.
      * @return non-null list of {@link ChAppUserContactDto}
      */
-    List<ChAppUserContactDto> getAllChAppUserContact();
+    List<ChAppUserContactDto> getAllChAppUserContacts();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link ChAppUserContactDto}
      */
@@ -26,7 +24,6 @@ public interface ChAppUserContactService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link ChAppUserContactDto}
      */
@@ -34,19 +31,16 @@ public interface ChAppUserContactService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link ChAppUserContactDto}
      */
     ChAppUserContactDto updateChAppUserContact(UUID id, ChAppUserContactDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteChAppUserContact(UUID id);

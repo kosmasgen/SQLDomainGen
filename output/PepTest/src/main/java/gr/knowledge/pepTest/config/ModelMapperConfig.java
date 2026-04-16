@@ -11,12 +11,19 @@ import org.springframework.context.annotation.Configuration;
 public class ModelMapperConfig {
 
     /**
-     * Creates a {@link ModelMapper} instance for the application context.
+     * Creates a {@link ModelMapper} instance configured for PATCH support.
+     * <p>
+     * Important: null values are skipped during mapping.
      *
-     * @return a ModelMapper bean
+     * @return a configured ModelMapper bean
      */
     @Bean
     public ModelMapper modelMapper() {
-        return new ModelMapper();
+        ModelMapper modelMapper = new ModelMapper();
+
+        modelMapper.getConfiguration()
+                .setSkipNullEnabled(true);
+
+        return modelMapper;
     }
 }

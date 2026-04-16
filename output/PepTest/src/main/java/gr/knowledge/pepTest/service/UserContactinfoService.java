@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.UserContactinfoDto;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code UserContactinfo} domain operations.
@@ -10,15 +10,13 @@ import java.util.List;
 public interface UserContactinfoService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all user contactinfos.
      * @return non-null list of {@link UserContactinfoDto}
      */
-    List<UserContactinfoDto> getAllUserContactinfo();
+    List<UserContactinfoDto> getAllUserContactinfos();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link UserContactinfoDto}
      */
@@ -26,7 +24,6 @@ public interface UserContactinfoService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link UserContactinfoDto}
      */
@@ -34,19 +31,16 @@ public interface UserContactinfoService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link UserContactinfoDto}
      */
     UserContactinfoDto updateUserContactinfo(UUID id, UserContactinfoDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteUserContactinfo(UUID id);

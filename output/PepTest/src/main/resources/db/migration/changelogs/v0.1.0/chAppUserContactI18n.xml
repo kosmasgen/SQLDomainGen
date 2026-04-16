@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/chAppUserContactI18n.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="create-ch-app-user-contact-i18n-table-and-audit" author="kosmasgenaris@knowledge.gr">
+        <createTable tableName="ch_app_user_contact_i18n" schemaName="pep_schema">
+            <column name="ch_app_user_contact_id" type="UUID">
+                <constraints primaryKey="true" primaryKeyName="pk_ch_app_user_contact_i18n" nullable="false"/>
+            </column>
+            <column name="language_id" type="UUID">
+                <constraints primaryKey="true" primaryKeyName="pk_ch_app_user_contact_i18n" nullable="false"/>
+            </column>
+            <column name="date_created" type="TIMESTAMP" defaultValueComputed="now()">
+            </column>
+            <column name="last_updated" type="TIMESTAMP" defaultValueComputed="now()">
+            </column>
+            <column name="city" type="VARCHAR(50)">
+            </column>
+            <column name="street" type="VARCHAR(255)">
+            </column>
+            <column name="recdeleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+
+
+
+
+        <addForeignKeyConstraint
+                                 baseTableName="ch_app_user_contact_i18n"
+                                 baseColumnNames="ch_app_user_contact_id"
+                                 constraintName="fk_ch_app_user_contact"
+                                 referencedTableName="ch_app_user_contact"
+                                 referencedColumnNames="id"
+                                baseTableSchemaName="pep_schema"
+                                referencedTableSchemaName="pep_schema"/>
+        <addForeignKeyConstraint
+                                 baseTableName="ch_app_user_contact_i18n"
+                                 baseColumnNames="language_id"
+                                 constraintName="fk_language"
+                                 referencedTableName="languages"
+                                 referencedColumnNames="id"
+                                baseTableSchemaName="pep_schema"
+                                referencedTableSchemaName="pep_schema"/>
+
+        <createTable tableName="ch_app_user_contact_i18n_aud" schemaName="audit">
+            <column name="ch_app_user_contact_id" type="UUID"/>
+            <column name="language_id" type="UUID"/>
+            <column name="date_created" type="TIMESTAMP"/>
+            <column name="last_updated" type="TIMESTAMP"/>
+            <column name="city" type="VARCHAR(50)"/>
+            <column name="street" type="VARCHAR(255)"/>
+            <column name="recdeleted" type="BOOLEAN"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+        </createTable>
+
+        <addPrimaryKey tableName="ch_app_user_contact_i18n_aud"
+                       columnNames="ch_app_user_contact_id, language_id, rev"
+                       constraintName="pk_ch_app_user_contact_i18n_aud"
+                       schemaName="audit"/>
+
+        <addForeignKeyConstraint baseTableName="ch_app_user_contact_i18n_aud"
+                                 baseColumnNames="rev"
+                                 constraintName="fk_ch_app_user_contact_i18n_aud_revinfo"
+                                 referencedTableName="REVINFO"
+                                 referencedColumnNames="REV"
+                                 baseTableSchemaName="audit"
+                                 referencedTableSchemaName="audit"/>
+
+    </changeSet>
+
+</databaseChangeLog>

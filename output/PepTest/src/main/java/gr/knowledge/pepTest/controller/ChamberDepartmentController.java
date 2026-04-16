@@ -2,122 +2,111 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.ChamberDepartmentDto;
 import gr.knowledge.pepTest.service.ChamberDepartmentService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing ChamberDepartment resources.
+ * REST controller for managing Chamber Department resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "ChamberDepartment", description = "ChamberDepartment API")
-@RequestMapping("/api/chamber-departments")
+@Tag(name = "Chamber Department", description = "Chamber Department API")
+@RequestMapping("/api/chamber-department")
 public class ChamberDepartmentController {
 
     private final ChamberDepartmentService chamberDepartmentService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all chamber departments.
      * @return list of ChamberDepartmentDto
      */
-    @Operation(summary = "Get all ChamberDepartment")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all chamber departments")
     @GetMapping
     public ResponseEntity<List<ChamberDepartmentDto>> getAll() {
-        log.info("Fetching all chamberdepartment records.");
-        return ResponseEntity.ok(chamberDepartmentService.getAllChamberDepartment());
+        return ResponseEntity.ok(chamberDepartmentService.getAllChamberDepartments());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the chamber department record by id.
+     * @param id chamber department identifier
      * @return ChamberDepartmentDto
      */
-    @Operation(summary = "Get ChamberDepartment by id")
+    @Operation(summary = "Get Chamber Department by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<ChamberDepartmentDto> getById(
-            @Parameter(description = "ChamberDepartment id", required = true)
+            @Parameter(description = "chamber department identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Fetching chamberdepartment with id: {}", id);
         return ResponseEntity.ok(chamberDepartmentService.getChamberDepartmentById(id));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new chamber department record.
+     * @param dto chamber department payload
      * @return created ChamberDepartmentDto
      */
-    @Operation(summary = "Create ChamberDepartment")
+    @Operation(summary = "Create Chamber Department")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<ChamberDepartmentDto> create(@RequestBody ChamberDepartmentDto dto) {
-        log.info("Creating chamberdepartment.");
+    public ResponseEntity<ChamberDepartmentDto> create(
+            @Valid @RequestBody ChamberDepartmentDto dto) {
         ChamberDepartmentDto created = chamberDepartmentService.createChamberDepartment(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing chamber department record.
+     * Only fields that are not null in the request are updated.
+     * @param id chamber department identifier
+     * @param dto partial chamber department payload
      * @return updated ChamberDepartmentDto
      */
-    @Operation(summary = "Update ChamberDepartment")
+    @Operation(summary = "Patch Chamber Department")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<ChamberDepartmentDto> update(
-            @Parameter(description = "ChamberDepartment id", required = true)
+    @PatchMapping("/{id}")
+    public ResponseEntity<ChamberDepartmentDto> patch(
+            @Parameter(description = "chamber department identifier", required = true)
             @PathVariable UUID id,
             @RequestBody ChamberDepartmentDto dto) {
-        log.info("Updating chamberdepartment with id: {}", id);
         return ResponseEntity.ok(chamberDepartmentService.updateChamberDepartment(id, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an chamber department record by id.
+     * @param id chamber department identifier
      * @return no content
      */
-    @Operation(summary = "Delete ChamberDepartment")
+    @Operation(summary = "Delete Chamber Department")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "ChamberDepartment id", required = true)
+            @Parameter(description = "chamber department identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Deleting chamberdepartment with id: {}", id);
         chamberDepartmentService.deleteChamberDepartment(id);
         return ResponseEntity.noContent().build();
     }
+
 }

@@ -3,9 +3,13 @@ package gr.knowledge.pepTest.entity;
 import jakarta.persistence.*;
 import lombok.*;
 import java.time.LocalDateTime;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.envers.Audited;
+import org.hibernate.type.SqlTypes;
 
 @Entity
-@Table(name = "data_staging")
+@Audited
+@Table(name = "data_staging", uniqueConstraints = @UniqueConstraint(columnNames = {"legacy_table_name", "legacy_record_id", "legacy_updated_at"}))
 @Getter
 @Setter
 @Builder
@@ -18,13 +22,14 @@ public class DataStaging {
     @Column(name = "id", nullable = false)
     private Long id;
 
-    @Column(name = "legacy_table_name", length = 255, nullable = false)
+    @Column(name = "legacy_table_name", length = 100, nullable = false)
     private String legacyTableName;
 
-    @Column(name = "legacy_record_id", length = 255, nullable = false)
+    @Column(name = "legacy_record_id", nullable = false)
     private String legacyRecordId;
 
-    @Column(name = "raw_data", nullable = false)
+    @JdbcTypeCode(SqlTypes.JSON)
+    @Column(name = "raw_data", columnDefinition = "jsonb", nullable = false)
     private String rawData;
 
     @Column(name = "legacy_updated_at", nullable = false)
@@ -33,7 +38,7 @@ public class DataStaging {
     @Column(name = "pulled_at", nullable = false)
     private LocalDateTime pulledAt;
 
-    @Column(name = "status", length = 255, nullable = false)
+    @Column(name = "status", length = 20, nullable = false)
     private String status;
 
 }

@@ -5,12 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.entity.Producti18nKey;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
+import gr.knowledge.pepTest.dto.LanguagesDto;
+import gr.knowledge.pepTest.dto.ProductDto;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for Producti18n.
@@ -22,34 +23,34 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Producti18nDto {
 
+    private Producti18nKey id;
+
     @NotNull
     private Integer version;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 500)
     private String description;
 
     @NotNull
     private Long chamberI18nId;
 
     @NotNull
-    private UUID languageId;
+    private LanguagesDto language;
 
     @NotNull
-    private UUID productId;
+    private ProductDto product;
 
-    @Size(max = 255)
+    @Size(max = 35)
     private String shortDescription;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
 }

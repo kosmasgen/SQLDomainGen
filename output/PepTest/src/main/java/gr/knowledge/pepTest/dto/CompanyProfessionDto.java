@@ -5,12 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import gr.knowledge.pepTest.dto.ProfessionDto;
+import gr.knowledge.pepTest.dto.ProfessionKindDto;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.dto.CompanyProfileDto;
+import java.math.BigInteger;
 
 /**
  * Data transfer object for CompanyProfession.
@@ -22,7 +25,6 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CompanyProfessionDto {
 
-    @NotNull
     private UUID id;
 
     @NotNull
@@ -31,12 +33,12 @@ public class CompanyProfessionDto {
     private Integer chamberCompanyProfessionId;
 
     @NotNull
-    private UUID companyId;
+    private CompanyDto company;
 
     @NotNull
-    private UUID professionId;
+    private ProfessionDto profession;
 
-    private UUID professionKindId;
+    private ProfessionKindDto professionKind;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
@@ -48,14 +50,14 @@ public class CompanyProfessionDto {
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime toDate;
 
-    private UUID profileId;
+    private CompanyProfileDto profile;
 
-    private BigDecimal gemiId;
+    private BigInteger gemiId;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime gemiDateCreated;

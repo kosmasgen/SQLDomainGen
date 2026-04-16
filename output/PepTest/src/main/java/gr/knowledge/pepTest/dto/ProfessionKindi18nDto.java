@@ -5,12 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.entity.ProfessionKindi18nKey;
+import gr.knowledge.pepTest.dto.ProfessionKindDto;
 import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for ProfessionKindi18n.
@@ -22,14 +23,16 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ProfessionKindi18nDto {
 
-    @NotNull
-    private UUID professionKindId;
+    private ProfessionKindi18nKey id;
 
     @NotNull
-    private UUID languageId;
+    private ProfessionKindDto professionKind;
 
     @NotNull
-    private Boolean recDeleted;
+    private LanguagesDto language;
+
+    @NotNull
+    private Boolean recdeleted;
 
     @NotNull
     @Size(max = 255)

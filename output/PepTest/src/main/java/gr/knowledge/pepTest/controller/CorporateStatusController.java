@@ -2,122 +2,111 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.CorporateStatusDto;
 import gr.knowledge.pepTest.service.CorporateStatusService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing CorporateStatus resources.
+ * REST controller for managing Corporate Status resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "CorporateStatus", description = "CorporateStatus API")
-@RequestMapping("/api/corporate-statuss")
+@Tag(name = "Corporate Status", description = "Corporate Status API")
+@RequestMapping("/api/corporate-status")
 public class CorporateStatusController {
 
     private final CorporateStatusService corporateStatusService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all corporate statuses.
      * @return list of CorporateStatusDto
      */
-    @Operation(summary = "Get all CorporateStatus")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all corporate statuses")
     @GetMapping
     public ResponseEntity<List<CorporateStatusDto>> getAll() {
-        log.info("Fetching all corporatestatus records.");
-        return ResponseEntity.ok(corporateStatusService.getAllCorporateStatus());
+        return ResponseEntity.ok(corporateStatusService.getAllCorporateStatuses());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the corporate status record by id.
+     * @param id corporate status identifier
      * @return CorporateStatusDto
      */
-    @Operation(summary = "Get CorporateStatus by id")
+    @Operation(summary = "Get Corporate Status by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<CorporateStatusDto> getById(
-            @Parameter(description = "CorporateStatus id", required = true)
+            @Parameter(description = "corporate status identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Fetching corporatestatus with id: {}", id);
         return ResponseEntity.ok(corporateStatusService.getCorporateStatusById(id));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new corporate status record.
+     * @param dto corporate status payload
      * @return created CorporateStatusDto
      */
-    @Operation(summary = "Create CorporateStatus")
+    @Operation(summary = "Create Corporate Status")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<CorporateStatusDto> create(@RequestBody CorporateStatusDto dto) {
-        log.info("Creating corporatestatus.");
+    public ResponseEntity<CorporateStatusDto> create(
+            @Valid @RequestBody CorporateStatusDto dto) {
         CorporateStatusDto created = corporateStatusService.createCorporateStatus(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing corporate status record.
+     * Only fields that are not null in the request are updated.
+     * @param id corporate status identifier
+     * @param dto partial corporate status payload
      * @return updated CorporateStatusDto
      */
-    @Operation(summary = "Update CorporateStatus")
+    @Operation(summary = "Patch Corporate Status")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<CorporateStatusDto> update(
-            @Parameter(description = "CorporateStatus id", required = true)
+    @PatchMapping("/{id}")
+    public ResponseEntity<CorporateStatusDto> patch(
+            @Parameter(description = "corporate status identifier", required = true)
             @PathVariable UUID id,
             @RequestBody CorporateStatusDto dto) {
-        log.info("Updating corporatestatus with id: {}", id);
         return ResponseEntity.ok(corporateStatusService.updateCorporateStatus(id, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an corporate status record by id.
+     * @param id corporate status identifier
      * @return no content
      */
-    @Operation(summary = "Delete CorporateStatus")
+    @Operation(summary = "Delete Corporate Status")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "CorporateStatus id", required = true)
+            @Parameter(description = "corporate status identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Deleting corporatestatus with id: {}", id);
         corporateStatusService.deleteCorporateStatus(id);
         return ResponseEntity.noContent().build();
     }
+
 }

@@ -45,6 +45,7 @@ public class Table {
      */
     private List<ManyToManyRelation> manyToManyRelations = new ArrayList<>();
 
+    private CompositeKeyDefinition compositeKey;
 
     private List<IndexDefinition> indexes = new ArrayList<>();
 

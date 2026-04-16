@@ -2,13 +2,13 @@ package gr.knowledge.pepTest.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "temporary_company_titlei18n")
 @Getter
 @Setter
@@ -18,35 +18,34 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class TemporaryCompanyTitlei18n {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+    @Column(name = "id", precision = 19, nullable = false)
+    private BigInteger id;
 
-    @Column(name = "version", nullable = false)
-    private BigDecimal version;
+    @Column(name = "version", precision = 19, nullable = false)
+    private BigInteger version;
 
-    @Column(name = "company_title_id", nullable = false)
-    private BigDecimal companyTitleId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_title_id", nullable = false)
+    private TemporaryCompanyTitle companyTitle;
 
-    @CreationTimestamp
     @Column(name = "date_created", nullable = false, updatable = false)
     private LocalDateTime dateCreated;
 
-    @Column(name = "language_id", nullable = false)
-    private BigDecimal languageId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "language_id", nullable = false)
+    private Languages language;
 
-    @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private BigDecimal recDeleted;
+    @Column(name = "recdeleted", precision = 19, nullable = false)
+    private BigInteger recdeleted;
 
-    @Column(name = "title", length = 255)
+    @Column(name = "title", length = 1000)
     private String title;
 
-    @Column(name = "gemi_id")
-    private BigDecimal gemiId;
+    @Column(name = "gemi_id", precision = 19)
+    private BigInteger gemiId;
 
     @Column(name = "gemi_date_created")
     private LocalDate gemiDateCreated;

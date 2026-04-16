@@ -126,14 +126,6 @@ public class Field {
         return relationKind != null;
     }
 
-    /**
-     * Returns true when this field represents a scalar non-relationship column.
-     *
-     * @return true if the field is a simple column field
-     */
-    public boolean isScalarField() {
-        return relationKind == null;
-    }
 
     /**
      * Returns true when this field represents an owning-side relationship.
@@ -142,24 +134,6 @@ public class Field {
      */
     public boolean isOwningRelationship() {
         return relationKind != null && owningSide;
-    }
-
-    /**
-     * Returns true when this field represents an inverse-side relationship.
-     *
-     * @return true if the field is an inverse-side relation
-     */
-    public boolean isInverseRelationship() {
-        return relationKind != null && !owningSide;
-    }
-
-    /**
-     * Returns true when this field represents a many-to-many relationship.
-     *
-     * @return true if the field is many-to-many
-     */
-    public boolean isManyToManyRelationship() {
-        return relationKind == RelationKind.MANY_TO_MANY;
     }
 
     /**

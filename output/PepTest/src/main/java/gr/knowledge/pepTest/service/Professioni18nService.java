@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.Professioni18nDto;
-import gr.knowledge.pepTest.entity.Professioni18nPK;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code Professioni18n} domain operations.
@@ -10,23 +10,21 @@ import java.util.List;
 public interface Professioni18nService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all professioni18ns.
      * @return non-null list of {@link Professioni18nDto}
      */
-    List<Professioni18nDto> getAllProfessioni18n();
+    List<Professioni18nDto> getAllProfessioni18ns();
 
     /**
      * Retrieves a record by id.
-     *
-     * @param id the record id
+     * @param professionId the profession_id value
+     * @param languageId the language_id value
      * @return the matching {@link Professioni18nDto}
      */
-    Professioni18nDto getProfessioni18nById(Professioni18nPK id);
+    Professioni18nDto getProfessioni18nById(UUID professionId, UUID languageId);
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link Professioni18nDto}
      */
@@ -34,20 +32,19 @@ public interface Professioni18nService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param professionId the profession_id value
+     * @param languageId the language_id value
+     * @param dto input payload with partial fields
      * @return updated {@link Professioni18nDto}
      */
-    Professioni18nDto updateProfessioni18n(Professioni18nPK id, Professioni18nDto dto);
+    Professioni18nDto updateProfessioni18n(UUID professionId, UUID languageId, Professioni18nDto dto);
 
     /**
      * Deletes a record by id.
-     *
-     * @param id the record id
+     * @param professionId the profession_id value
+     * @param languageId the language_id value
      */
-    void deleteProfessioni18n(Professioni18nPK id);
+    void deleteProfessioni18n(UUID professionId, UUID languageId);
 }

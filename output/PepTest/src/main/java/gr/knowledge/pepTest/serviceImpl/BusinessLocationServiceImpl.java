@@ -5,18 +5,17 @@ import gr.knowledge.pepTest.mapper.BusinessLocationMapper;
 import gr.knowledge.pepTest.entity.BusinessLocation;
 import gr.knowledge.pepTest.repository.BusinessLocationRepository;
 import gr.knowledge.pepTest.service.BusinessLocationService;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
 import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code BusinessLocation} domain operations.
+ * Service implementation for {@code Business Location} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -28,75 +27,97 @@ public class BusinessLocationServiceImpl implements BusinessLocationService {
     private final BusinessLocationMapper businessLocationMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link BusinessLocationDto}
+     * Retrieves all business locations records.
+     * @return list of BusinessLocationDto
      */
     @Override
-    public List<BusinessLocationDto> getAllBusinessLocation() {
-        log.info("Fetching all business-location.");
-        return businessLocationMapper.toDTO(businessLocationRepository.findAll());
+    public List<BusinessLocationDto> getAllBusinessLocations() {
+        log.info("Fetching all business locations records.");
+        return businessLocationMapper.toDTOList(businessLocationRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link BusinessLocationDto}
+     * Retrieves a business location record by id.
+     * @param id the business location id
+     * @return BusinessLocationDto
      */
     @Override
     public BusinessLocationDto getBusinessLocationById(UUID id) {
-        log.info("Fetching business-location with id: {}", id);
-        BusinessLocation entity = businessLocationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BusinessLocation not found with id: " + id));
-        return businessLocationMapper.toDTO(entity);
+        log.info("Fetching business location with id: {}", id);
+
+        BusinessLocation existingEntity = findBusinessLocationByIdOrThrow(id);
+        return businessLocationMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new business location record.
      * @param dto input payload
      * @return created {@link BusinessLocationDto}
      */
     @Override
     public BusinessLocationDto createBusinessLocation(BusinessLocationDto dto) {
-        log.info("Creating business-location.");
+        log.info("Creating business location.");
+
         BusinessLocation entity = businessLocationMapper.toEntity(dto);
-        BusinessLocation saved = businessLocationRepository.save(entity);
-        return businessLocationMapper.toDTO(saved);
+        BusinessLocation savedEntity = businessLocationRepository.save(entity);
+
+        return businessLocationMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing business location record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param id the business location id
+     * @param dto input payload with partial fields
      * @return updated {@link BusinessLocationDto}
      */
     @Override
     public BusinessLocationDto updateBusinessLocation(UUID id, BusinessLocationDto dto) {
-        log.info("Updating business-location with id: {}", id);
-        businessLocationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BusinessLocation not found with id: " + id));
-        BusinessLocation entity = businessLocationMapper.toEntity(dto);
-        entity.setId(id);
-        BusinessLocation saved = businessLocationRepository.save(entity);
-        return businessLocationMapper.toDTO(saved);
+        log.info("Updating business location with id: {}", id);
+
+        BusinessLocation existingEntity = findBusinessLocationByIdOrThrow(id);
+        businessLocationMapper.partialUpdate(existingEntity, dto);
+        BusinessLocation savedEntity = businessLocationRepository.save(existingEntity);
+
+        return businessLocationMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a business location record by id.
+     * @param id the business location id
      */
     @Override
     public void deleteBusinessLocation(UUID id) {
-        log.info("Deleting business-location with id: {}", id);
-        businessLocationRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "BusinessLocation not found with id: " + id));
+        log.info("Deleting business location with id: {}", id);
+
+        findBusinessLocationByIdOrThrow(id);
         businessLocationRepository.deleteById(id);
     }
+
+    /**
+     * Finds an existing business location record by id or throws an exception.
+     * @param id the business location id
+     * @return existing BusinessLocation entity
+     */
+    private BusinessLocation findBusinessLocationByIdOrThrow(UUID id) {
+        return businessLocationRepository.findById(id)
+                .orElseThrow(() -> createBusinessLocationNotFoundException(id));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the business location entity.
+     @param id the business location id
+     @return runtime exception
+     */
+    private RuntimeException createBusinessLocationNotFoundException(UUID id) {
+        log.warn("BusinessLocation not found with id: {}", id);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("BusinessLocation")
+                .message("BusinessLocation not found with id: " + id)
+                .build();
+    }
+
 }

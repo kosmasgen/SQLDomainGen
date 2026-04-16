@@ -2,6 +2,7 @@ package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.TemporaryCompanyi18nDto;
 import java.util.List;
+import java.math.BigInteger;
 
 /**
  * Service contract for {@code TemporaryCompanyi18n} domain operations.
@@ -9,23 +10,20 @@ import java.util.List;
 public interface TemporaryCompanyi18nService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all temporary companyi18ns.
      * @return non-null list of {@link TemporaryCompanyi18nDto}
      */
-    List<TemporaryCompanyi18nDto> getAllTemporaryCompanyi18n();
+    List<TemporaryCompanyi18nDto> getAllTemporaryCompanyi18ns();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link TemporaryCompanyi18nDto}
      */
-    TemporaryCompanyi18nDto getTemporaryCompanyi18nById(Long id);
+    TemporaryCompanyi18nDto getTemporaryCompanyi18nById(BigInteger id);
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link TemporaryCompanyi18nDto}
      */
@@ -33,20 +31,17 @@ public interface TemporaryCompanyi18nService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link TemporaryCompanyi18nDto}
      */
-    TemporaryCompanyi18nDto updateTemporaryCompanyi18n(Long id, TemporaryCompanyi18nDto dto);
+    TemporaryCompanyi18nDto updateTemporaryCompanyi18n(BigInteger id, TemporaryCompanyi18nDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
-    void deleteTemporaryCompanyi18n(Long id);
+    void deleteTemporaryCompanyi18n(BigInteger id);
 }

@@ -2,13 +2,13 @@ package gr.knowledge.pepTest.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import java.math.BigDecimal;
+import java.math.BigInteger;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import org.hibernate.annotations.CreationTimestamp;
-import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.envers.Audited;
 
 @Entity
+@Audited
 @Table(name = "temporary_companyi18n")
 @Getter
 @Setter
@@ -18,50 +18,49 @@ import org.hibernate.annotations.UpdateTimestamp;
 public class TemporaryCompanyi18n {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", nullable = false)
-    private Long id;
+    @Column(name = "id", precision = 19, nullable = false)
+    private BigInteger id;
 
-    @Column(name = "version", nullable = false)
-    private BigDecimal version;
+    @Column(name = "version", precision = 19, nullable = false)
+    private BigInteger version;
 
-    @Column(name = "city", length = 255)
+    @Column(name = "city", length = 50)
     private String city;
 
-    @Column(name = "co_name", length = 255)
+    @Column(name = "co_name", length = 1000)
     private String coName;
 
-    @Column(name = "company_id", nullable = false)
-    private BigDecimal companyId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "company_id", nullable = false)
+    private TemporaryCompany company;
 
-    @CreationTimestamp
     @Column(name = "date_created", nullable = false, updatable = false)
     private LocalDateTime dateCreated;
 
-    @Column(name = "language_id", nullable = false)
-    private BigDecimal languageId;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "language_id", nullable = false)
+    private Languages language;
 
-    @UpdateTimestamp
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
-    @Column(name = "mail_name", length = 255)
+    @Column(name = "mail_name", length = 60)
     private String mailName;
 
-    @Column(name = "objective")
+    @Column(name = "objective", columnDefinition = "text")
     private String objective;
 
-    @Column(name = "rec_deleted", nullable = false)
-    private BigDecimal recDeleted;
+    @Column(name = "recdeleted", precision = 19, nullable = false)
+    private BigInteger recdeleted;
 
-    @Column(name = "street", length = 255)
+    @Column(name = "street", length = 60)
     private String street;
 
-    @Column(name = "comments")
+    @Column(name = "comments", columnDefinition = "text")
     private String comments;
 
-    @Column(name = "gemi_id")
-    private BigDecimal gemiId;
+    @Column(name = "gemi_id", precision = 19)
+    private BigInteger gemiId;
 
     @Column(name = "gemi_date_created")
     private LocalDate gemiDateCreated;
@@ -69,10 +68,10 @@ public class TemporaryCompanyi18n {
     @Column(name = "gemi_last_updated")
     private LocalDate gemiLastUpdated;
 
-    @Column(name = "gemi_city", length = 255)
+    @Column(name = "gemi_city", length = 24)
     private String gemiCity;
 
-    @Column(name = "article")
+    @Column(name = "article", columnDefinition = "text")
     private String article;
 
 }

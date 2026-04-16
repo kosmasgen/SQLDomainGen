@@ -5,11 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import gr.knowledge.pepTest.dto.CompanyYpArticleDto;
+import jakarta.validation.constraints.NotNull;
+import gr.knowledge.pepTest.dto.CompanyFileDto;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for CompanyArticleFile.
@@ -21,23 +22,20 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class CompanyArticleFileDto {
 
-    @NotNull
     private UUID id;
 
     @NotNull
-    private UUID articleId;
+    private CompanyYpArticleDto article;
 
     @NotNull
-    private UUID fileId;
+    private CompanyFileDto file;
 
     @NotNull
     private Integer orderSeq;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 

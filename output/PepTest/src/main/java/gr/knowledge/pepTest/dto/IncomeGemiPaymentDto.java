@@ -5,14 +5,13 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import java.math.BigDecimal;
+import java.math.BigInteger;
 
 /**
  * Data transfer object for IncomeGemiPayment.
@@ -24,7 +23,6 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class IncomeGemiPaymentDto {
 
-    @NotNull
     private UUID id;
 
     @NotNull
@@ -36,39 +34,35 @@ public class IncomeGemiPaymentDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime saleTs;
 
-    @Positive
     private BigDecimal chamberAmount;
 
-    @Positive
     private BigDecimal chamberAmountForCerts;
 
-    @Positive
     private BigDecimal chamberAmountForPostal;
 
-    @Positive
     private BigDecimal totalAmountPaid;
 
-    @Size(max = 255)
+    @Size(max = 500)
     private String descr;
 
-    @Size(max = 255)
+    @Size(max = 500)
     private String payer;
 
     @NotNull
-    private BigDecimal gemiPaymentId;
+    private BigInteger gemiPaymentId;
 
-    private BigDecimal companyGemiId;
+    private BigInteger companyGemiId;
 
-    @Size(max = 255)
+    @Size(max = 1000)
     private String coName;
 
-    private BigDecimal companyChamberId;
+    private BigInteger companyChamberId;
 
     @NotNull
     @Size(max = 255)
     private String paymentMethod;
 
-    @Size(max = 255)
+    @Size(max = 25)
     private String ri3;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -77,7 +71,7 @@ public class IncomeGemiPaymentDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime subscriptionEndDate;
 
-    private BigDecimal cancelFlag;
+    private BigInteger cancelFlag;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime refundTs;
@@ -85,10 +79,9 @@ public class IncomeGemiPaymentDto {
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime remittanceDt;
 
-    @Positive
     private BigDecimal remittanceAmount;
 
-    @Size(max = 255)
+    @Size(max = 20)
     private String remittanceReference;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")

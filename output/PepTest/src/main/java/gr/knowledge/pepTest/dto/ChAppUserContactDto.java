@@ -5,13 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
-import jakarta.validation.constraints.Size;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.dto.ChamberAppUserDto;
+import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 
 /**
  * Data transfer object for ChAppUserContact.
@@ -23,7 +22,6 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChAppUserContactDto {
 
-    @NotNull
     private UUID id;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -33,34 +31,30 @@ public class ChAppUserContactDto {
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private UUID chamberAppUserId;
+    private ChamberAppUserDto chamberAppUser;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 20)
     private String phone1;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 20)
     private String phone2;
 
-    @Size(max = 255)
+    @Size(max = 20)
     private String mobile1;
 
-    @Size(max = 255)
+    @Size(max = 20)
     private String mobile2;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 100)
     private String email1;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 100)
     private String email2;
 
     @Size(max = 255)
     private String url;
 
-    @Size(max = 255)
+    @Size(max = 12)
     private String zipCode;
 
     @Size(max = 255)
@@ -73,9 +67,15 @@ public class ChAppUserContactDto {
     private String streetNumber;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
     @Size(max = 255)
     private String listingUrl;
+
+    @Size(max = 255)
+    private String email;
+
+    @Size(max = 50)
+    private String mobile;
 
 }

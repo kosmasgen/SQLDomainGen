@@ -5,18 +5,18 @@ import gr.knowledge.pepTest.mapper.CorporateStatusViewRulesMapper;
 import gr.knowledge.pepTest.entity.CorporateStatusViewRules;
 import gr.knowledge.pepTest.repository.CorporateStatusViewRulesRepository;
 import gr.knowledge.pepTest.service.CorporateStatusViewRulesService;
-import gr.knowledge.pepTest.entity.CorporateStatusViewRulesPK;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
+import gr.knowledge.pepTest.entity.CorporateStatusViewRulesKey;
+import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code CorporateStatusViewRules} domain operations.
+ * Service implementation for {@code Corporate Status View Rules} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -28,75 +28,159 @@ public class CorporateStatusViewRulesServiceImpl implements CorporateStatusViewR
     private final CorporateStatusViewRulesMapper corporateStatusViewRulesMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link CorporateStatusViewRulesDto}
+     * Retrieves all corporate status view ruleses records.
+     * @return list of CorporateStatusViewRulesDto
      */
     @Override
-    public List<CorporateStatusViewRulesDto> getAllCorporateStatusViewRules() {
-        log.info("Fetching all corporate-status-view-rules.");
-        return corporateStatusViewRulesMapper.toDTO(corporateStatusViewRulesRepository.findAll());
+    public List<CorporateStatusViewRulesDto> getAllCorporateStatusViewRuleses() {
+        log.info("Fetching all corporate status view ruleses records.");
+        return corporateStatusViewRulesMapper.toDTOList(corporateStatusViewRulesRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link CorporateStatusViewRulesDto}
+     * Retrieves a corporate status view rules record by id.
+     * @param corporateStatusId the corporateStatusId value
+     * @param companyViewRulesId the companyViewRulesId value
+     * @return CorporateStatusViewRulesDto
      */
     @Override
-    public CorporateStatusViewRulesDto getCorporateStatusViewRulesById(CorporateStatusViewRulesPK id) {
-        log.info("Fetching corporate-status-view-rules with id: {}", id);
-        CorporateStatusViewRules entity = corporateStatusViewRulesRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CorporateStatusViewRules not found with id: " + id));
-        return corporateStatusViewRulesMapper.toDTO(entity);
+    public CorporateStatusViewRulesDto getCorporateStatusViewRulesById(UUID corporateStatusId, UUID companyViewRulesId) {
+
+        String compositeId = buildCompositeId(corporateStatusId, companyViewRulesId);
+        log.info("Fetching corporate status view rules with composite id: {}", compositeId);
+
+        CorporateStatusViewRules existingEntity = findCorporateStatusViewRulesByIdOrThrow(corporateStatusId, companyViewRulesId);
+        return corporateStatusViewRulesMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new corporate status view rules record.
      * @param dto input payload
      * @return created {@link CorporateStatusViewRulesDto}
      */
     @Override
     public CorporateStatusViewRulesDto createCorporateStatusViewRules(CorporateStatusViewRulesDto dto) {
-        log.info("Creating corporate-status-view-rules.");
+        log.info("Creating corporate status view rules.");
+
+        validateCorporateStatusViewRulesDoesNotExist(dto);
+
         CorporateStatusViewRules entity = corporateStatusViewRulesMapper.toEntity(dto);
-        CorporateStatusViewRules saved = corporateStatusViewRulesRepository.save(entity);
-        return corporateStatusViewRulesMapper.toDTO(saved);
+        CorporateStatusViewRules savedEntity = corporateStatusViewRulesRepository.save(entity);
+
+        return corporateStatusViewRulesMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing corporate status view rules record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param corporateStatusId the corporateStatusId value
+     * @param companyViewRulesId the companyViewRulesId value
+     * @param dto input payload with partial fields
      * @return updated {@link CorporateStatusViewRulesDto}
      */
     @Override
-    public CorporateStatusViewRulesDto updateCorporateStatusViewRules(CorporateStatusViewRulesPK id, CorporateStatusViewRulesDto dto) {
-        log.info("Updating corporate-status-view-rules with id: {}", id);
-        corporateStatusViewRulesRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CorporateStatusViewRules not found with id: " + id));
-        CorporateStatusViewRules entity = corporateStatusViewRulesMapper.toEntity(dto);
-        entity.setId(id);
-        CorporateStatusViewRules saved = corporateStatusViewRulesRepository.save(entity);
-        return corporateStatusViewRulesMapper.toDTO(saved);
+    public CorporateStatusViewRulesDto updateCorporateStatusViewRules(UUID corporateStatusId, UUID companyViewRulesId, CorporateStatusViewRulesDto dto) {
+        String compositeId = buildCompositeId(corporateStatusId, companyViewRulesId);
+
+        log.info("Updating corporate status view rules with composite id: {}", compositeId);
+
+        CorporateStatusViewRules existingEntity = findCorporateStatusViewRulesByIdOrThrow(corporateStatusId, companyViewRulesId);
+        corporateStatusViewRulesMapper.partialUpdate(existingEntity, dto);
+        CorporateStatusViewRules savedEntity = corporateStatusViewRulesRepository.save(existingEntity);
+
+        return corporateStatusViewRulesMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a corporate status view rules record by id.
+     * @param corporateStatusId the corporate_status_id value
+     * @param companyViewRulesId the company_view_rules_id value
      */
     @Override
-    public void deleteCorporateStatusViewRules(CorporateStatusViewRulesPK id) {
-        log.info("Deleting corporate-status-view-rules with id: {}", id);
-        corporateStatusViewRulesRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CorporateStatusViewRules not found with id: " + id));
-        corporateStatusViewRulesRepository.deleteById(id);
+    public void deleteCorporateStatusViewRules(UUID corporateStatusId, UUID companyViewRulesId) {
+        String compositeId = buildCompositeId(corporateStatusId, companyViewRulesId);
+        log.info("Deleting corporate status view rules with composite id: {}", compositeId);
+
+        findCorporateStatusViewRulesByIdOrThrow(corporateStatusId, companyViewRulesId);
+        corporateStatusViewRulesRepository.deleteById(buildKey(corporateStatusId, companyViewRulesId));
     }
+
+    /**
+     * Finds an existing corporate status view rules record by id or throws an exception.
+     * @param corporateStatusId the corporateStatusId value
+     * @param companyViewRulesId the companyViewRulesId value
+     * @return existing CorporateStatusViewRules entity
+     */
+    private CorporateStatusViewRules findCorporateStatusViewRulesByIdOrThrow(UUID corporateStatusId, UUID companyViewRulesId) {
+        return corporateStatusViewRulesRepository.findById(buildKey(corporateStatusId, companyViewRulesId))
+                .orElseThrow(() -> createCorporateStatusViewRulesNotFoundException(corporateStatusId, companyViewRulesId));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the corporate status view rules entity.
+     @param corporateStatusId the corporate_status_id value
+     @param companyViewRulesId the company_view_rules_id value
+     @return runtime exception
+     */
+    private RuntimeException createCorporateStatusViewRulesNotFoundException(UUID corporateStatusId, UUID companyViewRulesId) {
+        String compositeId = buildCompositeId(corporateStatusId, companyViewRulesId);
+        log.warn("CorporateStatusViewRules not found with composite id: {}", compositeId);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("CorporateStatusViewRules")
+                .message("CorporateStatusViewRules not found with composite id: " + compositeId)
+                .build();
+    }
+
+    /**
+     * Validates that a corporate status view rules record does not already exist.
+     * @param dto input payload
+     * @throws GeneratedRuntimeException if the entity already exists
+     */
+    private void validateCorporateStatusViewRulesDoesNotExist(CorporateStatusViewRulesDto dto) {
+        if (dto == null || (dto.getId() != null ? dto.getId().getCorporateStatusId() : null) == null || (dto.getId() != null ? dto.getId().getCompanyViewRulesId() : null) == null) {
+            return;
+        }
+
+        CorporateStatusViewRulesKey key = buildKey((dto.getId() != null ? dto.getId().getCorporateStatusId() : null), (dto.getId() != null ? dto.getId().getCompanyViewRulesId() : null));
+
+        if (corporateStatusViewRulesRepository.existsById(key)) {
+            String compositeId = buildCompositeId((dto.getId() != null ? dto.getId().getCorporateStatusId() : null), (dto.getId() != null ? dto.getId().getCompanyViewRulesId() : null));
+            log.warn("CorporateStatusViewRules already exists with composite id: {}", compositeId);
+
+            throw GeneratedRuntimeException.builder()
+                    .code(ErrorCodes.BAD_REQUEST)
+                    .entity("CorporateStatusViewRules")
+                    .message("CorporateStatusViewRules already exists with composite id: " + compositeId)
+                    .build();
+        }
+    }
+
+    /**
+     * Builds the composite key.
+     *
+     * @param corporateStatusId the corporateStatusId value
+     * @param companyViewRulesId the companyViewRulesId value
+     * @return populated {@link CorporateStatusViewRulesKey}
+     */
+    private CorporateStatusViewRulesKey buildKey(UUID corporateStatusId, UUID companyViewRulesId) {
+        CorporateStatusViewRulesKey key = new CorporateStatusViewRulesKey();
+        key.setCorporateStatusId(corporateStatusId);
+        key.setCompanyViewRulesId(companyViewRulesId);
+        return key;
+    }
+
+    /**
+     * Builds the composite id string.
+     *
+     * @param corporateStatusId the corporateStatusId value
+     * @param companyViewRulesId the companyViewRulesId value
+     * @return composite id string
+     */
+    private String buildCompositeId(UUID corporateStatusId, UUID companyViewRulesId) {
+        return "corporateStatusId=" + corporateStatusId + ", " + "companyViewRulesId=" + companyViewRulesId;
+    }
+
 }

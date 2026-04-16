@@ -2,122 +2,111 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.CompanyProfileDto;
 import gr.knowledge.pepTest.service.CompanyProfileService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing CompanyProfile resources.
+ * REST controller for managing Company Profile resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "CompanyProfile", description = "CompanyProfile API")
-@RequestMapping("/api/company-profiles")
+@Tag(name = "Company Profile", description = "Company Profile API")
+@RequestMapping("/api/company-profile")
 public class CompanyProfileController {
 
     private final CompanyProfileService companyProfileService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all company profiles.
      * @return list of CompanyProfileDto
      */
-    @Operation(summary = "Get all CompanyProfile")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all company profiles")
     @GetMapping
     public ResponseEntity<List<CompanyProfileDto>> getAll() {
-        log.info("Fetching all companyprofile records.");
-        return ResponseEntity.ok(companyProfileService.getAllCompanyProfile());
+        return ResponseEntity.ok(companyProfileService.getAllCompanyProfiles());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the company profile record by id.
+     * @param id company profile identifier
      * @return CompanyProfileDto
      */
-    @Operation(summary = "Get CompanyProfile by id")
+    @Operation(summary = "Get Company Profile by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<CompanyProfileDto> getById(
-            @Parameter(description = "CompanyProfile id", required = true)
+            @Parameter(description = "company profile identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Fetching companyprofile with id: {}", id);
         return ResponseEntity.ok(companyProfileService.getCompanyProfileById(id));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new company profile record.
+     * @param dto company profile payload
      * @return created CompanyProfileDto
      */
-    @Operation(summary = "Create CompanyProfile")
+    @Operation(summary = "Create Company Profile")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<CompanyProfileDto> create(@RequestBody CompanyProfileDto dto) {
-        log.info("Creating companyprofile.");
+    public ResponseEntity<CompanyProfileDto> create(
+            @Valid @RequestBody CompanyProfileDto dto) {
         CompanyProfileDto created = companyProfileService.createCompanyProfile(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing company profile record.
+     * Only fields that are not null in the request are updated.
+     * @param id company profile identifier
+     * @param dto partial company profile payload
      * @return updated CompanyProfileDto
      */
-    @Operation(summary = "Update CompanyProfile")
+    @Operation(summary = "Patch Company Profile")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<CompanyProfileDto> update(
-            @Parameter(description = "CompanyProfile id", required = true)
+    @PatchMapping("/{id}")
+    public ResponseEntity<CompanyProfileDto> patch(
+            @Parameter(description = "company profile identifier", required = true)
             @PathVariable UUID id,
             @RequestBody CompanyProfileDto dto) {
-        log.info("Updating companyprofile with id: {}", id);
         return ResponseEntity.ok(companyProfileService.updateCompanyProfile(id, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an company profile record by id.
+     * @param id company profile identifier
      * @return no content
      */
-    @Operation(summary = "Delete CompanyProfile")
+    @Operation(summary = "Delete Company Profile")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "CompanyProfile id", required = true)
+            @Parameter(description = "company profile identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Deleting companyprofile with id: {}", id);
         companyProfileService.deleteCompanyProfile(id);
         return ResponseEntity.noContent().build();
     }
+
 }

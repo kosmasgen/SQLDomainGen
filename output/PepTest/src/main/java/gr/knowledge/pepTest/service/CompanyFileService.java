@@ -1,8 +1,8 @@
 package gr.knowledge.pepTest.service;
 
 import gr.knowledge.pepTest.dto.CompanyFileDto;
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
  * Service contract for {@code CompanyFile} domain operations.
@@ -10,15 +10,13 @@ import java.util.List;
 public interface CompanyFileService {
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all company files.
      * @return non-null list of {@link CompanyFileDto}
      */
-    List<CompanyFileDto> getAllCompanyFile();
+    List<CompanyFileDto> getAllCompanyFiles();
 
     /**
      * Retrieves a record by id.
-     *
      * @param id the record id
      * @return the matching {@link CompanyFileDto}
      */
@@ -26,7 +24,6 @@ public interface CompanyFileService {
 
     /**
      * Creates a new record.
-     *
      * @param dto input payload
      * @return created {@link CompanyFileDto}
      */
@@ -34,19 +31,16 @@ public interface CompanyFileService {
 
     /**
      * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * <p>
+     * Only non-null fields from the DTO are applied to the existing entity.
+     * @param id the record id
+     * @param dto input payload with partial fields
      * @return updated {@link CompanyFileDto}
      */
     CompanyFileDto updateCompanyFile(UUID id, CompanyFileDto dto);
 
     /**
      * Deletes a record by id.
-     *
      * @param id the record id
      */
     void deleteCompanyFile(UUID id);

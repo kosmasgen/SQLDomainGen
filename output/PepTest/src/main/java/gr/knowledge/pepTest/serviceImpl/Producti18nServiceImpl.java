@@ -5,14 +5,14 @@ import gr.knowledge.pepTest.mapper.Producti18nMapper;
 import gr.knowledge.pepTest.entity.Producti18n;
 import gr.knowledge.pepTest.repository.Producti18nRepository;
 import gr.knowledge.pepTest.service.Producti18nService;
-import gr.knowledge.pepTest.entity.Producti18nPK;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
+import gr.knowledge.pepTest.entity.Producti18nKey;
+import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
@@ -28,75 +28,159 @@ public class Producti18nServiceImpl implements Producti18nService {
     private final Producti18nMapper producti18nMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link Producti18nDto}
+     * Retrieves all producti18ns records.
+     * @return list of Producti18nDto
      */
     @Override
-    public List<Producti18nDto> getAllProducti18n() {
-        log.info("Fetching all producti18n.");
-        return producti18nMapper.toDTO(producti18nRepository.findAll());
+    public List<Producti18nDto> getAllProducti18ns() {
+        log.info("Fetching all producti18ns records.");
+        return producti18nMapper.toDTOList(producti18nRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link Producti18nDto}
+     * Retrieves a producti18n record by id.
+     * @param languageId the languageId value
+     * @param productId the productId value
+     * @return Producti18nDto
      */
     @Override
-    public Producti18nDto getProducti18nById(Producti18nPK id) {
-        log.info("Fetching producti18n with id: {}", id);
-        Producti18n entity = producti18nRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producti18n not found with id: " + id));
-        return producti18nMapper.toDTO(entity);
+    public Producti18nDto getProducti18nById(UUID languageId, UUID productId) {
+
+        String compositeId = buildCompositeId(languageId, productId);
+        log.info("Fetching producti18n with composite id: {}", compositeId);
+
+        Producti18n existingEntity = findProducti18nByIdOrThrow(languageId, productId);
+        return producti18nMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new producti18n record.
      * @param dto input payload
      * @return created {@link Producti18nDto}
      */
     @Override
     public Producti18nDto createProducti18n(Producti18nDto dto) {
         log.info("Creating producti18n.");
+
+        validateProducti18nDoesNotExist(dto);
+
         Producti18n entity = producti18nMapper.toEntity(dto);
-        Producti18n saved = producti18nRepository.save(entity);
-        return producti18nMapper.toDTO(saved);
+        Producti18n savedEntity = producti18nRepository.save(entity);
+
+        return producti18nMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing producti18n record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param languageId the languageId value
+     * @param productId the productId value
+     * @param dto input payload with partial fields
      * @return updated {@link Producti18nDto}
      */
     @Override
-    public Producti18nDto updateProducti18n(Producti18nPK id, Producti18nDto dto) {
-        log.info("Updating producti18n with id: {}", id);
-        producti18nRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producti18n not found with id: " + id));
-        Producti18n entity = producti18nMapper.toEntity(dto);
-        entity.setId(id);
-        Producti18n saved = producti18nRepository.save(entity);
-        return producti18nMapper.toDTO(saved);
+    public Producti18nDto updateProducti18n(UUID languageId, UUID productId, Producti18nDto dto) {
+        String compositeId = buildCompositeId(languageId, productId);
+
+        log.info("Updating producti18n with composite id: {}", compositeId);
+
+        Producti18n existingEntity = findProducti18nByIdOrThrow(languageId, productId);
+        producti18nMapper.partialUpdate(existingEntity, dto);
+        Producti18n savedEntity = producti18nRepository.save(existingEntity);
+
+        return producti18nMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a producti18n record by id.
+     * @param languageId the language_id value
+     * @param productId the product_id value
      */
     @Override
-    public void deleteProducti18n(Producti18nPK id) {
-        log.info("Deleting producti18n with id: {}", id);
-        producti18nRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "Producti18n not found with id: " + id));
-        producti18nRepository.deleteById(id);
+    public void deleteProducti18n(UUID languageId, UUID productId) {
+        String compositeId = buildCompositeId(languageId, productId);
+        log.info("Deleting producti18n with composite id: {}", compositeId);
+
+        findProducti18nByIdOrThrow(languageId, productId);
+        producti18nRepository.deleteById(buildKey(languageId, productId));
     }
+
+    /**
+     * Finds an existing producti18n record by id or throws an exception.
+     * @param languageId the languageId value
+     * @param productId the productId value
+     * @return existing Producti18n entity
+     */
+    private Producti18n findProducti18nByIdOrThrow(UUID languageId, UUID productId) {
+        return producti18nRepository.findById(buildKey(languageId, productId))
+                .orElseThrow(() -> createProducti18nNotFoundException(languageId, productId));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the producti18n entity.
+     @param languageId the language_id value
+     @param productId the product_id value
+     @return runtime exception
+     */
+    private RuntimeException createProducti18nNotFoundException(UUID languageId, UUID productId) {
+        String compositeId = buildCompositeId(languageId, productId);
+        log.warn("Producti18n not found with composite id: {}", compositeId);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("Producti18n")
+                .message("Producti18n not found with composite id: " + compositeId)
+                .build();
+    }
+
+    /**
+     * Validates that a producti18n record does not already exist.
+     * @param dto input payload
+     * @throws GeneratedRuntimeException if the entity already exists
+     */
+    private void validateProducti18nDoesNotExist(Producti18nDto dto) {
+        if (dto == null || (dto.getId() != null ? dto.getId().getLanguageId() : null) == null || (dto.getId() != null ? dto.getId().getProductId() : null) == null) {
+            return;
+        }
+
+        Producti18nKey key = buildKey((dto.getId() != null ? dto.getId().getLanguageId() : null), (dto.getId() != null ? dto.getId().getProductId() : null));
+
+        if (producti18nRepository.existsById(key)) {
+            String compositeId = buildCompositeId((dto.getId() != null ? dto.getId().getLanguageId() : null), (dto.getId() != null ? dto.getId().getProductId() : null));
+            log.warn("Producti18n already exists with composite id: {}", compositeId);
+
+            throw GeneratedRuntimeException.builder()
+                    .code(ErrorCodes.BAD_REQUEST)
+                    .entity("Producti18n")
+                    .message("Producti18n already exists with composite id: " + compositeId)
+                    .build();
+        }
+    }
+
+    /**
+     * Builds the composite key.
+     *
+     * @param languageId the languageId value
+     * @param productId the productId value
+     * @return populated {@link Producti18nKey}
+     */
+    private Producti18nKey buildKey(UUID languageId, UUID productId) {
+        Producti18nKey key = new Producti18nKey();
+        key.setLanguageId(languageId);
+        key.setProductId(productId);
+        return key;
+    }
+
+    /**
+     * Builds the composite id string.
+     *
+     * @param languageId the languageId value
+     * @param productId the productId value
+     * @return composite id string
+     */
+    private String buildCompositeId(UUID languageId, UUID productId) {
+        return "languageId=" + languageId + ", " + "productId=" + productId;
+    }
+
 }

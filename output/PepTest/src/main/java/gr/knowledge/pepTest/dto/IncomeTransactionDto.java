@@ -5,14 +5,15 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
-import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Positive;
-import jakarta.validation.constraints.Size;
-import java.math.BigDecimal;
-import java.time.LocalDateTime;
 import java.util.UUID;
+import jakarta.validation.constraints.NotNull;
+import java.math.BigInteger;
+import jakarta.validation.constraints.Size;
+import java.time.LocalDateTime;
+import com.fasterxml.jackson.annotation.JsonFormat;
+import gr.knowledge.pepTest.dto.IncomeTypeDto;
+import java.math.BigDecimal;
+import gr.knowledge.pepTest.dto.IncomePaymentMethodDto;
 
 /**
  * Data transfer object for IncomeTransaction.
@@ -24,17 +25,16 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class IncomeTransactionDto {
 
-    @NotNull
     private UUID id;
 
     @NotNull
     private Integer chamberId;
 
     @NotNull
-    private BigDecimal chamberInTransdId;
+    private BigInteger chamberInTransdId;
 
     @NotNull
-    @Size(max = 255)
+    @Size(max = 4)
     private String cdUse;
 
     @NotNull
@@ -48,31 +48,29 @@ public class IncomeTransactionDto {
     @Size(max = 255)
     private String accountCd;
 
-    private UUID incomeTypeId;
+    private IncomeTypeDto incomeType;
 
-    @Positive
     private BigDecimal amount;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
     @NotNull
-    private BigDecimal recDeleted;
+    private BigInteger recdeleted;
 
-    private UUID incomePayMethodId;
+    private IncomePaymentMethodDto incomePayMethod;
 
     private Integer isEchamber;
 
-    @Size(max = 255)
+    @Size(max = 3)
     private String blockSer;
 
-    private BigDecimal isKratisi;
+    private BigInteger isKratisi;
 
-    private BigDecimal chamberCompId;
+    private BigInteger chamberCompId;
 
-    private BigDecimal chamberMethod;
+    private BigInteger chamberMethod;
 
-    private BigDecimal chamberType;
+    private BigInteger chamberType;
 
 }

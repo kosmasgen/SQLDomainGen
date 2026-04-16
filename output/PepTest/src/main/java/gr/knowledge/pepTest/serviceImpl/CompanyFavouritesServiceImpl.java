@@ -5,18 +5,17 @@ import gr.knowledge.pepTest.mapper.CompanyFavouritesMapper;
 import gr.knowledge.pepTest.entity.CompanyFavourites;
 import gr.knowledge.pepTest.repository.CompanyFavouritesRepository;
 import gr.knowledge.pepTest.service.CompanyFavouritesService;
+import gr.knowledge.pepTest.exception.ErrorCodes;
+import gr.knowledge.pepTest.exception.GeneratedRuntimeException;
 import java.util.UUID;
 import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import org.springframework.web.server.ResponseStatusException;
-
 import java.util.List;
 
 /**
- * Service implementation for {@code CompanyFavourites} domain operations.
+ * Service implementation for {@code Company Favourites} domain operations.
  */
 @Service
 @RequiredArgsConstructor
@@ -28,75 +27,97 @@ public class CompanyFavouritesServiceImpl implements CompanyFavouritesService {
     private final CompanyFavouritesMapper companyFavouritesMapper;
 
     /**
-     * Retrieves all records.
-     *
-     * @return non-null list of {@link CompanyFavouritesDto}
+     * Retrieves all company favouriteses records.
+     * @return list of CompanyFavouritesDto
      */
     @Override
-    public List<CompanyFavouritesDto> getAllCompanyFavourites() {
-        log.info("Fetching all company-favourites.");
-        return companyFavouritesMapper.toDTO(companyFavouritesRepository.findAll());
+    public List<CompanyFavouritesDto> getAllCompanyFavouriteses() {
+        log.info("Fetching all company favouriteses records.");
+        return companyFavouritesMapper.toDTOList(companyFavouritesRepository.findAll());
     }
 
     /**
-     * Retrieves a record by id.
-     *
-     * @param id the record id
-     * @return the matching {@link CompanyFavouritesDto}
+     * Retrieves a company favourites record by id.
+     * @param id the company favourites id
+     * @return CompanyFavouritesDto
      */
     @Override
     public CompanyFavouritesDto getCompanyFavouritesById(UUID id) {
-        log.info("Fetching company-favourites with id: {}", id);
-        CompanyFavourites entity = companyFavouritesRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyFavourites not found with id: " + id));
-        return companyFavouritesMapper.toDTO(entity);
+        log.info("Fetching company favourites with id: {}", id);
+
+        CompanyFavourites existingEntity = findCompanyFavouritesByIdOrThrow(id);
+        return companyFavouritesMapper.toDTO(existingEntity);
     }
 
     /**
-     * Creates a new record.
-     *
+     * Creates a new company favourites record.
      * @param dto input payload
      * @return created {@link CompanyFavouritesDto}
      */
     @Override
     public CompanyFavouritesDto createCompanyFavourites(CompanyFavouritesDto dto) {
-        log.info("Creating company-favourites.");
+        log.info("Creating company favourites.");
+
         CompanyFavourites entity = companyFavouritesMapper.toEntity(dto);
-        CompanyFavourites saved = companyFavouritesRepository.save(entity);
-        return companyFavouritesMapper.toDTO(saved);
+        CompanyFavourites savedEntity = companyFavouritesRepository.save(entity);
+
+        return companyFavouritesMapper.toDTO(savedEntity);
     }
 
     /**
-     * Updates an existing record.
-     *
-     * Note: current implementation performs a full update (PUT-style).
-     * PATCH behavior (merge non-null fields) can be added via ModelMapper config.
-     *
-     * @param id  the record id
-     * @param dto input payload
+     * Updates an existing company favourites record.
+     * <p>
+     * Only non null fields from the DTO are applied to the existing entity.
+     * @param id the company favourites id
+     * @param dto input payload with partial fields
      * @return updated {@link CompanyFavouritesDto}
      */
     @Override
     public CompanyFavouritesDto updateCompanyFavourites(UUID id, CompanyFavouritesDto dto) {
-        log.info("Updating company-favourites with id: {}", id);
-        companyFavouritesRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyFavourites not found with id: " + id));
-        CompanyFavourites entity = companyFavouritesMapper.toEntity(dto);
-        entity.setId(id);
-        CompanyFavourites saved = companyFavouritesRepository.save(entity);
-        return companyFavouritesMapper.toDTO(saved);
+        log.info("Updating company favourites with id: {}", id);
+
+        CompanyFavourites existingEntity = findCompanyFavouritesByIdOrThrow(id);
+        companyFavouritesMapper.partialUpdate(existingEntity, dto);
+        CompanyFavourites savedEntity = companyFavouritesRepository.save(existingEntity);
+
+        return companyFavouritesMapper.toDTO(savedEntity);
     }
 
     /**
-     * Deletes a record by id.
-     *
-     * @param id the record id
+     * Delete a company favourites record by id.
+     * @param id the company favourites id
      */
     @Override
     public void deleteCompanyFavourites(UUID id) {
-        log.info("Deleting company-favourites with id: {}", id);
-        companyFavouritesRepository.findById(id)
-                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "CompanyFavourites not found with id: " + id));
+        log.info("Deleting company favourites with id: {}", id);
+
+        findCompanyFavouritesByIdOrThrow(id);
         companyFavouritesRepository.deleteById(id);
     }
+
+    /**
+     * Finds an existing company favourites record by id or throws an exception.
+     * @param id the company favourites id
+     * @return existing CompanyFavourites entity
+     */
+    private CompanyFavourites findCompanyFavouritesByIdOrThrow(UUID id) {
+        return companyFavouritesRepository.findById(id)
+                .orElseThrow(() -> createCompanyFavouritesNotFoundException(id));
+    }
+
+    /**
+     Creates a NOT FOUND exception for the company favourites entity.
+     @param id the company favourites id
+     @return runtime exception
+     */
+    private RuntimeException createCompanyFavouritesNotFoundException(UUID id) {
+        log.warn("CompanyFavourites not found with id: {}", id);
+
+        return GeneratedRuntimeException.builder()
+                .code(ErrorCodes.NOT_FOUND)
+                .entity("CompanyFavourites")
+                .message("CompanyFavourites not found with id: " + id)
+                .build();
+    }
+
 }

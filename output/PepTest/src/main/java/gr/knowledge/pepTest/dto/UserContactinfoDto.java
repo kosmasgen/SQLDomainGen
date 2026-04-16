@@ -5,13 +5,12 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
-import com.fasterxml.jackson.annotation.JsonFormat;
+import java.util.UUID;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import jakarta.validation.constraints.NotNull;
-import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
-import java.util.UUID;
+import com.fasterxml.jackson.annotation.JsonFormat;
 
 /**
  * Data transfer object for UserContactinfo.
@@ -23,37 +22,31 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class UserContactinfoDto {
 
-    @NotNull
     private UUID id;
 
     private Integer chamberId;
 
     @NotNull
-    private UUID companyId;
+    private CompanyDto company;
 
     @NotNull
-    @Size(max = 255)
     private String username;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 100)
     private String email;
 
-    @Size(max = 255)
-    @Pattern(regexp = ".*")
+    @Size(max = 20)
     private String phone;
 
-    @Size(max = 255)
+    @Size(max = 50)
     private String mobile;
 
     @Size(max = 255)
     private String contactUrl;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime dateCreated;
 
-    @NotNull
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 

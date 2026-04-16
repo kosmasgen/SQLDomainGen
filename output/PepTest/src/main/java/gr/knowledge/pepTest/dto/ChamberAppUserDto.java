@@ -5,11 +5,11 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-
+import java.util.UUID;
+import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
-import java.time.LocalDateTime;
-import java.util.UUID;
+import gr.knowledge.pepTest.dto.CompanyDto;
 
 /**
  * Data transfer object for ChamberAppUser.
@@ -21,7 +21,6 @@ import java.util.UUID;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class ChamberAppUserDto {
 
-    @NotNull
     private UUID id;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
@@ -36,12 +35,13 @@ public class ChamberAppUserDto {
     @NotNull
     private UUID chamberAppId;
 
-    @NotNull
-    private UUID companyId;
+    private CompanyDto company;
 
     @NotNull
-    private Boolean recDeleted;
+    private Boolean recdeleted;
 
     private UUID profileId;
+
+    private UUID personId;
 
 }

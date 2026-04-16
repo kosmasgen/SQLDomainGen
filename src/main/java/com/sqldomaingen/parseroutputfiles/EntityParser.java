@@ -1,5 +1,7 @@
 package com.sqldomaingen.parseroutputfiles;
 
+import com.sqldomaingen.model.Column;
+import com.sqldomaingen.model.CompositeKeyDefinition;
 import com.sqldomaingen.model.Entity;
 import com.sqldomaingen.model.Field;
 import lombok.extern.log4j.Log4j2;
@@ -72,18 +74,10 @@ public class EntityParser {
     }
 
     /**
-     * Extracts entity information from raw Java source lines.
-     * <p>
-     * Current parsing approach:
-     * <ul>
-     *   <li>Detects class name via "public class X"</li>
-     *   <li>Collects field-level annotations (lines starting with '@')</li>
-     *   <li>Detects fields via lines starting with "private "</li>
-     *   <li>Applies collected annotations to the field, then clears annotation buffer</li>
-     * </ul>
+     * Extracts entity metadata from generated entity source lines.
      *
      * @param lines source file lines
-     * @return entity model or null if class name cannot be detected
+     * @return extracted entity metadata or null when no class declaration exists
      */
     private Entity extractEntityInfo(List<String> lines) {
         log.debug("Extracting entity info from file content...");
@@ -106,14 +100,9 @@ public class EntityParser {
 
             if (line.startsWith("private ")) {
                 Field field = extractField(line);
-                log.debug("Detected field: '{}' (type='{}')", field.getName(), field.getType());
 
                 processAnnotations(currentAnnotations, field);
                 fields.add(field);
-
-                log.info("Field parsed -> name={}, type={}, pk={}, fk={}, nullable={}, unique={}, length={}, columnName={}, referencedEntity={}, referencedColumn={}",
-                        field.getName(), field.getType(), field.isPrimaryKey(), field.isForeignKey(), field.isNullable(), field.isUnique(),
-                        field.getLength(), field.getColumnName(), field.getReferencedEntity(), field.getReferencedColumn());
 
                 currentAnnotations.clear();
             }
@@ -124,8 +113,30 @@ public class EntityParser {
             return null;
         }
 
+        Entity entity = new Entity();
+        entity.setName(className);
+        entity.setFields(fields);
+
+
+        List<Column> pkColumns = fields.stream()
+                .filter(Field::isPrimaryKey)
+                .map(field -> {
+                    Column column = new Column();
+                    column.setName(field.getColumnName() != null ? field.getColumnName() : field.getName());
+                    column.setFieldName(field.getName());
+                    column.setJavaType(field.getType());
+                    return column;
+                })
+                .toList();
+
+        if (!pkColumns.isEmpty()) {
+            CompositeKeyDefinition compositeKey = new CompositeKeyDefinition();
+            compositeKey.setColumns(pkColumns);
+            entity.setCompositeKey(compositeKey);
+        }
+
         log.info("Entity '{}' extracted with {} fields.", className, fields.size());
-        return new Entity(className, fields);
+        return entity;
     }
 
     /**

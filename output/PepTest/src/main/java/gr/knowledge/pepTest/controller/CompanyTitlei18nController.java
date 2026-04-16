@@ -2,149 +2,129 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.CompanyTitlei18nDto;
 import gr.knowledge.pepTest.service.CompanyTitlei18nService;
-import gr.knowledge.pepTest.entity.CompanyTitlei18nPK;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing CompanyTitlei18n resources.
+ * REST controller for managing Company Titlei18n resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "CompanyTitlei18n", description = "CompanyTitlei18n API")
-@RequestMapping("/api/company-titlei18ns")
+@Tag(name = "Company Titlei18n", description = "Company Titlei18n API")
+@RequestMapping("/api/company-titlei18n")
 public class CompanyTitlei18nController {
 
     private final CompanyTitlei18nService companyTitlei18nService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all company titlei18ns.
      * @return list of CompanyTitlei18nDto
      */
-    @Operation(summary = "Get all CompanyTitlei18n")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all company titlei18ns")
     @GetMapping
     public ResponseEntity<List<CompanyTitlei18nDto>> getAll() {
-        log.info("Fetching all companytitlei18n records.");
-        return ResponseEntity.ok(companyTitlei18nService.getAllCompanyTitlei18n());
+        return ResponseEntity.ok(companyTitlei18nService.getAllCompanyTitlei18ns());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the company titlei18n record by id.
+     * @param companyTitleId company title id identifier
+     * @param languageId language id identifier
+     * @param chamberI18nId chamber i18n id identifier
      * @return CompanyTitlei18nDto
      */
-    @Operation(summary = "Get CompanyTitlei18n by id")
+    @Operation(summary = "Get Company Titlei18n by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @GetMapping("/by-id")
+    @GetMapping("/{companyTitleId}/{languageId}/{chamberI18nId}")
     public ResponseEntity<CompanyTitlei18nDto> getById(
-            @Parameter(description = "company_title_id", required = true)
-            @RequestParam(name = "company_title_id") UUID companyTitleId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId,
-            @Parameter(description = "chamber_i18n_id", required = true)
-            @RequestParam(name = "chamber_i18n_id") Integer chamberI18nId) {
-        CompanyTitlei18nPK id = buildCompanyTitlei18nId(companyTitleId, languageId, chamberI18nId);
-        log.info("Fetching companytitlei18n with composite id: {}", id);
-        return ResponseEntity.ok(companyTitlei18nService.getCompanyTitlei18nById(id));
+            @Parameter(description = "company title id identifier", required = true)
+            @PathVariable UUID companyTitleId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId,
+            @Parameter(description = "chamber i18n id identifier", required = true)
+            @PathVariable Integer chamberI18nId) {
+        return ResponseEntity.ok(companyTitlei18nService.getCompanyTitlei18nById(companyTitleId, languageId, chamberI18nId));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new company titlei18n record.
+     * @param dto company titlei18n payload
      * @return created CompanyTitlei18nDto
      */
-    @Operation(summary = "Create CompanyTitlei18n")
+    @Operation(summary = "Create Company Titlei18n")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<CompanyTitlei18nDto> create(@RequestBody CompanyTitlei18nDto dto) {
-        log.info("Creating companytitlei18n.");
+    public ResponseEntity<CompanyTitlei18nDto> create(
+            @Valid @RequestBody CompanyTitlei18nDto dto) {
         CompanyTitlei18nDto created = companyTitlei18nService.createCompanyTitlei18n(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing company titlei18n record.
+     * Only fields that are not null in the request are updated.
+     * @param companyTitleId company title id identifier
+     * @param languageId language id identifier
+     * @param chamberI18nId chamber i18n id identifier
+     * @param dto partial company titlei18n payload
      * @return updated CompanyTitlei18nDto
      */
-    @Operation(summary = "Update CompanyTitlei18n")
+    @Operation(summary = "Patch Company Titlei18n")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/by-id")
-    public ResponseEntity<CompanyTitlei18nDto> update(
-            @Parameter(description = "company_title_id", required = true)
-            @RequestParam(name = "company_title_id") UUID companyTitleId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId,
-            @Parameter(description = "chamber_i18n_id", required = true)
-            @RequestParam(name = "chamber_i18n_id") Integer chamberI18nId,
+    @PatchMapping("/{companyTitleId}/{languageId}/{chamberI18nId}")
+    public ResponseEntity<CompanyTitlei18nDto> patch(
+            @Parameter(description = "company title id identifier", required = true)
+            @PathVariable UUID companyTitleId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId,
+            @Parameter(description = "chamber i18n id identifier", required = true)
+            @PathVariable Integer chamberI18nId,
             @RequestBody CompanyTitlei18nDto dto) {
-        CompanyTitlei18nPK id = buildCompanyTitlei18nId(companyTitleId, languageId, chamberI18nId);
-        log.info("Updating companytitlei18n with composite id: {}", id);
-        return ResponseEntity.ok(companyTitlei18nService.updateCompanyTitlei18n(id, dto));
+        return ResponseEntity.ok(companyTitlei18nService.updateCompanyTitlei18n(companyTitleId, languageId, chamberI18nId, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an company titlei18n record by id.
+     * @param companyTitleId company title id identifier
+     * @param languageId language id identifier
+     * @param chamberI18nId chamber i18n id identifier
      * @return no content
      */
-    @Operation(summary = "Delete CompanyTitlei18n")
+    @Operation(summary = "Delete Company Titlei18n")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @DeleteMapping("/by-id")
+    @DeleteMapping("/{companyTitleId}/{languageId}/{chamberI18nId}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "company_title_id", required = true)
-            @RequestParam(name = "company_title_id") UUID companyTitleId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId,
-            @Parameter(description = "chamber_i18n_id", required = true)
-            @RequestParam(name = "chamber_i18n_id") Integer chamberI18nId) {
-        CompanyTitlei18nPK id = buildCompanyTitlei18nId(companyTitleId, languageId, chamberI18nId);
-        log.info("Deleting companytitlei18n with composite id: {}", id);
-        companyTitlei18nService.deleteCompanyTitlei18n(id);
+            @Parameter(description = "company title id identifier", required = true)
+            @PathVariable UUID companyTitleId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId,
+            @Parameter(description = "chamber i18n id identifier", required = true)
+            @PathVariable Integer chamberI18nId) {
+        companyTitlei18nService.deleteCompanyTitlei18n(companyTitleId, languageId, chamberI18nId);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Builds composite id object for CompanyTitlei18n.
-     */
-    private CompanyTitlei18nPK buildCompanyTitlei18nId(UUID companyTitleId, UUID languageId, Integer chamberI18nId) {
-        CompanyTitlei18nPK id = new CompanyTitlei18nPK();
-        id.setCompanyTitleId(companyTitleId);
-        id.setLanguageId(languageId);
-        id.setChamberI18nId(chamberI18nId);
-        return id;
-    }
 }

@@ -14,5 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 public class Entity {
     private String name;
+    private CompositeKeyDefinition compositeKey;
     private List<Field> fields = new ArrayList<>();
 }

@@ -2,142 +2,120 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.BusinessLocationI18nDto;
 import gr.knowledge.pepTest.service.BusinessLocationI18nService;
-import gr.knowledge.pepTest.entity.BusinessLocationI18nPK;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing BusinessLocationI18n resources.
+ * REST controller for managing Business Location I18n resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "BusinessLocationI18n", description = "BusinessLocationI18n API")
-@RequestMapping("/api/business-location-i18ns")
+@Tag(name = "Business Location I18n", description = "Business Location I18n API")
+@RequestMapping("/api/business-location-i18n")
 public class BusinessLocationI18nController {
 
     private final BusinessLocationI18nService businessLocationI18nService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all business location i18ns.
      * @return list of BusinessLocationI18nDto
      */
-    @Operation(summary = "Get all BusinessLocationI18n")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all business location i18ns")
     @GetMapping
     public ResponseEntity<List<BusinessLocationI18nDto>> getAll() {
-        log.info("Fetching all businesslocationi18n records.");
-        return ResponseEntity.ok(businessLocationI18nService.getAllBusinessLocationI18n());
+        return ResponseEntity.ok(businessLocationI18nService.getAllBusinessLocationI18ns());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the business location i18n record by id.
+     * @param businessLocationId business location id identifier
+     * @param languageId language id identifier
      * @return BusinessLocationI18nDto
      */
-    @Operation(summary = "Get BusinessLocationI18n by id")
+    @Operation(summary = "Get Business Location I18n by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @GetMapping("/by-id")
+    @GetMapping("/{businessLocationId}/{languageId}")
     public ResponseEntity<BusinessLocationI18nDto> getById(
-            @Parameter(description = "business_location_id", required = true)
-            @RequestParam(name = "business_location_id") UUID businessLocationId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId) {
-        BusinessLocationI18nPK id = buildBusinessLocationI18nId(businessLocationId, languageId);
-        log.info("Fetching businesslocationi18n with composite id: {}", id);
-        return ResponseEntity.ok(businessLocationI18nService.getBusinessLocationI18nById(id));
+            @Parameter(description = "business location id identifier", required = true)
+            @PathVariable UUID businessLocationId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId) {
+        return ResponseEntity.ok(businessLocationI18nService.getBusinessLocationI18nById(businessLocationId, languageId));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new business location i18n record.
+     * @param dto business location i18n payload
      * @return created BusinessLocationI18nDto
      */
-    @Operation(summary = "Create BusinessLocationI18n")
+    @Operation(summary = "Create Business Location I18n")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<BusinessLocationI18nDto> create(@RequestBody BusinessLocationI18nDto dto) {
-        log.info("Creating businesslocationi18n.");
+    public ResponseEntity<BusinessLocationI18nDto> create(
+            @Valid @RequestBody BusinessLocationI18nDto dto) {
         BusinessLocationI18nDto created = businessLocationI18nService.createBusinessLocationI18n(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing business location i18n record.
+     * Only fields that are not null in the request are updated.
+     * @param businessLocationId business location id identifier
+     * @param languageId language id identifier
+     * @param dto partial business location i18n payload
      * @return updated BusinessLocationI18nDto
      */
-    @Operation(summary = "Update BusinessLocationI18n")
+    @Operation(summary = "Patch Business Location I18n")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/by-id")
-    public ResponseEntity<BusinessLocationI18nDto> update(
-            @Parameter(description = "business_location_id", required = true)
-            @RequestParam(name = "business_location_id") UUID businessLocationId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId,
+    @PatchMapping("/{businessLocationId}/{languageId}")
+    public ResponseEntity<BusinessLocationI18nDto> patch(
+            @Parameter(description = "business location id identifier", required = true)
+            @PathVariable UUID businessLocationId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId,
             @RequestBody BusinessLocationI18nDto dto) {
-        BusinessLocationI18nPK id = buildBusinessLocationI18nId(businessLocationId, languageId);
-        log.info("Updating businesslocationi18n with composite id: {}", id);
-        return ResponseEntity.ok(businessLocationI18nService.updateBusinessLocationI18n(id, dto));
+        return ResponseEntity.ok(businessLocationI18nService.updateBusinessLocationI18n(businessLocationId, languageId, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an business location i18n record by id.
+     * @param businessLocationId business location id identifier
+     * @param languageId language id identifier
      * @return no content
      */
-    @Operation(summary = "Delete BusinessLocationI18n")
+    @Operation(summary = "Delete Business Location I18n")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @DeleteMapping("/by-id")
+    @DeleteMapping("/{businessLocationId}/{languageId}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "business_location_id", required = true)
-            @RequestParam(name = "business_location_id") UUID businessLocationId,
-            @Parameter(description = "language_id", required = true)
-            @RequestParam(name = "language_id") UUID languageId) {
-        BusinessLocationI18nPK id = buildBusinessLocationI18nId(businessLocationId, languageId);
-        log.info("Deleting businesslocationi18n with composite id: {}", id);
-        businessLocationI18nService.deleteBusinessLocationI18n(id);
+            @Parameter(description = "business location id identifier", required = true)
+            @PathVariable UUID businessLocationId,
+            @Parameter(description = "language id identifier", required = true)
+            @PathVariable UUID languageId) {
+        businessLocationI18nService.deleteBusinessLocationI18n(businessLocationId, languageId);
         return ResponseEntity.noContent().build();
     }
 
-    /**
-     * Builds composite id object for BusinessLocationI18n.
-     */
-    private BusinessLocationI18nPK buildBusinessLocationI18nId(UUID businessLocationId, UUID languageId) {
-        BusinessLocationI18nPK id = new BusinessLocationI18nPK();
-        id.setBusinessLocationId(businessLocationId);
-        id.setLanguageId(languageId);
-        return id;
-    }
 }

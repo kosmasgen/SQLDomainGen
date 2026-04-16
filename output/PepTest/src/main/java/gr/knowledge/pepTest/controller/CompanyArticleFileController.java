@@ -2,122 +2,111 @@ package gr.knowledge.pepTest.controller;
 
 import gr.knowledge.pepTest.dto.CompanyArticleFileDto;
 import gr.knowledge.pepTest.service.CompanyArticleFileService;
-
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import io.swagger.v3.oas.annotations.tags.Tag;
-
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.log4j.Log4j2;
-
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.UUID;
 import java.util.List;
+import java.util.UUID;
 
 /**
- * REST controller for managing CompanyArticleFile resources.
+ * REST controller for managing Company Article File resources.
  * Generated automatically by SQLDomainGen.
  */
 @RestController
 @RequiredArgsConstructor
 @Log4j2
-@Tag(name = "CompanyArticleFile", description = "CompanyArticleFile API")
-@RequestMapping("/api/company-article-files")
+@Tag(name = "Company Article File", description = "Company Article File API")
+@RequestMapping("/api/company-article-file")
 public class CompanyArticleFileController {
 
     private final CompanyArticleFileService companyArticleFileService;
 
     /**
-     * Retrieves all records.
-     *
+     * Retrieves all company article files.
      * @return list of CompanyArticleFileDto
      */
-    @Operation(summary = "Get all CompanyArticleFile")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success")
-    })
+    @Operation(summary = "Get all company article files")
     @GetMapping
     public ResponseEntity<List<CompanyArticleFileDto>> getAll() {
-        log.info("Fetching all companyarticlefile records.");
-        return ResponseEntity.ok(companyArticleFileService.getAllCompanyArticleFile());
+        return ResponseEntity.ok(companyArticleFileService.getAllCompanyArticleFiles());
     }
 
     /**
-     * Retrieves a record by id.
-     *
+     * Retrieves the company article file record by id.
+     * @param id company article file identifier
      * @return CompanyArticleFileDto
      */
-    @Operation(summary = "Get CompanyArticleFile by id")
+    @Operation(summary = "Get Company Article File by id")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @GetMapping("/{id}")
     public ResponseEntity<CompanyArticleFileDto> getById(
-            @Parameter(description = "CompanyArticleFile id", required = true)
+            @Parameter(description = "company article file identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Fetching companyarticlefile with id: {}", id);
         return ResponseEntity.ok(companyArticleFileService.getCompanyArticleFileById(id));
     }
 
     /**
-     * Creates a new record.
-     *
-     * @param dto payload
+     * Creates a new company article file record.
+     * @param dto company article file payload
      * @return created CompanyArticleFileDto
      */
-    @Operation(summary = "Create CompanyArticleFile")
+    @Operation(summary = "Create Company Article File")
     @ApiResponses({
             @ApiResponse(responseCode = "201", description = "Created")
     })
     @PostMapping
-    public ResponseEntity<CompanyArticleFileDto> create(@RequestBody CompanyArticleFileDto dto) {
-        log.info("Creating companyarticlefile.");
+    public ResponseEntity<CompanyArticleFileDto> create(
+            @Valid @RequestBody CompanyArticleFileDto dto) {
         CompanyArticleFileDto created = companyArticleFileService.createCompanyArticleFile(dto);
         return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
     /**
-     * Updates an existing record (PUT-style).
-     *
-     * @param dto payload
+     * Partially updates an existing company article file record.
+     * Only fields that are not null in the request are updated.
+     * @param id company article file identifier
+     * @param dto partial company article file payload
      * @return updated CompanyArticleFileDto
      */
-    @Operation(summary = "Update CompanyArticleFile")
+    @Operation(summary = "Patch Company Article File")
     @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "Success"),
+            @ApiResponse(responseCode = "400", description = "Bad request"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
-    @PutMapping("/{id}")
-    public ResponseEntity<CompanyArticleFileDto> update(
-            @Parameter(description = "CompanyArticleFile id", required = true)
+    @PatchMapping("/{id}")
+    public ResponseEntity<CompanyArticleFileDto> patch(
+            @Parameter(description = "company article file identifier", required = true)
             @PathVariable UUID id,
             @RequestBody CompanyArticleFileDto dto) {
-        log.info("Updating companyarticlefile with id: {}", id);
         return ResponseEntity.ok(companyArticleFileService.updateCompanyArticleFile(id, dto));
     }
 
     /**
-     * Deletes a record by id.
-     *
+     * Delete an company article file record by id.
+     * @param id company article file identifier
      * @return no content
      */
-    @Operation(summary = "Delete CompanyArticleFile")
+    @Operation(summary = "Delete Company Article File")
     @ApiResponses({
-            @ApiResponse(responseCode = "204", description = "No content"),
             @ApiResponse(responseCode = "404", description = "Not found")
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<Void> deleteById(
-            @Parameter(description = "CompanyArticleFile id", required = true)
+            @Parameter(description = "company article file identifier", required = true)
             @PathVariable UUID id) {
-        log.info("Deleting companyarticlefile with id: {}", id);
         companyArticleFileService.deleteCompanyArticleFile(id);
         return ResponseEntity.noContent().build();
     }
+
 }
