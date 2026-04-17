@@ -115,7 +115,7 @@ This information is used to generate a fully structured backend.
 SpringForge generates:
 
 * `IncomeTransaction`, `IncomeType`, and `IncomePaymentMethod` entities
-* DTOs with validation annotations
+* DTO with validation annotations
 * Repositories with proper key mappings
 * Service and service implementation layers
 * REST controllers
