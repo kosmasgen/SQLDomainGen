@@ -187,8 +187,9 @@ SpringForge follows a multi-step generation pipeline:
 
    * Entities
    * DTO
+   * Mapper
    * Repositories
-   * Services
+   * Services and service implementations
    * Controllers
    * Liquibase changelogs
    * Tests
