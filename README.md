@@ -19,11 +19,11 @@ It automatically generates:
 
 ## Why SpringForge
 
-Building backend layers manually is repetitive and error-prone.  
+Building backend layers manually is repetitive and error-prone.
 
 SpringForge generates a production-ready Spring Boot backend in minutes directly from your SQL schema, including entities, DTO, mappers, repositories, services, controllers, Liquibase changelogs, and tests.
 
----
+It eliminates up to 75% of backend development time.
 
 ## Quick Start
 
