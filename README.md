@@ -1,8 +1,8 @@
 # SpringForge
 
-SpringForge is a CLI tool that generates a complete Spring Boot backend from SQL DDL.
+SpringForge is a CLI tool that generates a fully structured, production-ready Spring Boot backend from SQL DDL.
 
-It automates the creation of:
+It generates:
 
 * JPA entities (with Envers auditing)
 * DTOs
@@ -17,8 +17,8 @@ It automates the creation of:
 
 ## Why SpringForge
 
-Building backend layers manually is repetitive and time-consuming.
-SpringForge eliminates boilerplate by generating a full backend structure directly from your database schema.
+Building backend layers manually is repetitive and error-prone.
+SpringForge eliminates boilerplate by generating a complete backend architecture directly from your database schema.
 
 Ideal for:
 
@@ -32,7 +32,7 @@ Ideal for:
 
 ## Quick Start
 
-Run the generator:
+Example CLI command:
 
 ```bash
 generate-entity \
@@ -49,6 +49,8 @@ generate-entity \
 ## Example
 
 ### Input SQL
+
+```sql
 CREATE TABLE income_payment_method (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     chamber_id int4 NOT NULL,
@@ -86,12 +88,6 @@ CREATE TABLE income_transaction (
     last_updated timestamp NOT NULL,
     recdeleted numeric NOT NULL,
     income_pay_method_id uuid NULL,
-    is_echamber int4 NULL,
-    block_ser varchar(3) NULL,
-    is_kratisi numeric NULL,
-    chamber_comp_id numeric NULL,
-    chamber_method numeric NULL,
-    chamber_type numeric NULL,
     CONSTRAINT pk_income_transaction PRIMARY KEY (id),
     CONSTRAINT uk_income_trans UNIQUE (chamber_id, chamber_in_transd_id, is_kratisi),
     CONSTRAINT fk_income_pay_method FOREIGN KEY (income_pay_method_id) REFERENCES income_payment_method(id),
@@ -99,24 +95,21 @@ CREATE TABLE income_transaction (
 );
 
 CREATE INDEX idx_in_trans_chamber ON income_transaction (chamber_id);
-CREATE INDEX idx_in_trans_comp ON income_transaction (company_id);
-CREATE INDEX idx_in_trans_dt ON income_transaction (dt);
-CREATE INDEX idx_in_trans_member ON income_transaction (is_member);
-CREATE INDEX idx_in_trans_pay ON income_transaction (income_pay_method_id);
 CREATE INDEX idx_in_trans_type ON income_transaction (income_type_id);
-
 ```
+
+---
 
 ### Generated Output
 
 SpringForge generates:
 
-* `Company` entity
-* `CompanyDto`
-* `CompanyRepository`
-* `CompanyService` and `CompanyServiceImpl`
-* `CompanyController`
-* Liquibase changelog
+* `IncomeTransaction`, `IncomeType`, and `IncomePaymentMethod` entities
+* DTOs with validation annotations
+* Repositories with proper key mappings
+* Service and service implementation layers
+* REST controllers
+* Liquibase changelogs with constraints, foreign keys, and indexes
 * Unit and integration tests
 
 ---
@@ -125,6 +118,8 @@ SpringForge generates:
 
 * Parses SQL DDL and extracts schema structure
 * Supports foreign keys and relationships
+* Supports table-level constraints (UNIQUE, CHECK, FOREIGN KEY)
+* Supports index detection and generation
 * Handles composite primary keys
 * Generates validation annotations
 * Produces Liquibase-ready output
