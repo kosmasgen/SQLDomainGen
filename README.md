@@ -4,14 +4,14 @@ SpringForge is a CLI tool that generates a complete Spring Boot backend from SQL
 
 It automates the creation of:
 
-* JPA Entities (with Envers auditing)
+* JPA entities (with Envers auditing)
 * DTOs
 * Mappers (ModelMapper)
 * Repositories
-* Services & Service Implementations
-* REST Controllers
+* Services and service implementations
+* REST controllers
 * Liquibase changelogs
-* Unit & integration tests
+* Unit and integration tests
 
 ---
 
@@ -32,7 +32,7 @@ Ideal for:
 
 ## Quick Start
 
-Run the generator using:
+Run the generator:
 
 ```bash
 generate-entity \
@@ -59,15 +59,15 @@ CREATE TABLE company (
 
 ### Generated Output
 
-SpringForge will generate:
+SpringForge generates:
 
 * `Company` entity
 * `CompanyDto`
 * `CompanyRepository`
-* `CompanyService` & `CompanyServiceImpl`
+* `CompanyService` and `CompanyServiceImpl`
 * `CompanyController`
 * Liquibase changelog
-* Unit & integration tests
+* Unit and integration tests
 
 ---
 
@@ -77,28 +77,39 @@ SpringForge will generate:
 * Supports foreign keys and relationships
 * Handles composite primary keys
 * Generates validation annotations
-* Liquibase-ready output
-* Clean layered architecture
-* Consistent naming conventions
-* Test-ready code generation
+* Produces Liquibase-ready output
+* Follows a clean layered architecture
+* Applies consistent naming conventions
+* Generates test-ready code
 
 ---
 
 ## Project Structure
 
-Generated projects follow a typical Spring Boot layered architecture:
+SpringForge generates a complete Spring Boot project:
 
-```
-entity/
-dto/
-mapper/
-repository/
-service/
-serviceImpl/
-controller/
-config/
-liquibase/
-test/
+```text
+src/main/java/com/example/project/
+ ├── entity/
+ ├── dto/
+ ├── mapper/
+ ├── repository/
+ ├── service/
+ ├── serviceImpl/
+ ├── controller/
+ ├── config/
+ ├── exception/
+
+src/main/resources/
+ ├── application.properties
+ ├── db/changelog/
+
+src/test/java/com/example/project/
+ ├── controller/
+ ├── service/
+ ├── mapper/
+
+pom.xml
 ```
 
 ---
@@ -115,8 +126,8 @@ test/
 
 * Improved relationship mapping
 * Better handling of advanced SQL constraints
-* Custom templates support
-* CLI enhancements
+* Custom template support
+* CLI improvements
 
 ---
 
