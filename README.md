@@ -19,16 +19,8 @@ It automatically generates:
 
 ## Why SpringForge
 
-Building backend layers manually is repetitive and error-prone.
+Building backend layers manually is repetitive and error-prone.  
 SpringForge eliminates boilerplate by generating a complete backend architecture directly from your database schema.
-
-Ideal for:
-
-* Rapid prototyping
-* CRUD-heavy applications
-* Internal tools
-* Learning Spring Boot architecture
-* Standardizing backend structure across projects
 
 ---
 
