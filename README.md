@@ -124,23 +124,27 @@ SpringForge generates:
 
 ---
 
-## Validation Report
+### Validation Report
 
 SpringForge includes a built-in validation system that verifies the generated backend against the original SQL schema.
 
-Example output:
+Example output (based on the above schema):
 
-- Parsed tables: 68
-- Generated entities: 67
-- DTO: 67
-- Repositories: 67
-- Services: 67
-- Controllers: 67
-- Liquibase files: 70
+- Parsed tables: 3
+- Generated entities: 3
+- DTO: 3
+- Mappers: 4
+- Repositories: 3
+- Services: 3
+- Controllers: 3
+- Liquibase files: 3
+- Foreign keys detected: 2
+- Indexes detected: 2
 - Total validation checks: 34
 - Violations: 0
 
 All generated components are validated for:
+
 - Entity-to-table mapping
 - Field types and constraints
 - Relationships and foreign keys
