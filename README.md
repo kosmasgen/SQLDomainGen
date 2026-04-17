@@ -133,11 +133,12 @@ Example output (based on the above schema):
 - Parsed tables: 3
 - Generated entities: 3
 - DTO: 3
-- Mappers: 4
+- Mapper: 4
 - Repositories: 3
 - Services: 3
+- ServicesImpl: 3
 - Controllers: 3
-- Liquibase files: 3
+- Liquibase files: 4
 - Foreign keys detected: 2
 - Indexes detected: 2
 - Total validation checks: 34
