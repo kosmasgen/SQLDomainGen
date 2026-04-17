@@ -20,7 +20,8 @@ It automatically generates:
 ## Why SpringForge
 
 Building backend layers manually is repetitive and error-prone.  
-SpringForge eliminates boilerplate by generating a complete backend architecture directly from your database schema.
+
+SpringForge generates a production-ready Spring Boot backend in minutes directly from your SQL schema, including entities, DTOs, mappers, repositories, services, controllers, Liquibase changelogs, and tests.
 
 ---
 
