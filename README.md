@@ -1,6 +1,6 @@
 # SpringForge
 
-SpringForge is a CLI tool that generates a fully structured, production-ready Spring Boot backend from SQL DDL.
+SpringForge is a CLI tool that parses SQL DDL and generates a fully structured, production-ready Spring Boot backend.
 
 It generates:
 
@@ -34,7 +34,7 @@ Ideal for:
 
 Example CLI command:
 
-```bash
+```bash id="7r7rxt"
 generate-entity \
  -i "path/to/input.sql" \
  -o "path/to/output" \
@@ -50,7 +50,7 @@ generate-entity \
 
 ### Input SQL
 
-```sql
+```sql id="x9gq1z"
 CREATE TABLE income_payment_method (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     chamber_id int4 NOT NULL,
@@ -100,6 +100,20 @@ CREATE INDEX idx_in_trans_type ON income_transaction (income_type_id);
 
 ---
 
+### What SpringForge extracts
+
+From this schema, SpringForge detects:
+
+* Table relationships (foreign keys)
+* Unique and composite constraints
+* Indexes for optimized queries
+* Field types and nullability
+* Default values and timestamps
+
+This information is used to generate a fully structured backend.
+
+---
+
 ### Generated Output
 
 SpringForge generates:
@@ -116,7 +130,7 @@ SpringForge generates:
 
 ## Features
 
-* Parses SQL DDL and extracts schema structure
+* Parses SQL DDL using ANTLR
 * Supports foreign keys and relationships
 * Supports table-level constraints (UNIQUE, CHECK, FOREIGN KEY)
 * Supports index detection and generation
@@ -129,11 +143,37 @@ SpringForge generates:
 
 ---
 
+## How It Works
+
+SpringForge follows a multi-step generation pipeline:
+
+1. **SQL Parsing**
+   The input SQL DDL is parsed using ANTLR to extract tables, columns, constraints, and relationships.
+
+2. **Model Transformation**
+   The parsed schema is converted into an internal domain model.
+
+3. **Code Generation**
+   Based on the model, SpringForge generates:
+
+   * Entities
+   * DTOs
+   * Repositories
+   * Services
+   * Controllers
+   * Liquibase changelogs
+   * Tests
+
+4. **Project Assembly**
+   All generated components are assembled into a complete Spring Boot project.
+
+---
+
 ## Project Structure
 
 SpringForge generates a complete Spring Boot project:
 
-```text
+```text id="c3k6vj"
 src/main/java/com/example/project/
  ├── entity/
  ├── dto/
