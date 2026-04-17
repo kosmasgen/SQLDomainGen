@@ -218,9 +218,8 @@ pom.xml
 
 ## Contributing
 
-Contributions, ideas, and feedback are welcome.
-
-Open an issue or submit a pull request.
+Contributions, ideas, and feedback are welcome.  
+Feel free to open an issue or submit a pull request.
 
 ---
 
@@ -228,4 +227,4 @@ Open an issue or submit a pull request.
 
 Email: kosmasgenaris [at] gmail [dot] com  
 
-For questions, suggestions, or collaboration, feel free to open an issue.
+For direct inquiries or collaboration, you can reach out via email.
