@@ -7,7 +7,7 @@ SpringForge generates a complete backend project, not just individual classes.
 It automatically generates:
 
 * JPA entities (with Envers auditing)
-* DTOs
+* DTO
 * Mappers (ModelMapper)
 * Repositories
 * Services and service implementations
@@ -159,7 +159,7 @@ SpringForge follows a multi-step generation pipeline:
    Based on the model, SpringForge generates:
 
    * Entities
-   * DTOs
+   * DTO
    * Repositories
    * Services
    * Controllers
