@@ -2,7 +2,9 @@
 
 SpringForge is a CLI tool that parses SQL DDL and generates a fully structured, production-ready Spring Boot backend.
 
-It generates:
+SpringForge generates a complete backend project, not just individual classes.
+
+It automatically generates:
 
 * JPA entities (with Envers auditing)
 * DTOs
@@ -88,6 +90,7 @@ CREATE TABLE income_transaction (
     last_updated timestamp NOT NULL,
     recdeleted numeric NOT NULL,
     income_pay_method_id uuid NULL,
+    is_kratisi numeric NULL,
     CONSTRAINT pk_income_transaction PRIMARY KEY (id),
     CONSTRAINT uk_income_trans UNIQUE (chamber_id, chamber_in_transd_id, is_kratisi),
     CONSTRAINT fk_income_pay_method FOREIGN KEY (income_pay_method_id) REFERENCES income_payment_method(id),
@@ -140,6 +143,7 @@ SpringForge generates:
 * Follows a clean layered architecture
 * Applies consistent naming conventions
 * Generates test-ready code
+* Transforms SQL schema into a domain model before code generation
 
 ---
 
@@ -218,13 +222,13 @@ pom.xml
 
 ## Contributing
 
-Contributions, ideas, and feedback are welcome.  
+Contributions, ideas, and feedback are welcome.
 Feel free to open an issue or submit a pull request.
 
 ---
 
 ## Contact
 
-Email: kosmasgenaris [at] gmail [dot] com  
+Email: kosmasgenaris [at] gmail [dot] com
 
 For direct inquiries or collaboration, you can reach out via email.
