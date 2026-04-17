@@ -226,8 +226,6 @@ Open an issue or submit a pull request.
 
 ## Contact
 
-For questions or collaboration:
+Email: kosmasgenaris [at] gmail [dot] com  
 
-kosmas.dev [at] gmail [dot] com
-
-Or open an issue in this repository.
+For questions, suggestions, or collaboration, feel free to open an issue.
