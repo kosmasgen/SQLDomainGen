@@ -21,7 +21,7 @@ It automatically generates:
 
 Building backend layers manually is repetitive and error-prone.  
 
-SpringForge generates a production-ready Spring Boot backend in minutes directly from your SQL schema, including entities, DTOs, mappers, repositories, services, controllers, Liquibase changelogs, and tests.
+SpringForge generates a production-ready Spring Boot backend in minutes directly from your SQL schema, including entities, DTO, mappers, repositories, services, controllers, Liquibase changelogs, and tests.
 
 ---
 
