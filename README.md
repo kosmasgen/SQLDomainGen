@@ -8,7 +8,7 @@ It automatically generates:
 
 * JPA entities (with Envers auditing)
 * DTO
-* Mappers (ModelMapper)
+* Mapper (ModelMapper)
 * Repositories
 * Services and service implementations
 * REST controllers
