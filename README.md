@@ -147,6 +147,10 @@ SpringForge generates:
 
 ---
 
+## Architecture
+
+SQL DDL → ANTLR Parser → Domain Model → Code Generator → Spring Boot Project
+
 ## How It Works
 
 SpringForge follows a multi-step generation pipeline:
