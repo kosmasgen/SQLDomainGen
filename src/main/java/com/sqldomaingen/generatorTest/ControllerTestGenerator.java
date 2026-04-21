@@ -1,5 +1,6 @@
 package com.sqldomaingen.generatorTest;
 
+import com.sqldomaingen.model.Field;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.GeneratorImportSupport;
@@ -63,6 +64,8 @@ public class ControllerTestGenerator {
             String serviceVar = NamingConverter.decapitalizeFirstLetter(entityName) + "Service";
 
             Map<String, String> dtoFieldTypes = loadGeneratedDtoFieldTypes(outputDir, basePackage, dtoName);
+            List<Field> dtoFields = loadGeneratedDtoFields(outputDir, basePackage, dtoName);
+            List<String> requiredDtoFieldNames = loadRequiredDtoFieldNames(outputDir, basePackage, dtoName);
 
             boolean compositePrimaryKey = hasCompositePrimaryKey(table);
             boolean shouldImportEq = true;
@@ -95,14 +98,43 @@ public class ControllerTestGenerator {
 
             if (compositePrimaryKey) {
                 appendCompositeGetByIdTests(content, entityName, dtoName, serviceVar, apiPath, primaryKeyColumns);
-                appendCompositeCreateTests(content, table, entityName, dtoName, serviceVar, apiPath, dtoFieldTypes);
+                appendCompositeCreateTests(
+                        content,
+                        entityName,
+                        dtoName,
+                        serviceVar,
+                        apiPath,
+                        dtoFields,
+                        requiredDtoFieldNames
+                );
+                appendCompositePatchValidationFailureTest(
+                        content,
+                        dtoName,
+                        apiPath,
+                        primaryKeyColumns
+                );
                 appendCompositePatchTests(content, entityName, dtoName, serviceVar, apiPath, primaryKeyColumns);
                 appendCompositeDeleteTests(content, entityName, serviceVar, apiPath, primaryKeyColumns);
             } else {
-                appendSinglePrimaryKeyTests(content, table, entityName, dtoName, serviceVar, apiPath, dtoFieldTypes);
+                appendSinglePrimaryKeyTests(
+                        content,
+                        table,
+                        entityName,
+                        dtoName,
+                        serviceVar,
+                        apiPath,
+                        dtoFields,
+                        requiredDtoFieldNames
+                );
             }
 
-            appendCreateDtoFixtureMethod(content, table, dtoName, entityName, dtoFieldTypes);
+            appendCreateDtoFixtureMethod(
+                    content,
+                    dtoName,
+                    entityName,
+                    dtoFields,
+                    requiredDtoFieldNames
+            );
             content.append("}\n");
 
             GeneratorSupport.writeFile(
@@ -113,6 +145,49 @@ public class ControllerTestGenerator {
         }
 
         log.info("Controller test classes generated under: {}", controllerTestDir.toAbsolutePath());
+    }
+
+    /**
+     * Appends a valid creation DTO fixture factory method based on actual DTO fields.
+     *
+     * @param content generated test content
+     * @param dtoName dto simple name
+     * @param entityName entity simple name
+     * @param dtoFields actual DTO fields
+     * @param requiredDtoFieldNames required DTO field names
+     */
+    private void appendCreateDtoFixtureMethod(
+            StringBuilder content,
+            String dtoName,
+            String entityName,
+            List<Field> dtoFields,
+            List<String> requiredDtoFieldNames
+    ) {
+        content.append("    /**\n");
+        content.append("     * Creates a valid create request DTO for ").append(entityName).append(".\n");
+        content.append("     *\n");
+        content.append("     * @return populated create request dto\n");
+        content.append("     */\n");
+        content.append("    private ").append(dtoName).append(" createValidCreate")
+                .append(entityName).append("Dto() {\n");
+
+        StringBuilder setterLines = new StringBuilder();
+        boolean hasAssignments = appendRequiredCreateDtoSetterLines(
+                setterLines,
+                dtoFields,
+                requiredDtoFieldNames
+        );
+
+        if (!hasAssignments) {
+            content.append("        return new ").append(dtoName).append("();\n");
+            content.append("    }\n\n");
+            return;
+        }
+
+        content.append("        ").append(dtoName).append(" dto = new ").append(dtoName).append("();\n");
+        content.append(setterLines);
+        content.append("        return dto;\n");
+        content.append("    }\n\n");
     }
 
     /**
@@ -174,6 +249,7 @@ public class ControllerTestGenerator {
         content.append("import org.springframework.test.web.servlet.MockMvc;\n\n");
 
         content.append("import java.util.List;\n");
+        appendMandatoryJavaTypeImports(content, table, dtoFieldTypes);
 
         Set<String> extraImports = GeneratorImportSupport.resolveImports(
                 table,
@@ -300,55 +376,99 @@ public class ControllerTestGenerator {
      * @param dtoName dto simple name
      * @param serviceVar service variable name
      * @param apiPath api base path
-     * @param dtoFieldTypes actual DTO field types
+     * @param dtoFields actual DTO fields
+     * @param requiredDtoFieldNames required DTO field names
      */
-    private void appendSinglePrimaryKeyTests(StringBuilder content,
-                                             Table table,
-                                             String entityName,
-                                             String dtoName,
-                                             String serviceVar,
-                                             String apiPath,
-                                             Map<String, String> dtoFieldTypes) {
+    private void appendSinglePrimaryKeyTests(
+            StringBuilder content,
+            Table table,
+            String entityName,
+            String dtoName,
+            String serviceVar,
+            String apiPath,
+            List<Field> dtoFields,
+            List<String> requiredDtoFieldNames
+    ) {
         String primaryKeyType = detectSinglePrimaryKeyType(table);
         String sampleId = sampleValueForType(primaryKeyType, 1);
 
         appendSingleGetByIdTests(content, entityName, dtoName, serviceVar, apiPath, primaryKeyType, sampleId);
-        appendSingleCreateTests(content, table, entityName, dtoName, serviceVar, apiPath, dtoFieldTypes);
+        appendSingleCreateTests(content, entityName, dtoName, serviceVar, apiPath, dtoFields, requiredDtoFieldNames);
+        appendPatchValidationFailureTest(
+                content,
+                entityName,
+                dtoName,
+                apiPath,
+                dtoFields,
+                requiredDtoFieldNames,
+                primaryKeyType,
+                sampleId
+        );
         appendSinglePatchTests(content, entityName, dtoName, serviceVar, apiPath, primaryKeyType, sampleId);
         appendSingleDeleteTests(content, entityName, serviceVar, apiPath, primaryKeyType, sampleId);
     }
 
     /**
-     * Appends the creation validation-failure test when the table
-     * has at least one null invalid table required create field.
+     * Appends validation failure test for composite primary key PATCH.
      *
      * @param content generated test content
-     * @param table current table
-     * @param entityName entity simple name
      * @param dtoName dto simple name
      * @param apiPath api base path
-     * @param dtoFieldTypes actual DTO field types
+     * @param primaryKeyColumns primary key columns
      */
-    private void appendCreateValidationFailureTest(StringBuilder content,
-                                                   Table table,
-                                                   String entityName,
-                                                   String dtoName,
-                                                   String apiPath,
-                                                   Map<String, String> dtoFieldTypes) {
-        Column invalidColumn = findFirstNullInvalidatableCreateField(table, dtoFieldTypes);
-        if (invalidColumn == null) {
-            return;
-        }
-
-        String dtoFieldName = resolveFlatDtoFieldName(invalidColumn, dtoFieldTypes);
-        if (dtoFieldName == null) {
-            return;
-        }
-
-        String setterName = "set" + NamingConverter.toPascalCase(dtoFieldName);
+    private void appendCompositePatchValidationFailureTest(
+            StringBuilder content,
+            String dtoName,
+            String apiPath,
+            List<Column> primaryKeyColumns
+    ) {
+        String compositePathTemplate = buildCompositePathTemplate(primaryKeyColumns);
 
         content.append("    @Test\n");
-        content.append("    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {\n");
+        content.append("    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {\n");
+        appendCompositePrimaryKeyDeclarations(content, primaryKeyColumns);
+        content.append("        ").append(dtoName).append(" requestDto = new ").append(dtoName).append("();\n\n");
+
+        content.append("        mockMvc.perform(patch(\"")
+                .append(apiPath)
+                .append(compositePathTemplate)
+                .append("\"");
+        appendCompositePathArguments(content, primaryKeyColumns);
+        content.append(")\n");
+        content.append("                .contentType(MediaType.APPLICATION_JSON)\n");
+        content.append("                .content(objectMapper.writeValueAsString(requestDto)))\n");
+        content.append("                .andExpect(status().isUnprocessableEntity());\n");
+
+        content.append("    }\n\n");
+    }
+
+    /**
+     * Appends validation failure test for CREATE endpoint.
+     *
+     * @param content StringBuilder for test content
+     * @param entityName entity name
+     * @param dtoName dto name
+     * @param apiPath api path
+     * @param dtoFields dto fields
+     * @param requiredDtoFieldNames required fields
+     */
+    private void appendCreateValidationFailureTest(
+            StringBuilder content,
+            String entityName,
+            String dtoName,
+            String apiPath,
+            List<Field> dtoFields,
+            List<String> requiredDtoFieldNames
+    ) {
+        String invalidFieldName = findFirstNullInvalidatableCreateField(dtoFields, requiredDtoFieldNames);
+        if (invalidFieldName == null) {
+            return;
+        }
+
+        String setterName = "set" + NamingConverter.toPascalCase(invalidFieldName);
+
+        content.append("    @Test\n");
+        content.append("    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {\n");
         content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
                 .append(entityName).append("Dto();\n");
         content.append("        requestDto.").append(setterName).append("(null);\n\n");
@@ -361,56 +481,187 @@ public class ControllerTestGenerator {
     }
 
     /**
-     * Returns the first required create field that can safely be invalidated with null
-     * in generated controller tests.
+     * Returns the first required DTO field that can safely be invalidated with null.
      *
-     * @param table current table
-     * @param dtoFieldTypes actual DTO field types
-     * @return first null invalid table required create field, or null when none exists
+     * @param dtoFields actual DTO fields
+     * @param requiredDtoFieldNames required DTO field names
+     * @return first null-invalidatable required DTO field name, or null when none exists
      */
-    private Column findFirstNullInvalidatableCreateField(Table table, Map<String, String> dtoFieldTypes) {
-        if (table == null || table.getColumns() == null || table.getColumns().isEmpty()) {
+    private String findFirstNullInvalidatableCreateField(
+            List<Field> dtoFields,
+            List<String> requiredDtoFieldNames
+    ) {
+        if (dtoFields == null || dtoFields.isEmpty()) {
             return null;
         }
 
-        return table.getColumns().stream()
-                .filter(Objects::nonNull)
-                .filter(this::shouldPopulateCreateField)
-                .filter(this::canInvalidateCreateFieldWithNull)
-                .filter(column -> {
-                    String dtoFieldName = resolveFlatDtoFieldName(column, dtoFieldTypes);
-                    if (dtoFieldName == null) {
-                        return false;
-                    }
-                    return isSupportedScalarDtoType(dtoFieldTypes.get(dtoFieldName));
-                })
-                .findFirst()
-                .orElse(null);
+        if (requiredDtoFieldNames == null || requiredDtoFieldNames.isEmpty()) {
+            return null;
+        }
+
+        Set<String> requiredFieldNameSet = new java.util.LinkedHashSet<>(requiredDtoFieldNames);
+
+        for (Field field : dtoFields) {
+            if (field == null) {
+                continue;
+            }
+
+            String dtoFieldName = field.getName();
+            String dtoFieldType = field.getType();
+
+            if (dtoFieldName == null || dtoFieldName.isBlank()) {
+                continue;
+            }
+
+            if (!requiredFieldNameSet.contains(dtoFieldName)) {
+                continue;
+            }
+
+            if ("id".equals(dtoFieldName)
+                    || "dateCreated".equals(dtoFieldName)
+                    || "lastUpdated".equals(dtoFieldName)) {
+                continue;
+            }
+
+            if (dtoFieldType == null || dtoFieldType.isBlank()) {
+                continue;
+            }
+
+            if (!isSupportedScalarDtoType(dtoFieldType) && !isSupportedNestedDtoType(dtoFieldType)) {
+                continue;
+            }
+
+            if (!canInvalidateDtoFieldWithNull(dtoFieldType)) {
+                continue;
+            }
+
+            return dtoFieldName;
+        }
+
+        return null;
+    }
+
+
+    /**
+     * Loads DTO field names that are explicitly required by validation annotations.
+     *
+     * @param outputDir project root output directory
+     * @param basePackage base Java package
+     * @param dtoName dto simple name
+     * @return required DTO field names in declaration order
+     */
+    private List<String> loadRequiredDtoFieldNames(
+            String outputDir,
+            String basePackage,
+            String dtoName
+    ) {
+        Path dtoPath = PackageResolver.resolvePath(outputDir, basePackage, "dto")
+                .resolve(dtoName + ".java");
+
+        if (!Files.exists(dtoPath)) {
+            return List.of();
+        }
+
+        List<String> requiredFieldNames = new java.util.ArrayList<>();
+        Pattern fieldPattern = Pattern.compile("^\\s*private\\s+(.+?)\\s+(\\w+)\\s*;\\s*$");
+
+        boolean requiredNextField = false;
+
+        try {
+            for (String line : Files.readAllLines(dtoPath)) {
+                String trimmedLine = line.trim();
+
+                if (trimmedLine.startsWith("@NotNull")
+                        || trimmedLine.startsWith("@NotBlank")
+                        || trimmedLine.startsWith("@NotEmpty")) {
+                    requiredNextField = true;
+                    continue;
+                }
+
+                Matcher matcher = fieldPattern.matcher(line);
+                if (!matcher.matches()) {
+                    continue;
+                }
+
+                String fieldName = matcher.group(2).trim();
+
+                if (requiredNextField) {
+                    requiredFieldNames.add(fieldName);
+                }
+
+                requiredNextField = false;
+            }
+        } catch (IOException exception) {
+            log.warn("Could not read DTO file for required field discovery: {}", dtoPath, exception);
+        }
+
+        return requiredFieldNames;
     }
 
     /**
-     * Determines whether a creation field can safely be invalidated with null
-     * in generated controller tests.
+     * Loads actual generated DTO fields from the written DTO source file.
      *
-     * @param column current column
-     * @return true when null can be passed to the generated setter safely
+     * @param outputDir project root output directory
+     * @param basePackage base Java package
+     * @param dtoName dto simple name
+     * @return actual dto fields in declaration order
      */
-    private boolean canInvalidateCreateFieldWithNull(Column column) {
-        if (column == null || column.getJavaType() == null || column.getJavaType().isBlank()) {
-            return true;
+    private List<Field> loadGeneratedDtoFields(
+            String outputDir,
+            String basePackage,
+            String dtoName
+    ) {
+        Path dtoPath = PackageResolver.resolvePath(outputDir, basePackage, "dto")
+                .resolve(dtoName + ".java");
+
+        if (!Files.exists(dtoPath)) {
+            return List.of();
         }
 
-        String normalizedType = column.getJavaType().trim();
+        List<Field> dtoFields = new java.util.ArrayList<>();
+        Pattern fieldPattern = Pattern.compile("^\\s*private\\s+(.+?)\\s+(\\w+)\\s*;\\s*$");
 
-        return !"int".equals(normalizedType)
-                && !"long".equals(normalizedType)
-                && !"short".equals(normalizedType)
-                && !"byte".equals(normalizedType)
-                && !"boolean".equals(normalizedType)
-                && !"double".equals(normalizedType)
-                && !"float".equals(normalizedType)
-                && !"char".equals(normalizedType);
+        try {
+            for (String line : Files.readAllLines(dtoPath)) {
+                Matcher matcher = fieldPattern.matcher(line);
+                if (!matcher.matches()) {
+                    continue;
+                }
+
+                String fieldType = matcher.group(1).trim();
+                String fieldName = matcher.group(2).trim();
+
+                dtoFields.add(Field.builder()
+                        .name(fieldName)
+                        .type(fieldType)
+                        .build());
+            }
+        } catch (IOException exception) {
+            log.warn("Could not read DTO file for field discovery: {}", dtoPath, exception);
+        }
+
+        return dtoFields;
     }
+
+    /**
+     * Determines whether a DTO field type can safely be invalidated with null.
+     *
+     * @param dtoFieldType actual DTO field type
+     * @return true when null can be assigned safely
+     */
+    private boolean canInvalidateDtoFieldWithNull(String dtoFieldType) {
+        String simpleType = resolveSimpleDtoType(dtoFieldType);
+
+        return !"int".equals(simpleType)
+                && !"long".equals(simpleType)
+                && !"short".equals(simpleType)
+                && !"byte".equals(simpleType)
+                && !"boolean".equals(simpleType)
+                && !"double".equals(simpleType)
+                && !"float".equals(simpleType)
+                && !"char".equals(simpleType);
+    }
+
 
     /**
      * Appends single-primary-key get-by-id tests.
@@ -462,26 +713,29 @@ public class ControllerTestGenerator {
      * Appends single-primary-key create tests.
      *
      * @param content generated test content
-     * @param table current table
      * @param entityName entity simple name
      * @param dtoName dto simple name
      * @param serviceVar service variable name
      * @param apiPath api base path
-     * @param dtoFieldTypes actual DTO field types
+     * @param dtoFields actual DTO fields
+     * @param requiredDtoFieldNames required DTO field names
      */
-    private void appendSingleCreateTests(StringBuilder content,
-                                         Table table,
-                                         String entityName,
-                                         String dtoName,
-                                         String serviceVar,
-                                         String apiPath,
-                                         Map<String, String> dtoFieldTypes) {
+    private void appendSingleCreateTests(
+            StringBuilder content,
+            String entityName,
+            String dtoName,
+            String serviceVar,
+            String apiPath,
+            List<Field> dtoFields,
+            List<String> requiredDtoFieldNames
+    ) {
         content.append("    @Test\n");
         content.append("    void shouldReturnCreatedForCreate() throws Exception {\n");
         content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
                 .append(entityName).append("Dto();\n");
         content.append("        ").append(dtoName).append(" responseDto = new ").append(dtoName).append("();\n");
-        content.append("        given(").append(serviceVar).append(".create").append(entityName)
+        content.append("        given(").append(serviceVar).append(".create")
+                .append(entityName)
                 .append("(any(").append(dtoName).append(".class))).willReturn(responseDto);\n\n");
 
         content.append("        mockMvc.perform(post(\"").append(apiPath).append("\")\n");
@@ -490,17 +744,26 @@ public class ControllerTestGenerator {
         content.append("                .andExpect(status().isCreated())\n");
         content.append("                .andExpect(content().contentTypeCompatibleWith(MediaType.APPLICATION_JSON));\n\n");
 
-        content.append("        verify(").append(serviceVar).append(").create").append(entityName)
+        content.append("        verify(").append(serviceVar).append(").create")
+                .append(entityName)
                 .append("(any(").append(dtoName).append(".class));\n");
         content.append("    }\n\n");
 
-        appendCreateValidationFailureTest(content, table, entityName, dtoName, apiPath, dtoFieldTypes);
+        appendCreateValidationFailureTest(
+                content,
+                entityName,
+                dtoName,
+                apiPath,
+                dtoFields,
+                requiredDtoFieldNames
+        );
 
         content.append("    @Test\n");
         content.append("    void shouldReturnBadRequestForCreateWhenServiceThrows() throws Exception {\n");
         content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
                 .append(entityName).append("Dto();\n");
-        content.append("        given(").append(serviceVar).append(".create").append(entityName)
+        content.append("        given(").append(serviceVar).append(".create")
+                .append(entityName)
                 .append("(any(").append(dtoName).append(".class)))\n");
         content.append("                .willThrow(GeneratedRuntimeException.builder()\n");
         content.append("                        .code(ErrorCodes.BAD_REQUEST)\n");
@@ -517,6 +780,7 @@ public class ControllerTestGenerator {
 
     /**
      * Appends single-primary-key patch tests.
+     *
      * @param content generated test content
      * @param entityName entity simple name
      * @param dtoName dto simple name
@@ -537,7 +801,8 @@ public class ControllerTestGenerator {
         content.append("    @Test\n");
         content.append("    void shouldReturnOkForPatch() throws Exception {\n");
         content.append("        ").append(primaryKeyType).append(" id = ").append(sampleId).append(";\n");
-        content.append("        ").append(dtoName).append(" requestDto = new ").append(dtoName).append("();\n");
+        content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
+                .append(entityName).append("Dto();\n");
         content.append("        ").append(dtoName).append(" responseDto = new ").append(dtoName).append("();\n");
         content.append("        given(").append(serviceVar).append(".update").append(entityName)
                 .append("(eq(id), any(").append(dtoName).append(".class))).willReturn(responseDto);\n\n");
@@ -555,7 +820,8 @@ public class ControllerTestGenerator {
         content.append("    @Test\n");
         content.append("    void shouldReturnNotFoundForPatch() throws Exception {\n");
         content.append("        ").append(primaryKeyType).append(" id = ").append(sampleId).append(";\n");
-        content.append("        ").append(dtoName).append(" requestDto = new ").append(dtoName).append("();\n");
+        content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
+                .append(entityName).append("Dto();\n");
         content.append("        given(").append(serviceVar).append(".update").append(entityName)
                 .append("(eq(id), any(").append(dtoName).append(".class)))\n");
         content.append("                .willThrow(GeneratedRuntimeException.builder()\n");
@@ -568,6 +834,47 @@ public class ControllerTestGenerator {
         content.append("                .contentType(MediaType.APPLICATION_JSON)\n");
         content.append("                .content(objectMapper.writeValueAsString(requestDto)))\n");
         content.append("                .andExpect(status().isNotFound());\n");
+        content.append("    }\n\n");
+
+        appendSinglePatchInternalServerErrorTest(content, entityName, dtoName, serviceVar, apiPath, primaryKeyType, sampleId);
+    }
+
+    /**
+     * Appends composite-primary-key patch test when service throws unexpected exception.
+     *
+     * @param content generated test content
+     * @param entityName entity simple name
+     * @param dtoName dto simple name
+     * @param serviceVar service variable name
+     * @param apiPath api base path
+     * @param primaryKeyColumns primary key columns
+     */
+    private void appendCompositePatchInternalServerErrorTest(
+            StringBuilder content,
+            String entityName,
+            String dtoName,
+            String serviceVar,
+            String apiPath,
+            List<Column> primaryKeyColumns
+    ) {
+        String serviceEqArguments = buildCompositeEqServiceArguments(primaryKeyColumns);
+        String compositePathTemplate = buildCompositePathTemplate(primaryKeyColumns);
+
+        content.append("    @Test\n");
+        content.append("    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {\n");
+        appendCompositePrimaryKeyDeclarations(content, primaryKeyColumns);
+        content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
+                .append(entityName).append("Dto();\n");
+        content.append("        given(").append(serviceVar).append(".update").append(entityName)
+                .append("(").append(serviceEqArguments).append(", any(").append(dtoName).append(".class)))\n");
+        content.append("                .willThrow(new RuntimeException(\"Unexpected error\"));\n\n");
+
+        content.append("        mockMvc.perform(patch(\"").append(apiPath).append(compositePathTemplate).append("\"");
+        appendCompositePathArguments(content, primaryKeyColumns);
+        content.append(")\n");
+        content.append("                .contentType(MediaType.APPLICATION_JSON)\n");
+        content.append("                .content(objectMapper.writeValueAsString(requestDto)))\n");
+        content.append("                .andExpect(status().isInternalServerError());\n");
         content.append("    }\n\n");
     }
 
@@ -672,20 +979,22 @@ public class ControllerTestGenerator {
      * Appends composite-primary-key create tests.
      *
      * @param content generated test content
-     * @param table current table
      * @param entityName entity simple name
      * @param dtoName dto simple name
      * @param serviceVar service variable name
      * @param apiPath api base path
-     * @param dtoFieldTypes actual DTO field types
+     * @param dtoFields actual DTO fields
+     * @param requiredDtoFieldNames required DTO field names
      */
-    private void appendCompositeCreateTests(StringBuilder content,
-                                            Table table,
-                                            String entityName,
-                                            String dtoName,
-                                            String serviceVar,
-                                            String apiPath,
-                                            Map<String, String> dtoFieldTypes) {
+    private void appendCompositeCreateTests(
+            StringBuilder content,
+            String entityName,
+            String dtoName,
+            String serviceVar,
+            String apiPath,
+            List<Field> dtoFields,
+            List<String> requiredDtoFieldNames
+    ) {
         content.append("    @Test\n");
         content.append("    void shouldReturnCreatedForCreate() throws Exception {\n");
         content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
@@ -704,7 +1013,14 @@ public class ControllerTestGenerator {
                 .append("(any(").append(dtoName).append(".class));\n");
         content.append("    }\n\n");
 
-        appendCreateValidationFailureTest(content, table, entityName, dtoName, apiPath, dtoFieldTypes);
+        appendCreateValidationFailureTest(
+                content,
+                entityName,
+                dtoName,
+                apiPath,
+                dtoFields,
+                requiredDtoFieldNames
+        );
 
         content.append("    @Test\n");
         content.append("    void shouldReturnBadRequestForCreateWhenServiceThrows() throws Exception {\n");
@@ -726,88 +1042,69 @@ public class ControllerTestGenerator {
     }
 
     /**
-     * Appends a valid creation DTO fixture factory method based on required table columns.
+     * Appends setter lines for the generated create DTO fixture
+     * based on required DTO fields.
      *
      * @param content generated test content
-     * @param table current table
-     * @param dtoName dto simple name
-     * @param entityName entity simple name
-     * @param dtoFieldTypes actual DTO field types
-     */
-    private void appendCreateDtoFixtureMethod(StringBuilder content,
-                                              Table table,
-                                              String dtoName,
-                                              String entityName,
-                                              Map<String, String> dtoFieldTypes) {
-        content.append("    /**\n");
-        content.append("     * Creates a valid create request DTO for ").append(entityName).append(".\n");
-        content.append("     *\n");
-        content.append("     * @return populated create request dto\n");
-        content.append("     */\n");
-        content.append("    private ").append(dtoName).append(" createValidCreate")
-                .append(entityName).append("Dto() {\n");
-
-        StringBuilder setterLines = new StringBuilder();
-        boolean hasAssignments = appendRequiredCreateDtoSetterLines(setterLines, table, dtoFieldTypes);
-
-        if (!hasAssignments) {
-            content.append("        return new ").append(dtoName).append("();\n");
-            content.append("    }\n\n");
-            return;
-        }
-
-        content.append("        ").append(dtoName).append(" dto = new ").append(dtoName).append("();\n");
-        content.append(setterLines);
-        content.append("        return dto;\n");
-        content.append("    }\n\n");
-    }
-
-    /**
-     * Appends setter lines for required create DTO fields derived from the table schema.
-     *
-     * @param content generated test content
-     * @param table current table
-     * @param dtoFieldTypes actual DTO field types
+     * @param dtoFields actual DTO fields
+     * @param requiredDtoFieldNames required DTO field names
      * @return true when at least one setter line was appended
      */
-    private boolean appendRequiredCreateDtoSetterLines(StringBuilder content,
-                                                       Table table,
-                                                       Map<String, String> dtoFieldTypes) {
-        if (table == null || table.getColumns() == null || table.getColumns().isEmpty()) {
+    private boolean appendRequiredCreateDtoSetterLines(
+            StringBuilder content,
+            List<Field> dtoFields,
+            List<String> requiredDtoFieldNames
+    ) {
+        if (content == null || dtoFields == null || dtoFields.isEmpty()) {
             return false;
         }
 
+        if (requiredDtoFieldNames == null || requiredDtoFieldNames.isEmpty()) {
+            return false;
+        }
+
+        Set<String> requiredFieldNameSet = new java.util.LinkedHashSet<>(requiredDtoFieldNames);
         boolean appended = false;
 
-        for (Column column : table.getColumns()) {
-            if (column == null) {
+        for (Field field : dtoFields) {
+            if (field == null) {
                 continue;
             }
 
-            String dtoFieldName = resolveCreateDtoFieldName(column, dtoFieldTypes);
-            if (dtoFieldName == null) {
+            String dtoFieldName = field.getName();
+            String dtoFieldType = field.getType();
+
+            if (dtoFieldName == null || dtoFieldName.isBlank()) {
                 continue;
             }
 
-            String dtoFieldType = dtoFieldTypes.get(dtoFieldName);
+            if (!requiredFieldNameSet.contains(dtoFieldName)) {
+                continue;
+            }
+
             if (dtoFieldType == null || dtoFieldType.isBlank()) {
                 continue;
             }
 
-            String flatDtoFieldName = resolveFlatDtoFieldName(column, dtoFieldTypes);
-            boolean relationField = flatDtoFieldName == null || !flatDtoFieldName.equals(dtoFieldName);
-
-            if (!relationField && !shouldPopulateCreateField(column)) {
-                continue;
-            }
-
-            if (relationField && !column.isForeignKey()) {
+            if ("id".equals(dtoFieldName)
+                    || "dateCreated".equals(dtoFieldName)
+                    || "lastUpdated".equals(dtoFieldName)) {
                 continue;
             }
 
             if (isSupportedScalarDtoType(dtoFieldType)) {
-                appendScalarCreateFixtureLine(content, column, dtoFieldName, dtoFieldType);
-                appended = true;
+                String setterName = "set" + NamingConverter.toPascalCase(dtoFieldName);
+                String sampleValue = sampleValueForType(resolveSimpleDtoType(dtoFieldType), 1);
+
+                if (!"null".equals(sampleValue)) {
+                    content.append("        dto.")
+                            .append(setterName)
+                            .append("(")
+                            .append(sampleValue)
+                            .append(");\n");
+                    appended = true;
+                }
+
                 continue;
             }
 
@@ -824,44 +1121,7 @@ public class ControllerTestGenerator {
         return appended;
     }
 
-    /**
-     * Resolves the DTO field name used in create fixtures.
-     *
-     * <p>
-     * Rules:
-     * <ul>
-     *     <li>Direct scalar fields use the camelCase column name</li>
-     *     <li>Foreign key relation DTO fields use the relation-style name without the _id suffix</li>
-     * </ul>
-     *
-     * @param column current database column
-     * @param dtoFieldTypes map of DTO field names to their types
-     * @return matching DTO field name when found, otherwise null
-     */
-    private String resolveCreateDtoFieldName(Column column, Map<String, String> dtoFieldTypes) {
-        if (column == null || dtoFieldTypes == null || dtoFieldTypes.isEmpty()) {
-            return null;
-        }
 
-        String flatFieldName = resolveFlatDtoFieldName(column, dtoFieldTypes);
-        if (flatFieldName != null) {
-            return flatFieldName;
-        }
-
-        if (!column.isForeignKey()) {
-            return null;
-        }
-
-        String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
-        if (columnName == null || columnName.isBlank()) {
-            return null;
-        }
-
-        String relationColumnName = columnName.replaceFirst("(?i)_id$", "");
-        String relationFieldName = NamingConverter.toCamelCase(relationColumnName);
-
-        return dtoFieldTypes.containsKey(relationFieldName) ? relationFieldName : null;
-    }
 
     /**
      * Appends a nested DTO setter line for a required relation field.
@@ -905,74 +1165,6 @@ public class ControllerTestGenerator {
                 && !simpleType.startsWith("List<")
                 && !simpleType.startsWith("Set<")
                 && !simpleType.startsWith("Map<");
-    }
-
-    /**
-     * Appends a scalar setter line for a creative DTO fixture.
-     *
-     * @param content generated test content
-     * @param column current column
-     * @param dtoFieldName actual DTO field name
-     * @param dtoFieldType actual DTO field type
-     */
-    private void appendScalarCreateFixtureLine(StringBuilder content,
-                                               Column column,
-                                               String dtoFieldName,
-                                               String dtoFieldType) {
-        if (column == null) {
-            return;
-        }
-
-        String setterName = "set" + NamingConverter.toPascalCase(dtoFieldName);
-        String javaLiteral = buildCreateFixtureLiteral(column, dtoFieldType);
-
-        if ("null".equals(javaLiteral)) {
-            return;
-        }
-
-        content.append("        dto.")
-                .append(setterName)
-                .append("(")
-                .append(javaLiteral)
-                .append(");\n");
-    }
-
-    /**
-     * Builds a valid fixture literal for a creative DTO field.
-     *
-     * @param column current column
-     * @param dtoFieldType actual DTO field type
-     * @return Java literal source
-     */
-    private String buildCreateFixtureLiteral(Column column, String dtoFieldType) {
-        if (column == null) {
-            return "null";
-        }
-
-        String simplifiedType = resolveSimpleDtoType(dtoFieldType);
-        if ("String".equals(simplifiedType)) {
-            return buildStringFixtureLiteral(column);
-        }
-
-        return sampleValueForType(simplifiedType, 1);
-    }
-
-    /**
-     * Builds a valid string literal for a DTO field while respecting max length constraints.
-     *
-     * @param column current column
-     * @return Java string literal source
-     */
-    private String buildStringFixtureLiteral(Column column) {
-        int maxLength = column.getLength();
-
-        if (maxLength <= 0) {
-            return "\"test\"";
-        }
-
-        int safeLength = Math.min(maxLength, 5);
-        String safeValue = "a".repeat(safeLength);
-        return "\"" + safeValue + "\"";
     }
 
     /**
@@ -1081,32 +1273,34 @@ public class ControllerTestGenerator {
 
 
     /**
-     * Determines whether a column should be populated in a generated valid create DTO fixture.
+     * Determines whether a column should be skipped in generated create DTO fixtures
+     * and validation-failure field selection.
      *
      * @param column current column
-     * @return true when the column is required for create fixture generation
+     * @return true when the column must be skipped
      */
-    private boolean shouldPopulateCreateField(Column column) {
+    private boolean shouldSkipCreateField(Column column) {
         if (column == null) {
-            return false;
+            return true;
         }
 
         if (column.isPrimaryKey()) {
-            return false;
+            return true;
         }
 
         if (column.isNullable()) {
-            return false;
+            return true;
         }
 
         String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
-        return !"date_created".equalsIgnoreCase(columnName)
-                && !"last_updated".equalsIgnoreCase(columnName);
+        return "date_created".equalsIgnoreCase(columnName)
+                || "last_updated".equalsIgnoreCase(columnName);
     }
 
 
     /**
      * Appends composite-primary-key patch tests.
+     *
      * @param content generated test content
      * @param entityName entity simple name
      * @param dtoName dto simple name
@@ -1128,7 +1322,8 @@ public class ControllerTestGenerator {
         content.append("    @Test\n");
         content.append("    void shouldReturnOkForPatch() throws Exception {\n");
         appendCompositePrimaryKeyDeclarations(content, primaryKeyColumns);
-        content.append("        ").append(dtoName).append(" requestDto = new ").append(dtoName).append("();\n");
+        content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
+                .append(entityName).append("Dto();\n");
         content.append("        ").append(dtoName).append(" responseDto = new ").append(dtoName).append("();\n");
         content.append("        given(").append(serviceVar).append(".update").append(entityName)
                 .append("(").append(serviceEqArguments).append(", any(").append(dtoName).append(".class)))")
@@ -1149,7 +1344,8 @@ public class ControllerTestGenerator {
         content.append("    @Test\n");
         content.append("    void shouldReturnNotFoundForPatch() throws Exception {\n");
         appendCompositePrimaryKeyDeclarations(content, primaryKeyColumns);
-        content.append("        ").append(dtoName).append(" requestDto = new ").append(dtoName).append("();\n");
+        content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
+                .append(entityName).append("Dto();\n");
         content.append("        given(").append(serviceVar).append(".update").append(entityName)
                 .append("(").append(serviceEqArguments).append(", any(").append(dtoName).append(".class)))\n");
         content.append("                .willThrow(GeneratedRuntimeException.builder()\n");
@@ -1164,6 +1360,60 @@ public class ControllerTestGenerator {
         content.append("                .contentType(MediaType.APPLICATION_JSON)\n");
         content.append("                .content(objectMapper.writeValueAsString(requestDto)))\n");
         content.append("                .andExpect(status().isNotFound());\n");
+        content.append("    }\n\n");
+
+        // ✅ FIX: call the missing method
+        appendCompositePatchInternalServerErrorTest(
+                content,
+                entityName,
+                dtoName,
+                serviceVar,
+                apiPath,
+                primaryKeyColumns
+        );
+    }
+
+    /**
+     * Appends the patch validation-failure test when the DTO
+     * has at least one required field that can safely be invalidated with null.
+     *
+     * @param content generated test content
+     * @param entityName entity simple name
+     * @param dtoName dto simple name
+     * @param apiPath api base path
+     * @param dtoFields actual DTO fields
+     * @param requiredDtoFieldNames required DTO field names
+     * @param primaryKeyType primary key type
+     * @param sampleId sample id value
+     */
+    private void appendPatchValidationFailureTest(
+            StringBuilder content,
+            String entityName,
+            String dtoName,
+            String apiPath,
+            List<Field> dtoFields,
+            List<String> requiredDtoFieldNames,
+            String primaryKeyType,
+            String sampleId
+    ) {
+        String dtoFieldName = findFirstNullInvalidatableCreateField(dtoFields, requiredDtoFieldNames);
+        if (dtoFieldName == null) {
+            return;
+        }
+
+        String setterName = "set" + NamingConverter.toPascalCase(dtoFieldName);
+
+        content.append("    @Test\n");
+        content.append("    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {\n");
+        content.append("        ").append(primaryKeyType).append(" id = ").append(sampleId).append(";\n");
+        content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
+                .append(entityName).append("Dto();\n");
+        content.append("        requestDto.").append(setterName).append("(null);\n\n");
+
+        content.append("        mockMvc.perform(patch(\"").append(apiPath).append("/{id}\", id)\n");
+        content.append("                .contentType(MediaType.APPLICATION_JSON)\n");
+        content.append("                .content(objectMapper.writeValueAsString(requestDto)))\n");
+        content.append("                .andExpect(status().isUnprocessableEntity());\n");
         content.append("    }\n\n");
     }
 
@@ -1360,12 +1610,12 @@ public class ControllerTestGenerator {
             case "Short", "short" -> "(short) " + variant;
             case "Byte", "byte" -> "(byte) " + variant;
             case "Boolean", "boolean" -> variant % 2 == 0 ? "false" : "true";
-            case "String" -> "\"test-id-" + variant + "\"";
+            case "String" -> "\"A\"";
             case "Long", "long" -> variant + "L";
             case "Integer", "int" -> String.valueOf(variant);
             case "Double", "double" -> variant + ".0d";
             case "Float", "float" -> variant + ".0f";
-            case "Character", "char" -> variant % 2 == 0 ? "'B'" : "'A'";
+            case "Character", "char" -> "'A'";
             case "LocalDate" -> "LocalDate.of(2025, " + variant + ", " + (variant + 10) + ")";
             case "LocalDateTime" -> "LocalDateTime.of(2025, " + variant + ", " + (variant + 10) + ", 10, 0)";
             case "LocalTime" -> "LocalTime.of(" + (variant + 9) + ", " + (variant + 5) + ")";
@@ -1374,6 +1624,42 @@ public class ControllerTestGenerator {
             case "ZonedDateTime" -> "ZonedDateTime.parse(\"2025-01-0" + variant + "T10:15:30+02:00[Europe/Athens]\")";
             default -> "null";
         };
+    }
+
+    /**
+     * Appends patch test when service throws unexpected exception.
+     *
+     * @param content generated test content
+     * @param entityName entity simple name
+     * @param dtoName dto simple name
+     * @param serviceVar service variable name
+     * @param apiPath api base path
+     * @param primaryKeyType primary key type
+     * @param sampleId sample id value
+     */
+    private void appendSinglePatchInternalServerErrorTest(
+            StringBuilder content,
+            String entityName,
+            String dtoName,
+            String serviceVar,
+            String apiPath,
+            String primaryKeyType,
+            String sampleId
+    ) {
+        content.append("    @Test\n");
+        content.append("    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {\n");
+        content.append("        ").append(primaryKeyType).append(" id = ").append(sampleId).append(";\n");
+        content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
+                .append(entityName).append("Dto();\n");
+        content.append("        given(").append(serviceVar).append(".update").append(entityName)
+                .append("(eq(id), any(").append(dtoName).append(".class)))\n");
+        content.append("                .willThrow(new RuntimeException(\"Unexpected error\"));\n\n");
+
+        content.append("        mockMvc.perform(patch(\"").append(apiPath).append("/{id}\", id)\n");
+        content.append("                .contentType(MediaType.APPLICATION_JSON)\n");
+        content.append("                .content(objectMapper.writeValueAsString(requestDto)))\n");
+        content.append("                .andExpect(status().isInternalServerError());\n");
+        content.append("    }\n\n");
     }
 
     /**
@@ -1438,6 +1724,76 @@ public class ControllerTestGenerator {
     }
 
 
+    /**
+     * Appends mandatory Java type imports required by generated controller tests.
+     *
+     * <p>
+     * This method covers Java types that may appear directly in generated test code
+     * through sample values, primary key declarations, or DTO fixture values, even
+     * when they are not discovered by the generic import resolver.
+     * </p>
+     *
+     * @param content generated file content
+     * @param table current table
+     * @param dtoFieldTypes actual DTO field types
+     */
+    private void appendMandatoryJavaTypeImports(
+            StringBuilder content,
+            Table table,
+            Map<String, String> dtoFieldTypes
+    ) {
+        Set<String> requiredImports = new java.util.TreeSet<>();
+
+        if (table != null) {
+            for (Column primaryKeyColumn : getPrimaryKeyColumns(table)) {
+                String primaryKeyType = detectJavaTypeForPrimaryKeyColumn(primaryKeyColumn);
+                addMandatoryImportForType(requiredImports, primaryKeyType);
+            }
+        }
+
+        if (dtoFieldTypes != null && !dtoFieldTypes.isEmpty()) {
+            for (String dtoFieldType : dtoFieldTypes.values()) {
+                String simpleType = resolveSimpleDtoType(dtoFieldType);
+                addMandatoryImportForType(requiredImports, simpleType);
+            }
+        }
+
+        for (String importLine : requiredImports) {
+            content.append(importLine).append("\n");
+        }
+
+        if (!requiredImports.isEmpty()) {
+            content.append("\n");
+        }
+    }
+
+    /**
+     * Adds the fully qualified import statement required for the given simple Java type.
+     *
+     * @param requiredImports collected import lines
+     * @param simpleType simple Java type name
+     */
+    private void addMandatoryImportForType(Set<String> requiredImports, String simpleType) {
+        if (requiredImports == null || simpleType == null || simpleType.isBlank()) {
+            return;
+        }
+
+        switch (simpleType) {
+            case "BigDecimal" -> requiredImports.add("import java.math.BigDecimal;");
+            case "BigInteger" -> requiredImports.add("import java.math.BigInteger;");
+            case "LocalDate" -> requiredImports.add("import java.time.LocalDate;");
+            case "LocalDateTime" -> requiredImports.add("import java.time.LocalDateTime;");
+            case "LocalTime" -> requiredImports.add("import java.time.LocalTime;");
+            case "Instant" -> requiredImports.add("import java.time.Instant;");
+            case "OffsetDateTime" -> requiredImports.add("import java.time.OffsetDateTime;");
+            case "ZonedDateTime" -> requiredImports.add("import java.time.ZonedDateTime;");
+            case "UUID" -> requiredImports.add("import java.util.UUID;");
+            default -> {
+            }
+        }
+    }
+
+
 
 
     /**
@@ -1449,18 +1805,21 @@ public class ControllerTestGenerator {
      * @param expectedType expected simple Java type
      * @return true when the generated test code uses the given type
      */
-    private boolean usesTypeInGeneratedTest(Column column,
-                                            Map<String, String> dtoFieldTypes,
-                                            String expectedType) {
-        if (column == null) {
+    private boolean usesTypeInGeneratedTest(
+            Column column,
+            Map<String, String> dtoFieldTypes,
+            String expectedType
+    ) {
+        if (column == null || expectedType == null || expectedType.isBlank()) {
             return false;
         }
 
+        // Primary key handling
         if (column.isPrimaryKey()) {
             return expectedType.equals(detectJavaTypeForPrimaryKeyColumn(column));
         }
 
-        if (!shouldPopulateCreateField(column)) {
+        if (shouldSkipCreateField(column)) {
             return false;
         }
 
@@ -1470,10 +1829,11 @@ public class ControllerTestGenerator {
         }
 
         String dtoFieldType = dtoFieldTypes.get(dtoFieldName);
-        if (!isSupportedScalarDtoType(dtoFieldType)) {
+        if (dtoFieldType == null || !isSupportedScalarDtoType(dtoFieldType)) {
             return false;
         }
 
-        return expectedType.equals(resolveSimpleDtoType(dtoFieldType));
+        String simpleType = resolveSimpleDtoType(dtoFieldType);
+        return expectedType.equals(simpleType);
     }
 }

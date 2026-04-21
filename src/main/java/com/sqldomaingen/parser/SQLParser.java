@@ -1,5 +1,6 @@
 package com.sqldomaingen.parser;
 
+import com.sqldomaingen.util.Constants;
 import lombok.Getter;
 import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
@@ -34,8 +35,7 @@ public class SQLParser {
 
     private String sqlContent;
 
-    /** Error message used when SQL input is missing. */
-    private static final String EMPTY_SQL_ERROR_MESSAGE = "SQL content is empty or not set.";
+
 
     /**
      * Creates a configured {@link PostgreSQLParser} for the current {@code sqlContent}.
@@ -51,8 +51,8 @@ public class SQLParser {
      */
     public PostgreSQLParser createParser() {
         if (!isSQLContentValid()) {
-            log.error(EMPTY_SQL_ERROR_MESSAGE);
-            throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);
+            log.error(Constants.EMPTY_SQL_ERROR_MESSAGE);
+            throw new IllegalArgumentException(Constants.EMPTY_SQL_ERROR_MESSAGE);
         }
 
         log.debug("ANTLR trace is enabled (grammar rule tracing).");
@@ -75,7 +75,7 @@ public class SQLParser {
         });
 
         // Enable tracing for debugging (consider disabling for production use).
-        parser.setTrace(true);
+        parser.setTrace(false);
 
         return parser;
     }
@@ -89,7 +89,7 @@ public class SQLParser {
     public ParseTree parseTreeFromSQL() {
         if (!isSQLContentValid()) {
             log.error("Cannot generate ParseTree: SQL content is invalid.");
-            throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);
+            throw new IllegalArgumentException(Constants.EMPTY_SQL_ERROR_MESSAGE);
         }
 
         PostgreSQLParser parser = createParser();
@@ -107,48 +107,6 @@ public class SQLParser {
         return tree;
     }
 
-    /**
-     * Parses a standalone constraint rule using the grammar {@code constraint} entry.
-     * <p>
-     * This is useful for isolated constraint parsing, tests, or when the input is known
-     * to contain only a constraint clause.
-     *
-     * @return the {@link PostgreSQLParser.ConstraintContext}
-     * @throws IllegalArgumentException if {@code sqlContent} is invalid or contains syntax errors
-     */
-    public PostgreSQLParser.ConstraintContext parseConstraint() {
-        if (!isSQLContentValid()) {
-            log.error("Cannot parse constraint: SQL content is invalid.");
-            throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);
-        }
-
-        PostgreSQLParser parser = createParser();
-
-        // createParser() already installs a fail-fast listener,
-        // but we keep this here to ensure constraint parsing also fails fast explicitly.
-        parser.removeErrorListeners();
-        parser.addErrorListener(new BaseErrorListener() {
-            @Override
-            public void syntaxError(Recognizer<?, ?> recognizer, Object offendingSymbol,
-                                    int line, int charPositionInLine, String msg,
-                                    RecognitionException e) {
-                throw new IllegalArgumentException(
-                        "Syntax error at line " + line + ", position " + charPositionInLine + ": " + msg
-                );
-            }
-        });
-
-        PostgreSQLParser.ConstraintContext context = parser.constraint();
-
-        // Defensive check: if ANTLR recorded an exception, reject the result.
-        if (context.exception != null) {
-            log.error("ConstraintContext contains parsing errors.");
-            throw new IllegalArgumentException("SQL contains errors and cannot be parsed.");
-        }
-
-        log.info("ConstraintContext created successfully: {}", context.getText());
-        return context;
-    }
 
     /**
      * Tokenizes the current SQL input and returns the {@link TokenStream}.
@@ -160,7 +118,7 @@ public class SQLParser {
     public TokenStream parseSQL() {
         if (!isSQLContentValid()) {
             log.error("Cannot generate TokenStream: SQL content is invalid.");
-            throw new IllegalArgumentException(EMPTY_SQL_ERROR_MESSAGE);
+            throw new IllegalArgumentException(Constants.EMPTY_SQL_ERROR_MESSAGE);
         }
 
         PostgreSQLLexer lexer = new PostgreSQLLexer(CharStreams.fromString(sqlContent));

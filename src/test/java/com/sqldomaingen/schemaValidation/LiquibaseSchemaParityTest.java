@@ -17,11 +17,7 @@ import org.junit.jupiter.api.io.TempDir;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
@@ -32,8 +28,8 @@ class LiquibaseSchemaParityTest {
     Path tempDir;
 
     /**
-     * Generates Liquibase files from the parsed SQL schema, validates the output,
-     * and produces a human-readable report without failing the test for schema mismatches.
+     * Generates Liquibase files into an isolated temporary directory, validates the output,
+     * and produces a human-readable report without modifying the project's real generated files.
      *
      * @throws Exception if file IO, parsing, or generation fails unexpectedly
      */
@@ -51,17 +47,29 @@ class LiquibaseSchemaParityTest {
         String sql = Files.readString(schemaPath);
         List<Table> parsedTables = parseTables(sql);
 
+        String liquibaseAuthor = System.getProperty("liquibase.author");
+        if (liquibaseAuthor == null || liquibaseAuthor.isBlank()) {
+            liquibaseAuthor = System.getenv("LIQUIBASE_AUTHOR");
+        }
+
+
+        Path generationRoot = tempDir;
+
         LiquibaseGenerator liquibaseGenerator = new LiquibaseGenerator();
         liquibaseGenerator.generateLiquibaseFiles(
-                tempDir.toString(),
+                generationRoot.toString(),
                 parsedTables,
-                true,
-                "tester@knowledge.gr"
+                false,
+                liquibaseAuthor
         );
 
-        Path versionDir = tempDir.resolve("src/main/resources/db/migration/changelogs/v0.1.0");
+        Path versionDir = generationRoot.resolve("src/main/resources/db/migration/changelogs/v0.1.0");
         Path auditXmlPath = versionDir.resolve("audit.xml");
         Path mainXmlPath = versionDir.resolve("main.xml");
+
+        System.out.println("Liquibase temp output directory: " + versionDir.toAbsolutePath());
+        System.out.println("Liquibase audit.xml path: " + auditXmlPath.toAbsolutePath());
+        System.out.println("Liquibase main.xml path: " + mainXmlPath.toAbsolutePath());
 
         if (!Files.exists(auditXmlPath)) {
             violations.add("Generated audit.xml was not found: " + auditXmlPath.toAbsolutePath());
@@ -79,21 +87,48 @@ class LiquibaseSchemaParityTest {
         String auditXml = Files.readString(auditXmlPath);
         String mainXml = Files.readString(mainXmlPath);
 
-        assertAuditBootstrap(auditXml, violations);
+        assertContains(
+                auditXml,
+                "<changeSet id=\"create_audit_schema\" author=\"" + liquibaseAuthor + "\">",
+                violations,
+                "audit.xml"
+        );
+        assertContains(auditXml, "CREATE SCHEMA IF NOT EXISTS audit;", violations, "audit.xml");
+        assertContains(auditXml, "<createTable tableName=\"REVINFO\" schemaName=\"audit\">", violations, "audit.xml");
+        assertContains(auditXml, "<createSequence sequenceName=\"revinfo_seq\"", violations, "audit.xml");
+
         assertMainIncludesAllTables(mainXml, parsedTables, violations);
 
         for (Table table : parsedTables) {
             assertGeneratedTableChangelogMatchesParsedTable(versionDir, table, violations);
+            String fileName = toIncludeFileName(table.getName());
+            Path tableXmlPath = versionDir.resolve(fileName);
+
+            if (Files.exists(tableXmlPath)) {
+                String tableXml = Files.readString(tableXmlPath);
+
+                if ("pep_schema.company_status_view_rules".equals(table.getName())) {
+                    System.out.println("==========================================");
+                    System.out.println("DEBUG TABLE: " + table.getName());
+                    System.out.println("FILE PATH: " + tableXmlPath.toAbsolutePath());
+                    System.out.println("HAS createIndex: " + tableXml.contains("<createIndex"));
+                    System.out.println("==========================================");
+                    System.out.println(tableXml);
+                    System.out.println("==========================================");
+                }
+
+                assertIndexes(tableXml, sql, table, violations);
+            }
         }
 
         writeAndPrintReport(violations);
     }
 
     /**
-     * Parses CREATE TABLE statements from the SQL schema file.
+     * Parses CREATE TABLE and CREATE INDEX statements from the SQL schema file.
      *
      * @param sql raw schema SQL
-     * @return parsed tables
+     * @return parsed tables enriched with index definitions
      */
     private List<Table> parseTables(String sql) {
         SQLParser sqlParser = new SQLParser();
@@ -107,7 +142,47 @@ class LiquibaseSchemaParityTest {
         CreateTableDefinition createTableDefinition = new CreateTableDefinition();
         Map<String, Table> tableMap = createTableDefinition.parseAllTables(collector.getCreateTableStatements());
 
+        PostgreSQLParser.SqlScriptContext sqlScriptContext = (PostgreSQLParser.SqlScriptContext) parseTree;
+        com.sqldomaingen.parser.CreateIndexDefinition createIndexDefinition =
+                new com.sqldomaingen.parser.CreateIndexDefinition();
+
+        for (PostgreSQLParser.CreateIndexStatementContext indexContext : sqlScriptContext.createIndexStatement()) {
+            com.sqldomaingen.model.IndexDefinition indexDefinition =
+                    createIndexDefinition.processCreateIndex(indexContext);
+
+            if (indexDefinition == null || indexDefinition.getTableName() == null || indexDefinition.getTableName().isBlank()) {
+                continue;
+            }
+
+            String normalizedIndexTableName = normalizeParsedIndexTableName(indexDefinition.getTableName());
+
+            Table table = tableMap.get(normalizedIndexTableName);
+            if (table == null) {
+                continue;
+            }
+
+            if (table.getIndexes() == null) {
+                table.setIndexes(new ArrayList<>());
+            }
+
+            table.getIndexes().add(indexDefinition);
+        }
+
         return new ArrayList<>(tableMap.values());
+    }
+
+    /**
+     * Normalizes an index table reference so it matches parsed table map keys.
+     *
+     * @param tableName raw index table reference
+     * @return normalized table reference
+     */
+    private String normalizeParsedIndexTableName(String tableName) {
+        if (tableName == null || tableName.isBlank()) {
+            return "";
+        }
+
+        return tableName.trim().replace("\"", "");
     }
 
     /**
@@ -123,19 +198,6 @@ class LiquibaseSchemaParityTest {
 
         System.out.println(report);
         System.out.println("Liquibase schema parity report written to: " + reportPath.toAbsolutePath());
-    }
-
-    /**
-     * Verifies audit bootstrap XML.
-     *
-     * @param auditXml generated audit.xml content
-     * @param violations collected violations
-     */
-    private void assertAuditBootstrap(String auditXml, List<String> violations) {
-        assertContains(auditXml, "<changeSet id=\"create_audit_schema\" author=\"tester@knowledge.gr\">", violations, "audit.xml");
-        assertContains(auditXml, "CREATE SCHEMA IF NOT EXISTS audit;", violations, "audit.xml");
-        assertContains(auditXml, "<createTable tableName=\"REVINFO\" schemaName=\"audit\">", violations, "audit.xml");
-        assertContains(auditXml, "<createSequence sequenceName=\"revinfo_seq\"", violations, "audit.xml");
     }
 
     /**
@@ -615,7 +677,19 @@ class LiquibaseSchemaParityTest {
         }
 
         String trimmedDefaultValue = defaultValue.trim();
-        String normalizedDefaultValue = trimmedDefaultValue.toLowerCase(Locale.ROOT);
+        String normalizedDefaultValue = trimmedDefaultValue.toLowerCase(Locale.ROOT)
+                .replaceAll("\\s+", " ")
+                .trim();
+
+        if (isEmptyStringCastDefault(normalizedDefaultValue)) {
+            assertContains(
+                    columnBlock,
+                    "defaultValue=\"\"",
+                    violations,
+                    tableName + "." + columnName
+            );
+            return;
+        }
 
         if (isDeferredSqlColumnBlock(columnBlock)) {
             String normalizedColumnBlock = normalizeXmlWhitespace(columnBlock);
@@ -695,13 +769,23 @@ class LiquibaseSchemaParityTest {
             return;
         }
 
-        if (normalizedDefaultValue.matches("^'?[^']+'?::(charactervarying|character varying|varchar|text)$")) {
+        if (normalizedDefaultValue.matches("^'?[^']*'?::(charactervarying|character varying|varchar|text)$")) {
             String literalValue = trimmedDefaultValue
                     .replaceFirst("(?i)::(charactervarying|character varying|varchar|text)$", "")
                     .trim();
 
             if (literalValue.startsWith("'") && literalValue.endsWith("'") && literalValue.length() >= 2) {
                 literalValue = literalValue.substring(1, literalValue.length() - 1);
+            }
+
+            if (literalValue.isEmpty() || "::charactervarying".equalsIgnoreCase(literalValue)) {
+                assertContains(
+                        columnBlock,
+                        "defaultValue=\"\"",
+                        violations,
+                        tableName + "." + columnName
+                );
+                return;
             }
 
             assertContains(
@@ -746,6 +830,26 @@ class LiquibaseSchemaParityTest {
                 violations,
                 tableName + "." + columnName
         );
+    }
+
+    /**
+     * Detects if a default value represents an empty string cast (e.g. ''::character varying).
+     *
+     * @param defaultValue the default value extracted from Liquibase XML
+     * @return true if it is an empty string cast, false otherwise
+     */
+    private boolean isEmptyStringCastDefault(String defaultValue) {
+        if (defaultValue == null) {
+            return false;
+        }
+
+        String normalized = defaultValue
+                .replaceAll("\\s+", "")
+                .toLowerCase();
+
+        return normalized.equals("''::charactervarying")
+                || normalized.equals("''::varchar")
+                || normalized.equals("''::text");
     }
 
     /**
@@ -1745,6 +1849,97 @@ class LiquibaseSchemaParityTest {
     }
 
     /**
+     * Extracts index definitions from SQL and groups them by target table.
+     *
+     * @param sql full SQL content
+     * @return map of normalized table name -> ordered index definitions
+     */
+    private Map<String, List<IndexDefinition>> extractIndexes(String sql) {
+        Map<String, List<IndexDefinition>> indexesByTable = new LinkedHashMap<>();
+
+        Pattern pattern = Pattern.compile(
+                "CREATE\\s+INDEX\\s+(\\w+)\\s+ON\\s+((?:\\w+\\.)?\\w+)\\s+USING\\s+\\w+\\s*\\(([^)]+)\\)(\\s+WHERE\\s+.+?)?\\s*;",
+                Pattern.CASE_INSENSITIVE | Pattern.DOTALL
+        );
+
+        Matcher matcher = pattern.matcher(sql);
+
+        while (matcher.find()) {
+            String indexName = matcher.group(1).trim();
+            String tableName = normalizeTableReference(matcher.group(2));
+            String columnExpression = matcher.group(3).trim();
+            String whereClause = matcher.group(4) == null ? null : matcher.group(4).trim();
+
+            indexesByTable
+                    .computeIfAbsent(tableName, ignored -> new ArrayList<>())
+                    .add(new IndexDefinition(indexName, tableName, columnExpression, whereClause));
+        }
+
+        return indexesByTable;
+    }
+
+    /**
+     * Verifies that generated index definitions preserve the parsed SQL indexes
+     * for the current table only.
+     *
+     * @param xml generated table changelog XML
+     * @param originalSql full original schema SQL
+     * @param table parsed table
+     * @param violations collected violations
+     */
+    private void assertIndexes(String xml, String originalSql, Table table, List<String> violations) {
+        String normalizedTableName = stripSchema(table.getName());
+        Map<String, List<IndexDefinition>> indexesByTable = extractIndexes(originalSql);
+        List<IndexDefinition> expectedIndexes = indexesByTable.getOrDefault(normalizedTableName, Collections.emptyList());
+
+        for (IndexDefinition expectedIndex : expectedIndexes) {
+            String indexName = expectedIndex.indexName();
+            String expectedColumnExpression = expectedIndex.columnExpression();
+
+            if (expectedColumnExpression.contains("\"")) {
+                String expectedSqlFragment = "CREATE INDEX " + indexName
+                        + " ON " + table.getName()
+                        + " USING btree (" + expectedColumnExpression + ")";
+
+                assertContains(xml, expectedSqlFragment, violations, normalizedTableName);
+                continue;
+            }
+
+            assertContains(xml, "indexName=\"" + indexName + "\"", violations, normalizedTableName);
+
+            String normalizedColumnExpression = normalizeIdentifier(expectedColumnExpression);
+
+            boolean columnExistsAsSelfClosing = normalizeXmlWhitespace(xml).contains(
+                    normalizeXmlWhitespace("<column name=\"" + normalizedColumnExpression + "\"/>")
+            );
+
+            boolean columnExistsAsExplicitClosing = normalizeXmlWhitespace(xml).contains(
+                    normalizeXmlWhitespace("<column name=\"" + normalizedColumnExpression + "\"></column>")
+            );
+
+            if (!columnExistsAsSelfClosing && !columnExistsAsExplicitClosing) {
+                violations.add("[" + normalizedTableName + "] Expected XML fragment not found: <column name=\""
+                        + normalizedColumnExpression + "\"/>");
+            }
+        }
+    }
+
+    /**
+     * Normalizes a table reference by removing surrounding quotes and schema prefix.
+     *
+     * @param tableReference raw table reference
+     * @return normalized schema-free table name
+     */
+    private String normalizeTableReference(String tableReference) {
+        if (tableReference == null || tableReference.isBlank()) {
+            return "";
+        }
+
+        String normalizedTableReference = tableReference.trim().replace("\"", "");
+        return stripSchema(normalizedTableReference);
+    }
+
+    /**
      * Structured SQL type descriptor.
      *
      * @param baseType base SQL type
@@ -1753,5 +1948,21 @@ class LiquibaseSchemaParityTest {
      * @param array whether the type is an array
      */
     private record TypeDescriptor(String baseType, Integer lengthOrPrecision, Integer scale, boolean array) {
+    }
+
+    /**
+     * Structured SQL index descriptor.
+     *
+     * @param indexName index name
+     * @param tableName normalized schema-free table name
+     * @param columnExpression index column expression
+     * @param whereClause optional WHERE clause
+     */
+    private record IndexDefinition(
+            String indexName,
+            String tableName,
+            String columnExpression,
+            String whereClause
+    ) {
     }
 }

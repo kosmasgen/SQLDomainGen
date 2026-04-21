@@ -22,6 +22,7 @@ import com.sqldomaingen.parser.CreateTableDefinition;
 import com.sqldomaingen.parser.PostgreSQLParser;
 import com.sqldomaingen.parser.SQLParser;
 import com.sqldomaingen.util.Constants;
+import com.sqldomaingen.validation.ValidationReportXmlWriter;
 import lombok.NoArgsConstructor;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.TokenStream;
@@ -52,7 +53,7 @@ public class GeneratorCommands {
 
     /**
      * Generates the full Spring backend from the provided SQL file
-     * and produces a validation PDF report in the output directory.
+     * and produces validation XML and PDF reports in the output directory.
      *
      * @param inputFile input SQL file path
      * @param outputDir output project directory
@@ -121,23 +122,25 @@ public class GeneratorCommands {
                     inputFile,
                     outputDir,
                     packageName,
+                    author,
                     parsedTables,
                     javaGenerationTables,
                     models
             );
 
-            new ValidationReportPdfWriter().writePdf(
-                    validationReport,
-                    validationDir.resolve("validation-report.pdf")
-            );
+            Path xmlPath = validationDir.resolve("validation-report.xml");
+            Path pdfPath = validationDir.resolve("validation-report.pdf");
+
+            new ValidationReportXmlWriter().writeXml(validationReport, xmlPath);
+            new ValidationReportPdfWriter().writePdf(validationReport, pdfPath);
 
             log.info("Backend generation completed successfully. Output dir: {}", outputDir);
-            log.info("Validation report written under: {}", validationDir.toAbsolutePath());
+            log.info("Validation reports written under: {}", validationDir.toAbsolutePath());
 
             System.exit(0);
 
-            return "Backend generation completed successfully. Validation report generated at: "
-                    + validationDir.resolve("validation-report.pdf").toAbsolutePath();
+            return "Backend generation completed successfully. Validation reports generated at: "
+                    + validationDir.toAbsolutePath();
 
         } catch (Exception exception) {
             log.error("Generation failed", exception);
@@ -211,8 +214,10 @@ public class GeneratorCommands {
     /**
      * Ensures the output directory exists and is usable.
      * Creates it if missing.
+     *
+     * @param outputDirectory target output directory
      */
-    public void validateOutputDirectory(String outputDirectory) throws IOException {
+    public void validateOutputDirectory(String outputDirectory) {
         if (outputDirectory == null || outputDirectory.trim().isEmpty()) {
             throw new IllegalArgumentException("Output directory cannot be null or empty.");
         }

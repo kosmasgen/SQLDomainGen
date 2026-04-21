@@ -51,7 +51,7 @@ public class ControllerGenerator {
             GeneratorSupport.writeFile(filePath, code, overwrite);
         }
 
-        log.info("✅ Controllers generated under: {}", controllerDir.toAbsolutePath());
+        log.info("Controllers generated under: {}", controllerDir.toAbsolutePath());
     }
 
     /**
@@ -394,14 +394,10 @@ public class ControllerGenerator {
                         .append(" ")
                         .append(parameterName);
 
-                if (index < primaryKeyColumns.size() - 1) {
-                    stringBuilder.append(",\n");
-                } else {
-                    stringBuilder.append(",\n");
-                }
+                stringBuilder.append(",\n");
             }
 
-            stringBuilder.append("            @RequestBody ").append(dtoName).append(" dto) {\n");
+            stringBuilder.append("            @Valid @RequestBody ").append(dtoName).append(" dto) {\n");
             stringBuilder.append("        return ResponseEntity.ok(")
                     .append(serviceName)
                     .append(".update")
@@ -421,7 +417,7 @@ public class ControllerGenerator {
                 .append(label)
                 .append(" identifier\", required = true)\n");
         stringBuilder.append("            @PathVariable ").append(primaryKeyType).append(" id,\n");
-        stringBuilder.append("            @RequestBody ").append(dtoName).append(" dto) {\n");
+        stringBuilder.append("            @Valid @RequestBody ").append(dtoName).append(" dto) {\n");
         stringBuilder.append("        return ResponseEntity.ok(")
                 .append(serviceName)
                 .append(".update")

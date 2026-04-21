@@ -834,7 +834,7 @@ public class EntitySchemaValidator {
 
     private ForeignKeyDefinition parseForeignKeyConstraint(String sourceTableName, String sqlSegment) {
         Pattern pattern = Pattern.compile(
-                "(?is)(?:CONSTRAINT\\s+[^\\s]+\\s+)?FOREIGN\\s+KEY\\s*\\(([^)]+)\\)\\s+REFERENCES\\s+([\\w.\"]+)\\s*\\(([^)]+)\\)"
+                "(?is)(?:CONSTRAINT\\s+\\S+\\s+)?FOREIGN\\s+KEY\\s*\\(([^)]+)\\)\\s+REFERENCES\\s+([\\w.\"]+)\\s*\\(([^)]+)\\)"
         );
 
         Matcher matcher = pattern.matcher(sqlSegment);
@@ -916,6 +916,12 @@ public class EntitySchemaValidator {
         return segments;
     }
 
+    /**
+     * Parses Java field definitions from a class body.
+     *
+     * @param content Java source content
+     * @return parsed field definitions
+     */
     private List<JavaFieldDefinition> parseJavaFields(String content) {
         List<JavaFieldDefinition> fieldDefinitions = new ArrayList<>();
 
@@ -947,7 +953,6 @@ public class EntitySchemaValidator {
                 if (annotationParenthesesDepth <= 0) {
                     pendingAnnotations.add(currentAnnotation.toString().trim());
                     currentAnnotation = null;
-                    annotationParenthesesDepth = 0;
                 }
 
                 continue;
@@ -960,7 +965,6 @@ public class EntitySchemaValidator {
                 if (annotationParenthesesDepth <= 0) {
                     pendingAnnotations.add(currentAnnotation.toString().trim());
                     currentAnnotation = null;
-                    annotationParenthesesDepth = 0;
                 }
 
                 continue;
@@ -978,7 +982,7 @@ public class EntitySchemaValidator {
                     ));
                 }
 
-                pendingAnnotations = new ArrayList<>();
+                pendingAnnotations.clear();
                 continue;
             }
 
@@ -986,9 +990,7 @@ public class EntitySchemaValidator {
                     || line.startsWith("public ")
                     || line.startsWith("protected ")
                     || line.startsWith("private ")) {
-                pendingAnnotations = new ArrayList<>();
-                currentAnnotation = null;
-                annotationParenthesesDepth = 0;
+                pendingAnnotations.clear();
             }
         }
 
@@ -1007,6 +1009,12 @@ public class EntitySchemaValidator {
         return count;
     }
 
+    /**
+     * Parses raw annotation lines into structured {@link AnnotationDefinition} objects.
+     *
+     * @param annotationLines list of annotation lines (e.g. "@Column(name = \"id\")")
+     * @return list of parsed annotation definitions with extracted name and attributes
+     */
     private List<AnnotationDefinition> parseAnnotations(List<String> annotationLines) {
         List<AnnotationDefinition> annotations = new ArrayList<>();
 
@@ -1029,6 +1037,12 @@ public class EntitySchemaValidator {
         return annotations;
     }
 
+    /**
+     * Parses raw annotation argument string into a map of attribute name-value pairs.
+     *
+     * @param rawArguments raw annotation arguments (e.g. "name = \"id\", nullable = false")
+     * @return ordered map of attribute names to their resolved values
+     */
     private Map<String, String> parseAnnotationAttributes(String rawArguments) {
         Map<String, String> attributes = new LinkedHashMap<>();
 
@@ -1246,7 +1260,7 @@ public class EntitySchemaValidator {
             return List.of(singleJoinColumnName);
         }
 
-        Matcher sectionMatcher = Pattern.compile(attributeName + "\\s*=\\s*\\{(.*?)\\}", Pattern.DOTALL)
+        Matcher sectionMatcher = Pattern.compile(attributeName + "\\s*=\\s*\\{(.*?)}", Pattern.DOTALL)
                 .matcher(rawJoinTableArguments);
         if (!sectionMatcher.find()) {
             return List.of();
@@ -1600,17 +1614,6 @@ public class EntitySchemaValidator {
                 validateNumericConstraint(entityDefinition, columnDefinition, javaFieldDefinition, violations);
             }
         }
-    }
-
-    private boolean isBooleanLikeColumn(ColumnDefinition columnDefinition) {
-        if (columnDefinition.sqlType() == null) {
-            return false;
-        }
-
-        String sqlType = columnDefinition.sqlType().toLowerCase(Locale.ROOT);
-        return sqlType.equals("bool")
-                || sqlType.equals("boolean")
-                || sqlType.equals("bit");
     }
 
     private boolean isStringLikeColumn(ColumnDefinition columnDefinition) {

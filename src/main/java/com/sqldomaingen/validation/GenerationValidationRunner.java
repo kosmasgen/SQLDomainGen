@@ -9,6 +9,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * Collects generation validation information and produces a unified report.
@@ -21,6 +22,7 @@ public class GenerationValidationRunner {
      * @param inputFile input SQL file path
      * @param outputDir output project directory
      * @param basePackage base Java package
+     * @param author Liquibase/generation author
      * @param parsedTables all parsed tables
      * @param javaGenerationTables filtered Java-generation tables
      * @param models generated entity models
@@ -30,20 +32,137 @@ public class GenerationValidationRunner {
             String inputFile,
             String outputDir,
             String basePackage,
+            String author,
             List<Table> parsedTables,
             List<Table> javaGenerationTables,
             List<Entity> models
     ) {
-        GenerationValidationReport report = new GenerationValidationReport(inputFile, outputDir, basePackage);
+        GenerationValidationReport report =
+                new GenerationValidationReport(inputFile, outputDir, basePackage, author);
 
-        appendInputSection(report, inputFile, outputDir, basePackage, parsedTables, javaGenerationTables, models);
-        appendGeneratedCountsSection(report, javaGenerationTables, models, outputDir, basePackage);
+        appendGenerationSummarySection(report, outputDir, basePackage, parsedTables);
+
+        appendInfrastructureSection(report, outputDir, basePackage);
+
+        appendParsedTableNamesSection(report, parsedTables);
+
+        //appendJavaGenerationTablesSection(report, javaGenerationTables);
+
+        appendGeneratedModelsSection(report, models);
+
         appendLiquibaseSection(report, outputDir);
+
         appendSchemaValidationChecklistSection(report);
+
         appendTodoEntitiesSection(report);
+
         appendSchemaValidationSection(report);
 
         return report;
+    }
+
+    /**
+     * Appends the generation summary section using actual filesystem counts.
+     *
+     * @param report target report
+     * @param outputDir output directory
+     * @param basePackage base package
+     * @param parsedTables parsed tables
+     */
+    private void appendGenerationSummarySection(
+            GenerationValidationReport report,
+            String outputDir,
+            String basePackage,
+            List<Table> parsedTables
+    ) {
+        List<String> details = new ArrayList<>();
+        List<String> violations = new ArrayList<>();
+
+        Path entityDir = PackageResolver.resolvePath(outputDir, basePackage, "entity");
+        Path dtoDir = PackageResolver.resolvePath(outputDir, basePackage, "dto");
+        Path repositoryDir = PackageResolver.resolvePath(outputDir, basePackage, "repository");
+        Path mapperDir = PackageResolver.resolvePath(outputDir, basePackage, "mapper");
+        Path serviceDir = PackageResolver.resolvePath(outputDir, basePackage, "service");
+        Path serviceImplDir = PackageResolver.resolvePath(outputDir, basePackage, "serviceImpl");
+        Path controllerDir = PackageResolver.resolvePath(outputDir, basePackage, "controller");
+
+        int entityCount = countJavaFiles(entityDir);
+        int dtoCount = countJavaFiles(dtoDir);
+        int repositoryCount = countJavaFiles(repositoryDir);
+        int mapperCount = countJavaFiles(mapperDir);
+        int serviceCount = countJavaFiles(serviceDir);
+        int serviceImplCount = countJavaFiles(serviceImplDir);
+        int controllerCount = countJavaFiles(controllerDir);
+
+        details.add("Parsed tables: " + safeSize(parsedTables));
+        details.add("Generated files:");
+        details.add("Entities: " + entityCount);
+        details.add("Dto: " + dtoCount);
+        details.add("Repositories: " + repositoryCount);
+        details.add("Mappers: " + mapperCount + " (include BaseMapper)");
+        details.add("Services: " + serviceCount);
+        details.add("ServiceImpls: " + serviceImplCount);
+        details.add("Controllers: " + controllerCount);
+
+        if (parsedTables == null || parsedTables.isEmpty()) {
+            violations.add("Parsed tables list is empty.");
+        }
+        if (entityCount == 0) {
+            violations.add("No entity files were found.");
+        }
+        if (dtoCount == 0) {
+            violations.add("No dto files were found.");
+        }
+        if (repositoryCount == 0) {
+            violations.add("No repository files were found.");
+        }
+        if (mapperCount == 0) {
+            violations.add("No mapper files were found.");
+        }
+        if (serviceCount == 0) {
+            violations.add("No service files were found.");
+        }
+        if (serviceImplCount == 0) {
+            violations.add("No serviceImpl files were found.");
+        }
+        if (controllerCount == 0) {
+            violations.add("No controller files were found.");
+        }
+
+        report.addSection("Generation Summary", details, violations);
+    }
+
+    /**
+     * Appends the infrastructure section using actual filesystem counts.
+     *
+     * @param report target report
+     * @param outputDir output directory
+     * @param basePackage base package
+     */
+    private void appendInfrastructureSection(
+            GenerationValidationReport report,
+            String outputDir,
+            String basePackage
+    ) {
+        List<String> details = new ArrayList<>();
+
+        Path configDir = PackageResolver.resolvePath(outputDir, basePackage, "config");
+        Path exceptionDir = PackageResolver.resolvePath(outputDir, basePackage, "exception");
+        Path pomFile = Paths.get(outputDir, "pom.xml");
+        Path applicationPropertiesFile = Paths.get(
+                outputDir,
+                "src",
+                "main",
+                "resources",
+                "application.properties"
+        );
+
+        details.add("Config Classes: " + countJavaFiles(configDir));
+        details.add("Exception Classes: " + countJavaFiles(exceptionDir));
+        details.add("Build Files (pom.xml): " + (Files.exists(pomFile) ? 1 : 0));
+        details.add("Configuration Files (application.properties): " + (Files.exists(applicationPropertiesFile) ? 1 : 0));
+
+        report.addSection("Infrastructure", details, List.of());
     }
 
     /**
@@ -70,6 +189,7 @@ public class GenerationValidationRunner {
 
     /**
      * Appends schema validation results into the report.
+     * The section is added ONLY when violations exist.
      *
      * @param report target report
      */
@@ -81,143 +201,18 @@ public class GenerationValidationRunner {
             EntitySchemaValidationService service = new EntitySchemaValidationService();
             List<String> results = service.validate();
 
-            details.add("Schema validation executed.");
-
-            if (results.isEmpty()) {
-                details.add("No schema violations detected.");
-            } else {
+            if (!results.isEmpty()) {
                 details.add("Schema violations detected: " + results.size());
                 violations.addAll(results);
+                report.addSection("Schema Validation", details, violations);
             }
+
         } catch (Exception exception) {
             violations.add("Schema validation failed: " + exception.getMessage());
+            report.addSection("Schema Validation", details, violations);
         }
-
-        report.addSection("Schema Validation", details, violations);
     }
 
-    /**
-     * Appends the input summary section.
-     *
-     * @param report target report
-     * @param inputFile input SQL file path
-     * @param outputDir output directory
-     * @param basePackage base package
-     * @param parsedTables parsed tables
-     * @param javaGenerationTables Java-generation tables
-     * @param models generated models
-     */
-    private void appendInputSection(
-            GenerationValidationReport report,
-            String inputFile,
-            String outputDir,
-            String basePackage,
-            List<Table> parsedTables,
-            List<Table> javaGenerationTables,
-            List<Entity> models
-    ) {
-        List<String> details = new ArrayList<>();
-        List<String> violations = new ArrayList<>();
-
-        details.add("Input file: " + inputFile);
-        details.add("Output directory: " + outputDir);
-        details.add("Base package: " + basePackage);
-        details.add("Parsed tables: " + safeSize(parsedTables));
-        details.add("Java generation tables: " + safeSize(javaGenerationTables));
-        details.add("Generated entity models: " + safeSize(models));
-
-        if (isBlank(inputFile)) {
-            violations.add("Input file path is blank.");
-        }
-        if (isBlank(outputDir)) {
-            violations.add("Output directory is blank.");
-        }
-        if (isBlank(basePackage)) {
-            violations.add("Base package is blank.");
-        }
-        if (parsedTables == null || parsedTables.isEmpty()) {
-            violations.add("Parsed tables list is empty.");
-        }
-        if (models == null || models.isEmpty()) {
-            violations.add("Generated entity model list is empty.");
-        }
-
-        report.addSection("Generation Inputs", details, violations);
-    }
-
-
-    /**
-     * Appends generated file count information.
-     *
-     * @param report target report
-     * @param javaGenerationTables Java-generation tables
-     * @param models generated models
-     * @param outputDir output directory
-     * @param basePackage base package
-     */
-    private void appendGeneratedCountsSection(
-            GenerationValidationReport report,
-            List<Table> javaGenerationTables,
-            List<Entity> models,
-            String outputDir,
-            String basePackage
-    ) {
-        List<String> details = new ArrayList<>();
-        List<String> violations = new ArrayList<>();
-
-        Path entityDir = PackageResolver.resolvePath(outputDir, basePackage, "entity");
-        Path dtoDir = PackageResolver.resolvePath(outputDir, basePackage, "dto");
-        Path repositoryDir = PackageResolver.resolvePath(outputDir, basePackage, "repository");
-        Path mapperDir = PackageResolver.resolvePath(outputDir, basePackage, "mapper");
-        Path serviceDir = PackageResolver.resolvePath(outputDir, basePackage, "service");
-        Path serviceImplDir = PackageResolver.resolvePath(outputDir, basePackage, "serviceImpl");
-        Path controllerDir = PackageResolver.resolvePath(outputDir, basePackage, "controller");
-
-        int expectedJavaArtifacts = safeSize(javaGenerationTables);
-        int expectedEntityFiles = safeSize(models);
-
-        int entityFileCount = countJavaFiles(entityDir);
-        int dtoFileCount = countJavaFiles(dtoDir);
-        int repositoryFileCount = countJavaFiles(repositoryDir);
-        int mapperFileCount = countJavaFiles(mapperDir);
-        int serviceFileCount = countJavaFiles(serviceDir);
-        int serviceImplFileCount = countJavaFiles(serviceImplDir);
-        int controllerFileCount = countJavaFiles(controllerDir);
-
-        details.add("Expected generated table count: " + expectedJavaArtifacts);
-        details.add("Expected generated entity model count: " + expectedEntityFiles);
-        details.add("Entity java files: " + entityFileCount);
-        details.add("DTO java files: " + dtoFileCount);
-        details.add("Repository java files: " + repositoryFileCount);
-        details.add("Mapper java files: " + mapperFileCount);
-        details.add("Service java files: " + serviceFileCount);
-        details.add("ServiceImpl java files: " + serviceImplFileCount);
-        details.add("Controller java files: " + controllerFileCount);
-
-        if (expectedJavaArtifacts > 0 && repositoryFileCount == 0) {
-            violations.add("No repository files were generated.");
-        }
-        if (expectedJavaArtifacts > 0 && mapperFileCount == 0) {
-            violations.add("No mapper files were generated.");
-        }
-        if (expectedJavaArtifacts > 0 && serviceFileCount == 0) {
-            violations.add("No service files were generated.");
-        }
-        if (expectedJavaArtifacts > 0 && serviceImplFileCount == 0) {
-            violations.add("No service implementation files were generated.");
-        }
-        if (expectedJavaArtifacts > 0 && controllerFileCount == 0) {
-            violations.add("No controller files were generated.");
-        }
-        if (expectedEntityFiles > 0 && entityFileCount == 0) {
-            violations.add("No entity files were generated.");
-        }
-        if (expectedEntityFiles > 0 && dtoFileCount == 0) {
-            violations.add("No DTO files were generated.");
-        }
-
-        report.addSection("Generated File Counts", details, violations);
-    }
 
     /**
      * Appends the Liquibase section.
@@ -243,29 +238,27 @@ public class GenerationValidationRunner {
                 "v0.1.0"
         );
 
-        details.add("Liquibase changelog root: " + changelogRoot.toAbsolutePath());
-        details.add("Liquibase xml file count: " + countXmlFiles(changelogRoot));
+        details.add("Liquibase xml files: " + countXmlFiles(changelogRoot));
 
-        validateDirectoryExists(changelogRoot, "Liquibase changelog directory", violations);
+        validateDirectoryExists(changelogRoot, violations);
 
         report.addSection("Liquibase Output", details, violations);
     }
 
     /**
-     * Validates that a directory exists.
+     * Validates that the Liquibase changelog directory exists.
      *
      * @param directory directory path
-     * @param label human-readable label
      * @param violations target violations
      */
-    private void validateDirectoryExists(Path directory, String label, List<String> violations) {
+    private void validateDirectoryExists(Path directory, List<String> violations) {
         if (!Files.exists(directory)) {
-            violations.add(label + " does not exist: " + directory.toAbsolutePath());
+            violations.add("Liquibase changelog directory does not exist: " + directory.toAbsolutePath());
             return;
         }
 
         if (!Files.isDirectory(directory)) {
-            violations.add(label + " is not a directory: " + directory.toAbsolutePath());
+            violations.add("Liquibase changelog directory is not a directory: " + directory.toAbsolutePath());
         }
     }
 
@@ -340,6 +333,112 @@ public class GenerationValidationRunner {
     }
 
     /**
+     * Appends a report section containing parsed table names in alphabetical order.
+     *
+     * @param report target report
+     * @param parsedTables already parsed schema tables
+     */
+    private void appendParsedTableNamesSection(
+            GenerationValidationReport report,
+            List<Table> parsedTables
+    ) {
+        List<String> details = new ArrayList<>();
+        List<String> violations = new ArrayList<>();
+
+        if (parsedTables == null) {
+            violations.add("Parsed tables list is null.");
+            report.addSection("Schema Tables", details, violations);
+            return;
+        }
+
+        List<String> tableNames = parsedTables.stream()
+                .filter(Objects::nonNull)
+                .map(Table::getName)
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(tableName -> !tableName.isBlank())
+                .map(this::stripSchemaPrefix)
+                .distinct()
+                .sorted(String.CASE_INSENSITIVE_ORDER)
+                .toList();
+
+        if (tableNames.isEmpty()) {
+            violations.add("No parsed table names were found.");
+            report.addSection("Schema Tables", details, violations);
+            return;
+        }
+
+        details.addAll(tableNames);
+
+        report.addSection("Schema Tables", details, violations);
+    }
+
+    /**
+     * Appends Java generation tables section.
+     *
+     * @param report validation report
+     * @param javaGenerationTables tables used for Java generation
+     */
+    private void appendJavaGenerationTablesSection(
+            GenerationValidationReport report,
+            List<Table> javaGenerationTables
+    ) {
+        List<String> details = new ArrayList<>();
+
+        if (javaGenerationTables == null || javaGenerationTables.isEmpty()) {
+            details.add("No tables were used for Java generation.");
+            report.addSection("Java Generation Tables", details, List.of());
+            return;
+        }
+
+        details.add("Total tables: " + javaGenerationTables.size());
+
+        for (Table table : javaGenerationTables) {
+            details.add(table.getName());
+        }
+
+        report.addSection("Java Generation Tables", details, List.of());
+    }
+
+    /**
+     * Appends generated models section.
+     *
+     * @param report validation report
+     * @param models generated entity models
+     */
+    private void appendGeneratedModelsSection(
+            GenerationValidationReport report,
+            List<Entity> models
+    ) {
+        List<String> details = new ArrayList<>();
+
+        if (models == null || models.isEmpty()) {
+            details.add("No models were generated.");
+            report.addSection("Generated Models", details, List.of());
+            return;
+        }
+
+        details.add("Total models: " + models.size());
+
+        for (Entity entity : models) {
+            details.add(entity.getName());
+        }
+
+        report.addSection("Generated Models", details, List.of());
+    }
+
+    /**
+     * Removes the schema prefix from a physical table name.
+     *
+     * @param tableName physical table name
+     * @return schema-free table name
+     */
+    private String stripSchemaPrefix(String tableName) {
+        int dotIndex = tableName.indexOf('.');
+        return dotIndex >= 0 ? tableName.substring(dotIndex + 1) : tableName;
+    }
+
+    /**
      * Returns a safe size for a list.
      *
      * @param values source list
@@ -349,13 +448,5 @@ public class GenerationValidationRunner {
         return values == null ? 0 : values.size();
     }
 
-    /**
-     * Returns whether a string is blank.
-     *
-     * @param value source value
-     * @return true when blank
-     */
-    private boolean isBlank(String value) {
-        return value == null || value.isBlank();
-    }
+
 }

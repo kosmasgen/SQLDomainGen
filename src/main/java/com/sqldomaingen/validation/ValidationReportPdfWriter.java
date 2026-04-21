@@ -46,6 +46,7 @@ public class ValidationReportPdfWriter {
         lines.add("GENERATION VALIDATION REPORT");
         lines.add("");
         lines.add("Generated at: " + report.getGeneratedAt().format(formatter));
+        lines.add("Author: " + report.getAuthor());
         lines.add("Input file: " + report.getInputFile());
         lines.add("Output dir: " + report.getOutputDir());
         lines.add("Base package: " + report.getBasePackage());
@@ -57,19 +58,28 @@ public class ValidationReportPdfWriter {
 
             if (!section.details().isEmpty()) {
                 lines.add("Details:");
-                for (String detail : section.details()) {
-                    lines.add(" - " + detail);
+
+                if ("Schema Tables".equals(section.title())) {
+                    int index = 1;
+                    for (String detail : section.details()) {
+                        lines.add(index + ". " + detail);
+                        index++;
+                    }
+                } else {
+                    lines.addAll(section.details());
                 }
             }
 
-            if (!section.violations().isEmpty()) {
-                lines.add("Violations:");
-                for (String violation : section.violations()) {
-                    lines.add(" - " + violation);
-                }
+            if ("Infrastructure".equals(section.title())) {
+                lines.add("");
+                continue;
+            }
+
+            if (section.violations().isEmpty()) {
+                lines.add("Violations: None");
             } else {
                 lines.add("Violations:");
-                lines.add(" - None");
+                lines.addAll(section.violations());
             }
 
             lines.add("");
@@ -77,7 +87,6 @@ public class ValidationReportPdfWriter {
 
         return lines;
     }
-
     /**
      * Builds a minimal valid PDF byte array.
      *
@@ -189,7 +198,7 @@ public class ValidationReportPdfWriter {
         List<String> currentPage = new ArrayList<>();
 
         for (String line : lines) {
-            List<String> wrappedLines = wrapLine(line, 100);
+            List<String> wrappedLines = wrapLine(line);
 
             for (String wrappedLine : wrappedLines) {
                 if (currentPage.size() >= Constants.MAX_LINES_PER_PAGE) {
@@ -213,24 +222,23 @@ public class ValidationReportPdfWriter {
     }
 
     /**
-     * Wraps one line to a maximum character width.
+     * Wraps one line to a fixed maximum character width.
      *
      * @param line source line
-     * @param maxLength max line length
      * @return wrapped lines
      */
-    private List<String> wrapLine(String line, int maxLength) {
+    private List<String> wrapLine(String line) {
         List<String> wrappedLines = new ArrayList<>();
         String safeLine = line == null ? "" : line;
 
-        if (safeLine.length() <= maxLength) {
+        if (safeLine.length() <= Constants.MAX_LINE_LENGTH) {
             wrappedLines.add(safeLine);
             return wrappedLines;
         }
 
         int startIndex = 0;
         while (startIndex < safeLine.length()) {
-            int endIndex = Math.min(startIndex + maxLength, safeLine.length());
+            int endIndex = Math.min(startIndex + Constants.MAX_LINE_LENGTH, safeLine.length());
             wrappedLines.add(safeLine.substring(startIndex, endIndex));
             startIndex = endIndex;
         }

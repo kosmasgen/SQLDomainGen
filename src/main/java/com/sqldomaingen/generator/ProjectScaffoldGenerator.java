@@ -56,6 +56,7 @@ public class ProjectScaffoldGenerator {
 
         GeneratorSupport.ensureDirectory(resolveBaseJavaDir(projectRoot, pkg, true));
 
+        copyMavenWrapper(projectRoot);
         log.info("Project scaffold created under: {}", projectRoot.toAbsolutePath());
     }
 
@@ -413,6 +414,89 @@ springdoc.writer-with-order-by-keys=true
         }
 
         return projectRoot.resolve(Path.of("src", "main", "java", basePath));
+    }
+
+    /**
+     * Copies the Maven Wrapper files into the generated project root
+     * so the generated project can run Maven commands independently.
+     *
+     * @param projectRoot generated project root directory
+     */
+    private void copyMavenWrapper(Path projectRoot) {
+        Objects.requireNonNull(projectRoot, "projectRoot must not be null");
+
+        Path generatorRoot = Path.of("").toAbsolutePath().normalize();
+        Path sourceMvnwCmd = generatorRoot.resolve("mvnw.cmd");
+        Path sourceMvnw = generatorRoot.resolve("mvnw");
+        Path sourceMvnDir = generatorRoot.resolve(".mvn");
+
+        if (!java.nio.file.Files.exists(sourceMvnwCmd)) {
+            throw new IllegalStateException("Missing Maven wrapper file: " + sourceMvnwCmd);
+        }
+
+        if (!java.nio.file.Files.exists(sourceMvnw)) {
+            throw new IllegalStateException("Missing Maven wrapper file: " + sourceMvnw);
+        }
+
+        if (!java.nio.file.Files.isDirectory(sourceMvnDir)) {
+            throw new IllegalStateException("Missing Maven wrapper directory: " + sourceMvnDir);
+        }
+
+        try {
+            java.nio.file.Files.copy(
+                    sourceMvnwCmd,
+                    projectRoot.resolve("mvnw.cmd"),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            );
+
+            java.nio.file.Files.copy(
+                    sourceMvnw,
+                    projectRoot.resolve("mvnw"),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            );
+
+            Path targetMvnDir = projectRoot.resolve(".mvn");
+
+            if (java.nio.file.Files.exists(targetMvnDir)) {
+                try (java.util.stream.Stream<Path> targetPaths = java.nio.file.Files.walk(targetMvnDir)) {
+                    targetPaths.sorted(java.util.Comparator.reverseOrder())
+                            .forEach(path -> {
+                                try {
+                                    java.nio.file.Files.delete(path);
+                                } catch (java.io.IOException exception) {
+                                    throw new RuntimeException("Failed to delete existing wrapper path: " + path, exception);
+                                }
+                            });
+                }
+            }
+
+            try (java.util.stream.Stream<Path> sourcePaths = java.nio.file.Files.walk(sourceMvnDir)) {
+                sourcePaths.forEach(sourcePath -> {
+                    try {
+                        Path relativePath = sourceMvnDir.relativize(sourcePath);
+                        Path targetPath = targetMvnDir.resolve(relativePath);
+
+                        if (java.nio.file.Files.isDirectory(sourcePath)) {
+                            java.nio.file.Files.createDirectories(targetPath);
+                        } else {
+                            java.nio.file.Files.createDirectories(targetPath.getParent());
+                            java.nio.file.Files.copy(
+                                    sourcePath,
+                                    targetPath,
+                                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+                            );
+                        }
+                    } catch (java.io.IOException exception) {
+                        throw new RuntimeException("Failed to copy wrapper path: " + sourcePath, exception);
+                    }
+                });
+            }
+
+            log.info("Maven wrapper copied to generated project root: {}", projectRoot.toAbsolutePath());
+
+        } catch (java.io.IOException exception) {
+            throw new RuntimeException("Failed to copy Maven wrapper into generated project.", exception);
+        }
     }
 
 }

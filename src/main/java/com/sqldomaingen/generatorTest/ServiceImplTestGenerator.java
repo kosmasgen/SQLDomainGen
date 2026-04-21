@@ -95,6 +95,7 @@ public class ServiceImplTestGenerator {
                     testPackage,
                     entityPackage,
                     dtoPackage,
+                    dtoFields,
                     repositoryPackage,
                     mapperPackage,
                     serviceImplPackage,
@@ -148,9 +149,28 @@ public class ServiceImplTestGenerator {
                     primaryKeyType
             );
             appendCreateTest(content, entityName, dtoName, repositoryVar, mapperVar, serviceVar);
+            appendCreateUniqueConstraintTests(
+                    content,
+                    table,
+                    entityName,
+                    dtoName,
+                    repositoryVar,
+                    serviceVar
+            );
             appendPatchSuccessTest(
                     content,
                     table,
+                    entityName,
+                    dtoName,
+                    repositoryVar,
+                    mapperVar,
+                    serviceVar,
+                    primaryKeyType
+            );
+            appendPatchValidationTests(
+                    content,
+                    table,
+                    dtoFields,
                     entityName,
                     dtoName,
                     repositoryVar,
@@ -186,6 +206,7 @@ public class ServiceImplTestGenerator {
      * @param testPackage generated test package name
      * @param entityPackage entity package name
      * @param dtoPackage dto package name
+     * @param dtoFields actual generated DTO fields
      * @param repositoryPackage repository package name
      * @param mapperPackage mapper package name
      * @param serviceImplPackage service implementation package name
@@ -200,6 +221,7 @@ public class ServiceImplTestGenerator {
             String testPackage,
             String entityPackage,
             String dtoPackage,
+            List<Field> dtoFields,
             String repositoryPackage,
             String mapperPackage,
             String serviceImplPackage,
@@ -211,12 +233,56 @@ public class ServiceImplTestGenerator {
     ) {
         content.append("import ").append(entityPackage).append(".").append(entityName).append(";\n");
         content.append("import ").append(dtoPackage).append(".").append(dtoName).append(";\n");
+
+        for (String nestedDtoType : resolveNestedDtoImports(dtoFields, dtoName)) {
+            content.append("import ").append(dtoPackage).append(".").append(nestedDtoType).append(";\n");
+        }
+
         content.append("import ").append(repositoryPackage).append(".").append(repositoryName).append(";\n");
         content.append("import ").append(mapperPackage).append(".").append(mapperName).append(";\n");
 
         if (!Objects.equals(testPackage, serviceImplPackage)) {
             content.append("import ").append(serviceImplPackage).append(".").append(serviceImplName).append(";\n");
         }
+    }
+
+    /**
+     * Resolves nested DTO imports required by generated service implementation tests.
+     *
+     * @param dtoFields actual generated DTO fields
+     * @param rootDtoName current root DTO simple name
+     * @return nested DTO simple names that must be imported
+     */
+    private Set<String> resolveNestedDtoImports(List<Field> dtoFields, String rootDtoName) {
+        Set<String> imports = new LinkedHashSet<>();
+
+        if (dtoFields == null || dtoFields.isEmpty()) {
+            return imports;
+        }
+
+        for (Field field : dtoFields) {
+            if (field == null || field.getType() == null || field.getType().isBlank()) {
+                continue;
+            }
+
+            String simpleType = normalizeJavaType(field.getType());
+
+            if (simpleType.isBlank()) {
+                continue;
+            }
+
+            if (!simpleType.endsWith("Dto")) {
+                continue;
+            }
+
+            if (simpleType.equals(rootDtoName)) {
+                continue;
+            }
+
+            imports.add(simpleType);
+        }
+
+        return imports;
     }
 
     /**
@@ -669,6 +735,146 @@ public class ServiceImplTestGenerator {
     }
 
     /**
+     * Appends create unique constraint tests.
+     */
+    private void appendCreateUniqueConstraintTests(
+            StringBuilder content,
+            Table table,
+            String entityName,
+            String dtoName,
+            String repositoryVar,
+            String serviceVar
+    ) {
+        table.getColumns().stream()
+                .filter(Column::isUnique)
+                .forEach(column -> {
+
+                    String fieldName = NamingConverter.toPascalCase(
+                            GeneratorSupport.unquoteIdentifier(column.getName())
+                    );
+
+                    String methodSuffix = "shouldThrowBadRequestWhenCreate" + entityName + "WithExisting" + fieldName;
+
+                    content.append("    @Test\n");
+                    content.append("    void ").append(methodSuffix).append("() {\n");
+                    content.append("        ").append(dtoName).append(" requestDto = createSample")
+                            .append(entityName).append("Dto();\n\n");
+
+                    content.append("        given(").append(repositoryVar)
+                            .append(".existsBy").append(fieldName)
+                            .append("(requestDto.get").append(fieldName).append("()))")
+                            .append(".willReturn(true);\n\n");
+
+                    content.append("        assertThrows(GeneratedRuntimeException.class, () -> ")
+                            .append(serviceVar).append(".create").append(entityName)
+                            .append("(requestDto));\n\n");
+
+                    content.append("        verify(").append(repositoryVar).append(", never()).save(any());\n");
+                    content.append("    }\n\n");
+                });
+    }
+
+    /**
+     * Appends update validation (not-null) tests.
+     */
+    private void appendPatchValidationTests(
+            StringBuilder content,
+            Table table,
+            List<Field> dtoFields,
+            String entityName,
+            String dtoName,
+            String repositoryVar,
+            String mapperVar,
+            String serviceVar,
+            String primaryKeyType
+    ) {
+        String serviceArguments = buildServicePrimaryKeyArguments(table);
+
+        loadRequiredDtoFields(table, dtoFields).forEach(field -> {
+
+            String fieldName = NamingConverter.toPascalCase(field.getName());
+
+            content.append("    @Test\n");
+            content.append("    void shouldThrowWhenUpdate").append(entityName)
+                    .append(fieldName).append("IsNull() {\n");
+
+            content.append(buildPrimaryKeyDeclarationCode(table, primaryKeyType));
+
+            content.append("        ").append(dtoName).append(" requestDto = createPatch")
+                    .append(entityName).append("Dto();\n");
+            content.append("        requestDto.set").append(fieldName).append("(null);\n\n");
+
+            content.append("        given(").append(repositoryVar)
+                    .append(".findById(id)).willReturn(Optional.of(createSample")
+                    .append(entityName).append("Entity()));\n\n");
+
+            content.append("        assertThrows(IllegalArgumentException.class, () -> ")
+                    .append(serviceVar).append(".update").append(entityName)
+                    .append("(").append(serviceArguments).append(", requestDto));\n\n");
+
+            content.append("        verify(").append(mapperVar).append(", never()).partialUpdate(any(), any());\n");
+            content.append("        verify(").append(repositoryVar).append(", never()).save(any());\n");
+            content.append("    }\n\n");
+        });
+    }
+
+    /**
+     * Loads required DTO fields that actually exist in the generated DTO source.
+     *
+     * @param table current table
+     * @param dtoFields actual generated DTO fields
+     * @return dto fields that are required and safe for null-validation tests
+     */
+    private List<Field> loadRequiredDtoFields(Table table, List<Field> dtoFields) {
+        if (dtoFields == null || dtoFields.isEmpty()) {
+            return List.of();
+        }
+
+        Set<String> requiredColumnFieldNames = table.getColumns().stream()
+                .filter(Objects::nonNull)
+                .filter(column -> !column.isNullable())
+                .filter(column -> !column.isPrimaryKey())
+                .map(Column::getName)
+                .filter(Objects::nonNull)
+                .map(GeneratorSupport::unquoteIdentifier)
+                .map(NamingConverter::toCamelCase)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+
+        return dtoFields.stream()
+                .filter(Objects::nonNull)
+                .filter(field -> field.getName() != null && !field.getName().isBlank())
+                .filter(field -> requiredColumnFieldNames.contains(field.getName()))
+                .filter(field -> !"id".equals(field.getName()))
+                .filter(field -> !"dateCreated".equals(field.getName()))
+                .filter(field -> !"lastUpdated".equals(field.getName()))
+                .filter(this::canAssignNullToField)
+                .toList();
+    }
+
+    /**
+     * Determines whether the generated DTO field can safely receive null in validation tests.
+     *
+     * @param field dto field metadata
+     * @return true when null can be assigned safely
+     */
+    private boolean canAssignNullToField(Field field) {
+        if (field == null) {
+            return false;
+        }
+
+        String fieldType = normalizeJavaType(field.getType());
+
+        return !"int".equals(fieldType)
+                && !"long".equals(fieldType)
+                && !"short".equals(fieldType)
+                && !"byte".equals(fieldType)
+                && !"boolean".equals(fieldType)
+                && !"double".equals(fieldType)
+                && !"float".equals(fieldType)
+                && !"char".equals(fieldType);
+    }
+
+    /**
      * Appends fixture factory methods for the generated service test.
      *
      * @param content generated test content
@@ -893,8 +1099,16 @@ public class ServiceImplTestGenerator {
      * @return Java literal source code
      */
     private String sampleLiteralForDtoField(Field field, int variant) {
+        if (field == null) {
+            return "null";
+        }
+
         String normalizedJavaType = normalizeJavaType(field.getType());
         String fieldName = field.getName();
+
+        if (normalizedJavaType.endsWith("Dto")) {
+            return "new " + normalizedJavaType + "()";
+        }
 
         return switch (normalizedJavaType) {
             case "UUID" -> buildUuidSampleLiteral(variant);

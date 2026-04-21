@@ -16,6 +16,7 @@ public class GenerationValidationReport {
     private final String basePackage;
     private final LocalDateTime generatedAt;
     private final List<Section> sections;
+    private final String author;
 
     /**
      * Creates a report for one generation run.
@@ -23,13 +24,25 @@ public class GenerationValidationReport {
      * @param inputFile input SQL file path
      * @param outputDir generation output directory
      * @param basePackage generated base package
+     * @param author Liquibase/generation author
      */
-    public GenerationValidationReport(String inputFile, String outputDir, String basePackage) {
+    public GenerationValidationReport(String inputFile, String outputDir, String basePackage, String author) {
         this.inputFile = inputFile == null ? "" : inputFile;
         this.outputDir = outputDir == null ? "" : outputDir;
         this.basePackage = basePackage == null ? "" : basePackage;
+        this.author = author == null ? "" : author;
         this.generatedAt = LocalDateTime.now();
         this.sections = new ArrayList<>();
+    }
+
+    /**
+     * Returns the generation author.
+     *
+     * @return generation author
+     */
+    @SuppressWarnings("unused")
+    public String getAuthor() {
+        return author;
     }
 
 
@@ -82,14 +95,6 @@ public class GenerationValidationReport {
         return getAllViolations().size();
     }
 
-    /**
-     * Returns whether the report contains any violations.
-     *
-     * @return true when at least one violation exists
-     */
-    public boolean hasViolations() {
-        return getTotalViolationCount() > 0;
-    }
 
     /**
      * Returns the input SQL file path.

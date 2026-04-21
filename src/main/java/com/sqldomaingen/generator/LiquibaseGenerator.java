@@ -4,6 +4,7 @@ import com.sqldomaingen.liquibase.LiquibaseDependencyGraphBuilder;
 import com.sqldomaingen.liquibase.TableDependencySorter;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
+import com.sqldomaingen.util.Constants;
 import com.sqldomaingen.util.GeneratorSupport;
 import lombok.extern.log4j.Log4j2;
 
@@ -13,7 +14,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import static com.sqldomaingen.util.Constants.DEFAULT_VERSION;
 
 /**
  * Generates the base Liquibase folder structure and root changelog files.
@@ -45,7 +45,7 @@ public class LiquibaseGenerator {
         Objects.requireNonNull(tables, "tables must not be null");
 
         Path migrationRoot = resolveMigrationRoot(outputDir);
-        Path versionDir = resolveVersionDirectory(migrationRoot, DEFAULT_VERSION);
+        Path versionDir = resolveVersionDirectory(migrationRoot);
 
         List<String> orderedChangelogFiles = buildOrderedChangelogFiles(tables);
 
@@ -59,13 +59,13 @@ public class LiquibaseGenerator {
 
         GeneratorSupport.writeFile(
                 versionDir.resolve("main.xml"),
-                buildVersionMainContent(orderedChangelogFiles, DEFAULT_VERSION),
+                buildVersionMainContent(orderedChangelogFiles),
                 overwrite
         );
 
         GeneratorSupport.writeFile(
                 migrationRoot.resolve("changelog-master.xml"),
-                buildMasterChangelogContent(DEFAULT_VERSION),
+                buildMasterChangelogContent(),
                 overwrite
         );
 
@@ -92,24 +92,23 @@ public class LiquibaseGenerator {
 
             GeneratorSupport.writeFile(
                     versionDir.resolve(fileName),
-                    buildTableChangelogContent(table, DEFAULT_VERSION, author, availableTableReferences),
+                    buildTableChangelogContent(table, author, availableTableReferences),
                     overwrite
             );
         }
     }
 
+
     /**
      * Builds the Liquibase changelog content for a single table and its audit table.
      *
      * @param table parsed table
-     * @param version Liquibase changelog version
      * @param author liquibase author
      * @param availableTableReferences available parsed table references
      * @return generated table changelog XML
      */
     private String buildTableChangelogContent(
             Table table,
-            String version,
             String author,
             Set<String> availableTableReferences
     ) {
@@ -129,7 +128,7 @@ public class LiquibaseGenerator {
         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
 
-""".formatted(version, changelogFileName));
+""".formatted(Constants.DEFAULT_VERSION, changelogFileName));
 
         builder.append("""
     <changeSet id="%s" author="%s">
@@ -170,7 +169,6 @@ public class LiquibaseGenerator {
 
         return builder.toString();
     }
-
     /**
      * Appends table-level CHECK constraints for the main table.
      *
@@ -787,57 +785,54 @@ public class LiquibaseGenerator {
     }
 
     /**
-     * Resolves the version-specific changelog directory.
+     * Resolves the default changelog directory.
      *
      * @param migrationRoot Liquibase migration root directory
-     * @param version Liquibase changelog version
-     * @return version changelog directory path
+     * @return changelog directory path
      */
-    private Path resolveVersionDirectory(Path migrationRoot, String version) {
+    private Path resolveVersionDirectory(Path migrationRoot) {
         return GeneratorSupport.ensureDirectory(
-                migrationRoot.resolve("changelogs").resolve(version)
+                migrationRoot.resolve("changelogs").resolve(Constants.DEFAULT_VERSION)
         );
     }
 
     /**
      * Builds the Liquibase master changelog content.
      *
-     * @param version Liquibase changelog version
      * @return generated master changelog XML
      */
-    private String buildMasterChangelogContent(String version) {
+    private String buildMasterChangelogContent() {
         return """
-                <?xml version="1.0" encoding="utf-8"?>
-                <databaseChangeLog
-                        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+            <?xml version="1.0" encoding="utf-8"?>
+            <databaseChangeLog
+                    xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                    xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
 
-                    <include file="changelogs/%s/main.xml" relativeToChangelogFile="true" />
+                <include file="changelogs/%s/main.xml" relativeToChangelogFile="true" />
 
-                </databaseChangeLog>
-                """.formatted(version);
+            </databaseChangeLog>
+            """.formatted(Constants.DEFAULT_VERSION);
     }
 
     /**
      * Builds the version main changelog content.
      *
      * @param changelogFiles ordered included changelog files
-     * @param version Liquibase changelog version
      * @return generated version main changelog XML
      */
-    private String buildVersionMainContent(List<String> changelogFiles, String version) {
+    private String buildVersionMainContent(List<String> changelogFiles) {
         StringBuilder builder = new StringBuilder();
 
         builder.append("""
-        <?xml version="1.0" encoding="utf-8"?>
-        <databaseChangeLog
-                logicalFilePath="%s/main.xml"
-                xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
-                xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
-                xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+    <?xml version="1.0" encoding="utf-8"?>
+    <databaseChangeLog
+            logicalFilePath="%s/main.xml"
+            xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+            xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+            xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
 
-        """.formatted(version));
+    """.formatted(Constants.DEFAULT_VERSION));
 
         builder.append("    <include file=\"audit.xml\" relativeToChangelogFile=\"true\" />\n");
 
@@ -1044,11 +1039,7 @@ public class LiquibaseGenerator {
 
     /**
      * Builds the Liquibase default value attribute based on the parsed SQL default value.
-     *
-     * <p>This method supports PostgreSQL defaults for booleans, numerics, computed
-     * expressions, quoted string literals, and PostgreSQL-style casts such as
-     * {@code 'PENDING'::character varying} or normalized forms such as
-     * {@code PENDING::charactervarying}.
+     * Fix: handles broken literals like '::charactervarying' and converts them to empty string.
      *
      * @param column parsed column
      * @return Liquibase default attribute or empty string when no default exists
@@ -1063,6 +1054,11 @@ public class LiquibaseGenerator {
         String trimmedDefaultValue = defaultValue.trim();
         String normalized = trimmedDefaultValue.toLowerCase(java.util.Locale.ROOT);
 
+        if (normalized.equals("'::charactervarying'::character varying")
+                || normalized.equals("'::charactervarying'::charactervarying")) {
+            return " defaultValue=\"\"";
+        }
+
         if (normalized.equals("true") || normalized.equals("false")) {
             return " defaultValueBoolean=\"" + normalized + "\"";
         }
@@ -1071,15 +1067,8 @@ public class LiquibaseGenerator {
             return " defaultValueNumeric=\"" + normalized + "\"";
         }
 
-        if (normalized.matches("^'?[^']+'?::(charactervarying|character varying|varchar|text)$")) {
-            String literalValue = trimmedDefaultValue
-                    .replaceFirst("(?i)::(charactervarying|character varying|varchar|text)$", "")
-                    .trim();
-
-            if (literalValue.startsWith("'") && literalValue.endsWith("'") && literalValue.length() >= 2) {
-                literalValue = literalValue.substring(1, literalValue.length() - 1);
-            }
-
+        if (normalized.matches("^'?[^']*'?::(charactervarying|character varying|varchar|text)$")) {
+            String literalValue = extractStringLiteralValue(trimmedDefaultValue);
             return " defaultValue=\"" + escapeXml(literalValue) + "\"";
         }
 
@@ -1099,6 +1088,28 @@ public class LiquibaseGenerator {
         }
 
         return " defaultValue=\"" + escapeXml(trimmedDefaultValue) + "\"";
+    }
+
+    /**
+     * Extracts the literal string value from a PostgreSQL text/varchar cast default.
+     *
+     * @param trimmedDefaultValue raw trimmed SQL default value
+     * @return extracted literal value
+     */
+    private String extractStringLiteralValue(String trimmedDefaultValue) {
+        String literalValue = trimmedDefaultValue
+                .replaceFirst("(?i)::(charactervarying|character varying|varchar|text)$", "")
+                .trim();
+
+        if (literalValue.startsWith("'") && literalValue.endsWith("'") && literalValue.length() >= 2) {
+            literalValue = literalValue.substring(1, literalValue.length() - 1);
+        }
+
+        if (literalValue.equals("::charactervarying")) {
+            return "";
+        }
+
+        return literalValue;
     }
 
     /**
@@ -1347,6 +1358,10 @@ public class LiquibaseGenerator {
      * createIndex element includes the corresponding schemaName attribute.
      * Otherwise, Liquibase uses the default schema.
      *
+     * <p>When an index contains one or more originally quoted PostgreSQL identifiers,
+     * raw SQL is generated instead of a Liquibase createIndex element. This preserves
+     * the exact quoted identifiers declared in the source SQL.
+     *
      * @param builder XML builder
      * @param tableName physical table name without schema
      * @param table parsed table
@@ -1357,9 +1372,38 @@ public class LiquibaseGenerator {
         }
 
         String schemaName = extractSchemaNameFromTable(table.getName());
+        String qualifiedTableName = buildQualifiedTableName(table.getName());
 
         for (var index : table.getIndexes()) {
             if (index == null || index.getColumns() == null || index.getColumns().isEmpty()) {
+                continue;
+            }
+
+            boolean requiresRawSql = index.getColumns().stream()
+                    .filter(Objects::nonNull)
+                    .anyMatch(this::isQuotedIdentifier);
+
+            if (requiresRawSql) {
+                String columnList = index.getColumns().stream()
+                        .filter(Objects::nonNull)
+                        .map(this::toIndexSqlColumnExpression)
+                        .filter(columnExpression -> !columnExpression.isBlank())
+                        .collect(java.util.stream.Collectors.joining(", "));
+
+                if (columnList.isBlank()) {
+                    continue;
+                }
+
+                builder.append("""
+        <sql><![CDATA[
+            CREATE %sINDEX %s ON %s USING btree (%s);
+        ]]></sql>
+""".formatted(
+                        index.isUnique() ? "UNIQUE " : "",
+                        index.getName(),
+                        qualifiedTableName,
+                        columnList
+                ));
                 continue;
             }
 
@@ -1384,8 +1428,14 @@ public class LiquibaseGenerator {
             builder.append(">\n");
 
             for (String columnName : index.getColumns()) {
+                String normalizedColumnName = normalizeIdentifier(columnName);
+
+                if (normalizedColumnName.isBlank()) {
+                    continue;
+                }
+
                 builder.append("            <column name=\"")
-                        .append(escapeXml(normalizeIdentifier(columnName)))
+                        .append(escapeXml(normalizedColumnName))
                         .append("\"/>\n");
             }
 
@@ -1393,27 +1443,47 @@ public class LiquibaseGenerator {
         }
     }
 
+    /**
+     * Checks whether the provided SQL identifier is explicitly quoted.
+     *
+     * @param identifier raw SQL identifier
+     * @return true when the identifier is surrounded by double quotes
+     */
+    private boolean isQuotedIdentifier(String identifier) {
+        if (identifier == null) {
+            return false;
+        }
+
+        String trimmedIdentifier = identifier.trim();
+
+        return trimmedIdentifier.length() >= 2
+                && trimmedIdentifier.startsWith("\"")
+                && trimmedIdentifier.endsWith("\"");
+    }
+
+    /**
+     * Converts a raw index column identifier to the SQL expression that should be
+     * written inside a raw CREATE INDEX statement.
+     *
+     * @param rawIdentifier raw SQL identifier from the parsed index definition
+     * @return SQL-safe column expression for the index body
+     */
+    private String toIndexSqlColumnExpression(String rawIdentifier) {
+        String normalizedIdentifier = normalizeIdentifier(rawIdentifier);
+
+        if (normalizedIdentifier.isBlank()) {
+            return "";
+        }
+
+        if (isQuotedIdentifier(rawIdentifier)) {
+            return "\"" + normalizedIdentifier + "\"";
+        }
+
+        return normalizedIdentifier;
+    }
 
     /**
      * Normalizes a PostgreSQL SQL type into a Liquibase-safe type.
-     *
-     * <p>This method converts PostgreSQL-specific type aliases and formatting into
-     * stable Liquibase column types while preserving length and precision where needed.
-     *
-     * <p>Examples:
-     * <ul>
-     *     <li>{@code bigserial} -> {@code BIGINT}</li>
-     *     <li>{@code serial} -> {@code INTEGER}</li>
-     *     <li>{@code character varying(20)} -> {@code VARCHAR(20)}</li>
-     *     <li>{@code charactervarying(20)} -> {@code VARCHAR(20)}</li>
-     *     <li>{@code bpchar(1)} -> {@code CHAR(1)}</li>
-     *     <li>{@code char(2000)} -> {@code CHAR(2000)}</li>
-     *     <li>{@code character(5)} -> {@code CHAR(5)}</li>
-     *     <li>{@code bpchar} -> {@code CHAR}</li>
-     *     <li>{@code char} -> {@code CHAR}</li>
-     *     <li>{@code text} -> {@code TEXT}</li>
-     *     <li>{@code timestamp(6)} -> {@code TIMESTAMP}</li>
-     * </ul>
      *
      * @param sqlType raw SQL type
      * @return Liquibase-safe normalized type
@@ -1425,60 +1495,43 @@ public class LiquibaseGenerator {
 
         String normalized = sqlType.trim().toLowerCase(java.util.Locale.ROOT);
 
-        if (normalized.equals("bigserial")) {
-            return "BIGINT";
-        }
+        switch (normalized) {
+            case "bigserial":
+            case "int8":
+                return "BIGINT";
 
-        if (normalized.equals("serial")) {
-            return "INTEGER";
-        }
+            case "serial":
+            case "int4":
+                return "INTEGER";
 
-        if (normalized.equals("smallserial")) {
-            return "SMALLINT";
-        }
+            case "smallserial":
+            case "int2":
+                return "SMALLINT";
 
-        if (normalized.equals("int8")) {
-            return "BIGINT";
-        }
+            case "float8":
+                return "DOUBLE";
 
-        if (normalized.equals("int4")) {
-            return "INTEGER";
-        }
+            case "float4":
+                return "REAL";
 
-        if (normalized.equals("int2")) {
-            return "SMALLINT";
-        }
+            case "bool":
+                return "BOOLEAN";
 
-        if (normalized.equals("float8")) {
-            return "DOUBLE";
-        }
+            case "bpchar":
+            case "char":
+            case "character":
+                return "CHAR";
 
-        if (normalized.equals("float4")) {
-            return "REAL";
-        }
-
-        if (normalized.equals("bool")) {
-            return "BOOLEAN";
-        }
-
-        if (normalized.equals("bpchar")) {
-            return "CHAR";
+            case "text":
+                return "TEXT";
         }
 
         if (normalized.startsWith("bpchar(")) {
             return normalized.replaceFirst("bpchar", "char").toUpperCase();
         }
 
-        if (normalized.equals("char")) {
-            return "CHAR";
-        }
-
         if (normalized.startsWith("char(")) {
             return normalized.toUpperCase();
-        }
-
-        if (normalized.equals("character")) {
-            return "CHAR";
         }
 
         if (normalized.startsWith("character(")) {
@@ -1491,10 +1544,6 @@ public class LiquibaseGenerator {
 
         if (normalized.startsWith("charactervarying")) {
             return normalized.replaceFirst("charactervarying", "varchar").toUpperCase();
-        }
-
-        if (normalized.equals("text")) {
-            return "TEXT";
         }
 
         if (normalized.startsWith("timestamp")) {
