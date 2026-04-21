@@ -134,7 +134,7 @@ public class DTOGenerator {
                 continue;
             }
 
-            addProjectTypeImports(collector, fieldType, dtoPackage, entityPackage);
+            addProjectTypeImports(collector, fieldType, entityPackage);
             collector.addImportForComplexType(fieldType);
 
             if (shouldAddNotNull(field)) {
@@ -151,23 +151,31 @@ public class DTOGenerator {
         }
     }
 
-
+    /**
+     * Adds project-specific imports for DTO field types.
+     *
+     * @param collector import collector
+     * @param fieldType resolved field type
+     * @param entityPackage entity package name
+     */
     private void addProjectTypeImports(
             JavaImportCollector collector,
             String fieldType,
-            String dtoPackage,
             String entityPackage
     ) {
         for (String simpleType : extractProjectSimpleTypes(fieldType)) {
 
             if (simpleType.endsWith("Dto")) {
-                collector.addImport("import " + dtoPackage + "." + simpleType + ";");
+                continue;
+            }
 
-            } else if (shouldImportEntityKeyType(simpleType)) {
+            if (shouldImportEntityKeyType(simpleType)) {
                 collector.addImport("import " + entityPackage + "." + simpleType + ";");
             }
         }
     }
+
+
     /**
      * Extracts project-specific simple types from a possibly generic field type.
      *

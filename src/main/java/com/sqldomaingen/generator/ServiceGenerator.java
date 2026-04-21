@@ -1828,9 +1828,8 @@ public class ServiceGenerator {
                 NamingConverter.toCamelCase(columnName)
         );
 
-        // Composite PK
         if (compositePrimaryKey && isPrimaryKeyColumn(table, columnName)) {
-            return "(dto.getId() != null ? dto.getId().get" + getterSuffix + "() : null)";
+            return "dto.getId().get" + getterSuffix + "()";
         }
 
         boolean isRelationship = table.getRelationships() != null &&
@@ -1849,7 +1848,6 @@ public class ServiceGenerator {
                     + relationGetterSuffix + "().getId() : null)";
         }
 
-        // Scalar
         return "dto.get" + getterSuffix + "()";
     }
 

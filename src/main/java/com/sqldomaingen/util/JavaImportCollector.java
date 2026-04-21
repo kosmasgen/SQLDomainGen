@@ -75,6 +75,11 @@ public class JavaImportCollector {
                 continue;
             }
 
+            // ΜΗΝ κάνεις import DTO (ίδιο package)
+            if (token.endsWith("Dto")) {
+                continue;
+            }
+
             addImportForType(token);
         }
     }
@@ -94,18 +99,6 @@ public class JavaImportCollector {
         }
 
         imports.add(importLine.trim());
-    }
-
-    /**
-     * Adds import only when needed.
-     *
-     * @param condition condition to evaluate
-     * @param importLine import line
-     */
-    public void addImportIf(boolean condition, String importLine) {
-        if (condition) {
-            addImport(importLine);
-        }
     }
 
     /**
@@ -149,10 +142,4 @@ public class JavaImportCollector {
         return builder.toString();
     }
 
-    /**
-     * Clears collected imports.
-     */
-    public void clear() {
-        imports.clear();
-    }
 }
