@@ -2,6 +2,7 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.ChAppUserContact;
 import gr.knowledge.pepTest.dto.ChAppUserContactDto;
+import gr.knowledge.pepTest.dto.ChamberAppUserDto;
 import gr.knowledge.pepTest.repository.ChAppUserContactRepository;
 import gr.knowledge.pepTest.mapper.ChAppUserContactMapper;
 import java.util.UUID;
@@ -245,6 +246,7 @@ class ChAppUserContactServiceImplTest {
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
+        dto.setChamberAppUser(new ChamberAppUserDto());
         dto.setPhone1("phone1-value-1");
         dto.setPhone2("phone2-value-1");
         dto.setMobile1("mobile1-value-1");
@@ -274,6 +276,7 @@ class ChAppUserContactServiceImplTest {
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
+        dto.setChamberAppUser(new ChamberAppUserDto());
         dto.setPhone1("phone1-value-2");
         dto.setPhone2("phone2-value-2");
         dto.setMobile1("mobile1-value-2");
@@ -302,6 +305,7 @@ class ChAppUserContactServiceImplTest {
         ChAppUserContactDto dto = new ChAppUserContactDto();
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
+        dto.setChamberAppUser(new ChamberAppUserDto());
         dto.setPhone1("phone1-value-3");
         dto.setPhone2("phone2-value-3");
         dto.setMobile1("mobile1-value-3");

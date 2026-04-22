@@ -88,7 +88,7 @@ public class CountryController {
     public ResponseEntity<CountryDto> patch(
             @Parameter(description = "country identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody CountryDto dto) {
+            @Valid @RequestBody CountryDto dto) {
         return ResponseEntity.ok(countryService.updateCountry(id, dto));
     }
 

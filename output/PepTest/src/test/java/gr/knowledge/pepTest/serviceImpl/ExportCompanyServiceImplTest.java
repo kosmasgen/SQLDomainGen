@@ -2,6 +2,7 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.ExportCompany;
 import gr.knowledge.pepTest.dto.ExportCompanyDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import gr.knowledge.pepTest.repository.ExportCompanyRepository;
 import gr.knowledge.pepTest.mapper.ExportCompanyMapper;
 import java.util.UUID;
@@ -219,6 +220,7 @@ class ExportCompanyServiceImplTest {
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
+        dto.setCompany(new CompanyDto());
         dto.setActive(true);
         dto.setEmeCode(1L);
 
@@ -235,6 +237,7 @@ class ExportCompanyServiceImplTest {
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
+        dto.setCompany(new CompanyDto());
         dto.setActive(false);
         dto.setEmeCode(2L);
 
@@ -250,6 +253,7 @@ class ExportCompanyServiceImplTest {
         ExportCompanyDto dto = new ExportCompanyDto();
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
+        dto.setCompany(new CompanyDto());
         dto.setActive(true);
         dto.setEmeCode(3L);
 

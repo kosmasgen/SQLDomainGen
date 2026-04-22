@@ -88,7 +88,7 @@ public class ChamberAppUserController {
     public ResponseEntity<ChamberAppUserDto> patch(
             @Parameter(description = "chamber app user identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody ChamberAppUserDto dto) {
+            @Valid @RequestBody ChamberAppUserDto dto) {
         return ResponseEntity.ok(chamberAppUserService.updateChamberAppUser(id, dto));
     }
 

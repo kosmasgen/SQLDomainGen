@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.TemporaryCompanyi18n;
 import gr.knowledge.pepTest.dto.TemporaryCompanyi18nDto;
+import gr.knowledge.pepTest.dto.TemporaryCompanyDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.TemporaryCompanyi18nRepository;
 import gr.knowledge.pepTest.mapper.TemporaryCompanyi18nMapper;
 import java.math.BigInteger;
@@ -244,7 +246,9 @@ class TemporaryCompanyi18nServiceImplTest {
         dto.setVersion(new BigInteger("1"));
         dto.setCity("city-value-1");
         dto.setCoName("coName-value-1");
+        dto.setCompany(new TemporaryCompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
+        dto.setLanguage(new LanguagesDto());
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setMailName("mailName-value-1");
         dto.setObjective("objective-value-1");
@@ -271,7 +275,9 @@ class TemporaryCompanyi18nServiceImplTest {
         dto.setVersion(new BigInteger("2"));
         dto.setCity("city-value-2");
         dto.setCoName("coName-value-2");
+        dto.setCompany(new TemporaryCompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
+        dto.setLanguage(new LanguagesDto());
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setMailName("mailName-value-2");
         dto.setObjective("objective-value-2");
@@ -297,7 +303,9 @@ class TemporaryCompanyi18nServiceImplTest {
         dto.setVersion(new BigInteger("3"));
         dto.setCity("city-value-3");
         dto.setCoName("coName-value-3");
+        dto.setCompany(new TemporaryCompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
+        dto.setLanguage(new LanguagesDto());
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setMailName("mailName-value-3");
         dto.setObjective("objective-value-3");

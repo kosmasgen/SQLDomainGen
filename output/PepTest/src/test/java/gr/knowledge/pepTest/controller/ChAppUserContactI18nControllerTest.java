@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,9 +105,9 @@ class ChAppUserContactI18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         ChAppUserContactI18nDto requestDto = createValidCreateChAppUserContactI18nDto();
-        requestDto.setRecdeleted(null);
+        requestDto.setChAppUserContact(null);
 
         mockMvc.perform(post("/api/ch-app-user-contact-i18n")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,11 +132,24 @@ class ChAppUserContactI18nControllerTest {
     }
 
     @Test
-    void shouldReturnOkForPatch() throws Exception {
+    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {
         UUID chAppUserContactId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
         ChAppUserContactI18nDto requestDto = new ChAppUserContactI18nDto();
+
+        mockMvc.perform(patch("/api/ch-app-user-contact-i18n/{chAppUserContactId}/{languageId}", chAppUserContactId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void shouldReturnOkForPatch() throws Exception {
+        UUID chAppUserContactId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        ChAppUserContactI18nDto requestDto = createValidCreateChAppUserContactI18nDto();
         ChAppUserContactI18nDto responseDto = new ChAppUserContactI18nDto();
         given(chAppUserContactI18nService.updateChAppUserContactI18n(eq(chAppUserContactId), eq(languageId), any(ChAppUserContactI18nDto.class))).willReturn(responseDto);
 
@@ -151,7 +167,7 @@ class ChAppUserContactI18nControllerTest {
         UUID chAppUserContactId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
-        ChAppUserContactI18nDto requestDto = new ChAppUserContactI18nDto();
+        ChAppUserContactI18nDto requestDto = createValidCreateChAppUserContactI18nDto();
         given(chAppUserContactI18nService.updateChAppUserContactI18n(eq(chAppUserContactId), eq(languageId), any(ChAppUserContactI18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -163,6 +179,21 @@ class ChAppUserContactI18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID chAppUserContactId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        ChAppUserContactI18nDto requestDto = createValidCreateChAppUserContactI18nDto();
+        given(chAppUserContactI18nService.updateChAppUserContactI18n(eq(chAppUserContactId), eq(languageId), any(ChAppUserContactI18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/ch-app-user-contact-i18n/{chAppUserContactId}/{languageId}", chAppUserContactId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

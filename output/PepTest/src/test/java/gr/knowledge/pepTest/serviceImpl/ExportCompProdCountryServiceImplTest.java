@@ -2,6 +2,9 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.ExportCompProdCountry;
 import gr.knowledge.pepTest.dto.ExportCompProdCountryDto;
+import gr.knowledge.pepTest.dto.ExportCompanyDto;
+import gr.knowledge.pepTest.dto.CountryDto;
+import gr.knowledge.pepTest.dto.ProductDto;
 import gr.knowledge.pepTest.repository.ExportCompProdCountryRepository;
 import gr.knowledge.pepTest.mapper.ExportCompProdCountryMapper;
 import java.util.UUID;
@@ -217,10 +220,13 @@ class ExportCompProdCountryServiceImplTest {
     private ExportCompProdCountryDto createSampleExportCompProdCountryDto() {
         ExportCompProdCountryDto dto = new ExportCompProdCountryDto();
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setExportCompany(new ExportCompanyDto());
+        dto.setCountry(new CountryDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setRecdeleted(true);
         dto.setExpYear(1);
+        dto.setProduct(new ProductDto());
 
         return dto;
     }
@@ -233,10 +239,13 @@ class ExportCompProdCountryServiceImplTest {
     private ExportCompProdCountryDto createAnotherExportCompProdCountryDto() {
         ExportCompProdCountryDto dto = new ExportCompProdCountryDto();
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setExportCompany(new ExportCompanyDto());
+        dto.setCountry(new CountryDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setRecdeleted(false);
         dto.setExpYear(2);
+        dto.setProduct(new ProductDto());
 
         return dto;
     }
@@ -248,10 +257,13 @@ class ExportCompProdCountryServiceImplTest {
      */
     private ExportCompProdCountryDto createPatchExportCompProdCountryDto() {
         ExportCompProdCountryDto dto = new ExportCompProdCountryDto();
+        dto.setExportCompany(new ExportCompanyDto());
+        dto.setCountry(new CountryDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setRecdeleted(true);
         dto.setExpYear(3);
+        dto.setProduct(new ProductDto());
 
         return dto;
     }

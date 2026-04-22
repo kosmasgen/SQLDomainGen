@@ -68,10 +68,9 @@ public class CompanyStatusServiceImpl implements CompanyStatusService {
 
     /**
      * Updates an existing company status record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the company status id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link CompanyStatusDto}
      */
     @Override

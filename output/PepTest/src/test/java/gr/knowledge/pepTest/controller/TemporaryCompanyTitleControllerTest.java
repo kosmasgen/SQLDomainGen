@@ -16,6 +16,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import java.math.BigInteger;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -96,7 +100,7 @@ class TemporaryCompanyTitleControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         TemporaryCompanyTitleDto requestDto = createValidCreateTemporaryCompanyTitleDto();
         requestDto.setVersion(null);
 
@@ -123,9 +127,21 @@ class TemporaryCompanyTitleControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        BigInteger id = new BigInteger("1");
+        TemporaryCompanyTitleDto requestDto = createValidCreateTemporaryCompanyTitleDto();
+        requestDto.setVersion(null);
+
+        mockMvc.perform(patch("/api/temporary-company-title/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         BigInteger id = new BigInteger("1");
-        TemporaryCompanyTitleDto requestDto = new TemporaryCompanyTitleDto();
+        TemporaryCompanyTitleDto requestDto = createValidCreateTemporaryCompanyTitleDto();
         TemporaryCompanyTitleDto responseDto = new TemporaryCompanyTitleDto();
         given(temporaryCompanyTitleService.updateTemporaryCompanyTitle(eq(id), any(TemporaryCompanyTitleDto.class))).willReturn(responseDto);
 
@@ -141,7 +157,7 @@ class TemporaryCompanyTitleControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         BigInteger id = new BigInteger("1");
-        TemporaryCompanyTitleDto requestDto = new TemporaryCompanyTitleDto();
+        TemporaryCompanyTitleDto requestDto = createValidCreateTemporaryCompanyTitleDto();
         given(temporaryCompanyTitleService.updateTemporaryCompanyTitle(eq(id), any(TemporaryCompanyTitleDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +169,19 @@ class TemporaryCompanyTitleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        BigInteger id = new BigInteger("1");
+        TemporaryCompanyTitleDto requestDto = createValidCreateTemporaryCompanyTitleDto();
+        given(temporaryCompanyTitleService.updateTemporaryCompanyTitle(eq(id), any(TemporaryCompanyTitleDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/temporary-company-title/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

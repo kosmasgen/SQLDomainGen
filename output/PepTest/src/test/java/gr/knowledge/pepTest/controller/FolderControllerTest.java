@@ -15,6 +15,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -96,7 +99,7 @@ class FolderControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         FolderDto requestDto = createValidCreateFolderDto();
         requestDto.setDescr(null);
 
@@ -123,9 +126,21 @@ class FolderControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        FolderDto requestDto = createValidCreateFolderDto();
+        requestDto.setDescr(null);
+
+        mockMvc.perform(patch("/api/folder/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        FolderDto requestDto = new FolderDto();
+        FolderDto requestDto = createValidCreateFolderDto();
         FolderDto responseDto = new FolderDto();
         given(folderService.updateFolder(eq(id), any(FolderDto.class))).willReturn(responseDto);
 
@@ -141,7 +156,7 @@ class FolderControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        FolderDto requestDto = new FolderDto();
+        FolderDto requestDto = createValidCreateFolderDto();
         given(folderService.updateFolder(eq(id), any(FolderDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +168,19 @@ class FolderControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        FolderDto requestDto = createValidCreateFolderDto();
+        given(folderService.updateFolder(eq(id), any(FolderDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/folder/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -187,8 +215,8 @@ class FolderControllerTest {
      */
     private FolderDto createValidCreateFolderDto() {
         FolderDto dto = new FolderDto();
-        dto.setDescr("test");
-        dto.setUri("aaaaa");
+        dto.setDescr("A");
+        dto.setUri("A");
         dto.setRecdeleted(true);
 
         return dto;

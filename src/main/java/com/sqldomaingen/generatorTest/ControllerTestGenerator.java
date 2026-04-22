@@ -442,6 +442,7 @@ public class ControllerTestGenerator {
         content.append("    }\n\n");
     }
 
+
     /**
      * Appends validation failure test for CREATE endpoint.
      *
@@ -1720,7 +1721,7 @@ public class ControllerTestGenerator {
             throw new IllegalStateException("Composite primary key is not supported here");
         }
 
-        return detectJavaTypeForPrimaryKeyColumn(primaryKeyColumns.get(0));
+        return detectJavaTypeForPrimaryKeyColumn(primaryKeyColumns.getFirst());
     }
 
 

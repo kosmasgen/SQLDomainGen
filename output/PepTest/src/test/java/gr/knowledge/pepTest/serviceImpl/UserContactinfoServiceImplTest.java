@@ -2,6 +2,7 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.UserContactinfo;
 import gr.knowledge.pepTest.dto.UserContactinfoDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import gr.knowledge.pepTest.repository.UserContactinfoRepository;
 import gr.knowledge.pepTest.mapper.UserContactinfoMapper;
 import java.util.UUID;
@@ -226,6 +227,7 @@ class UserContactinfoServiceImplTest {
         UserContactinfoDto dto = new UserContactinfoDto();
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(1);
+        dto.setCompany(new CompanyDto());
         dto.setUsername("username-value-1");
         dto.setEmail("email-value-1");
         dto.setPhone("phone-value-1");
@@ -246,6 +248,7 @@ class UserContactinfoServiceImplTest {
         UserContactinfoDto dto = new UserContactinfoDto();
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(2);
+        dto.setCompany(new CompanyDto());
         dto.setUsername("username-value-2");
         dto.setEmail("email-value-2");
         dto.setPhone("phone-value-2");
@@ -265,6 +268,7 @@ class UserContactinfoServiceImplTest {
     private UserContactinfoDto createPatchUserContactinfoDto() {
         UserContactinfoDto dto = new UserContactinfoDto();
         dto.setChamberId(3);
+        dto.setCompany(new CompanyDto());
         dto.setUsername("username-value-3");
         dto.setEmail("email-value-3");
         dto.setPhone("phone-value-3");

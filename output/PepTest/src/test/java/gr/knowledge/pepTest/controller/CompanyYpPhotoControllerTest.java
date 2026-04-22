@@ -16,6 +16,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -97,7 +100,7 @@ class CompanyYpPhotoControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyYpPhotoDto requestDto = createValidCreateCompanyYpPhotoDto();
         requestDto.setChamberId(null);
 
@@ -124,9 +127,21 @@ class CompanyYpPhotoControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyYpPhotoDto requestDto = createValidCreateCompanyYpPhotoDto();
+        requestDto.setChamberId(null);
+
+        mockMvc.perform(patch("/api/company-yp-photo/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyYpPhotoDto requestDto = new CompanyYpPhotoDto();
+        CompanyYpPhotoDto requestDto = createValidCreateCompanyYpPhotoDto();
         CompanyYpPhotoDto responseDto = new CompanyYpPhotoDto();
         given(companyYpPhotoService.updateCompanyYpPhoto(eq(id), any(CompanyYpPhotoDto.class))).willReturn(responseDto);
 
@@ -142,7 +157,7 @@ class CompanyYpPhotoControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyYpPhotoDto requestDto = new CompanyYpPhotoDto();
+        CompanyYpPhotoDto requestDto = createValidCreateCompanyYpPhotoDto();
         given(companyYpPhotoService.updateCompanyYpPhoto(eq(id), any(CompanyYpPhotoDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -154,6 +169,19 @@ class CompanyYpPhotoControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyYpPhotoDto requestDto = createValidCreateCompanyYpPhotoDto();
+        given(companyYpPhotoService.updateCompanyYpPhoto(eq(id), any(CompanyYpPhotoDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-yp-photo/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -190,12 +218,12 @@ class CompanyYpPhotoControllerTest {
         CompanyYpPhotoDto dto = new CompanyYpPhotoDto();
         dto.setChamberId(1);
         dto.setCompany(new CompanyDto());
-        dto.setFileName("aaaaa");
-        dto.setMimeType("aaaaa");
+        dto.setFileName("A");
+        dto.setMimeType("A");
         dto.setFileSize(1);
         dto.setOrderSeq(1);
         dto.setRecdeleted(true);
-        dto.setBlobUri("aaaaa");
+        dto.setBlobUri("A");
 
         return dto;
     }

@@ -15,6 +15,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -96,7 +99,7 @@ class CompanyStatusControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyStatusDto requestDto = createValidCreateCompanyStatusDto();
         requestDto.setChamberId(null);
 
@@ -123,9 +126,21 @@ class CompanyStatusControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyStatusDto requestDto = createValidCreateCompanyStatusDto();
+        requestDto.setChamberId(null);
+
+        mockMvc.perform(patch("/api/company-status/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyStatusDto requestDto = new CompanyStatusDto();
+        CompanyStatusDto requestDto = createValidCreateCompanyStatusDto();
         CompanyStatusDto responseDto = new CompanyStatusDto();
         given(companyStatusService.updateCompanyStatus(eq(id), any(CompanyStatusDto.class))).willReturn(responseDto);
 
@@ -141,7 +156,7 @@ class CompanyStatusControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyStatusDto requestDto = new CompanyStatusDto();
+        CompanyStatusDto requestDto = createValidCreateCompanyStatusDto();
         given(companyStatusService.updateCompanyStatus(eq(id), any(CompanyStatusDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +168,19 @@ class CompanyStatusControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyStatusDto requestDto = createValidCreateCompanyStatusDto();
+        given(companyStatusService.updateCompanyStatus(eq(id), any(CompanyStatusDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-status/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

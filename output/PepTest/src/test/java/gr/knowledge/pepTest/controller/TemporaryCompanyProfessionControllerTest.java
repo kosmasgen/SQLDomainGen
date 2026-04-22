@@ -16,6 +16,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import java.math.BigInteger;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -96,7 +100,7 @@ class TemporaryCompanyProfessionControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         TemporaryCompanyProfessionDto requestDto = createValidCreateTemporaryCompanyProfessionDto();
         requestDto.setVersion(null);
 
@@ -123,9 +127,21 @@ class TemporaryCompanyProfessionControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        BigInteger id = new BigInteger("1");
+        TemporaryCompanyProfessionDto requestDto = createValidCreateTemporaryCompanyProfessionDto();
+        requestDto.setVersion(null);
+
+        mockMvc.perform(patch("/api/temporary-company-profession/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         BigInteger id = new BigInteger("1");
-        TemporaryCompanyProfessionDto requestDto = new TemporaryCompanyProfessionDto();
+        TemporaryCompanyProfessionDto requestDto = createValidCreateTemporaryCompanyProfessionDto();
         TemporaryCompanyProfessionDto responseDto = new TemporaryCompanyProfessionDto();
         given(temporaryCompanyProfessionService.updateTemporaryCompanyProfession(eq(id), any(TemporaryCompanyProfessionDto.class))).willReturn(responseDto);
 
@@ -141,7 +157,7 @@ class TemporaryCompanyProfessionControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         BigInteger id = new BigInteger("1");
-        TemporaryCompanyProfessionDto requestDto = new TemporaryCompanyProfessionDto();
+        TemporaryCompanyProfessionDto requestDto = createValidCreateTemporaryCompanyProfessionDto();
         given(temporaryCompanyProfessionService.updateTemporaryCompanyProfession(eq(id), any(TemporaryCompanyProfessionDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +169,19 @@ class TemporaryCompanyProfessionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        BigInteger id = new BigInteger("1");
+        TemporaryCompanyProfessionDto requestDto = createValidCreateTemporaryCompanyProfessionDto();
+        given(temporaryCompanyProfessionService.updateTemporaryCompanyProfession(eq(id), any(TemporaryCompanyProfessionDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/temporary-company-profession/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

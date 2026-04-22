@@ -18,6 +18,10 @@ import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
 import java.math.BigInteger;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+import java.math.BigInteger;
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -98,7 +102,7 @@ class TemporaryCompanyTitlei18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         TemporaryCompanyTitlei18nDto requestDto = createValidCreateTemporaryCompanyTitlei18nDto();
         requestDto.setVersion(null);
 
@@ -125,9 +129,21 @@ class TemporaryCompanyTitlei18nControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        BigInteger id = new BigInteger("1");
+        TemporaryCompanyTitlei18nDto requestDto = createValidCreateTemporaryCompanyTitlei18nDto();
+        requestDto.setVersion(null);
+
+        mockMvc.perform(patch("/api/temporary-company-titlei18n/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         BigInteger id = new BigInteger("1");
-        TemporaryCompanyTitlei18nDto requestDto = new TemporaryCompanyTitlei18nDto();
+        TemporaryCompanyTitlei18nDto requestDto = createValidCreateTemporaryCompanyTitlei18nDto();
         TemporaryCompanyTitlei18nDto responseDto = new TemporaryCompanyTitlei18nDto();
         given(temporaryCompanyTitlei18nService.updateTemporaryCompanyTitlei18n(eq(id), any(TemporaryCompanyTitlei18nDto.class))).willReturn(responseDto);
 
@@ -143,7 +159,7 @@ class TemporaryCompanyTitlei18nControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         BigInteger id = new BigInteger("1");
-        TemporaryCompanyTitlei18nDto requestDto = new TemporaryCompanyTitlei18nDto();
+        TemporaryCompanyTitlei18nDto requestDto = createValidCreateTemporaryCompanyTitlei18nDto();
         given(temporaryCompanyTitlei18nService.updateTemporaryCompanyTitlei18n(eq(id), any(TemporaryCompanyTitlei18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -155,6 +171,19 @@ class TemporaryCompanyTitlei18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        BigInteger id = new BigInteger("1");
+        TemporaryCompanyTitlei18nDto requestDto = createValidCreateTemporaryCompanyTitlei18nDto();
+        given(temporaryCompanyTitlei18nService.updateTemporaryCompanyTitlei18n(eq(id), any(TemporaryCompanyTitlei18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/temporary-company-titlei18n/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

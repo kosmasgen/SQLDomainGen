@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.Profession;
 import gr.knowledge.pepTest.dto.ProfessionDto;
+import gr.knowledge.pepTest.dto.ProfessionSystemDto;
+import gr.knowledge.pepTest.dto.ProfessionFriendlyCategoryDto;
 import gr.knowledge.pepTest.repository.ProfessionRepository;
 import gr.knowledge.pepTest.mapper.ProfessionMapper;
 import java.util.UUID;
@@ -226,11 +228,14 @@ class ProfessionServiceImplTest {
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(1);
         dto.setChamberProfessionId(1);
+        dto.setParentProfession(new ProfessionDto());
+        dto.setProfessionSystem(new ProfessionSystemDto());
         dto.setCode("code-value-1");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setRecdeleted(true);
         dto.setProteasId(new BigInteger("1"));
+        dto.setFriendlyCat(new ProfessionFriendlyCategoryDto());
 
         return dto;
     }
@@ -245,11 +250,14 @@ class ProfessionServiceImplTest {
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(2);
         dto.setChamberProfessionId(2);
+        dto.setParentProfession(new ProfessionDto());
+        dto.setProfessionSystem(new ProfessionSystemDto());
         dto.setCode("code-value-2");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setRecdeleted(false);
         dto.setProteasId(new BigInteger("2"));
+        dto.setFriendlyCat(new ProfessionFriendlyCategoryDto());
 
         return dto;
     }
@@ -263,11 +271,14 @@ class ProfessionServiceImplTest {
         ProfessionDto dto = new ProfessionDto();
         dto.setChamberId(3);
         dto.setChamberProfessionId(3);
+        dto.setParentProfession(new ProfessionDto());
+        dto.setProfessionSystem(new ProfessionSystemDto());
         dto.setCode("code-value-3");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setRecdeleted(true);
         dto.setProteasId(new BigInteger("3"));
+        dto.setFriendlyCat(new ProfessionFriendlyCategoryDto());
 
         return dto;
     }

@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CompanyFavourites;
 import gr.knowledge.pepTest.dto.CompanyFavouritesDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import gr.knowledge.pepTest.dto.CompanyProfileDto;
 import gr.knowledge.pepTest.repository.CompanyFavouritesRepository;
 import gr.knowledge.pepTest.mapper.CompanyFavouritesMapper;
 import java.util.UUID;
@@ -215,9 +217,12 @@ class CompanyFavouritesServiceImplTest {
     private CompanyFavouritesDto createSampleCompanyFavouritesDto() {
         CompanyFavouritesDto dto = new CompanyFavouritesDto();
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setCompany(new CompanyDto());
+        dto.setFavouriteCompany(new CompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setNotes("notes-value-1");
+        dto.setFavouriteProfile(new CompanyProfileDto());
 
         return dto;
     }
@@ -230,9 +235,12 @@ class CompanyFavouritesServiceImplTest {
     private CompanyFavouritesDto createAnotherCompanyFavouritesDto() {
         CompanyFavouritesDto dto = new CompanyFavouritesDto();
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setCompany(new CompanyDto());
+        dto.setFavouriteCompany(new CompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setNotes("notes-value-2");
+        dto.setFavouriteProfile(new CompanyProfileDto());
 
         return dto;
     }
@@ -244,9 +252,12 @@ class CompanyFavouritesServiceImplTest {
      */
     private CompanyFavouritesDto createPatchCompanyFavouritesDto() {
         CompanyFavouritesDto dto = new CompanyFavouritesDto();
+        dto.setCompany(new CompanyDto());
+        dto.setFavouriteCompany(new CompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setNotes("notes-value-3");
+        dto.setFavouriteProfile(new CompanyProfileDto());
 
         return dto;
     }

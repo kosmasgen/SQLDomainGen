@@ -88,7 +88,7 @@ public class CompanyBgCooperationI18nController {
     public ResponseEntity<CompanyBgCooperationI18nDto> patch(
             @Parameter(description = "company bg cooperation i18n identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody CompanyBgCooperationI18nDto dto) {
+            @Valid @RequestBody CompanyBgCooperationI18nDto dto) {
         return ResponseEntity.ok(companyBgCooperationI18nService.updateCompanyBgCooperationI18n(id, dto));
     }
 

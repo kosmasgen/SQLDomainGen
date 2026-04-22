@@ -55,7 +55,7 @@ class ProfessionFriendlyCategoryControllerTest {
 
     @Test
     void shouldReturnOkForGetById() throws Exception {
-        String id = "test-id-1";
+        String id = "A";
         given(professionFriendlyCategoryService.getProfessionFriendlyCategoryById(id)).willReturn(new ProfessionFriendlyCategoryDto());
 
         mockMvc.perform(get("/api/profession-friendly-category/{id}", id))
@@ -67,7 +67,7 @@ class ProfessionFriendlyCategoryControllerTest {
 
     @Test
     void shouldReturnNotFoundForGetById() throws Exception {
-        String id = "test-id-1";
+        String id = "A";
         given(professionFriendlyCategoryService.getProfessionFriendlyCategoryById(id))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -112,8 +112,8 @@ class ProfessionFriendlyCategoryControllerTest {
 
     @Test
     void shouldReturnOkForPatch() throws Exception {
-        String id = "test-id-1";
-        ProfessionFriendlyCategoryDto requestDto = new ProfessionFriendlyCategoryDto();
+        String id = "A";
+        ProfessionFriendlyCategoryDto requestDto = createValidCreateProfessionFriendlyCategoryDto();
         ProfessionFriendlyCategoryDto responseDto = new ProfessionFriendlyCategoryDto();
         given(professionFriendlyCategoryService.updateProfessionFriendlyCategory(eq(id), any(ProfessionFriendlyCategoryDto.class))).willReturn(responseDto);
 
@@ -128,8 +128,8 @@ class ProfessionFriendlyCategoryControllerTest {
 
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
-        String id = "test-id-1";
-        ProfessionFriendlyCategoryDto requestDto = new ProfessionFriendlyCategoryDto();
+        String id = "A";
+        ProfessionFriendlyCategoryDto requestDto = createValidCreateProfessionFriendlyCategoryDto();
         given(professionFriendlyCategoryService.updateProfessionFriendlyCategory(eq(id), any(ProfessionFriendlyCategoryDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -144,8 +144,21 @@ class ProfessionFriendlyCategoryControllerTest {
     }
 
     @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        String id = "A";
+        ProfessionFriendlyCategoryDto requestDto = createValidCreateProfessionFriendlyCategoryDto();
+        given(professionFriendlyCategoryService.updateProfessionFriendlyCategory(eq(id), any(ProfessionFriendlyCategoryDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/profession-friendly-category/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
+    }
+
+    @Test
     void shouldReturnNoContentForDelete() throws Exception {
-        String id = "test-id-1";
+        String id = "A";
         willDoNothing().given(professionFriendlyCategoryService).deleteProfessionFriendlyCategory(id);
 
         mockMvc.perform(delete("/api/profession-friendly-category/{id}", id))
@@ -156,7 +169,7 @@ class ProfessionFriendlyCategoryControllerTest {
 
     @Test
     void shouldReturnNotFoundForDelete() throws Exception {
-        String id = "test-id-1";
+        String id = "A";
         willThrow(GeneratedRuntimeException.builder()
                 .code(ErrorCodes.NOT_FOUND)
                 .entity("ProfessionFriendlyCategory")

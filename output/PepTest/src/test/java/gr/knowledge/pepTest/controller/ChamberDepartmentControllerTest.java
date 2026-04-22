@@ -15,6 +15,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -96,7 +99,7 @@ class ChamberDepartmentControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         ChamberDepartmentDto requestDto = createValidCreateChamberDepartmentDto();
         requestDto.setRecdeleted(null);
 
@@ -123,9 +126,21 @@ class ChamberDepartmentControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        ChamberDepartmentDto requestDto = createValidCreateChamberDepartmentDto();
+        requestDto.setRecdeleted(null);
+
+        mockMvc.perform(patch("/api/chamber-department/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        ChamberDepartmentDto requestDto = new ChamberDepartmentDto();
+        ChamberDepartmentDto requestDto = createValidCreateChamberDepartmentDto();
         ChamberDepartmentDto responseDto = new ChamberDepartmentDto();
         given(chamberDepartmentService.updateChamberDepartment(eq(id), any(ChamberDepartmentDto.class))).willReturn(responseDto);
 
@@ -141,7 +156,7 @@ class ChamberDepartmentControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        ChamberDepartmentDto requestDto = new ChamberDepartmentDto();
+        ChamberDepartmentDto requestDto = createValidCreateChamberDepartmentDto();
         given(chamberDepartmentService.updateChamberDepartment(eq(id), any(ChamberDepartmentDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +168,19 @@ class ChamberDepartmentControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        ChamberDepartmentDto requestDto = createValidCreateChamberDepartmentDto();
+        given(chamberDepartmentService.updateChamberDepartment(eq(id), any(ChamberDepartmentDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/chamber-department/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -188,7 +216,7 @@ class ChamberDepartmentControllerTest {
     private ChamberDepartmentDto createValidCreateChamberDepartmentDto() {
         ChamberDepartmentDto dto = new ChamberDepartmentDto();
         dto.setRecdeleted(true);
-        dto.setCd("aaaaa");
+        dto.setCd("A");
 
         return dto;
     }

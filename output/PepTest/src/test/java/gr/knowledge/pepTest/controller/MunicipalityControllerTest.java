@@ -15,6 +15,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -96,7 +99,7 @@ class MunicipalityControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         MunicipalityDto requestDto = createValidCreateMunicipalityDto();
         requestDto.setCd(null);
 
@@ -123,9 +126,21 @@ class MunicipalityControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        MunicipalityDto requestDto = createValidCreateMunicipalityDto();
+        requestDto.setCd(null);
+
+        mockMvc.perform(patch("/api/municipality/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        MunicipalityDto requestDto = new MunicipalityDto();
+        MunicipalityDto requestDto = createValidCreateMunicipalityDto();
         MunicipalityDto responseDto = new MunicipalityDto();
         given(municipalityService.updateMunicipality(eq(id), any(MunicipalityDto.class))).willReturn(responseDto);
 
@@ -141,7 +156,7 @@ class MunicipalityControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        MunicipalityDto requestDto = new MunicipalityDto();
+        MunicipalityDto requestDto = createValidCreateMunicipalityDto();
         given(municipalityService.updateMunicipality(eq(id), any(MunicipalityDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +168,19 @@ class MunicipalityControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        MunicipalityDto requestDto = createValidCreateMunicipalityDto();
+        given(municipalityService.updateMunicipality(eq(id), any(MunicipalityDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/municipality/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -187,7 +215,7 @@ class MunicipalityControllerTest {
      */
     private MunicipalityDto createValidCreateMunicipalityDto() {
         MunicipalityDto dto = new MunicipalityDto();
-        dto.setCd("aaaaa");
+        dto.setCd("A");
 
         return dto;
     }

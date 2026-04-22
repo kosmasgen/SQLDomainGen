@@ -88,7 +88,7 @@ public class BusinessLocationController {
     public ResponseEntity<BusinessLocationDto> patch(
             @Parameter(description = "business location identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody BusinessLocationDto dto) {
+            @Valid @RequestBody BusinessLocationDto dto) {
         return ResponseEntity.ok(businessLocationService.updateBusinessLocation(id, dto));
     }
 

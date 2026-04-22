@@ -22,7 +22,7 @@
             </column>
             <column name="recdeleted" type="BOOLEAN" defaultValueBoolean="false">
             </column>
-            <column name="cd" type="VARCHAR(255)" defaultValue="::charactervarying">
+            <column name="cd" type="VARCHAR(255)" defaultValue="">
                 <constraints nullable="false"/>
             </column>
             <column name="is_proteas_data" type="BOOLEAN" defaultValueBoolean="false">

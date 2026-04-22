@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CorporateStatusi18n;
 import gr.knowledge.pepTest.dto.CorporateStatusi18nDto;
+import gr.knowledge.pepTest.dto.CorporateStatusDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.CorporateStatusi18nRepository;
 import gr.knowledge.pepTest.mapper.CorporateStatusi18nMapper;
 import gr.knowledge.pepTest.entity.CorporateStatusi18nKey;
@@ -75,16 +77,20 @@ class CorporateStatusi18nServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setLanguageId(languageId);
 
+        CorporateStatusi18nKey expectedKey = new CorporateStatusi18nKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setLanguageId(languageId);
+
         CorporateStatusi18n corporateStatusi18n = createSampleCorporateStatusi18nEntity();
         CorporateStatusi18nDto corporateStatusi18nDto = createSampleCorporateStatusi18nDto();
 
-        given(corporateStatusi18nRepository.findById(id)).willReturn(Optional.of(corporateStatusi18n));
+        given(corporateStatusi18nRepository.findById(expectedKey)).willReturn(Optional.of(corporateStatusi18n));
         given(corporateStatusi18nMapper.toDTO(corporateStatusi18n)).willReturn(corporateStatusi18nDto);
 
         CorporateStatusi18nDto result = corporateStatusi18nService.getCorporateStatusi18nById(corporateStatusId, languageId);
 
         assertSame(corporateStatusi18nDto, result);
-        verify(corporateStatusi18nRepository).findById(id);
+        verify(corporateStatusi18nRepository).findById(expectedKey);
         verify(corporateStatusi18nMapper).toDTO(corporateStatusi18n);
     }
 
@@ -97,11 +103,15 @@ class CorporateStatusi18nServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setLanguageId(languageId);
 
-        given(corporateStatusi18nRepository.findById(id)).willReturn(Optional.empty());
+        CorporateStatusi18nKey expectedKey = new CorporateStatusi18nKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setLanguageId(languageId);
+
+        given(corporateStatusi18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> corporateStatusi18nService.getCorporateStatusi18nById(corporateStatusId, languageId));
 
-        verify(corporateStatusi18nRepository).findById(id);
+        verify(corporateStatusi18nRepository).findById(expectedKey);
         verify(corporateStatusi18nMapper, never()).toDTO(any(CorporateStatusi18n.class));
     }
 
@@ -133,19 +143,23 @@ class CorporateStatusi18nServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setLanguageId(languageId);
 
+        CorporateStatusi18nKey expectedKey = new CorporateStatusi18nKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setLanguageId(languageId);
+
         CorporateStatusi18nDto requestDto = createPatchCorporateStatusi18nDto();
         CorporateStatusi18n existingEntity = createSampleCorporateStatusi18nEntity();
         CorporateStatusi18n savedEntity = createAnotherCorporateStatusi18nEntity();
         CorporateStatusi18nDto responseDto = createAnotherCorporateStatusi18nDto();
 
-        given(corporateStatusi18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(corporateStatusi18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
         given(corporateStatusi18nRepository.save(existingEntity)).willReturn(savedEntity);
         given(corporateStatusi18nMapper.toDTO(savedEntity)).willReturn(responseDto);
 
         CorporateStatusi18nDto result = corporateStatusi18nService.updateCorporateStatusi18n(corporateStatusId, languageId, requestDto);
 
         assertSame(responseDto, result);
-        verify(corporateStatusi18nRepository).findById(id);
+        verify(corporateStatusi18nRepository).findById(expectedKey);
         verify(corporateStatusi18nMapper).partialUpdate(existingEntity, requestDto);
         verify(corporateStatusi18nRepository).save(existingEntity);
         verify(corporateStatusi18nMapper).toDTO(savedEntity);
@@ -161,13 +175,17 @@ class CorporateStatusi18nServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setLanguageId(languageId);
 
+        CorporateStatusi18nKey expectedKey = new CorporateStatusi18nKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setLanguageId(languageId);
+
         CorporateStatusi18nDto requestDto = createPatchCorporateStatusi18nDto();
 
-        given(corporateStatusi18nRepository.findById(id)).willReturn(Optional.empty());
+        given(corporateStatusi18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> corporateStatusi18nService.updateCorporateStatusi18n(corporateStatusId, languageId, requestDto));
 
-        verify(corporateStatusi18nRepository).findById(id);
+        verify(corporateStatusi18nRepository).findById(expectedKey);
         verify(corporateStatusi18nMapper, never()).partialUpdate(any(), any());
         verify(corporateStatusi18nRepository, never()).save(any());
     }
@@ -181,14 +199,18 @@ class CorporateStatusi18nServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setLanguageId(languageId);
 
+        CorporateStatusi18nKey expectedKey = new CorporateStatusi18nKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setLanguageId(languageId);
+
         CorporateStatusi18n existingEntity = createSampleCorporateStatusi18nEntity();
 
-        given(corporateStatusi18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(corporateStatusi18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
 
         corporateStatusi18nService.deleteCorporateStatusi18n(corporateStatusId, languageId);
 
-        verify(corporateStatusi18nRepository).findById(id);
-        verify(corporateStatusi18nRepository).deleteById(id);
+        verify(corporateStatusi18nRepository).findById(expectedKey);
+        verify(corporateStatusi18nRepository).deleteById(expectedKey);
     }
 
     @Test
@@ -200,12 +222,16 @@ class CorporateStatusi18nServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setLanguageId(languageId);
 
-        given(corporateStatusi18nRepository.findById(id)).willReturn(Optional.empty());
+        CorporateStatusi18nKey expectedKey = new CorporateStatusi18nKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setLanguageId(languageId);
+
+        given(corporateStatusi18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> corporateStatusi18nService.deleteCorporateStatusi18n(corporateStatusId, languageId));
 
-        verify(corporateStatusi18nRepository).findById(id);
-        verify(corporateStatusi18nRepository, never()).deleteById(id);
+        verify(corporateStatusi18nRepository).findById(expectedKey);
+        verify(corporateStatusi18nRepository, never()).deleteById(expectedKey);
     }
 
     /**
@@ -249,6 +275,13 @@ class CorporateStatusi18nServiceImplTest {
      */
     private CorporateStatusi18nDto createSampleCorporateStatusi18nDto() {
         CorporateStatusi18nDto dto = new CorporateStatusi18nDto();
+        CorporateStatusi18nKey id = new CorporateStatusi18nKey();
+        id.setCorporateStatusId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setCorporateStatus(new CorporateStatusDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDescription("description-value-1");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
@@ -266,6 +299,13 @@ class CorporateStatusi18nServiceImplTest {
      */
     private CorporateStatusi18nDto createAnotherCorporateStatusi18nDto() {
         CorporateStatusi18nDto dto = new CorporateStatusi18nDto();
+        CorporateStatusi18nKey id = new CorporateStatusi18nKey();
+        id.setCorporateStatusId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setCorporateStatus(new CorporateStatusDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDescription("description-value-2");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
@@ -283,6 +323,8 @@ class CorporateStatusi18nServiceImplTest {
      */
     private CorporateStatusi18nDto createPatchCorporateStatusi18nDto() {
         CorporateStatusi18nDto dto = new CorporateStatusi18nDto();
+        dto.setCorporateStatus(new CorporateStatusDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDescription("description-value-3");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));

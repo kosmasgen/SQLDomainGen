@@ -74,11 +74,10 @@ public class ChamberDepartmenti18nServiceImpl implements ChamberDepartmenti18nSe
 
     /**
      * Updates an existing chamber departmenti18n record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param departmentId the departmentId value
      * @param languageId the languageId value
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link ChamberDepartmenti18nDto}
      */
     @Override
@@ -118,11 +117,11 @@ public class ChamberDepartmenti18nServiceImpl implements ChamberDepartmenti18nSe
             return;
         }
 
-        if ((dto.getId() != null ? dto.getId().getDepartmentId() : null) != null && dto.getChamberI18nId() != null && chamberDepartmenti18nRepository.existsByIdDepartmentIdAndChamberI18nId((dto.getId() != null ? dto.getId().getDepartmentId() : null), dto.getChamberI18nId())) {
+        if (dto.getId() != null && dto.getId().getDepartmentId() != null && dto.getChamberI18nId() != null && chamberDepartmenti18nRepository.existsByIdDepartmentIdAndChamberI18nId(dto.getId().getDepartmentId(), dto.getChamberI18nId())) {
             throw GeneratedRuntimeException.builder()
                     .code(ErrorCodes.BAD_REQUEST)
                     .entity("ChamberDepartmenti18n")
-                    .message("ChamberDepartmenti18n already exists with " + "departmentId=" + (dto.getId() != null ? dto.getId().getDepartmentId() : null) + ", " + "chamberI18nId=" + dto.getChamberI18nId())
+                    .message("ChamberDepartmenti18n already exists with " + "departmentId=" + dto.getId().getDepartmentId() + ", " + "chamberI18nId=" + dto.getChamberI18nId())
                     .build();
         }
     }
@@ -161,14 +160,14 @@ public class ChamberDepartmenti18nServiceImpl implements ChamberDepartmenti18nSe
      * @throws GeneratedRuntimeException if the entity already exists
      */
     private void validateChamberDepartmenti18nDoesNotExist(ChamberDepartmenti18nDto dto) {
-        if (dto == null || (dto.getId() != null ? dto.getId().getDepartmentId() : null) == null || (dto.getId() != null ? dto.getId().getLanguageId() : null) == null) {
+        if (dto == null || dto.getId().getDepartmentId() == null || dto.getId().getLanguageId() == null) {
             return;
         }
 
-        ChamberDepartmenti18nKey key = buildKey((dto.getId() != null ? dto.getId().getDepartmentId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+        ChamberDepartmenti18nKey key = buildKey(dto.getId().getDepartmentId(), dto.getId().getLanguageId());
 
         if (chamberDepartmenti18nRepository.existsById(key)) {
-            String compositeId = buildCompositeId((dto.getId() != null ? dto.getId().getDepartmentId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+            String compositeId = buildCompositeId(dto.getId().getDepartmentId(), dto.getId().getLanguageId());
             log.warn("ChamberDepartmenti18n already exists with composite id: {}", compositeId);
 
             throw GeneratedRuntimeException.builder()

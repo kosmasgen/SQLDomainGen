@@ -11,12 +11,6 @@ import java.math.BigInteger;
 import jakarta.validation.constraints.NotNull;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import gr.knowledge.pepTest.dto.MunicipalityDto;
-import gr.knowledge.pepTest.dto.ChamberDepartmentDto;
-import gr.knowledge.pepTest.dto.CompanyStatusDto;
-import gr.knowledge.pepTest.dto.CorporateStatusDto;
-import gr.knowledge.pepTest.dto.BusinessLocationDto;
-import gr.knowledge.pepTest.dto.CountryDto;
 
 /**
  * Data transfer object for Company.

@@ -88,7 +88,7 @@ public class CompanyArticleFileController {
     public ResponseEntity<CompanyArticleFileDto> patch(
             @Parameter(description = "company article file identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody CompanyArticleFileDto dto) {
+            @Valid @RequestBody CompanyArticleFileDto dto) {
         return ResponseEntity.ok(companyArticleFileService.updateCompanyArticleFile(id, dto));
     }
 

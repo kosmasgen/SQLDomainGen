@@ -21,6 +21,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,7 +106,7 @@ class CompanyControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyDto requestDto = createValidCreateCompanyDto();
         requestDto.setCoName(null);
 
@@ -129,9 +133,21 @@ class CompanyControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyDto requestDto = createValidCreateCompanyDto();
+        requestDto.setCoName(null);
+
+        mockMvc.perform(patch("/api/company/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyDto requestDto = new CompanyDto();
+        CompanyDto requestDto = createValidCreateCompanyDto();
         CompanyDto responseDto = new CompanyDto();
         given(companyService.updateCompany(eq(id), any(CompanyDto.class))).willReturn(responseDto);
 
@@ -147,7 +163,7 @@ class CompanyControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyDto requestDto = new CompanyDto();
+        CompanyDto requestDto = createValidCreateCompanyDto();
         given(companyService.updateCompany(eq(id), any(CompanyDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -159,6 +175,19 @@ class CompanyControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyDto requestDto = createValidCreateCompanyDto();
+        given(companyService.updateCompany(eq(id), any(CompanyDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -193,17 +222,11 @@ class CompanyControllerTest {
      */
     private CompanyDto createValidCreateCompanyDto() {
         CompanyDto dto = new CompanyDto();
-        dto.setCoName("aaaaa");
+        dto.setCoName("A");
         dto.setChamberId(1);
-        dto.setAddressMunicipalityPri(new MunicipalityDto());
-        dto.setChamberDepartment(new ChamberDepartmentDto());
-        dto.setCompanyStatus(new CompanyStatusDto());
-        dto.setCorporateStatus(new CorporateStatusDto());
         dto.setIsChamberCompany(true);
         dto.setIsTradesCompany(true);
         dto.setShowBusinessGuide(true);
-        dto.setBusinessLocation(new BusinessLocationDto());
-        dto.setAddressCountry(new CountryDto());
 
         return dto;
     }

@@ -2,6 +2,7 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.UserGeodata;
 import gr.knowledge.pepTest.dto.UserGeodataDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import gr.knowledge.pepTest.repository.UserGeodataRepository;
 import gr.knowledge.pepTest.mapper.UserGeodataMapper;
 import java.util.UUID;
@@ -222,6 +223,7 @@ class UserGeodataServiceImplTest {
         UserGeodataDto dto = new UserGeodataDto();
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(1);
+        dto.setCompany(new CompanyDto());
         dto.setUsername("username-value-1");
         dto.setLatitude("latitude-value-1");
         dto.setLongitude("longitude-value-1");
@@ -240,6 +242,7 @@ class UserGeodataServiceImplTest {
         UserGeodataDto dto = new UserGeodataDto();
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(2);
+        dto.setCompany(new CompanyDto());
         dto.setUsername("username-value-2");
         dto.setLatitude("latitude-value-2");
         dto.setLongitude("longitude-value-2");
@@ -257,6 +260,7 @@ class UserGeodataServiceImplTest {
     private UserGeodataDto createPatchUserGeodataDto() {
         UserGeodataDto dto = new UserGeodataDto();
         dto.setChamberId(3);
+        dto.setCompany(new CompanyDto());
         dto.setUsername("username-value-3");
         dto.setLatitude("latitude-value-3");
         dto.setLongitude("longitude-value-3");

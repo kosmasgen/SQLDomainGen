@@ -94,7 +94,7 @@ public class ChamberDepartmenti18nController {
             @PathVariable UUID departmentId,
             @Parameter(description = "language id identifier", required = true)
             @PathVariable UUID languageId,
-            @RequestBody ChamberDepartmenti18nDto dto) {
+            @Valid @RequestBody ChamberDepartmenti18nDto dto) {
         return ResponseEntity.ok(chamberDepartmenti18nService.updateChamberDepartmenti18n(departmentId, languageId, dto));
     }
 

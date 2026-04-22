@@ -2,6 +2,7 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CompanyYpPhoto;
 import gr.knowledge.pepTest.dto.CompanyYpPhotoDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import gr.knowledge.pepTest.repository.CompanyYpPhotoRepository;
 import gr.knowledge.pepTest.mapper.CompanyYpPhotoMapper;
 import java.util.UUID;
@@ -230,6 +231,7 @@ class CompanyYpPhotoServiceImplTest {
         CompanyYpPhotoDto dto = new CompanyYpPhotoDto();
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(1);
+        dto.setCompany(new CompanyDto());
         dto.setFileName("fileName-value-1");
         dto.setMimeType("mimeType-value-1");
         dto.setFileSize(1);
@@ -252,6 +254,7 @@ class CompanyYpPhotoServiceImplTest {
         CompanyYpPhotoDto dto = new CompanyYpPhotoDto();
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(2);
+        dto.setCompany(new CompanyDto());
         dto.setFileName("fileName-value-2");
         dto.setMimeType("mimeType-value-2");
         dto.setFileSize(2);
@@ -273,6 +276,7 @@ class CompanyYpPhotoServiceImplTest {
     private CompanyYpPhotoDto createPatchCompanyYpPhotoDto() {
         CompanyYpPhotoDto dto = new CompanyYpPhotoDto();
         dto.setChamberId(3);
+        dto.setCompany(new CompanyDto());
         dto.setFileName("fileName-value-3");
         dto.setMimeType("mimeType-value-3");
         dto.setFileSize(3);

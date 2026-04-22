@@ -74,11 +74,10 @@ public class ProfessionKindi18nServiceImpl implements ProfessionKindi18nService 
 
     /**
      * Updates an existing profession kindi18n record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param professionKindId the professionKindId value
      * @param languageId the languageId value
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link ProfessionKindi18nDto}
      */
     @Override
@@ -118,11 +117,11 @@ public class ProfessionKindi18nServiceImpl implements ProfessionKindi18nService 
             return;
         }
 
-        if ((dto.getId() != null ? dto.getId().getProfessionKindId() : null) != null && dto.getChamberI18nId() != null && professionKindi18nRepository.existsByIdProfessionKindIdAndChamberI18nId((dto.getId() != null ? dto.getId().getProfessionKindId() : null), dto.getChamberI18nId())) {
+        if (dto.getId() != null && dto.getId().getProfessionKindId() != null && dto.getChamberI18nId() != null && professionKindi18nRepository.existsByIdProfessionKindIdAndChamberI18nId(dto.getId().getProfessionKindId(), dto.getChamberI18nId())) {
             throw GeneratedRuntimeException.builder()
                     .code(ErrorCodes.BAD_REQUEST)
                     .entity("ProfessionKindi18n")
-                    .message("ProfessionKindi18n already exists with " + "professionKindId=" + (dto.getId() != null ? dto.getId().getProfessionKindId() : null) + ", " + "chamberI18nId=" + dto.getChamberI18nId())
+                    .message("ProfessionKindi18n already exists with " + "professionKindId=" + dto.getId().getProfessionKindId() + ", " + "chamberI18nId=" + dto.getChamberI18nId())
                     .build();
         }
     }
@@ -161,14 +160,14 @@ public class ProfessionKindi18nServiceImpl implements ProfessionKindi18nService 
      * @throws GeneratedRuntimeException if the entity already exists
      */
     private void validateProfessionKindi18nDoesNotExist(ProfessionKindi18nDto dto) {
-        if (dto == null || (dto.getId() != null ? dto.getId().getProfessionKindId() : null) == null || (dto.getId() != null ? dto.getId().getLanguageId() : null) == null) {
+        if (dto == null || dto.getId().getProfessionKindId() == null || dto.getId().getLanguageId() == null) {
             return;
         }
 
-        ProfessionKindi18nKey key = buildKey((dto.getId() != null ? dto.getId().getProfessionKindId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+        ProfessionKindi18nKey key = buildKey(dto.getId().getProfessionKindId(), dto.getId().getLanguageId());
 
         if (professionKindi18nRepository.existsById(key)) {
-            String compositeId = buildCompositeId((dto.getId() != null ? dto.getId().getProfessionKindId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+            String compositeId = buildCompositeId(dto.getId().getProfessionKindId(), dto.getId().getLanguageId());
             log.warn("ProfessionKindi18n already exists with composite id: {}", compositeId);
 
             throw GeneratedRuntimeException.builder()

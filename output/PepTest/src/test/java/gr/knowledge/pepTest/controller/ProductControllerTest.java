@@ -15,6 +15,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -96,7 +99,7 @@ class ProductControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         ProductDto requestDto = createValidCreateProductDto();
         requestDto.setChamberProductId(null);
 
@@ -123,9 +126,21 @@ class ProductControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        ProductDto requestDto = createValidCreateProductDto();
+        requestDto.setChamberProductId(null);
+
+        mockMvc.perform(patch("/api/product/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        ProductDto requestDto = new ProductDto();
+        ProductDto requestDto = createValidCreateProductDto();
         ProductDto responseDto = new ProductDto();
         given(productService.updateProduct(eq(id), any(ProductDto.class))).willReturn(responseDto);
 
@@ -141,7 +156,7 @@ class ProductControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        ProductDto requestDto = new ProductDto();
+        ProductDto requestDto = createValidCreateProductDto();
         given(productService.updateProduct(eq(id), any(ProductDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +168,19 @@ class ProductControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        ProductDto requestDto = createValidCreateProductDto();
+        given(productService.updateProduct(eq(id), any(ProductDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/product/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -189,7 +217,7 @@ class ProductControllerTest {
         ProductDto dto = new ProductDto();
         dto.setChamberProductId(1L);
         dto.setVersion(1);
-        dto.setCd("aaaaa");
+        dto.setCd("A");
         dto.setRecdeleted(true);
 
         return dto;

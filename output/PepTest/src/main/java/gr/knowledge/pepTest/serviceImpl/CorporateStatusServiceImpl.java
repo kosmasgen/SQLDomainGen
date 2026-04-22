@@ -68,10 +68,9 @@ public class CorporateStatusServiceImpl implements CorporateStatusService {
 
     /**
      * Updates an existing corporate status record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the corporate status id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link CorporateStatusDto}
      */
     @Override

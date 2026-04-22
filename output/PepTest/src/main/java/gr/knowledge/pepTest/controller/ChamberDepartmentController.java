@@ -88,7 +88,7 @@ public class ChamberDepartmentController {
     public ResponseEntity<ChamberDepartmentDto> patch(
             @Parameter(description = "chamber department identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody ChamberDepartmentDto dto) {
+            @Valid @RequestBody ChamberDepartmentDto dto) {
         return ResponseEntity.ok(chamberDepartmentService.updateChamberDepartment(id, dto));
     }
 

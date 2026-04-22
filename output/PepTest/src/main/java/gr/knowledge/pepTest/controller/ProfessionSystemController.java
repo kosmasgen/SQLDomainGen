@@ -88,7 +88,7 @@ public class ProfessionSystemController {
     public ResponseEntity<ProfessionSystemDto> patch(
             @Parameter(description = "profession system identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody ProfessionSystemDto dto) {
+            @Valid @RequestBody ProfessionSystemDto dto) {
         return ResponseEntity.ok(professionSystemService.updateProfessionSystem(id, dto));
     }
 

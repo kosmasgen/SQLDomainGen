@@ -68,10 +68,9 @@ public class StatusHistoryServiceImpl implements StatusHistoryService {
 
     /**
      * Updates an existing status history record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the status history id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link StatusHistoryDto}
      */
     @Override

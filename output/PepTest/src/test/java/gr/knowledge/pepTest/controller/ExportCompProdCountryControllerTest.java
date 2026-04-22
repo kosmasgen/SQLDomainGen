@@ -18,6 +18,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -99,9 +102,9 @@ class ExportCompProdCountryControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         ExportCompProdCountryDto requestDto = createValidCreateExportCompProdCountryDto();
-        requestDto.setRecdeleted(null);
+        requestDto.setExportCompany(null);
 
         mockMvc.perform(post("/api/export-comp-prod-country")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -126,9 +129,21 @@ class ExportCompProdCountryControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        ExportCompProdCountryDto requestDto = createValidCreateExportCompProdCountryDto();
+        requestDto.setExportCompany(null);
+
+        mockMvc.perform(patch("/api/export-comp-prod-country/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        ExportCompProdCountryDto requestDto = new ExportCompProdCountryDto();
+        ExportCompProdCountryDto requestDto = createValidCreateExportCompProdCountryDto();
         ExportCompProdCountryDto responseDto = new ExportCompProdCountryDto();
         given(exportCompProdCountryService.updateExportCompProdCountry(eq(id), any(ExportCompProdCountryDto.class))).willReturn(responseDto);
 
@@ -144,7 +159,7 @@ class ExportCompProdCountryControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        ExportCompProdCountryDto requestDto = new ExportCompProdCountryDto();
+        ExportCompProdCountryDto requestDto = createValidCreateExportCompProdCountryDto();
         given(exportCompProdCountryService.updateExportCompProdCountry(eq(id), any(ExportCompProdCountryDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -156,6 +171,19 @@ class ExportCompProdCountryControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        ExportCompProdCountryDto requestDto = createValidCreateExportCompProdCountryDto();
+        given(exportCompProdCountryService.updateExportCompProdCountry(eq(id), any(ExportCompProdCountryDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/export-comp-prod-country/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -194,7 +222,6 @@ class ExportCompProdCountryControllerTest {
         dto.setCountry(new CountryDto());
         dto.setRecdeleted(true);
         dto.setExpYear(1);
-        dto.setProduct(new ProductDto());
 
         return dto;
     }

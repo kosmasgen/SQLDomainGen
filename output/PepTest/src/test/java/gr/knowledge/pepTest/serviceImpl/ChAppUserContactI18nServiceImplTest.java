@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.ChAppUserContactI18n;
 import gr.knowledge.pepTest.dto.ChAppUserContactI18nDto;
+import gr.knowledge.pepTest.dto.ChAppUserContactDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.ChAppUserContactI18nRepository;
 import gr.knowledge.pepTest.mapper.ChAppUserContactI18nMapper;
 import gr.knowledge.pepTest.entity.ChAppUserContactI18nKey;
@@ -75,16 +77,20 @@ class ChAppUserContactI18nServiceImplTest {
         id.setChAppUserContactId(chAppUserContactId);
         id.setLanguageId(languageId);
 
+        ChAppUserContactI18nKey expectedKey = new ChAppUserContactI18nKey();
+        expectedKey.setChAppUserContactId(chAppUserContactId);
+        expectedKey.setLanguageId(languageId);
+
         ChAppUserContactI18n chAppUserContactI18n = createSampleChAppUserContactI18nEntity();
         ChAppUserContactI18nDto chAppUserContactI18nDto = createSampleChAppUserContactI18nDto();
 
-        given(chAppUserContactI18nRepository.findById(id)).willReturn(Optional.of(chAppUserContactI18n));
+        given(chAppUserContactI18nRepository.findById(expectedKey)).willReturn(Optional.of(chAppUserContactI18n));
         given(chAppUserContactI18nMapper.toDTO(chAppUserContactI18n)).willReturn(chAppUserContactI18nDto);
 
         ChAppUserContactI18nDto result = chAppUserContactI18nService.getChAppUserContactI18nById(chAppUserContactId, languageId);
 
         assertSame(chAppUserContactI18nDto, result);
-        verify(chAppUserContactI18nRepository).findById(id);
+        verify(chAppUserContactI18nRepository).findById(expectedKey);
         verify(chAppUserContactI18nMapper).toDTO(chAppUserContactI18n);
     }
 
@@ -97,11 +103,15 @@ class ChAppUserContactI18nServiceImplTest {
         id.setChAppUserContactId(chAppUserContactId);
         id.setLanguageId(languageId);
 
-        given(chAppUserContactI18nRepository.findById(id)).willReturn(Optional.empty());
+        ChAppUserContactI18nKey expectedKey = new ChAppUserContactI18nKey();
+        expectedKey.setChAppUserContactId(chAppUserContactId);
+        expectedKey.setLanguageId(languageId);
+
+        given(chAppUserContactI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> chAppUserContactI18nService.getChAppUserContactI18nById(chAppUserContactId, languageId));
 
-        verify(chAppUserContactI18nRepository).findById(id);
+        verify(chAppUserContactI18nRepository).findById(expectedKey);
         verify(chAppUserContactI18nMapper, never()).toDTO(any(ChAppUserContactI18n.class));
     }
 
@@ -133,19 +143,23 @@ class ChAppUserContactI18nServiceImplTest {
         id.setChAppUserContactId(chAppUserContactId);
         id.setLanguageId(languageId);
 
+        ChAppUserContactI18nKey expectedKey = new ChAppUserContactI18nKey();
+        expectedKey.setChAppUserContactId(chAppUserContactId);
+        expectedKey.setLanguageId(languageId);
+
         ChAppUserContactI18nDto requestDto = createPatchChAppUserContactI18nDto();
         ChAppUserContactI18n existingEntity = createSampleChAppUserContactI18nEntity();
         ChAppUserContactI18n savedEntity = createAnotherChAppUserContactI18nEntity();
         ChAppUserContactI18nDto responseDto = createAnotherChAppUserContactI18nDto();
 
-        given(chAppUserContactI18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(chAppUserContactI18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
         given(chAppUserContactI18nRepository.save(existingEntity)).willReturn(savedEntity);
         given(chAppUserContactI18nMapper.toDTO(savedEntity)).willReturn(responseDto);
 
         ChAppUserContactI18nDto result = chAppUserContactI18nService.updateChAppUserContactI18n(chAppUserContactId, languageId, requestDto);
 
         assertSame(responseDto, result);
-        verify(chAppUserContactI18nRepository).findById(id);
+        verify(chAppUserContactI18nRepository).findById(expectedKey);
         verify(chAppUserContactI18nMapper).partialUpdate(existingEntity, requestDto);
         verify(chAppUserContactI18nRepository).save(existingEntity);
         verify(chAppUserContactI18nMapper).toDTO(savedEntity);
@@ -161,13 +175,17 @@ class ChAppUserContactI18nServiceImplTest {
         id.setChAppUserContactId(chAppUserContactId);
         id.setLanguageId(languageId);
 
+        ChAppUserContactI18nKey expectedKey = new ChAppUserContactI18nKey();
+        expectedKey.setChAppUserContactId(chAppUserContactId);
+        expectedKey.setLanguageId(languageId);
+
         ChAppUserContactI18nDto requestDto = createPatchChAppUserContactI18nDto();
 
-        given(chAppUserContactI18nRepository.findById(id)).willReturn(Optional.empty());
+        given(chAppUserContactI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> chAppUserContactI18nService.updateChAppUserContactI18n(chAppUserContactId, languageId, requestDto));
 
-        verify(chAppUserContactI18nRepository).findById(id);
+        verify(chAppUserContactI18nRepository).findById(expectedKey);
         verify(chAppUserContactI18nMapper, never()).partialUpdate(any(), any());
         verify(chAppUserContactI18nRepository, never()).save(any());
     }
@@ -181,14 +199,18 @@ class ChAppUserContactI18nServiceImplTest {
         id.setChAppUserContactId(chAppUserContactId);
         id.setLanguageId(languageId);
 
+        ChAppUserContactI18nKey expectedKey = new ChAppUserContactI18nKey();
+        expectedKey.setChAppUserContactId(chAppUserContactId);
+        expectedKey.setLanguageId(languageId);
+
         ChAppUserContactI18n existingEntity = createSampleChAppUserContactI18nEntity();
 
-        given(chAppUserContactI18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(chAppUserContactI18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
 
         chAppUserContactI18nService.deleteChAppUserContactI18n(chAppUserContactId, languageId);
 
-        verify(chAppUserContactI18nRepository).findById(id);
-        verify(chAppUserContactI18nRepository).deleteById(id);
+        verify(chAppUserContactI18nRepository).findById(expectedKey);
+        verify(chAppUserContactI18nRepository).deleteById(expectedKey);
     }
 
     @Test
@@ -200,12 +222,16 @@ class ChAppUserContactI18nServiceImplTest {
         id.setChAppUserContactId(chAppUserContactId);
         id.setLanguageId(languageId);
 
-        given(chAppUserContactI18nRepository.findById(id)).willReturn(Optional.empty());
+        ChAppUserContactI18nKey expectedKey = new ChAppUserContactI18nKey();
+        expectedKey.setChAppUserContactId(chAppUserContactId);
+        expectedKey.setLanguageId(languageId);
+
+        given(chAppUserContactI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> chAppUserContactI18nService.deleteChAppUserContactI18n(chAppUserContactId, languageId));
 
-        verify(chAppUserContactI18nRepository).findById(id);
-        verify(chAppUserContactI18nRepository, never()).deleteById(id);
+        verify(chAppUserContactI18nRepository).findById(expectedKey);
+        verify(chAppUserContactI18nRepository, never()).deleteById(expectedKey);
     }
 
     /**
@@ -247,6 +273,13 @@ class ChAppUserContactI18nServiceImplTest {
      */
     private ChAppUserContactI18nDto createSampleChAppUserContactI18nDto() {
         ChAppUserContactI18nDto dto = new ChAppUserContactI18nDto();
+        ChAppUserContactI18nKey id = new ChAppUserContactI18nKey();
+        id.setChAppUserContactId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setChAppUserContact(new ChAppUserContactDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setCity("city-value-1");
@@ -263,6 +296,13 @@ class ChAppUserContactI18nServiceImplTest {
      */
     private ChAppUserContactI18nDto createAnotherChAppUserContactI18nDto() {
         ChAppUserContactI18nDto dto = new ChAppUserContactI18nDto();
+        ChAppUserContactI18nKey id = new ChAppUserContactI18nKey();
+        id.setChAppUserContactId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setChAppUserContact(new ChAppUserContactDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setCity("city-value-2");
@@ -279,6 +319,8 @@ class ChAppUserContactI18nServiceImplTest {
      */
     private ChAppUserContactI18nDto createPatchChAppUserContactI18nDto() {
         ChAppUserContactI18nDto dto = new ChAppUserContactI18nDto();
+        dto.setChAppUserContact(new ChAppUserContactDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setCity("city-value-3");

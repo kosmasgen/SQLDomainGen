@@ -72,11 +72,10 @@ public class CorporateStatusViewRulesServiceImpl implements CorporateStatusViewR
 
     /**
      * Updates an existing corporate status view rules record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param corporateStatusId the corporateStatusId value
      * @param companyViewRulesId the companyViewRulesId value
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link CorporateStatusViewRulesDto}
      */
     @Override
@@ -140,14 +139,14 @@ public class CorporateStatusViewRulesServiceImpl implements CorporateStatusViewR
      * @throws GeneratedRuntimeException if the entity already exists
      */
     private void validateCorporateStatusViewRulesDoesNotExist(CorporateStatusViewRulesDto dto) {
-        if (dto == null || (dto.getId() != null ? dto.getId().getCorporateStatusId() : null) == null || (dto.getId() != null ? dto.getId().getCompanyViewRulesId() : null) == null) {
+        if (dto == null || dto.getId().getCorporateStatusId() == null || dto.getId().getCompanyViewRulesId() == null) {
             return;
         }
 
-        CorporateStatusViewRulesKey key = buildKey((dto.getId() != null ? dto.getId().getCorporateStatusId() : null), (dto.getId() != null ? dto.getId().getCompanyViewRulesId() : null));
+        CorporateStatusViewRulesKey key = buildKey(dto.getId().getCorporateStatusId(), dto.getId().getCompanyViewRulesId());
 
         if (corporateStatusViewRulesRepository.existsById(key)) {
-            String compositeId = buildCompositeId((dto.getId() != null ? dto.getId().getCorporateStatusId() : null), (dto.getId() != null ? dto.getId().getCompanyViewRulesId() : null));
+            String compositeId = buildCompositeId(dto.getId().getCorporateStatusId(), dto.getId().getCompanyViewRulesId());
             log.warn("CorporateStatusViewRules already exists with composite id: {}", compositeId);
 
             throw GeneratedRuntimeException.builder()

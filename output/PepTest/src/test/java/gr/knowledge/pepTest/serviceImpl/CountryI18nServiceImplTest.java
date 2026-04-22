@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CountryI18n;
 import gr.knowledge.pepTest.dto.CountryI18nDto;
+import gr.knowledge.pepTest.dto.CountryDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.CountryI18nRepository;
 import gr.knowledge.pepTest.mapper.CountryI18nMapper;
 import gr.knowledge.pepTest.entity.CountryI18nKey;
@@ -75,16 +77,20 @@ class CountryI18nServiceImplTest {
         id.setCountryId(countryId);
         id.setLanguageId(languageId);
 
+        CountryI18nKey expectedKey = new CountryI18nKey();
+        expectedKey.setCountryId(countryId);
+        expectedKey.setLanguageId(languageId);
+
         CountryI18n countryI18n = createSampleCountryI18nEntity();
         CountryI18nDto countryI18nDto = createSampleCountryI18nDto();
 
-        given(countryI18nRepository.findById(id)).willReturn(Optional.of(countryI18n));
+        given(countryI18nRepository.findById(expectedKey)).willReturn(Optional.of(countryI18n));
         given(countryI18nMapper.toDTO(countryI18n)).willReturn(countryI18nDto);
 
         CountryI18nDto result = countryI18nService.getCountryI18nById(countryId, languageId);
 
         assertSame(countryI18nDto, result);
-        verify(countryI18nRepository).findById(id);
+        verify(countryI18nRepository).findById(expectedKey);
         verify(countryI18nMapper).toDTO(countryI18n);
     }
 
@@ -97,11 +103,15 @@ class CountryI18nServiceImplTest {
         id.setCountryId(countryId);
         id.setLanguageId(languageId);
 
-        given(countryI18nRepository.findById(id)).willReturn(Optional.empty());
+        CountryI18nKey expectedKey = new CountryI18nKey();
+        expectedKey.setCountryId(countryId);
+        expectedKey.setLanguageId(languageId);
+
+        given(countryI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> countryI18nService.getCountryI18nById(countryId, languageId));
 
-        verify(countryI18nRepository).findById(id);
+        verify(countryI18nRepository).findById(expectedKey);
         verify(countryI18nMapper, never()).toDTO(any(CountryI18n.class));
     }
 
@@ -133,19 +143,23 @@ class CountryI18nServiceImplTest {
         id.setCountryId(countryId);
         id.setLanguageId(languageId);
 
+        CountryI18nKey expectedKey = new CountryI18nKey();
+        expectedKey.setCountryId(countryId);
+        expectedKey.setLanguageId(languageId);
+
         CountryI18nDto requestDto = createPatchCountryI18nDto();
         CountryI18n existingEntity = createSampleCountryI18nEntity();
         CountryI18n savedEntity = createAnotherCountryI18nEntity();
         CountryI18nDto responseDto = createAnotherCountryI18nDto();
 
-        given(countryI18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(countryI18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
         given(countryI18nRepository.save(existingEntity)).willReturn(savedEntity);
         given(countryI18nMapper.toDTO(savedEntity)).willReturn(responseDto);
 
         CountryI18nDto result = countryI18nService.updateCountryI18n(countryId, languageId, requestDto);
 
         assertSame(responseDto, result);
-        verify(countryI18nRepository).findById(id);
+        verify(countryI18nRepository).findById(expectedKey);
         verify(countryI18nMapper).partialUpdate(existingEntity, requestDto);
         verify(countryI18nRepository).save(existingEntity);
         verify(countryI18nMapper).toDTO(savedEntity);
@@ -161,13 +175,17 @@ class CountryI18nServiceImplTest {
         id.setCountryId(countryId);
         id.setLanguageId(languageId);
 
+        CountryI18nKey expectedKey = new CountryI18nKey();
+        expectedKey.setCountryId(countryId);
+        expectedKey.setLanguageId(languageId);
+
         CountryI18nDto requestDto = createPatchCountryI18nDto();
 
-        given(countryI18nRepository.findById(id)).willReturn(Optional.empty());
+        given(countryI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> countryI18nService.updateCountryI18n(countryId, languageId, requestDto));
 
-        verify(countryI18nRepository).findById(id);
+        verify(countryI18nRepository).findById(expectedKey);
         verify(countryI18nMapper, never()).partialUpdate(any(), any());
         verify(countryI18nRepository, never()).save(any());
     }
@@ -181,14 +199,18 @@ class CountryI18nServiceImplTest {
         id.setCountryId(countryId);
         id.setLanguageId(languageId);
 
+        CountryI18nKey expectedKey = new CountryI18nKey();
+        expectedKey.setCountryId(countryId);
+        expectedKey.setLanguageId(languageId);
+
         CountryI18n existingEntity = createSampleCountryI18nEntity();
 
-        given(countryI18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(countryI18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
 
         countryI18nService.deleteCountryI18n(countryId, languageId);
 
-        verify(countryI18nRepository).findById(id);
-        verify(countryI18nRepository).deleteById(id);
+        verify(countryI18nRepository).findById(expectedKey);
+        verify(countryI18nRepository).deleteById(expectedKey);
     }
 
     @Test
@@ -200,12 +222,16 @@ class CountryI18nServiceImplTest {
         id.setCountryId(countryId);
         id.setLanguageId(languageId);
 
-        given(countryI18nRepository.findById(id)).willReturn(Optional.empty());
+        CountryI18nKey expectedKey = new CountryI18nKey();
+        expectedKey.setCountryId(countryId);
+        expectedKey.setLanguageId(languageId);
+
+        given(countryI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> countryI18nService.deleteCountryI18n(countryId, languageId));
 
-        verify(countryI18nRepository).findById(id);
-        verify(countryI18nRepository, never()).deleteById(id);
+        verify(countryI18nRepository).findById(expectedKey);
+        verify(countryI18nRepository, never()).deleteById(expectedKey);
     }
 
     /**
@@ -247,6 +273,13 @@ class CountryI18nServiceImplTest {
      */
     private CountryI18nDto createSampleCountryI18nDto() {
         CountryI18nDto dto = new CountryI18nDto();
+        CountryI18nKey id = new CountryI18nKey();
+        id.setCountryId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setCountry(new CountryDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDescription("description-value-1");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
@@ -263,6 +296,13 @@ class CountryI18nServiceImplTest {
      */
     private CountryI18nDto createAnotherCountryI18nDto() {
         CountryI18nDto dto = new CountryI18nDto();
+        CountryI18nKey id = new CountryI18nKey();
+        id.setCountryId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setCountry(new CountryDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDescription("description-value-2");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
@@ -279,6 +319,8 @@ class CountryI18nServiceImplTest {
      */
     private CountryI18nDto createPatchCountryI18nDto() {
         CountryI18nDto dto = new CountryI18nDto();
+        dto.setCountry(new CountryDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDescription("description-value-3");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));

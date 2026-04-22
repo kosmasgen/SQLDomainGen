@@ -9,7 +9,6 @@ import java.util.UUID;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
-import gr.knowledge.pepTest.dto.CompanyDto;
 
 /**
  * Data transfer object for ChamberAppUser.

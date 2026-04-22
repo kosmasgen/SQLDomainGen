@@ -88,7 +88,7 @@ public class IncomeGemiPaymentController {
     public ResponseEntity<IncomeGemiPaymentDto> patch(
             @Parameter(description = "income gemi payment identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody IncomeGemiPaymentDto dto) {
+            @Valid @RequestBody IncomeGemiPaymentDto dto) {
         return ResponseEntity.ok(incomeGemiPaymentService.updateIncomeGemiPayment(id, dto));
     }
 

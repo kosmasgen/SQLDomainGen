@@ -88,7 +88,7 @@ public class BgPoiController {
     public ResponseEntity<BgPoiDto> patch(
             @Parameter(description = "bg poi identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody BgPoiDto dto) {
+            @Valid @RequestBody BgPoiDto dto) {
         return ResponseEntity.ok(bgPoiService.updateBgPoi(id, dto));
     }
 

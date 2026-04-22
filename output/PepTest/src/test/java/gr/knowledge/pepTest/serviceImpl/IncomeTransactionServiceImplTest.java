@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.IncomeTransaction;
 import gr.knowledge.pepTest.dto.IncomeTransactionDto;
+import gr.knowledge.pepTest.dto.IncomeTypeDto;
+import gr.knowledge.pepTest.dto.IncomePaymentMethodDto;
 import gr.knowledge.pepTest.repository.IncomeTransactionRepository;
 import gr.knowledge.pepTest.mapper.IncomeTransactionMapper;
 import java.util.UUID;
@@ -250,9 +252,11 @@ class IncomeTransactionServiceImplTest {
         dto.setIsMember(1);
         dto.setCompanyId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         dto.setAccountCd("accountCd-value-1");
+        dto.setIncomeType(new IncomeTypeDto());
         dto.setAmount(new BigDecimal("1.00"));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setRecdeleted(new BigInteger("1"));
+        dto.setIncomePayMethod(new IncomePaymentMethodDto());
         dto.setIsEchamber(1);
         dto.setBlockSer("blockSer-value-1");
         dto.setIsKratisi(new BigInteger("1"));
@@ -278,9 +282,11 @@ class IncomeTransactionServiceImplTest {
         dto.setIsMember(2);
         dto.setCompanyId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         dto.setAccountCd("accountCd-value-2");
+        dto.setIncomeType(new IncomeTypeDto());
         dto.setAmount(new BigDecimal("2.00"));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setRecdeleted(new BigInteger("2"));
+        dto.setIncomePayMethod(new IncomePaymentMethodDto());
         dto.setIsEchamber(2);
         dto.setBlockSer("blockSer-value-2");
         dto.setIsKratisi(new BigInteger("2"));
@@ -305,9 +311,11 @@ class IncomeTransactionServiceImplTest {
         dto.setIsMember(3);
         dto.setCompanyId(UUID.fromString("323e4567-e89b-12d3-a456-426614174000"));
         dto.setAccountCd("accountCd-value-3");
+        dto.setIncomeType(new IncomeTypeDto());
         dto.setAmount(new BigDecimal("3.00"));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setRecdeleted(new BigInteger("3"));
+        dto.setIncomePayMethod(new IncomePaymentMethodDto());
         dto.setIsEchamber(3);
         dto.setBlockSer("blockSer-value-3");
         dto.setIsKratisi(new BigInteger("3"));

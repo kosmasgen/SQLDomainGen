@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -104,9 +107,9 @@ class CompanyTitlei18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyTitlei18nDto requestDto = createValidCreateCompanyTitlei18nDto();
-        requestDto.setRecdeleted(null);
+        requestDto.setCompanyTitle(null);
 
         mockMvc.perform(post("/api/company-titlei18n")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -131,12 +134,26 @@ class CompanyTitlei18nControllerTest {
     }
 
     @Test
-    void shouldReturnOkForPatch() throws Exception {
+    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {
         UUID companyTitleId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
         Integer chamberI18nId = 3;
 
         CompanyTitlei18nDto requestDto = new CompanyTitlei18nDto();
+
+        mockMvc.perform(patch("/api/company-titlei18n/{companyTitleId}/{languageId}/{chamberI18nId}", companyTitleId, languageId, chamberI18nId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void shouldReturnOkForPatch() throws Exception {
+        UUID companyTitleId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+        Integer chamberI18nId = 3;
+
+        CompanyTitlei18nDto requestDto = createValidCreateCompanyTitlei18nDto();
         CompanyTitlei18nDto responseDto = new CompanyTitlei18nDto();
         given(companyTitlei18nService.updateCompanyTitlei18n(eq(companyTitleId), eq(languageId), eq(chamberI18nId), any(CompanyTitlei18nDto.class))).willReturn(responseDto);
 
@@ -155,7 +172,7 @@ class CompanyTitlei18nControllerTest {
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
         Integer chamberI18nId = 3;
 
-        CompanyTitlei18nDto requestDto = new CompanyTitlei18nDto();
+        CompanyTitlei18nDto requestDto = createValidCreateCompanyTitlei18nDto();
         given(companyTitlei18nService.updateCompanyTitlei18n(eq(companyTitleId), eq(languageId), eq(chamberI18nId), any(CompanyTitlei18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -167,6 +184,22 @@ class CompanyTitlei18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID companyTitleId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+        Integer chamberI18nId = 3;
+
+        CompanyTitlei18nDto requestDto = createValidCreateCompanyTitlei18nDto();
+        given(companyTitlei18nService.updateCompanyTitlei18n(eq(companyTitleId), eq(languageId), eq(chamberI18nId), any(CompanyTitlei18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-titlei18n/{companyTitleId}/{languageId}/{chamberI18nId}", companyTitleId, languageId, chamberI18nId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

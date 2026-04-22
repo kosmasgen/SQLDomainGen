@@ -94,7 +94,7 @@ public class ChAppUserContactI18nController {
             @PathVariable UUID chAppUserContactId,
             @Parameter(description = "language id identifier", required = true)
             @PathVariable UUID languageId,
-            @RequestBody ChAppUserContactI18nDto dto) {
+            @Valid @RequestBody ChAppUserContactI18nDto dto) {
         return ResponseEntity.ok(chAppUserContactI18nService.updateChAppUserContactI18n(chAppUserContactId, languageId, dto));
     }
 

@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,6 +105,17 @@ class CorporateStatusViewRulesControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
+        CorporateStatusViewRulesDto requestDto = createValidCreateCorporateStatusViewRulesDto();
+        requestDto.setCorporateStatus(null);
+
+        mockMvc.perform(post("/api/corporate-status-view-rules")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnBadRequestForCreateWhenServiceThrows() throws Exception {
         CorporateStatusViewRulesDto requestDto = createValidCreateCorporateStatusViewRulesDto();
         given(corporateStatusViewRulesService.createCorporateStatusViewRules(any(CorporateStatusViewRulesDto.class)))
@@ -118,11 +132,24 @@ class CorporateStatusViewRulesControllerTest {
     }
 
     @Test
-    void shouldReturnOkForPatch() throws Exception {
+    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {
         UUID corporateStatusId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID companyViewRulesId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
         CorporateStatusViewRulesDto requestDto = new CorporateStatusViewRulesDto();
+
+        mockMvc.perform(patch("/api/corporate-status-view-rules/{corporateStatusId}/{companyViewRulesId}", corporateStatusId, companyViewRulesId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void shouldReturnOkForPatch() throws Exception {
+        UUID corporateStatusId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID companyViewRulesId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        CorporateStatusViewRulesDto requestDto = createValidCreateCorporateStatusViewRulesDto();
         CorporateStatusViewRulesDto responseDto = new CorporateStatusViewRulesDto();
         given(corporateStatusViewRulesService.updateCorporateStatusViewRules(eq(corporateStatusId), eq(companyViewRulesId), any(CorporateStatusViewRulesDto.class))).willReturn(responseDto);
 
@@ -140,7 +167,7 @@ class CorporateStatusViewRulesControllerTest {
         UUID corporateStatusId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID companyViewRulesId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
-        CorporateStatusViewRulesDto requestDto = new CorporateStatusViewRulesDto();
+        CorporateStatusViewRulesDto requestDto = createValidCreateCorporateStatusViewRulesDto();
         given(corporateStatusViewRulesService.updateCorporateStatusViewRules(eq(corporateStatusId), eq(companyViewRulesId), any(CorporateStatusViewRulesDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -152,6 +179,21 @@ class CorporateStatusViewRulesControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID corporateStatusId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID companyViewRulesId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        CorporateStatusViewRulesDto requestDto = createValidCreateCorporateStatusViewRulesDto();
+        given(corporateStatusViewRulesService.updateCorporateStatusViewRules(eq(corporateStatusId), eq(companyViewRulesId), any(CorporateStatusViewRulesDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/corporate-status-view-rules/{corporateStatusId}/{companyViewRulesId}", corporateStatusId, companyViewRulesId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

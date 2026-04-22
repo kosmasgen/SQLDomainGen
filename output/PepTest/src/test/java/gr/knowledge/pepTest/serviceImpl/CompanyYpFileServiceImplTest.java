@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CompanyYpFile;
 import gr.knowledge.pepTest.dto.CompanyYpFileDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.CompanyYpFileRepository;
 import gr.knowledge.pepTest.mapper.CompanyYpFileMapper;
 import java.util.UUID;
@@ -238,6 +240,8 @@ class CompanyYpFileServiceImplTest {
         dto.setRecdeleted(true);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
+        dto.setCompany(new CompanyDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setBlobUri("blobUri-value-1");
 
         return dto;
@@ -260,6 +264,8 @@ class CompanyYpFileServiceImplTest {
         dto.setRecdeleted(false);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
+        dto.setCompany(new CompanyDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setBlobUri("blobUri-value-2");
 
         return dto;
@@ -281,6 +287,8 @@ class CompanyYpFileServiceImplTest {
         dto.setRecdeleted(true);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
+        dto.setCompany(new CompanyDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setBlobUri("blobUri-value-3");
 
         return dto;

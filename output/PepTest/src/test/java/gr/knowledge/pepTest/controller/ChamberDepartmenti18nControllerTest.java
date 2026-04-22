@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,9 +105,9 @@ class ChamberDepartmenti18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         ChamberDepartmenti18nDto requestDto = createValidCreateChamberDepartmenti18nDto();
-        requestDto.setDescription(null);
+        requestDto.setDepartment(null);
 
         mockMvc.perform(post("/api/chamber-departmenti18n")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,11 +132,24 @@ class ChamberDepartmenti18nControllerTest {
     }
 
     @Test
-    void shouldReturnOkForPatch() throws Exception {
+    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {
         UUID departmentId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
         ChamberDepartmenti18nDto requestDto = new ChamberDepartmenti18nDto();
+
+        mockMvc.perform(patch("/api/chamber-departmenti18n/{departmentId}/{languageId}", departmentId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void shouldReturnOkForPatch() throws Exception {
+        UUID departmentId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        ChamberDepartmenti18nDto requestDto = createValidCreateChamberDepartmenti18nDto();
         ChamberDepartmenti18nDto responseDto = new ChamberDepartmenti18nDto();
         given(chamberDepartmenti18nService.updateChamberDepartmenti18n(eq(departmentId), eq(languageId), any(ChamberDepartmenti18nDto.class))).willReturn(responseDto);
 
@@ -151,7 +167,7 @@ class ChamberDepartmenti18nControllerTest {
         UUID departmentId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
-        ChamberDepartmenti18nDto requestDto = new ChamberDepartmenti18nDto();
+        ChamberDepartmenti18nDto requestDto = createValidCreateChamberDepartmenti18nDto();
         given(chamberDepartmenti18nService.updateChamberDepartmenti18n(eq(departmentId), eq(languageId), any(ChamberDepartmenti18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -163,6 +179,21 @@ class ChamberDepartmenti18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID departmentId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        ChamberDepartmenti18nDto requestDto = createValidCreateChamberDepartmenti18nDto();
+        given(chamberDepartmenti18nService.updateChamberDepartmenti18n(eq(departmentId), eq(languageId), any(ChamberDepartmenti18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/chamber-departmenti18n/{departmentId}/{languageId}", departmentId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -203,7 +234,7 @@ class ChamberDepartmenti18nControllerTest {
         ChamberDepartmenti18nDto dto = new ChamberDepartmenti18nDto();
         dto.setDepartment(new ChamberDepartmentDto());
         dto.setLanguage(new LanguagesDto());
-        dto.setDescription("aaaaa");
+        dto.setDescription("A");
         dto.setRecdeleted(true);
 
         return dto;

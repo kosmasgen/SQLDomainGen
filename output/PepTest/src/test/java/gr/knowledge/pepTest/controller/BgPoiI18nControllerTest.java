@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -98,7 +101,7 @@ class BgPoiI18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         BgPoiI18nDto requestDto = createValidCreateBgPoiI18nDto();
         requestDto.setRecdeleted(null);
 
@@ -125,9 +128,21 @@ class BgPoiI18nControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        BgPoiI18nDto requestDto = createValidCreateBgPoiI18nDto();
+        requestDto.setRecdeleted(null);
+
+        mockMvc.perform(patch("/api/bg-poi-i18n/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        BgPoiI18nDto requestDto = new BgPoiI18nDto();
+        BgPoiI18nDto requestDto = createValidCreateBgPoiI18nDto();
         BgPoiI18nDto responseDto = new BgPoiI18nDto();
         given(bgPoiI18nService.updateBgPoiI18n(eq(id), any(BgPoiI18nDto.class))).willReturn(responseDto);
 
@@ -143,7 +158,7 @@ class BgPoiI18nControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        BgPoiI18nDto requestDto = new BgPoiI18nDto();
+        BgPoiI18nDto requestDto = createValidCreateBgPoiI18nDto();
         given(bgPoiI18nService.updateBgPoiI18n(eq(id), any(BgPoiI18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -155,6 +170,19 @@ class BgPoiI18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        BgPoiI18nDto requestDto = createValidCreateBgPoiI18nDto();
+        given(bgPoiI18nService.updateBgPoiI18n(eq(id), any(BgPoiI18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/bg-poi-i18n/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -190,7 +218,7 @@ class BgPoiI18nControllerTest {
     private BgPoiI18nDto createValidCreateBgPoiI18nDto() {
         BgPoiI18nDto dto = new BgPoiI18nDto();
         dto.setRecdeleted(true);
-        dto.setTitle("aaaaa");
+        dto.setTitle("A");
         dto.setPoi(new BgPoiDto());
         dto.setLanguage(new LanguagesDto());
 

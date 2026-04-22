@@ -17,6 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.util.UUID;
 
+import java.util.UUID;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -96,7 +98,7 @@ class LanguagesControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         LanguagesDto requestDto = createValidCreateLanguagesDto();
         requestDto.setChamberId(null);
 
@@ -123,9 +125,21 @@ class LanguagesControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        LanguagesDto requestDto = createValidCreateLanguagesDto();
+        requestDto.setChamberId(null);
+
+        mockMvc.perform(patch("/api/languages/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        LanguagesDto requestDto = new LanguagesDto();
+        LanguagesDto requestDto = createValidCreateLanguagesDto();
         LanguagesDto responseDto = new LanguagesDto();
         given(languagesService.updateLanguages(eq(id), any(LanguagesDto.class))).willReturn(responseDto);
 
@@ -141,7 +155,7 @@ class LanguagesControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        LanguagesDto requestDto = new LanguagesDto();
+        LanguagesDto requestDto = createValidCreateLanguagesDto();
         given(languagesService.updateLanguages(eq(id), any(LanguagesDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +167,19 @@ class LanguagesControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        LanguagesDto requestDto = createValidCreateLanguagesDto();
+        given(languagesService.updateLanguages(eq(id), any(LanguagesDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/languages/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -188,8 +215,8 @@ class LanguagesControllerTest {
     private LanguagesDto createValidCreateLanguagesDto() {
         LanguagesDto dto = new LanguagesDto();
         dto.setChamberId(1);
-        dto.setCd("aaa");
-        dto.setDescr("aaaaa");
+        dto.setCd("A");
+        dto.setDescr("A");
 
         return dto;
     }

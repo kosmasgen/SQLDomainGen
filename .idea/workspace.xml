@@ -4,32 +4,14 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="b0084f3d-faef-4b57-8eff-7f8eb002c2d9" name="Changes" comment="Εntity generator refactor">
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/DtoFieldTypeResolver.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generatorTest/DtoPojoTestGenerator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generatorTest/EntityPojoTestGenerator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generatorTest/MapperTestGenerator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generatorTest/TestGenerator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/CompositeKeyDefinition.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/FlatGenerationSupport.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/GeneratorImportSupport.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/GeneratorNamingSupport.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/JavaImportCollector.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/JavaTypeSupport.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/PrimaryKeySupport.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/ProjectTypeImportSupport.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/RelationshipTypeResolver.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/validation/EntitySchemaValidationService.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/validation/EntitySchemaValidator.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/validation/GenerationValidationReport.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/validation/GenerationValidationRunner.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/validation/ValidationReportPdfWriter.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/schemaValidation/EntityDtoConsistencyValidationTest.java" afterDir="false" />
+    <list default="true" id="b0084f3d-faef-4b57-8eff-7f8eb002c2d9" name="Changes" comment="refactor">
+      <change afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/schemaValidation/GeneratedSourcesMavenTestExecutionTest.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/input/test_script.sql" beforeDir="false" afterPath="$PROJECT_DIR$/input/test_script.sql" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/pom.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/PepTestApplication.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/config/CorsConfig.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/config/ModelMapperConfig.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/config/SecurityConfig.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/controller/AuditTrailController.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/controller/BgPoiController.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/controller/BgPoiI18nController.java" beforeDir="false" />
@@ -89,7 +71,6 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/controller/StatusHistoryController.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/controller/SyncWatermarksController.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/controller/SyncrunsController.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/controller/SyncrunsErrorLogController.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/controller/TemporaryCompanyController.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/controller/TemporaryCompanyProfessionController.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/controller/TemporaryCompanyTitleController.java" beforeDir="false" />
@@ -157,7 +138,6 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/dto/StatusHistoryDto.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/dto/SyncWatermarksDto.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/dto/SyncrunsDto.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/dto/SyncrunsErrorLogDto.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/dto/TemporaryCompanyDto.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/dto/TemporaryCompanyProfessionDto.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/dto/TemporaryCompanyTitleDto.java" beforeDir="false" />
@@ -171,14 +151,14 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/BgPoiI18n.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/BusinessLocation.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/BusinessLocationI18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/BusinessLocationI18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/BusinessLocationI18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ChAppUserContact.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ChAppUserContactI18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ChAppUserContactI18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ChAppUserContactI18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ChamberAppUser.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ChamberDepartment.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ChamberDepartmenti18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ChamberDepartmenti18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ChamberDepartmenti18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Company.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyArticleFile.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyBgCooperation.java" beforeDir="false" />
@@ -189,31 +169,31 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyProfession.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyProfile.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyProfileI18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyProfileI18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyProfileI18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyStatus.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyStatusViewRules.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyStatusViewRulesPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyStatusViewRulesKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyStatusi18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyStatusi18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyStatusi18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyTitle.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyTitlei18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyTitlei18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyTitlei18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyViewRules.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyYpArticle.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyYpArticleI18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyYpArticleI18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyYpArticleI18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyYpFile.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CompanyYpPhoto.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Companyi18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Companyi18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Companyi18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CorporateStatus.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CorporateStatusViewRules.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CorporateStatusViewRulesPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CorporateStatusViewRulesKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CorporateStatusi18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CorporateStatusi18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CorporateStatusi18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Country.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CountryI18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CountryI18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/CountryI18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/DataStaging.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ExportCompProdCountry.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ExportCompany.java" beforeDir="false" />
@@ -225,23 +205,22 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Languages.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Municipality.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/MunicipalityI18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/MunicipalityI18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/MunicipalityI18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Product.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Producti18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Producti18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Producti18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Profession.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ProfessionFriendlyCategory.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ProfessionKind.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ProfessionKindi18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ProfessionKindi18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ProfessionKindi18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/ProfessionSystem.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Professioni18n.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Professioni18nPK.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Professioni18nKey.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/StatsExpense.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/StatusHistory.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/SyncWatermarks.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/Syncruns.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/SyncrunsErrorLog.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/TemporaryCompany.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/TemporaryCompanyProfession.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/TemporaryCompanyTitle.java" beforeDir="false" />
@@ -250,7 +229,9 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/UserContactinfo.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/UserGeodata.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/entity/WorkingHours.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/exception/ErrorCodes.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/exception/ErrorResponse.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/exception/GeneratedRuntimeException.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/exception/GlobalExceptionHandler.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/mapper/AuditTrailMapper.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/mapper/BaseMapper.java" beforeDir="false" />
@@ -311,7 +292,6 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/mapper/StatsExpenseMapper.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/mapper/StatusHistoryMapper.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/mapper/SyncWatermarksMapper.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/mapper/SyncrunsErrorLogMapper.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/mapper/SyncrunsMapper.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/mapper/TemporaryCompanyMapper.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/mapper/TemporaryCompanyProfessionMapper.java" beforeDir="false" />
@@ -379,7 +359,6 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/repository/StatsExpenseRepository.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/repository/StatusHistoryRepository.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/repository/SyncWatermarksRepository.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/repository/SyncrunsErrorLogRepository.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/repository/SyncrunsRepository.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/repository/TemporaryCompanyProfessionRepository.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/repository/TemporaryCompanyRepository.java" beforeDir="false" />
@@ -447,7 +426,6 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/service/StatsExpenseService.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/service/StatusHistoryService.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/service/SyncWatermarksService.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/service/SyncrunsErrorLogService.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/service/SyncrunsService.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/service/TemporaryCompanyProfessionService.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/service/TemporaryCompanyService.java" beforeDir="false" />
@@ -515,7 +493,6 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/serviceImpl/StatsExpenseServiceImpl.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/serviceImpl/StatusHistoryServiceImpl.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/serviceImpl/SyncWatermarksServiceImpl.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/serviceImpl/SyncrunsErrorLogServiceImpl.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/serviceImpl/SyncrunsServiceImpl.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/serviceImpl/TemporaryCompanyProfessionServiceImpl.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/serviceImpl/TemporaryCompanyServiceImpl.java" beforeDir="false" />
@@ -526,7 +503,77 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/serviceImpl/UserGeodataServiceImpl.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/java/gr/knowledge/pepTest/serviceImpl/WorkingHoursServiceImpl.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/application.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/PepTestApplicationTests.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelog-master.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/audit.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/auditTrail.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/bgPoi.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/bgPoiI18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/businessLocation.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/businessLocationI18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/chAppUserContact.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/chAppUserContactI18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/chamberAppUser.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/chamberDepartment.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/chamberDepartmenti18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/company.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyArticleFile.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyBgCooperation.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyBgCooperationI18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyContactMessage.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyFavourites.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyFile.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyProfession.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyProfile.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyProfileI18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyStatus.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyStatusViewRules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyStatusi18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyTitle.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyTitlei18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyViewRules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyYpArticle.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyYpArticleI18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyYpFile.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyYpPhoto.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/companyi18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/corporateStatus.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/corporateStatusViewRules.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/corporateStatusi18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/country.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/countryI18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/dataStaging.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/exportCompProdCountry.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/exportCompany.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/folder.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/incomeGemiPayment.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/incomePaymentMethod.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/incomeTransaction.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/incomeType.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/languages.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/main.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/municipality.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/municipalityI18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/product.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/producti18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/profession.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/professionFriendlyCategory.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/professionKind.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/professionKindi18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/professionSystem.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/professioni18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/statsExpense.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/statusHistory.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/syncWatermarks.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/syncruns.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/syncrunsErrorLog.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/temporaryCompany.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/temporaryCompanyProfession.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/temporaryCompanyTitle.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/temporaryCompanyTitlei18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/temporaryCompanyi18n.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/userContactinfo.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/userGeodata.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/main/resources/db/migration/changelogs/v0.1.0/workingHours.xml" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/AuditTrailControllerTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/BgPoiControllerTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/BgPoiI18nControllerTest.java" beforeDir="false" />
@@ -586,7 +633,6 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/StatusHistoryControllerTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/SyncWatermarksControllerTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/SyncrunsControllerTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/SyncrunsErrorLogControllerTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/TemporaryCompanyControllerTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/TemporaryCompanyProfessionControllerTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/TemporaryCompanyTitleControllerTest.java" beforeDir="false" />
@@ -595,131 +641,466 @@
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/UserContactinfoControllerTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/UserGeodataControllerTest.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/controller/WorkingHoursControllerTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/AuditTrailServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/BgPoiI18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/BgPoiServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/BusinessLocationI18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/BusinessLocationServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ChAppUserContactI18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ChAppUserContactServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ChamberAppUserServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ChamberDepartmentServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ChamberDepartmenti18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyArticleFileServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyBgCooperationI18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyBgCooperationServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyContactMessageServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyFavouritesServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyFileServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyProfessionServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyProfileI18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyProfileServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyStatusServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyStatusViewRulesServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyStatusi18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyTitleServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyTitlei18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyViewRulesServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyYpArticleI18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyYpArticleServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyYpFileServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CompanyYpPhotoServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/Companyi18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CorporateStatusServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CorporateStatusViewRulesServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CorporateStatusi18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CountryI18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/CountryServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/DataStagingServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ExportCompProdCountryServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ExportCompanyServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/FolderServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/IncomeGemiPaymentServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/IncomePaymentMethodServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/IncomeTransactionServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/IncomeTypeServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/LanguagesServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/MunicipalityI18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/MunicipalityServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ProductServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/Producti18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ProfessionFriendlyCategoryServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ProfessionKindServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ProfessionKindi18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ProfessionServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/ProfessionSystemServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/Professioni18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/StatsExpenseServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/StatusHistoryServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/SyncWatermarksServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/SyncrunsErrorLogServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/SyncrunsServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/TemporaryCompanyProfessionServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/TemporaryCompanyServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/TemporaryCompanyTitleServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/TemporaryCompanyTitlei18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/TemporaryCompanyi18nServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/UserContactinfoServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/UserGeodataServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/service/WorkingHoursServiceTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/spring-shell.log" beforeDir="false" afterPath="$PROJECT_DIR$/spring-shell.log" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ConfigGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ConfigGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ControllerGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ControllerGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ControllerTestGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generatorTest/ControllerTestGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/DTOGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/DTOGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/EntityGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/EntityGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ExceptionGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ExceptionGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/LiquibaseGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/LiquibaseGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/MapperGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/MapperGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ProjectScaffoldGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ProjectScaffoldGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/RepositoryGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/RepositoryGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/AuditTrailDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/BgPoiDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/BgPoiI18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/BusinessLocationDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/BusinessLocationI18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ChAppUserContactDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ChAppUserContactI18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ChamberAppUserDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ChamberDepartmentDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ChamberDepartmenti18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyArticleFileDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyBgCooperationDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyBgCooperationI18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyContactMessageDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyFavouritesDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyFileDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyProfessionDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyProfileDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyProfileI18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyStatusDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyStatusViewRulesDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyStatusi18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyTitleDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyTitlei18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyViewRulesDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyYpArticleDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyYpArticleI18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyYpFileDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CompanyYpPhotoDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/Companyi18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CorporateStatusDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CorporateStatusViewRulesDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CorporateStatusi18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CountryDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/CountryI18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/DataStagingDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ExportCompProdCountryDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ExportCompanyDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/FolderDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/IncomeGemiPaymentDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/IncomePaymentMethodDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/IncomeTransactionDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/IncomeTypeDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/LanguagesDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/MunicipalityDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/MunicipalityI18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ProductDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/Producti18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ProfessionDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ProfessionFriendlyCategoryDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ProfessionKindDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ProfessionKindi18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/ProfessionSystemDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/Professioni18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/StatsExpenseDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/StatusHistoryDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/SyncWatermarksDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/SyncrunsDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/TemporaryCompanyDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/TemporaryCompanyProfessionDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/TemporaryCompanyTitleDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/TemporaryCompanyTitlei18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/TemporaryCompanyi18nDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/UserContactinfoDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/UserGeodataDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/dto/WorkingHoursDtoTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/AuditTrailEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/BgPoiEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/BgPoiI18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/BusinessLocationEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/BusinessLocationI18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ChAppUserContactEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ChAppUserContactI18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ChamberAppUserEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ChamberDepartmentEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ChamberDepartmenti18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyArticleFileEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyBgCooperationEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyBgCooperationI18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyContactMessageEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyFavouritesEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyFileEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyProfessionEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyProfileEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyProfileI18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyStatusEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyStatusViewRulesEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyStatusi18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyTitleEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyTitlei18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyViewRulesEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyYpArticleEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyYpArticleI18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyYpFileEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CompanyYpPhotoEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/Companyi18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CorporateStatusEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CorporateStatusViewRulesEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CorporateStatusi18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CountryEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/CountryI18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/DataStagingEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ExportCompProdCountryEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ExportCompanyEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/FolderEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/IncomeGemiPaymentEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/IncomePaymentMethodEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/IncomeTransactionEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/IncomeTypeEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/LanguagesEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/MunicipalityEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/MunicipalityI18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ProductEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/Producti18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ProfessionEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ProfessionFriendlyCategoryEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ProfessionKindEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ProfessionKindi18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/ProfessionSystemEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/Professioni18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/StatsExpenseEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/StatusHistoryEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/SyncWatermarksEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/SyncrunsEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/TemporaryCompanyEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/TemporaryCompanyProfessionEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/TemporaryCompanyTitleEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/TemporaryCompanyTitlei18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/TemporaryCompanyi18nEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/UserContactinfoEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/UserGeodataEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/entity/WorkingHoursEntityTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/AuditTrailMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/BgPoiI18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/BgPoiMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/BusinessLocationI18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/BusinessLocationMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ChAppUserContactI18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ChAppUserContactMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ChamberAppUserMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ChamberDepartmentMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ChamberDepartmenti18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyArticleFileMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyBgCooperationI18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyBgCooperationMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyContactMessageMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyFavouritesMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyFileMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyProfessionMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyProfileI18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyProfileMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyStatusMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyStatusViewRulesMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyStatusi18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyTitleMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyTitlei18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyViewRulesMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyYpArticleI18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyYpArticleMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyYpFileMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CompanyYpPhotoMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/Companyi18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CorporateStatusMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CorporateStatusViewRulesMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CorporateStatusi18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CountryI18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/CountryMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/DataStagingMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ExportCompProdCountryMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ExportCompanyMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/FolderMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/IncomeGemiPaymentMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/IncomePaymentMethodMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/IncomeTransactionMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/IncomeTypeMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/LanguagesMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/MunicipalityI18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/MunicipalityMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ProductMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/Producti18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ProfessionFriendlyCategoryMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ProfessionKindMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ProfessionKindi18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ProfessionMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/ProfessionSystemMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/Professioni18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/StatsExpenseMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/StatusHistoryMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/SyncWatermarksMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/SyncrunsMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/TemporaryCompanyMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/TemporaryCompanyProfessionMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/TemporaryCompanyTitleMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/TemporaryCompanyTitlei18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/TemporaryCompanyi18nMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/UserContactinfoMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/UserGeodataMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/mapper/WorkingHoursMapperTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/AuditTrailServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/BgPoiI18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/BgPoiServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/BusinessLocationI18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/BusinessLocationServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ChAppUserContactI18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ChAppUserContactServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ChamberAppUserServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ChamberDepartmentServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ChamberDepartmenti18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyArticleFileServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyBgCooperationI18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyBgCooperationServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyContactMessageServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyFavouritesServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyFileServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyProfessionServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyProfileI18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyProfileServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyStatusServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyStatusViewRulesServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyStatusi18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyTitleServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyTitlei18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyViewRulesServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyYpArticleI18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyYpArticleServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyYpFileServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CompanyYpPhotoServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/Companyi18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CorporateStatusServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CorporateStatusViewRulesServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CorporateStatusi18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CountryI18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/CountryServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/DataStagingServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ExportCompProdCountryServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ExportCompanyServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/FolderServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/IncomeGemiPaymentServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/IncomePaymentMethodServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/IncomeTransactionServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/IncomeTypeServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/LanguagesServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/MunicipalityI18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/MunicipalityServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ProductServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/Producti18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ProfessionFriendlyCategoryServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ProfessionKindServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ProfessionKindi18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ProfessionServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/ProfessionSystemServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/Professioni18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/StatsExpenseServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/StatusHistoryServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/SyncWatermarksServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/SyncrunsServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/TemporaryCompanyProfessionServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/TemporaryCompanyServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/TemporaryCompanyTitleServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/TemporaryCompanyTitlei18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/TemporaryCompanyi18nServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/UserContactinfoServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/UserGeodataServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/src/test/java/gr/knowledge/pepTest/serviceImpl/WorkingHoursServiceImplTest.java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/output/PepTest/validation/validation-report.pdf" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ServiceGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ServiceGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/ServiceImplTestGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generatorTest/ServiceImplTestGenerator.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generator/TestGenerator.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Column.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Column.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Entity.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Entity.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/EntityModel.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Field.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Field.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Table.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/model/Table.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/ColumnDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/ColumnDefinition.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/CreateTableDefinition.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parser/CreateTableDefinition.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parseroutputfiles/EntityParser.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/parseroutputfiles/EntityParser.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/shell/GeneratorCommands.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/shell/GeneratorCommands.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/Constants.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/Constants.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/NamingConverter.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/NamingConverter.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/TypeMapper.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/util/TypeMapper.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/TopologigalTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/schemaValidation/LiquibaseDataStagingGenerationTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/schemaValidation/LiquibaseIncomeGemiPaymentGenerationTest.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/schemaValidation/LiquibaseSchemaParityTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/schemaValidation/LiquibaseSchemaParityTest.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/schemaValidation/SchemaModelValidationTest.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/test/java/com/sqldomaingen/schemaValidation/SchemaModelValidationTest.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generatorTest/ControllerTestGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generatorTest/ControllerTestGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generatorTest/ServiceImplTestGenerator.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/com/sqldomaingen/generatorTest/ServiceImplTestGenerator.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/SQLDomainGenApplication.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/SQLDomainGenApplication.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ConfigGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ConfigGenerator.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ControllerGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ControllerGenerator.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/DTOGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/DTOGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/DtoFieldTypeResolver.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/DtoFieldTypeResolver.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator$ForeignKeyGenerationStrategy.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator$ForeignKeyGenerationStrategy.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/EntityGenerator.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ExceptionGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ExceptionGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/LiquibaseGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/LiquibaseGenerator.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/MapperGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/MapperGenerator.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ProjectScaffoldGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ProjectScaffoldGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RelationshipResolver.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RelationshipResolver.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RepositoryGenerator$TypeRef.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RepositoryGenerator$TypeRef.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RepositoryGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/RepositoryGenerator.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ServiceGenerator$TypeRef.class" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ServiceGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/ServiceGenerator.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generator/TestGenerator.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/ControllerTestGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/ControllerTestGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/DtoPojoTestGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/DtoPojoTestGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/EntityPojoTestGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/EntityPojoTestGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/MapperTestGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/MapperTestGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/ServiceImplTestGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/ServiceImplTestGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/TestGenerator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/generatorTest/TestGenerator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/liquibase/LiquibaseDependencyGraphBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/liquibase/LiquibaseDependencyGraphBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/liquibase/TableDependencySorter.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/liquibase/TableDependencySorter.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Column.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Column.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/CompositeKeyDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/CompositeKeyDefinition.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Entity.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Entity.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/EntityModel.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Field$FieldBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Field$FieldBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Field$RelationKind.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Field$RelationKind.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Field.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Field.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/IndexDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/IndexDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/ManyToManyRelation$ManyToManyRelationBuilder.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/ManyToManyRelation$ManyToManyRelationBuilder.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/ManyToManyRelation.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/ManyToManyRelation.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Relationship$RelationshipType.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Relationship$RelationshipType.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Relationship.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Relationship.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Table.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/Table.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/UniqueConstraint.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/model/UniqueConstraint.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/ColumnDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/ColumnDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/CreateIndexDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/CreateIndexDefinition.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/CreateTableDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/CreateTableDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLBaseListener.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLBaseListener.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLLexer.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLLexer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLListener.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLListener.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ActionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterActionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterColumnActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterColumnActionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterTableStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AlterTableStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AnyExpressionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$AnyExpressionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ArrayConstructorContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ArrayConstructorContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$BooleanConditionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$BooleanConditionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$BooleanLiteralContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$BooleanLiteralContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CollateClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CollateClauseContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnAttributeContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnAttributeContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnDefContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnDefContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameListContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnNameListContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnTypeModifierContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ColumnTypeModifierContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ComparisonOperatorContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ComparisonOperatorContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ConditionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ConditionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ConflictActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ConflictActionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ConstraintContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ConstraintContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateFunctionStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateFunctionStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateIndexStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateIndexStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreatePolicyStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreatePolicyStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateRuleStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateRuleStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateSchemaStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateSchemaStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateTableStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateTableStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateViewStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$CreateViewStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DataManipulationStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DataManipulationStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DataTypeContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DataTypeContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DecimalTypeContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DecimalTypeContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DeleteStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$DeleteStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ExcludeElementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ExcludeElementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ExcludeElementListContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ExcludeElementListContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ExpressionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ExpressionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ExpressionListContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ExpressionListContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$FunctionCallContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$FunctionCallContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$GeneratedColumnBodyContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$GeneratedColumnBodyContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$GeneratedColumnContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$GeneratedColumnContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IdentityColumnContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IdentityColumnContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IdentityOptionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IdentityOptionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IdentityOptionsContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IdentityOptionsContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IndexElementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IndexElementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IndexOptionsClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IndexOptionsClauseContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$InsertStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$InsertStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IntervalLiteralContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$IntervalLiteralContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$LimitClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$LimitClauseContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$NumericLiteralContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$NumericLiteralContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnActionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnUpdateClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OnUpdateClauseContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OrderByClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$OrderByClauseContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ParameterContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ParameterContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PartitionClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PartitionClauseContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PartitionStrategyContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PartitionStrategyContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PartitionValuesClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PartitionValuesClauseContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PlpgsqlBlockContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PlpgsqlBlockContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PredicateContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$PredicateContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$RelationshipTypeContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$RelationshipTypeContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$RuleActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$RuleActionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$RuleEventContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$RuleEventContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SchemaNameContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SchemaNameContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SelectListContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SelectListContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SelectStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SelectStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SqlActionContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SqlActionContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SqlScriptContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SqlScriptContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$StatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$StatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SubqueryContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$SubqueryContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TableConstraintContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TableConstraintContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TableNameContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TableNameContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TableReferenceContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TableReferenceContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TriggerEventContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TriggerEventContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TriggerStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TriggerStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TriggerTimingContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TriggerTimingContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TypeCastContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TypeCastContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TypeNameContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$TypeNameContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$UpdateStatementContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$UpdateStatementContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ValueAtomContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ValueAtomContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ValueContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ValueContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ValueListContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$ValueListContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$WhereClauseContext.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser$WhereClauseContext.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/PostgreSQLParser.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parser/SQLParser.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parseroutputfiles/EntityParser.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/parseroutputfiles/EntityParser.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/shell/GeneratorCommands.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/shell/GeneratorCommands.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/Constants.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/Constants.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/FlatGenerationSupport.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/FlatGenerationSupport.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/GeneratorImportSupport.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/GeneratorImportSupport.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/GeneratorNamingSupport.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/GeneratorNamingSupport.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/GeneratorSupport.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/GeneratorSupport.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/JavaImportCollector.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/JavaImportCollector.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/JavaTypeSupport.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/JavaTypeSupport.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/NamingConverter.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/NamingConverter.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/PackageResolver.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/PackageResolver.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/PrimaryKeySupport$TypeRef.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/PrimaryKeySupport$TypeRef.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/PrimaryKeySupport.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/PrimaryKeySupport.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/ProjectTypeImportSupport.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/ProjectTypeImportSupport.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/RelationshipTypeResolver.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/RelationshipTypeResolver.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/TypeMapper.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/util/TypeMapper.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TopologigalTest.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidationService.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidationService.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$AnnotationDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$AnnotationDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$ColumnDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$ColumnDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$ForeignKeyDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$ForeignKeyDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$JavaEntityDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$JavaEntityDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$JavaFieldDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$JavaFieldDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$TableDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator$TableDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/EntitySchemaValidator.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/GenerationValidationReport$Section.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/GenerationValidationReport$Section.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/GenerationValidationReport.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/GenerationValidationReport.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/GenerationValidationRunner.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/GenerationValidationRunner.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/ValidationReportPdfWriter.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/com/sqldomaingen/validation/ValidationReportPdfWriter.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnDefinitionScaleTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnDefinitionScaleTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnDefinitionTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnDefinitionTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/ColumnTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/CreateIndexDefinitionTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/CreateIndexDefinitionTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/CreateTableDefinitionTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/CreateTableDefinitionTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/EntityGeneratorTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/EntityGeneratorTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/EntityGeneratorTestUp.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/EntityGeneratorTestUp.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/GrammarRelationshipTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/GrammarRelationshipTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/LiquibaseDependencyGraphBuilderTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/LiquibaseDependencyGraphBuilderTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/LiquibaseGeneratorTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/LiquibaseGeneratorTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RelationshipResolverTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RelationshipResolverTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RelationshipTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/RelationshipTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/SQLParserTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/SQLParserTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableDependencySorterTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableDependencySorterTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest$1.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest$CollectingErrorListener.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest$CollectingErrorListener.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest$CreateTableCapture.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest$CreateTableCapture.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest$ParseCapture.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest$ParseCapture.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableParsingTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/TableTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntityDtoConsistencyValidationTest$AnnotationDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntityDtoConsistencyValidationTest$AnnotationDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntityDtoConsistencyValidationTest$JavaFieldDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntityDtoConsistencyValidationTest$JavaFieldDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntityDtoConsistencyValidationTest$JavaTypeDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntityDtoConsistencyValidationTest$JavaTypeDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntityDtoConsistencyValidationTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntityDtoConsistencyValidationTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$AnnotationDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$AnnotationDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$ColumnDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$ColumnDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$ForeignKeyDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$ForeignKeyDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$JavaEntityDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$JavaEntityDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$JavaFieldDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$JavaFieldDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$TableDefinition.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest$TableDefinition.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/EntitySchemaValidationTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/LiquibaseGeneratorEndToEndTest$CreateTableStatementCollector.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/LiquibaseGeneratorEndToEndTest$CreateTableStatementCollector.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/LiquibaseGeneratorEndToEndTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/LiquibaseGeneratorEndToEndTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/LiquibaseSchemaParityTest$CreateTableStatementCollector.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/LiquibaseSchemaParityTest$CreateTableStatementCollector.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/LiquibaseSchemaParityTest$TypeDescriptor.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/LiquibaseSchemaParityTest$TypeDescriptor.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/LiquibaseSchemaParityTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/LiquibaseSchemaParityTest.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/SchemaModelValidationTest.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/test-classes/com/sqldomaingen/schemaValidation/SchemaModelValidationTest.class" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -815,6 +1196,7 @@
     &quot;JUnit.EntityGeneratorTestUp.testGenerateCompanyProfileLanguageEntity_GeneratesExternalPkAndInverseCollectionsOnParents.executor&quot;: &quot;Run&quot;,
     &quot;JUnit.EntityGeneratorTestUp.testGeneratePureManyToManyFromBothSides.executor&quot;: &quot;Run&quot;,
     &quot;JUnit.EntitySchemaValidationTest.executor&quot;: &quot;Run&quot;,
+    &quot;JUnit.GeneratedSourcesMavenTestExecutionTest.executor&quot;: &quot;Run&quot;,
     &quot;JUnit.GrammarRelationshipTest.executor&quot;: &quot;Run&quot;,
     &quot;JUnit.GrammarTest.executor&quot;: &quot;Debug&quot;,
     &quot;JUnit.LiquibaseDataStagingGenerationTest.executor&quot;: &quot;Run&quot;,
@@ -921,7 +1303,7 @@
     &quot;RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252&quot;: &quot;true&quot;,
     &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
     &quot;Spring Boot.SQLDomainGenApplication.executor&quot;: &quot;Run&quot;,
-    &quot;git-widget-placeholder&quot;: &quot;feature/24993&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;main&quot;,
     &quot;ignore.virus.scanning.warn.message&quot;: &quot;true&quot;,
     &quot;kotlin-language-version-configured&quot;: &quot;true&quot;,
     &quot;last_opened_file_path&quot;: &quot;C:/Users/kosma/IdeaProjects/SQLDomainGen/src/test/java/com/sqldomaingen&quot;,
@@ -939,7 +1321,7 @@
       <recent name="C:\Users\kosma\IdeaProjects\SQLDomainGen\src\test\java\com\sqldomaingen" />
     </key>
   </component>
-  <component name="RunManager">
+  <component name="RunManager" selected="Application.SQLGEN">
     <configuration name="SQLGEN" type="Application" factoryName="Application">
       <option name="MAIN_CLASS_NAME" value="com.sqldomaingen.SQLDomainGenApplication" />
       <module name="SQLDomainGen" />

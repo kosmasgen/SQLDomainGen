@@ -2,6 +2,7 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CompanyTitle;
 import gr.knowledge.pepTest.dto.CompanyTitleDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import gr.knowledge.pepTest.repository.CompanyTitleRepository;
 import gr.knowledge.pepTest.mapper.CompanyTitleMapper;
 import java.util.UUID;
@@ -225,6 +226,7 @@ class CompanyTitleServiceImplTest {
         dto.setChamberId(1);
         dto.setTitle("title-value-1");
         dto.setChamberTitleId(new BigInteger("1"));
+        dto.setCompany(new CompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setRecdeleted(true);
@@ -243,6 +245,7 @@ class CompanyTitleServiceImplTest {
         dto.setChamberId(2);
         dto.setTitle("title-value-2");
         dto.setChamberTitleId(new BigInteger("2"));
+        dto.setCompany(new CompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setRecdeleted(false);
@@ -260,6 +263,7 @@ class CompanyTitleServiceImplTest {
         dto.setChamberId(3);
         dto.setTitle("title-value-3");
         dto.setChamberTitleId(new BigInteger("3"));
+        dto.setCompany(new CompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setRecdeleted(true);

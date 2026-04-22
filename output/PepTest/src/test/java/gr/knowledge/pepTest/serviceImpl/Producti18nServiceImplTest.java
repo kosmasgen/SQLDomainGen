@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.Producti18n;
 import gr.knowledge.pepTest.dto.Producti18nDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
+import gr.knowledge.pepTest.dto.ProductDto;
 import gr.knowledge.pepTest.repository.Producti18nRepository;
 import gr.knowledge.pepTest.mapper.Producti18nMapper;
 import gr.knowledge.pepTest.entity.Producti18nKey;
@@ -75,16 +77,20 @@ class Producti18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setProductId(productId);
 
+        Producti18nKey expectedKey = new Producti18nKey();
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setProductId(productId);
+
         Producti18n producti18n = createSampleProducti18nEntity();
         Producti18nDto producti18nDto = createSampleProducti18nDto();
 
-        given(producti18nRepository.findById(id)).willReturn(Optional.of(producti18n));
+        given(producti18nRepository.findById(expectedKey)).willReturn(Optional.of(producti18n));
         given(producti18nMapper.toDTO(producti18n)).willReturn(producti18nDto);
 
         Producti18nDto result = producti18nService.getProducti18nById(languageId, productId);
 
         assertSame(producti18nDto, result);
-        verify(producti18nRepository).findById(id);
+        verify(producti18nRepository).findById(expectedKey);
         verify(producti18nMapper).toDTO(producti18n);
     }
 
@@ -97,11 +103,15 @@ class Producti18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setProductId(productId);
 
-        given(producti18nRepository.findById(id)).willReturn(Optional.empty());
+        Producti18nKey expectedKey = new Producti18nKey();
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setProductId(productId);
+
+        given(producti18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> producti18nService.getProducti18nById(languageId, productId));
 
-        verify(producti18nRepository).findById(id);
+        verify(producti18nRepository).findById(expectedKey);
         verify(producti18nMapper, never()).toDTO(any(Producti18n.class));
     }
 
@@ -133,19 +143,23 @@ class Producti18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setProductId(productId);
 
+        Producti18nKey expectedKey = new Producti18nKey();
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setProductId(productId);
+
         Producti18nDto requestDto = createPatchProducti18nDto();
         Producti18n existingEntity = createSampleProducti18nEntity();
         Producti18n savedEntity = createAnotherProducti18nEntity();
         Producti18nDto responseDto = createAnotherProducti18nDto();
 
-        given(producti18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(producti18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
         given(producti18nRepository.save(existingEntity)).willReturn(savedEntity);
         given(producti18nMapper.toDTO(savedEntity)).willReturn(responseDto);
 
         Producti18nDto result = producti18nService.updateProducti18n(languageId, productId, requestDto);
 
         assertSame(responseDto, result);
-        verify(producti18nRepository).findById(id);
+        verify(producti18nRepository).findById(expectedKey);
         verify(producti18nMapper).partialUpdate(existingEntity, requestDto);
         verify(producti18nRepository).save(existingEntity);
         verify(producti18nMapper).toDTO(savedEntity);
@@ -161,13 +175,17 @@ class Producti18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setProductId(productId);
 
+        Producti18nKey expectedKey = new Producti18nKey();
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setProductId(productId);
+
         Producti18nDto requestDto = createPatchProducti18nDto();
 
-        given(producti18nRepository.findById(id)).willReturn(Optional.empty());
+        given(producti18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> producti18nService.updateProducti18n(languageId, productId, requestDto));
 
-        verify(producti18nRepository).findById(id);
+        verify(producti18nRepository).findById(expectedKey);
         verify(producti18nMapper, never()).partialUpdate(any(), any());
         verify(producti18nRepository, never()).save(any());
     }
@@ -181,14 +199,18 @@ class Producti18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setProductId(productId);
 
+        Producti18nKey expectedKey = new Producti18nKey();
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setProductId(productId);
+
         Producti18n existingEntity = createSampleProducti18nEntity();
 
-        given(producti18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(producti18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
 
         producti18nService.deleteProducti18n(languageId, productId);
 
-        verify(producti18nRepository).findById(id);
-        verify(producti18nRepository).deleteById(id);
+        verify(producti18nRepository).findById(expectedKey);
+        verify(producti18nRepository).deleteById(expectedKey);
     }
 
     @Test
@@ -200,12 +222,16 @@ class Producti18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setProductId(productId);
 
-        given(producti18nRepository.findById(id)).willReturn(Optional.empty());
+        Producti18nKey expectedKey = new Producti18nKey();
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setProductId(productId);
+
+        given(producti18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> producti18nService.deleteProducti18n(languageId, productId));
 
-        verify(producti18nRepository).findById(id);
-        verify(producti18nRepository, never()).deleteById(id);
+        verify(producti18nRepository).findById(expectedKey);
+        verify(producti18nRepository, never()).deleteById(expectedKey);
     }
 
     /**
@@ -251,9 +277,16 @@ class Producti18nServiceImplTest {
      */
     private Producti18nDto createSampleProducti18nDto() {
         Producti18nDto dto = new Producti18nDto();
+        Producti18nKey id = new Producti18nKey();
+        id.setLanguageId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        id.setProductId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
         dto.setVersion(1);
         dto.setDescription("description-value-1");
         dto.setChamberI18nId(1L);
+        dto.setLanguage(new LanguagesDto());
+        dto.setProduct(new ProductDto());
         dto.setShortDescription("shortDescription-value-1");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
@@ -269,9 +302,16 @@ class Producti18nServiceImplTest {
      */
     private Producti18nDto createAnotherProducti18nDto() {
         Producti18nDto dto = new Producti18nDto();
+        Producti18nKey id = new Producti18nKey();
+        id.setLanguageId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        id.setProductId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
         dto.setVersion(2);
         dto.setDescription("description-value-2");
         dto.setChamberI18nId(2L);
+        dto.setLanguage(new LanguagesDto());
+        dto.setProduct(new ProductDto());
         dto.setShortDescription("shortDescription-value-2");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
@@ -290,6 +330,8 @@ class Producti18nServiceImplTest {
         dto.setVersion(3);
         dto.setDescription("description-value-3");
         dto.setChamberI18nId(3L);
+        dto.setLanguage(new LanguagesDto());
+        dto.setProduct(new ProductDto());
         dto.setShortDescription("shortDescription-value-3");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));

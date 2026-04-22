@@ -1,0 +1,248 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<generationValidationReport>
+  <generatedAt>2026-04-22 13:13</generatedAt>
+  <author>kosmasgenaris@knowledge.gr</author>
+  <inputFile>C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql</inputFile>
+  <outputDir>C:/Users/kosma/IdeaProjects/SQLDomainGen/output/PepTest</outputDir>
+  <basePackage>gr.knowledge.pepTest</basePackage>
+  <totalIssues>0</totalIssues>
+  <sections>
+    <section>
+      <title>Generation Summary</title>
+      <details>
+        <detail>Parsed tables: 68</detail>
+        <detail>Generated files:</detail>
+        <detail>Entities: 83</detail>
+        <detail>Dto: 67</detail>
+        <detail>Repositories: 67</detail>
+        <detail>Mappers: 68 (include BaseMapper)</detail>
+        <detail>Services: 67</detail>
+        <detail>ServiceImpls: 67</detail>
+        <detail>Controllers: 67</detail>
+      </details>
+      <violations>
+      </violations>
+    </section>
+    <section>
+      <title>Infrastructure</title>
+      <details>
+        <detail>Config Classes: 3</detail>
+        <detail>Exception Classes: 4</detail>
+        <detail>Build Files (pom.xml): 1</detail>
+        <detail>Configuration Files (application.properties): 1</detail>
+      </details>
+      <violations>
+      </violations>
+    </section>
+    <section>
+      <title>Schema Tables</title>
+      <details>
+        <detail>audit_trail</detail>
+        <detail>bg_poi</detail>
+        <detail>bg_poi_i18n</detail>
+        <detail>business_location</detail>
+        <detail>business_location_i18n</detail>
+        <detail>ch_app_user_contact</detail>
+        <detail>ch_app_user_contact_i18n</detail>
+        <detail>chamber_app_user</detail>
+        <detail>chamber_department</detail>
+        <detail>chamber_departmenti18n</detail>
+        <detail>company</detail>
+        <detail>company_article_file</detail>
+        <detail>company_bg_cooperation</detail>
+        <detail>company_bg_cooperation_i18n</detail>
+        <detail>company_contact_message</detail>
+        <detail>company_favourites</detail>
+        <detail>company_file</detail>
+        <detail>company_profession</detail>
+        <detail>company_profile</detail>
+        <detail>company_profile_i18n</detail>
+        <detail>company_status</detail>
+        <detail>company_status_view_rules</detail>
+        <detail>company_statusi18n</detail>
+        <detail>company_title</detail>
+        <detail>company_titlei18n</detail>
+        <detail>company_view_rules</detail>
+        <detail>company_yp_article</detail>
+        <detail>company_yp_article_i18n</detail>
+        <detail>company_yp_file</detail>
+        <detail>company_yp_photo</detail>
+        <detail>companyi18n</detail>
+        <detail>corporate_status</detail>
+        <detail>corporate_status_view_rules</detail>
+        <detail>corporate_statusi18n</detail>
+        <detail>country</detail>
+        <detail>country_i18n</detail>
+        <detail>data_staging</detail>
+        <detail>export_comp_prod_country</detail>
+        <detail>export_company</detail>
+        <detail>folder</detail>
+        <detail>income_gemi_payment</detail>
+        <detail>income_payment_method</detail>
+        <detail>income_transaction</detail>
+        <detail>income_type</detail>
+        <detail>languages</detail>
+        <detail>municipality</detail>
+        <detail>municipality_i18n</detail>
+        <detail>product</detail>
+        <detail>producti18n</detail>
+        <detail>profession</detail>
+        <detail>profession_friendly_category</detail>
+        <detail>profession_kind</detail>
+        <detail>profession_kindi18n</detail>
+        <detail>profession_system</detail>
+        <detail>professioni18n</detail>
+        <detail>stats_expense</detail>
+        <detail>status_history</detail>
+        <detail>sync_watermarks</detail>
+        <detail>syncruns</detail>
+        <detail>syncruns_error_log</detail>
+        <detail>temporary_company</detail>
+        <detail>temporary_company_profession</detail>
+        <detail>temporary_company_title</detail>
+        <detail>temporary_company_titlei18n</detail>
+        <detail>temporary_companyi18n</detail>
+        <detail>user_contactinfo</detail>
+        <detail>user_geodata</detail>
+        <detail>working_hours</detail>
+      </details>
+      <violations>
+      </violations>
+    </section>
+    <section>
+      <title>Generated Models</title>
+      <details>
+        <detail>Total models: 67</detail>
+        <detail>BgPoi</detail>
+        <detail>BusinessLocation</detail>
+        <detail>ChamberDepartment</detail>
+        <detail>CompanyContactMessage</detail>
+        <detail>CompanyStatus</detail>
+        <detail>CompanyViewRules</detail>
+        <detail>CorporateStatus</detail>
+        <detail>Country</detail>
+        <detail>DataStaging</detail>
+        <detail>Folder</detail>
+        <detail>IncomeGemiPayment</detail>
+        <detail>IncomePaymentMethod</detail>
+        <detail>IncomeType</detail>
+        <detail>Languages</detail>
+        <detail>Municipality</detail>
+        <detail>Product</detail>
+        <detail>ProfessionFriendlyCategory</detail>
+        <detail>ProfessionKind</detail>
+        <detail>ProfessionSystem</detail>
+        <detail>StatsExpense</detail>
+        <detail>SyncWatermarks</detail>
+        <detail>Syncruns</detail>
+        <detail>TemporaryCompany</detail>
+        <detail>TemporaryCompanyProfession</detail>
+        <detail>TemporaryCompanyTitle</detail>
+        <detail>TemporaryCompanyTitlei18n</detail>
+        <detail>TemporaryCompanyi18n</detail>
+        <detail>BgPoiI18n</detail>
+        <detail>BusinessLocationI18n</detail>
+        <detail>ChamberDepartmenti18n</detail>
+        <detail>CompanyStatusViewRules</detail>
+        <detail>CompanyStatusi18n</detail>
+        <detail>CorporateStatusViewRules</detail>
+        <detail>CorporateStatusi18n</detail>
+        <detail>CountryI18n</detail>
+        <detail>IncomeTransaction</detail>
+        <detail>MunicipalityI18n</detail>
+        <detail>Producti18n</detail>
+        <detail>Profession</detail>
+        <detail>ProfessionKindi18n</detail>
+        <detail>Professioni18n</detail>
+        <detail>AuditTrail</detail>
+        <detail>ChAppUserContact</detail>
+        <detail>ChAppUserContactI18n</detail>
+        <detail>ChamberAppUser</detail>
+        <detail>Company</detail>
+        <detail>CompanyArticleFile</detail>
+        <detail>CompanyBgCooperation</detail>
+        <detail>CompanyBgCooperationI18n</detail>
+        <detail>CompanyFavourites</detail>
+        <detail>CompanyFile</detail>
+        <detail>CompanyProfession</detail>
+        <detail>CompanyProfile</detail>
+        <detail>CompanyProfileI18n</detail>
+        <detail>CompanyTitle</detail>
+        <detail>CompanyTitlei18n</detail>
+        <detail>CompanyYpArticle</detail>
+        <detail>CompanyYpArticleI18n</detail>
+        <detail>CompanyYpFile</detail>
+        <detail>CompanyYpPhoto</detail>
+        <detail>Companyi18n</detail>
+        <detail>ExportCompProdCountry</detail>
+        <detail>ExportCompany</detail>
+        <detail>StatusHistory</detail>
+        <detail>UserContactinfo</detail>
+        <detail>UserGeodata</detail>
+        <detail>WorkingHours</detail>
+      </details>
+      <violations>
+      </violations>
+    </section>
+    <section>
+      <title>Liquibase Output</title>
+      <details>
+        <detail>Liquibase xml files: 70</detail>
+      </details>
+      <violations>
+      </violations>
+    </section>
+    <section>
+      <title>Schema Validation Checklist</title>
+      <details>
+        <detail>Total checks: 34</detail>
+        <detail>1. Checks that the schema SQL file exists</detail>
+        <detail>2. Checks that the generated Java root exists</detail>
+        <detail>3. Scans generated entity source files under the entity package</detail>
+        <detail>4. Parses @Entity, @Embeddable, @Table, fields, and annotations from source files</detail>
+        <detail>5. Prints generated entities that still contain TODO comments</detail>
+        <detail>6. Checks that each entity has @Table(name=...)</detail>
+        <detail>7. Checks that each entity has @Id or @EmbeddedId</detail>
+        <detail>8. Checks simple field-to-column mappings against SQL table columns</detail>
+        <detail>9. Checks embedded id fields against SQL columns</detail>
+        <detail>10. Checks Java field types against SQL column types using TypeMapper</detail>
+        <detail>11. Checks Java field constraints against SQL column nullability, uniqueness, and length/precision metadata</detail>
+        <detail>12. Checks @ManyToOne fields for @JoinColumn/@JoinColumns presence</detail>
+        <detail>13. Checks @ManyToOne join columns exist in the owning SQL table</detail>
+        <detail>14. Checks @ManyToOne join columns are backed by a foreign key</detail>
+        <detail>15. Checks @OneToOne owning-side fields for @JoinColumn/@JoinColumns presence</detail>
+        <detail>16. Checks @OneToOne join columns exist in the owning SQL table</detail>
+        <detail>17. Checks @OneToOne join columns are backed by a foreign key</detail>
+        <detail>18. Checks @OneToMany fields define mappedBy</detail>
+        <detail>19. Checks @OneToMany mappedBy points to a real field on the target entity</detail>
+        <detail>20. Checks @OneToMany mappedBy points to a @ManyToOne or @OneToOne owning field</detail>
+        <detail>21. Checks owning @ManyToMany fields define @JoinTable(name=...)</detail>
+        <detail>22. Checks @ManyToMany join table exists in the parsed SQL schema</detail>
+        <detail>23. Checks @ManyToMany joinColumns and inverseJoinColumns exist in the join table</detail>
+        <detail>24. Checks @ManyToMany join table columns are backed by foreign keys</detail>
+        <detail>25. Checks relation target entity type matches the local foreign-key target table when resolvable</detail>
+        <detail>26. Checks referencedColumnName matches the foreign-key target column when declared</detail>
+        <detail>27. Ignores foreign keys pointing to external tables not present in the parsed schema</detail>
+        <detail>28. Checks local foreign keys are not left as scalar fields instead of relations</detail>
+        <detail>29. Checks local foreign keys are not missing relation fields entirely</detail>
+        <detail>30. Checks @NotNull usage against SQL column nullability</detail>
+        <detail>31. Checks @Size(max=...) against SQL varchar/char length</detail>
+        <detail>32. Checks @Digits(integer=..., fraction=...) against SQL numeric precision/scale</detail>
+        <detail>33. Checks presence of SQL default/check metadata for future constraint validation</detail>
+        <detail>34. Checks for unmapped non-audit SQL columns</detail>
+      </details>
+      <violations>
+      </violations>
+    </section>
+    <section>
+      <title>Generated Entity Classes With TODO Comments</title>
+      <details>
+        <detail>Total classes with TODO: 2</detail>
+        <detail>gr.knowledge.pepTest.entity.ChamberAppUser</detail>
+        <detail>gr.knowledge.pepTest.entity.Company</detail>
+      </details>
+      <violations>
+      </violations>
+    </section>
+  </sections>
+</generationValidationReport>

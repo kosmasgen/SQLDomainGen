@@ -10,9 +10,6 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import gr.knowledge.pepTest.dto.CompanyDto;
-import gr.knowledge.pepTest.dto.CompanyProfileDto;
-import gr.knowledge.pepTest.dto.CountryDto;
 
 /**
  * Data transfer object for AuditTrail.

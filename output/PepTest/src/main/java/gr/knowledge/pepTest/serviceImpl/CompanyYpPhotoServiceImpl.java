@@ -68,10 +68,9 @@ public class CompanyYpPhotoServiceImpl implements CompanyYpPhotoService {
 
     /**
      * Updates an existing company yp photo record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the company yp photo id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link CompanyYpPhotoDto}
      */
     @Override
@@ -107,7 +106,7 @@ public class CompanyYpPhotoServiceImpl implements CompanyYpPhotoService {
             return;
         }
 
-        if ((dto.getCompany() != null ? dto.getCompany().getId() : null) != null && dto.getFileName() != null && companyYpPhotoRepository.existsByCompanyIdAndFileName((dto.getCompany() != null ? dto.getCompany().getId() : null), dto.getFileName())) {
+        if (dto.getCompany() != null && dto.getCompany().getId() != null && dto.getFileName() != null && companyYpPhotoRepository.existsByCompanyIdAndFileName((dto.getCompany() != null ? dto.getCompany().getId() : null), dto.getFileName())) {
             throw GeneratedRuntimeException.builder()
                     .code(ErrorCodes.BAD_REQUEST)
                     .entity("CompanyYpPhoto")

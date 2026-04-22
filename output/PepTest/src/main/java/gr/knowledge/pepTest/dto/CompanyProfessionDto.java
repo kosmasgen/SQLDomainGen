@@ -7,12 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
-import gr.knowledge.pepTest.dto.CompanyDto;
-import gr.knowledge.pepTest.dto.ProfessionDto;
-import gr.knowledge.pepTest.dto.ProfessionKindDto;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import gr.knowledge.pepTest.dto.CompanyProfileDto;
 import java.math.BigInteger;
 
 /**

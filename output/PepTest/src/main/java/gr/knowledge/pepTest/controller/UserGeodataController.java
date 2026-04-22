@@ -88,7 +88,7 @@ public class UserGeodataController {
     public ResponseEntity<UserGeodataDto> patch(
             @Parameter(description = "user geodata identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody UserGeodataDto dto) {
+            @Valid @RequestBody UserGeodataDto dto) {
         return ResponseEntity.ok(userGeodataService.updateUserGeodata(id, dto));
     }
 

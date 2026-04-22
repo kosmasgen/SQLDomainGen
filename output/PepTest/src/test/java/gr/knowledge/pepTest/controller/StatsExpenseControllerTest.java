@@ -15,6 +15,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 import java.math.BigInteger;
 
@@ -97,7 +102,7 @@ class StatsExpenseControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         StatsExpenseDto requestDto = createValidCreateStatsExpenseDto();
         requestDto.setChamberId(null);
 
@@ -124,9 +129,21 @@ class StatsExpenseControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        StatsExpenseDto requestDto = createValidCreateStatsExpenseDto();
+        requestDto.setChamberId(null);
+
+        mockMvc.perform(patch("/api/stats-expense/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        StatsExpenseDto requestDto = new StatsExpenseDto();
+        StatsExpenseDto requestDto = createValidCreateStatsExpenseDto();
         StatsExpenseDto responseDto = new StatsExpenseDto();
         given(statsExpenseService.updateStatsExpense(eq(id), any(StatsExpenseDto.class))).willReturn(responseDto);
 
@@ -142,7 +159,7 @@ class StatsExpenseControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        StatsExpenseDto requestDto = new StatsExpenseDto();
+        StatsExpenseDto requestDto = createValidCreateStatsExpenseDto();
         given(statsExpenseService.updateStatsExpense(eq(id), any(StatsExpenseDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -154,6 +171,19 @@ class StatsExpenseControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        StatsExpenseDto requestDto = createValidCreateStatsExpenseDto();
+        given(statsExpenseService.updateStatsExpense(eq(id), any(StatsExpenseDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/stats-expense/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -190,8 +220,8 @@ class StatsExpenseControllerTest {
         StatsExpenseDto dto = new StatsExpenseDto();
         dto.setChamberId(1);
         dto.setAccountSumId(new BigInteger("1"));
-        dto.setCdUse("aaaa");
-        dto.setMm("aa");
+        dto.setCdUse("A");
+        dto.setMm("A");
 
         return dto;
     }

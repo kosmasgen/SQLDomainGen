@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.BgPoiI18n;
 import gr.knowledge.pepTest.dto.BgPoiI18nDto;
+import gr.knowledge.pepTest.dto.BgPoiDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.BgPoiI18nRepository;
 import gr.knowledge.pepTest.mapper.BgPoiI18nMapper;
 import java.util.UUID;
@@ -221,6 +223,8 @@ class BgPoiI18nServiceImplTest {
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setRecdeleted(true);
         dto.setTitle("title-value-1");
+        dto.setPoi(new BgPoiDto());
+        dto.setLanguage(new LanguagesDto());
 
         return dto;
     }
@@ -237,6 +241,8 @@ class BgPoiI18nServiceImplTest {
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setRecdeleted(false);
         dto.setTitle("title-value-2");
+        dto.setPoi(new BgPoiDto());
+        dto.setLanguage(new LanguagesDto());
 
         return dto;
     }
@@ -252,6 +258,8 @@ class BgPoiI18nServiceImplTest {
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setRecdeleted(true);
         dto.setTitle("title-value-3");
+        dto.setPoi(new BgPoiDto());
+        dto.setLanguage(new LanguagesDto());
 
         return dto;
     }

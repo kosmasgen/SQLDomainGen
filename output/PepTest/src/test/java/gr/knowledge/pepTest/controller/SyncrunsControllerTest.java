@@ -15,6 +15,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -113,7 +115,7 @@ class SyncrunsControllerTest {
     @Test
     void shouldReturnOkForPatch() throws Exception {
         Long id = 1L;
-        SyncrunsDto requestDto = new SyncrunsDto();
+        SyncrunsDto requestDto = createValidCreateSyncrunsDto();
         SyncrunsDto responseDto = new SyncrunsDto();
         given(syncrunsService.updateSyncruns(eq(id), any(SyncrunsDto.class))).willReturn(responseDto);
 
@@ -129,7 +131,7 @@ class SyncrunsControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         Long id = 1L;
-        SyncrunsDto requestDto = new SyncrunsDto();
+        SyncrunsDto requestDto = createValidCreateSyncrunsDto();
         given(syncrunsService.updateSyncruns(eq(id), any(SyncrunsDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -141,6 +143,19 @@ class SyncrunsControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        Long id = 1L;
+        SyncrunsDto requestDto = createValidCreateSyncrunsDto();
+        given(syncrunsService.updateSyncruns(eq(id), any(SyncrunsDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/syncruns/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

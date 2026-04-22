@@ -2,6 +2,7 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.ChamberAppUser;
 import gr.knowledge.pepTest.dto.ChamberAppUserDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import gr.knowledge.pepTest.repository.ChamberAppUserRepository;
 import gr.knowledge.pepTest.mapper.ChamberAppUserMapper;
 import java.util.UUID;
@@ -227,6 +228,7 @@ class ChamberAppUserServiceImplTest {
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setChamberId(1);
         dto.setChamberAppId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setCompany(new CompanyDto());
         dto.setRecdeleted(true);
         dto.setProfileId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         dto.setPersonId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
@@ -246,6 +248,7 @@ class ChamberAppUserServiceImplTest {
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setChamberId(2);
         dto.setChamberAppId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setCompany(new CompanyDto());
         dto.setRecdeleted(false);
         dto.setProfileId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         dto.setPersonId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
@@ -264,6 +267,7 @@ class ChamberAppUserServiceImplTest {
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setChamberId(3);
         dto.setChamberAppId(UUID.fromString("323e4567-e89b-12d3-a456-426614174000"));
+        dto.setCompany(new CompanyDto());
         dto.setRecdeleted(true);
         dto.setProfileId(UUID.fromString("323e4567-e89b-12d3-a456-426614174000"));
         dto.setPersonId(UUID.fromString("323e4567-e89b-12d3-a456-426614174000"));

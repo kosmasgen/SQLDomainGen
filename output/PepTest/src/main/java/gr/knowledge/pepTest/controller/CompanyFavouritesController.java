@@ -88,7 +88,7 @@ public class CompanyFavouritesController {
     public ResponseEntity<CompanyFavouritesDto> patch(
             @Parameter(description = "company favourites identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody CompanyFavouritesDto dto) {
+            @Valid @RequestBody CompanyFavouritesDto dto) {
         return ResponseEntity.ok(companyFavouritesService.updateCompanyFavourites(id, dto));
     }
 

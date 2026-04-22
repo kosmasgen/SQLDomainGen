@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,7 +105,7 @@ class Producti18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         Producti18nDto requestDto = createValidCreateProducti18nDto();
         requestDto.setVersion(null);
 
@@ -129,11 +132,24 @@ class Producti18nControllerTest {
     }
 
     @Test
-    void shouldReturnOkForPatch() throws Exception {
+    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {
         UUID languageId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID productId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
         Producti18nDto requestDto = new Producti18nDto();
+
+        mockMvc.perform(patch("/api/producti18n/{languageId}/{productId}", languageId, productId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void shouldReturnOkForPatch() throws Exception {
+        UUID languageId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID productId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        Producti18nDto requestDto = createValidCreateProducti18nDto();
         Producti18nDto responseDto = new Producti18nDto();
         given(producti18nService.updateProducti18n(eq(languageId), eq(productId), any(Producti18nDto.class))).willReturn(responseDto);
 
@@ -151,7 +167,7 @@ class Producti18nControllerTest {
         UUID languageId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID productId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
-        Producti18nDto requestDto = new Producti18nDto();
+        Producti18nDto requestDto = createValidCreateProducti18nDto();
         given(producti18nService.updateProducti18n(eq(languageId), eq(productId), any(Producti18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -163,6 +179,21 @@ class Producti18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID languageId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID productId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        Producti18nDto requestDto = createValidCreateProducti18nDto();
+        given(producti18nService.updateProducti18n(eq(languageId), eq(productId), any(Producti18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/producti18n/{languageId}/{productId}", languageId, productId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -202,7 +233,7 @@ class Producti18nControllerTest {
     private Producti18nDto createValidCreateProducti18nDto() {
         Producti18nDto dto = new Producti18nDto();
         dto.setVersion(1);
-        dto.setDescription("aaaaa");
+        dto.setDescription("A");
         dto.setChamberI18nId(1L);
         dto.setLanguage(new LanguagesDto());
         dto.setProduct(new ProductDto());

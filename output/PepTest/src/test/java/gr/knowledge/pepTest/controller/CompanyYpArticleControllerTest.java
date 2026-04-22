@@ -18,6 +18,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -99,9 +102,9 @@ class CompanyYpArticleControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyYpArticleDto requestDto = createValidCreateCompanyYpArticleDto();
-        requestDto.setOrderSeq(null);
+        requestDto.setCompany(null);
 
         mockMvc.perform(post("/api/company-yp-article")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -126,9 +129,21 @@ class CompanyYpArticleControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyYpArticleDto requestDto = createValidCreateCompanyYpArticleDto();
+        requestDto.setCompany(null);
+
+        mockMvc.perform(patch("/api/company-yp-article/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyYpArticleDto requestDto = new CompanyYpArticleDto();
+        CompanyYpArticleDto requestDto = createValidCreateCompanyYpArticleDto();
         CompanyYpArticleDto responseDto = new CompanyYpArticleDto();
         given(companyYpArticleService.updateCompanyYpArticle(eq(id), any(CompanyYpArticleDto.class))).willReturn(responseDto);
 
@@ -144,7 +159,7 @@ class CompanyYpArticleControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyYpArticleDto requestDto = new CompanyYpArticleDto();
+        CompanyYpArticleDto requestDto = createValidCreateCompanyYpArticleDto();
         given(companyYpArticleService.updateCompanyYpArticle(eq(id), any(CompanyYpArticleDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -156,6 +171,19 @@ class CompanyYpArticleControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyYpArticleDto requestDto = createValidCreateCompanyYpArticleDto();
+        given(companyYpArticleService.updateCompanyYpArticle(eq(id), any(CompanyYpArticleDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-yp-article/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -191,7 +219,6 @@ class CompanyYpArticleControllerTest {
     private CompanyYpArticleDto createValidCreateCompanyYpArticleDto() {
         CompanyYpArticleDto dto = new CompanyYpArticleDto();
         dto.setCompany(new CompanyDto());
-        dto.setLanguage(new LanguagesDto());
         dto.setOrderSeq(1);
         dto.setRecdeleted(true);
         dto.setIsPublished(true);

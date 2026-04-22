@@ -94,7 +94,7 @@ public class MunicipalityI18nController {
             @PathVariable UUID municipalityId,
             @Parameter(description = "language id identifier", required = true)
             @PathVariable UUID languageId,
-            @RequestBody MunicipalityI18nDto dto) {
+            @Valid @RequestBody MunicipalityI18nDto dto) {
         return ResponseEntity.ok(municipalityI18nService.updateMunicipalityI18n(municipalityId, languageId, dto));
     }
 

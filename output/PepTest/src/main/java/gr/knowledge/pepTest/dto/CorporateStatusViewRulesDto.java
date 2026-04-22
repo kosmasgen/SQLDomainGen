@@ -6,9 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import gr.knowledge.pepTest.entity.CorporateStatusViewRulesKey;
-import gr.knowledge.pepTest.dto.CorporateStatusDto;
 import jakarta.validation.constraints.NotNull;
-import gr.knowledge.pepTest.dto.CompanyViewRulesDto;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 

@@ -88,7 +88,7 @@ public class CompanyProfileController {
     public ResponseEntity<CompanyProfileDto> patch(
             @Parameter(description = "company profile identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody CompanyProfileDto dto) {
+            @Valid @RequestBody CompanyProfileDto dto) {
         return ResponseEntity.ok(companyProfileService.updateCompanyProfile(id, dto));
     }
 

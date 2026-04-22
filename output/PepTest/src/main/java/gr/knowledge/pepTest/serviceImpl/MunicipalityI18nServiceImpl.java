@@ -74,11 +74,10 @@ public class MunicipalityI18nServiceImpl implements MunicipalityI18nService {
 
     /**
      * Updates an existing municipality i18n record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param municipalityId the municipalityId value
      * @param languageId the languageId value
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link MunicipalityI18nDto}
      */
     @Override
@@ -118,11 +117,11 @@ public class MunicipalityI18nServiceImpl implements MunicipalityI18nService {
             return;
         }
 
-        if ((dto.getId() != null ? dto.getId().getMunicipalityId() : null) != null && dto.getChamberI18nId() != null && municipalityI18nRepository.existsByIdMunicipalityIdAndChamberI18nId((dto.getId() != null ? dto.getId().getMunicipalityId() : null), dto.getChamberI18nId())) {
+        if (dto.getId() != null && dto.getId().getMunicipalityId() != null && dto.getChamberI18nId() != null && municipalityI18nRepository.existsByIdMunicipalityIdAndChamberI18nId(dto.getId().getMunicipalityId(), dto.getChamberI18nId())) {
             throw GeneratedRuntimeException.builder()
                     .code(ErrorCodes.BAD_REQUEST)
                     .entity("MunicipalityI18n")
-                    .message("MunicipalityI18n already exists with " + "municipalityId=" + (dto.getId() != null ? dto.getId().getMunicipalityId() : null) + ", " + "chamberI18nId=" + dto.getChamberI18nId())
+                    .message("MunicipalityI18n already exists with " + "municipalityId=" + dto.getId().getMunicipalityId() + ", " + "chamberI18nId=" + dto.getChamberI18nId())
                     .build();
         }
     }
@@ -161,14 +160,14 @@ public class MunicipalityI18nServiceImpl implements MunicipalityI18nService {
      * @throws GeneratedRuntimeException if the entity already exists
      */
     private void validateMunicipalityI18nDoesNotExist(MunicipalityI18nDto dto) {
-        if (dto == null || (dto.getId() != null ? dto.getId().getMunicipalityId() : null) == null || (dto.getId() != null ? dto.getId().getLanguageId() : null) == null) {
+        if (dto == null || dto.getId().getMunicipalityId() == null || dto.getId().getLanguageId() == null) {
             return;
         }
 
-        MunicipalityI18nKey key = buildKey((dto.getId() != null ? dto.getId().getMunicipalityId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+        MunicipalityI18nKey key = buildKey(dto.getId().getMunicipalityId(), dto.getId().getLanguageId());
 
         if (municipalityI18nRepository.existsById(key)) {
-            String compositeId = buildCompositeId((dto.getId() != null ? dto.getId().getMunicipalityId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+            String compositeId = buildCompositeId(dto.getId().getMunicipalityId(), dto.getId().getLanguageId());
             log.warn("MunicipalityI18n already exists with composite id: {}", compositeId);
 
             throw GeneratedRuntimeException.builder()

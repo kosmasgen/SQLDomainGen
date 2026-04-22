@@ -16,6 +16,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -97,9 +100,9 @@ class UserContactinfoControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         UserContactinfoDto requestDto = createValidCreateUserContactinfoDto();
-        requestDto.setUsername(null);
+        requestDto.setCompany(null);
 
         mockMvc.perform(post("/api/user-contactinfo")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -124,9 +127,21 @@ class UserContactinfoControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UserContactinfoDto requestDto = createValidCreateUserContactinfoDto();
+        requestDto.setCompany(null);
+
+        mockMvc.perform(patch("/api/user-contactinfo/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        UserContactinfoDto requestDto = new UserContactinfoDto();
+        UserContactinfoDto requestDto = createValidCreateUserContactinfoDto();
         UserContactinfoDto responseDto = new UserContactinfoDto();
         given(userContactinfoService.updateUserContactinfo(eq(id), any(UserContactinfoDto.class))).willReturn(responseDto);
 
@@ -142,7 +157,7 @@ class UserContactinfoControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        UserContactinfoDto requestDto = new UserContactinfoDto();
+        UserContactinfoDto requestDto = createValidCreateUserContactinfoDto();
         given(userContactinfoService.updateUserContactinfo(eq(id), any(UserContactinfoDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -154,6 +169,19 @@ class UserContactinfoControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UserContactinfoDto requestDto = createValidCreateUserContactinfoDto();
+        given(userContactinfoService.updateUserContactinfo(eq(id), any(UserContactinfoDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/user-contactinfo/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -189,7 +217,7 @@ class UserContactinfoControllerTest {
     private UserContactinfoDto createValidCreateUserContactinfoDto() {
         UserContactinfoDto dto = new UserContactinfoDto();
         dto.setCompany(new CompanyDto());
-        dto.setUsername("test");
+        dto.setUsername("A");
 
         return dto;
     }

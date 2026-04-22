@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,9 +105,9 @@ class CompanyStatusi18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyStatusi18nDto requestDto = createValidCreateCompanyStatusi18nDto();
-        requestDto.setDescription(null);
+        requestDto.setCompanyStatus(null);
 
         mockMvc.perform(post("/api/company-statusi18n")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,11 +132,24 @@ class CompanyStatusi18nControllerTest {
     }
 
     @Test
-    void shouldReturnOkForPatch() throws Exception {
+    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {
         UUID companyStatusId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
         CompanyStatusi18nDto requestDto = new CompanyStatusi18nDto();
+
+        mockMvc.perform(patch("/api/company-statusi18n/{companyStatusId}/{languageId}", companyStatusId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void shouldReturnOkForPatch() throws Exception {
+        UUID companyStatusId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        CompanyStatusi18nDto requestDto = createValidCreateCompanyStatusi18nDto();
         CompanyStatusi18nDto responseDto = new CompanyStatusi18nDto();
         given(companyStatusi18nService.updateCompanyStatusi18n(eq(companyStatusId), eq(languageId), any(CompanyStatusi18nDto.class))).willReturn(responseDto);
 
@@ -151,7 +167,7 @@ class CompanyStatusi18nControllerTest {
         UUID companyStatusId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
-        CompanyStatusi18nDto requestDto = new CompanyStatusi18nDto();
+        CompanyStatusi18nDto requestDto = createValidCreateCompanyStatusi18nDto();
         given(companyStatusi18nService.updateCompanyStatusi18n(eq(companyStatusId), eq(languageId), any(CompanyStatusi18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -163,6 +179,21 @@ class CompanyStatusi18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID companyStatusId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        CompanyStatusi18nDto requestDto = createValidCreateCompanyStatusi18nDto();
+        given(companyStatusi18nService.updateCompanyStatusi18n(eq(companyStatusId), eq(languageId), any(CompanyStatusi18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-statusi18n/{companyStatusId}/{languageId}", companyStatusId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -203,7 +234,7 @@ class CompanyStatusi18nControllerTest {
         CompanyStatusi18nDto dto = new CompanyStatusi18nDto();
         dto.setCompanyStatus(new CompanyStatusDto());
         dto.setLanguage(new LanguagesDto());
-        dto.setDescription("aaaaa");
+        dto.setDescription("A");
         dto.setRecdeleted(true);
 
         return dto;

@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,9 +105,9 @@ class ProfessionKindi18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         ProfessionKindi18nDto requestDto = createValidCreateProfessionKindi18nDto();
-        requestDto.setRecdeleted(null);
+        requestDto.setProfessionKind(null);
 
         mockMvc.perform(post("/api/profession-kindi18n")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,11 +132,24 @@ class ProfessionKindi18nControllerTest {
     }
 
     @Test
-    void shouldReturnOkForPatch() throws Exception {
+    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {
         UUID professionKindId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
         ProfessionKindi18nDto requestDto = new ProfessionKindi18nDto();
+
+        mockMvc.perform(patch("/api/profession-kindi18n/{professionKindId}/{languageId}", professionKindId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void shouldReturnOkForPatch() throws Exception {
+        UUID professionKindId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        ProfessionKindi18nDto requestDto = createValidCreateProfessionKindi18nDto();
         ProfessionKindi18nDto responseDto = new ProfessionKindi18nDto();
         given(professionKindi18nService.updateProfessionKindi18n(eq(professionKindId), eq(languageId), any(ProfessionKindi18nDto.class))).willReturn(responseDto);
 
@@ -151,7 +167,7 @@ class ProfessionKindi18nControllerTest {
         UUID professionKindId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
-        ProfessionKindi18nDto requestDto = new ProfessionKindi18nDto();
+        ProfessionKindi18nDto requestDto = createValidCreateProfessionKindi18nDto();
         given(professionKindi18nService.updateProfessionKindi18n(eq(professionKindId), eq(languageId), any(ProfessionKindi18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -163,6 +179,21 @@ class ProfessionKindi18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID professionKindId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        ProfessionKindi18nDto requestDto = createValidCreateProfessionKindi18nDto();
+        given(professionKindi18nService.updateProfessionKindi18n(eq(professionKindId), eq(languageId), any(ProfessionKindi18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/profession-kindi18n/{professionKindId}/{languageId}", professionKindId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -204,7 +235,7 @@ class ProfessionKindi18nControllerTest {
         dto.setProfessionKind(new ProfessionKindDto());
         dto.setLanguage(new LanguagesDto());
         dto.setRecdeleted(true);
-        dto.setDescription("aaaaa");
+        dto.setDescription("A");
 
         return dto;
     }

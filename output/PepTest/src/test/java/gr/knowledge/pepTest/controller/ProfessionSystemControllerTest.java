@@ -15,6 +15,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -96,7 +99,7 @@ class ProfessionSystemControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         ProfessionSystemDto requestDto = createValidCreateProfessionSystemDto();
         requestDto.setChamberId(null);
 
@@ -123,9 +126,21 @@ class ProfessionSystemControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        ProfessionSystemDto requestDto = createValidCreateProfessionSystemDto();
+        requestDto.setChamberId(null);
+
+        mockMvc.perform(patch("/api/profession-system/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        ProfessionSystemDto requestDto = new ProfessionSystemDto();
+        ProfessionSystemDto requestDto = createValidCreateProfessionSystemDto();
         ProfessionSystemDto responseDto = new ProfessionSystemDto();
         given(professionSystemService.updateProfessionSystem(eq(id), any(ProfessionSystemDto.class))).willReturn(responseDto);
 
@@ -141,7 +156,7 @@ class ProfessionSystemControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        ProfessionSystemDto requestDto = new ProfessionSystemDto();
+        ProfessionSystemDto requestDto = createValidCreateProfessionSystemDto();
         given(professionSystemService.updateProfessionSystem(eq(id), any(ProfessionSystemDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +168,19 @@ class ProfessionSystemControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        ProfessionSystemDto requestDto = createValidCreateProfessionSystemDto();
+        given(professionSystemService.updateProfessionSystem(eq(id), any(ProfessionSystemDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/profession-system/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -188,8 +216,8 @@ class ProfessionSystemControllerTest {
     private ProfessionSystemDto createValidCreateProfessionSystemDto() {
         ProfessionSystemDto dto = new ProfessionSystemDto();
         dto.setChamberId(1);
-        dto.setCd("aaaaa");
-        dto.setDescription("aaaaa");
+        dto.setCd("A");
+        dto.setDescription("A");
         dto.setRecdeleted(true);
 
         return dto;

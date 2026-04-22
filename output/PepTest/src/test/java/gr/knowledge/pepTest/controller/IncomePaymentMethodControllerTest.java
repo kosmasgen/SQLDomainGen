@@ -15,6 +15,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -96,7 +99,7 @@ class IncomePaymentMethodControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         IncomePaymentMethodDto requestDto = createValidCreateIncomePaymentMethodDto();
         requestDto.setChamberId(null);
 
@@ -123,9 +126,21 @@ class IncomePaymentMethodControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        IncomePaymentMethodDto requestDto = createValidCreateIncomePaymentMethodDto();
+        requestDto.setChamberId(null);
+
+        mockMvc.perform(patch("/api/income-payment-method/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        IncomePaymentMethodDto requestDto = new IncomePaymentMethodDto();
+        IncomePaymentMethodDto requestDto = createValidCreateIncomePaymentMethodDto();
         IncomePaymentMethodDto responseDto = new IncomePaymentMethodDto();
         given(incomePaymentMethodService.updateIncomePaymentMethod(eq(id), any(IncomePaymentMethodDto.class))).willReturn(responseDto);
 
@@ -141,7 +156,7 @@ class IncomePaymentMethodControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        IncomePaymentMethodDto requestDto = new IncomePaymentMethodDto();
+        IncomePaymentMethodDto requestDto = createValidCreateIncomePaymentMethodDto();
         given(incomePaymentMethodService.updateIncomePaymentMethod(eq(id), any(IncomePaymentMethodDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +168,19 @@ class IncomePaymentMethodControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        IncomePaymentMethodDto requestDto = createValidCreateIncomePaymentMethodDto();
+        given(incomePaymentMethodService.updateIncomePaymentMethod(eq(id), any(IncomePaymentMethodDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/income-payment-method/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -189,7 +217,7 @@ class IncomePaymentMethodControllerTest {
         IncomePaymentMethodDto dto = new IncomePaymentMethodDto();
         dto.setChamberId(1);
         dto.setChamberPayMethodId(1);
-        dto.setDescription("aaaaa");
+        dto.setDescription("A");
 
         return dto;
     }

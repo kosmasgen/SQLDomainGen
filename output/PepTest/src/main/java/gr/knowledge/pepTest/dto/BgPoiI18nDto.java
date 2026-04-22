@@ -10,8 +10,6 @@ import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import gr.knowledge.pepTest.dto.BgPoiDto;
-import gr.knowledge.pepTest.dto.LanguagesDto;
 
 /**
  * Data transfer object for BgPoiI18n.

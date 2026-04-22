@@ -66,10 +66,9 @@ public class TemporaryCompanyTitlei18nServiceImpl implements TemporaryCompanyTit
 
     /**
      * Updates an existing temporary company titlei18n record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the temporary company titlei18n id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link TemporaryCompanyTitlei18nDto}
      */
     @Override

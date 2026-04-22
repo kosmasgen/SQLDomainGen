@@ -87,7 +87,7 @@ public class DataStagingController {
     public ResponseEntity<DataStagingDto> patch(
             @Parameter(description = "data staging identifier", required = true)
             @PathVariable Long id,
-            @RequestBody DataStagingDto dto) {
+            @Valid @RequestBody DataStagingDto dto) {
         return ResponseEntity.ok(dataStagingService.updateDataStaging(id, dto));
     }
 

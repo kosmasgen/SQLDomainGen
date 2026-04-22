@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,9 +105,9 @@ class Professioni18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         Professioni18nDto requestDto = createValidCreateProfessioni18nDto();
-        requestDto.setRecdeleted(null);
+        requestDto.setProfession(null);
 
         mockMvc.perform(post("/api/professioni18n")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,11 +132,24 @@ class Professioni18nControllerTest {
     }
 
     @Test
-    void shouldReturnOkForPatch() throws Exception {
+    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {
         UUID professionId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
         Professioni18nDto requestDto = new Professioni18nDto();
+
+        mockMvc.perform(patch("/api/professioni18n/{professionId}/{languageId}", professionId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void shouldReturnOkForPatch() throws Exception {
+        UUID professionId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        Professioni18nDto requestDto = createValidCreateProfessioni18nDto();
         Professioni18nDto responseDto = new Professioni18nDto();
         given(professioni18nService.updateProfessioni18n(eq(professionId), eq(languageId), any(Professioni18nDto.class))).willReturn(responseDto);
 
@@ -151,7 +167,7 @@ class Professioni18nControllerTest {
         UUID professionId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
-        Professioni18nDto requestDto = new Professioni18nDto();
+        Professioni18nDto requestDto = createValidCreateProfessioni18nDto();
         given(professioni18nService.updateProfessioni18n(eq(professionId), eq(languageId), any(Professioni18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -163,6 +179,21 @@ class Professioni18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID professionId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        Professioni18nDto requestDto = createValidCreateProfessioni18nDto();
+        given(professioni18nService.updateProfessioni18n(eq(professionId), eq(languageId), any(Professioni18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/professioni18n/{professionId}/{languageId}", professionId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -204,7 +235,7 @@ class Professioni18nControllerTest {
         dto.setProfession(new ProfessionDto());
         dto.setLanguage(new LanguagesDto());
         dto.setRecdeleted(true);
-        dto.setDescription("aaaaa");
+        dto.setDescription("A");
 
         return dto;
     }

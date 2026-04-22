@@ -7,10 +7,8 @@ import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.math.BigInteger;
 import jakarta.validation.constraints.NotNull;
-import gr.knowledge.pepTest.dto.TemporaryCompanyTitleDto;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import gr.knowledge.pepTest.dto.LanguagesDto;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDate;
 

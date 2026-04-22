@@ -68,10 +68,9 @@ public class ProfessionKindServiceImpl implements ProfessionKindService {
 
     /**
      * Updates an existing profession kind record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the profession kind id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link ProfessionKindDto}
      */
     @Override

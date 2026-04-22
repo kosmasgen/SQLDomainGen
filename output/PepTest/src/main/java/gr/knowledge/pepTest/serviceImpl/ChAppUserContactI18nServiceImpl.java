@@ -72,11 +72,10 @@ public class ChAppUserContactI18nServiceImpl implements ChAppUserContactI18nServ
 
     /**
      * Updates an existing ch app user contact i18n record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param chAppUserContactId the chAppUserContactId value
      * @param languageId the languageId value
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link ChAppUserContactI18nDto}
      */
     @Override
@@ -140,14 +139,14 @@ public class ChAppUserContactI18nServiceImpl implements ChAppUserContactI18nServ
      * @throws GeneratedRuntimeException if the entity already exists
      */
     private void validateChAppUserContactI18nDoesNotExist(ChAppUserContactI18nDto dto) {
-        if (dto == null || (dto.getId() != null ? dto.getId().getChAppUserContactId() : null) == null || (dto.getId() != null ? dto.getId().getLanguageId() : null) == null) {
+        if (dto == null || dto.getId().getChAppUserContactId() == null || dto.getId().getLanguageId() == null) {
             return;
         }
 
-        ChAppUserContactI18nKey key = buildKey((dto.getId() != null ? dto.getId().getChAppUserContactId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+        ChAppUserContactI18nKey key = buildKey(dto.getId().getChAppUserContactId(), dto.getId().getLanguageId());
 
         if (chAppUserContactI18nRepository.existsById(key)) {
-            String compositeId = buildCompositeId((dto.getId() != null ? dto.getId().getChAppUserContactId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+            String compositeId = buildCompositeId(dto.getId().getChAppUserContactId(), dto.getId().getLanguageId());
             log.warn("ChAppUserContactI18n already exists with composite id: {}", compositeId);
 
             throw GeneratedRuntimeException.builder()

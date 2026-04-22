@@ -187,9 +187,7 @@ public class GlobalExceptionHandler {
             case NOT_FOUND -> ErrorCodes.NOT_FOUND;
             case BAD_REQUEST -> ErrorCodes.BAD_REQUEST;
             case UNPROCESSABLE_ENTITY -> ErrorCodes.VALIDATION_ERROR;
-            case UNAUTHORIZED -> ErrorCodes.REQUEST_ERROR;
-            case FORBIDDEN -> ErrorCodes.REQUEST_ERROR;
-            case CONFLICT -> ErrorCodes.REQUEST_ERROR;
+            case UNAUTHORIZED, FORBIDDEN, CONFLICT -> ErrorCodes.REQUEST_ERROR;
             default -> status.is4xxClientError()
                     ? ErrorCodes.REQUEST_ERROR
                     : ErrorCodes.INTERNAL_ERROR;
@@ -209,9 +207,8 @@ public class GlobalExceptionHandler {
 
         return switch (errorCode) {
             case ErrorCodes.NOT_FOUND -> HttpStatus.NOT_FOUND;
-            case ErrorCodes.BAD_REQUEST -> HttpStatus.BAD_REQUEST;
+            case ErrorCodes.BAD_REQUEST, ErrorCodes.REQUEST_ERROR -> HttpStatus.BAD_REQUEST;
             case ErrorCodes.VALIDATION_ERROR -> HttpStatus.UNPROCESSABLE_ENTITY;
-            case ErrorCodes.REQUEST_ERROR -> HttpStatus.BAD_REQUEST;
             default -> HttpStatus.INTERNAL_SERVER_ERROR;
         };
     }

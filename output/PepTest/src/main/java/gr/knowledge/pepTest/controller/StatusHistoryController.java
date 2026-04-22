@@ -88,7 +88,7 @@ public class StatusHistoryController {
     public ResponseEntity<StatusHistoryDto> patch(
             @Parameter(description = "status history identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody StatusHistoryDto dto) {
+            @Valid @RequestBody StatusHistoryDto dto) {
         return ResponseEntity.ok(statusHistoryService.updateStatusHistory(id, dto));
     }
 

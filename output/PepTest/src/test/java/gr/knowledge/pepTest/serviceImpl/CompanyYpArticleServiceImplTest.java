@@ -2,6 +2,9 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CompanyYpArticle;
 import gr.knowledge.pepTest.dto.CompanyYpArticleDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
+import gr.knowledge.pepTest.dto.CompanyProfileDto;
 import gr.knowledge.pepTest.repository.CompanyYpArticleRepository;
 import gr.knowledge.pepTest.mapper.CompanyYpArticleMapper;
 import java.util.UUID;
@@ -226,13 +229,16 @@ class CompanyYpArticleServiceImplTest {
         CompanyYpArticleDto dto = new CompanyYpArticleDto();
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(1);
+        dto.setCompany(new CompanyDto());
         dto.setTitle("title-value-1");
         dto.setHtml("html-value-1");
+        dto.setLanguage(new LanguagesDto());
         dto.setOrderSeq(1);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setRecdeleted(true);
         dto.setIsPublished(true);
+        dto.setCompanyProfile(new CompanyProfileDto());
 
         return dto;
     }
@@ -246,13 +252,16 @@ class CompanyYpArticleServiceImplTest {
         CompanyYpArticleDto dto = new CompanyYpArticleDto();
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(2);
+        dto.setCompany(new CompanyDto());
         dto.setTitle("title-value-2");
         dto.setHtml("html-value-2");
+        dto.setLanguage(new LanguagesDto());
         dto.setOrderSeq(2);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setRecdeleted(false);
         dto.setIsPublished(false);
+        dto.setCompanyProfile(new CompanyProfileDto());
 
         return dto;
     }
@@ -265,13 +274,16 @@ class CompanyYpArticleServiceImplTest {
     private CompanyYpArticleDto createPatchCompanyYpArticleDto() {
         CompanyYpArticleDto dto = new CompanyYpArticleDto();
         dto.setChamberId(3);
+        dto.setCompany(new CompanyDto());
         dto.setTitle("title-value-3");
         dto.setHtml("html-value-3");
+        dto.setLanguage(new LanguagesDto());
         dto.setOrderSeq(3);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setRecdeleted(true);
         dto.setIsPublished(true);
+        dto.setCompanyProfile(new CompanyProfileDto());
 
         return dto;
     }

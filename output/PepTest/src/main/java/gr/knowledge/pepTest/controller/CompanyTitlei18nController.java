@@ -100,7 +100,7 @@ public class CompanyTitlei18nController {
             @PathVariable UUID languageId,
             @Parameter(description = "chamber i18n id identifier", required = true)
             @PathVariable Integer chamberI18nId,
-            @RequestBody CompanyTitlei18nDto dto) {
+            @Valid @RequestBody CompanyTitlei18nDto dto) {
         return ResponseEntity.ok(companyTitlei18nService.updateCompanyTitlei18n(companyTitleId, languageId, chamberI18nId, dto));
     }
 

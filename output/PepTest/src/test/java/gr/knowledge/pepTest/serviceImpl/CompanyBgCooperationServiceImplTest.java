@@ -2,6 +2,7 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CompanyBgCooperation;
 import gr.knowledge.pepTest.dto.CompanyBgCooperationDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import gr.knowledge.pepTest.repository.CompanyBgCooperationRepository;
 import gr.knowledge.pepTest.mapper.CompanyBgCooperationMapper;
 import java.util.UUID;
@@ -220,6 +221,8 @@ class CompanyBgCooperationServiceImplTest {
         CompanyBgCooperationDto dto = new CompanyBgCooperationDto();
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(1);
+        dto.setCompany(new CompanyDto());
+        dto.setCoopCompany(new CompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setRecdeleted(true);
@@ -237,6 +240,8 @@ class CompanyBgCooperationServiceImplTest {
         CompanyBgCooperationDto dto = new CompanyBgCooperationDto();
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(2);
+        dto.setCompany(new CompanyDto());
+        dto.setCoopCompany(new CompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setRecdeleted(false);
@@ -253,6 +258,8 @@ class CompanyBgCooperationServiceImplTest {
     private CompanyBgCooperationDto createPatchCompanyBgCooperationDto() {
         CompanyBgCooperationDto dto = new CompanyBgCooperationDto();
         dto.setChamberId(3);
+        dto.setCompany(new CompanyDto());
+        dto.setCoopCompany(new CompanyDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setRecdeleted(true);

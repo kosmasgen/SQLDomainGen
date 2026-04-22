@@ -2,6 +2,9 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CompanyFile;
 import gr.knowledge.pepTest.dto.CompanyFileDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
+import gr.knowledge.pepTest.dto.CompanyProfileDto;
 import gr.knowledge.pepTest.repository.CompanyFileRepository;
 import gr.knowledge.pepTest.mapper.CompanyFileMapper;
 import java.util.UUID;
@@ -239,8 +242,11 @@ class CompanyFileServiceImplTest {
         dto.setRecdeleted(true);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
+        dto.setCompany(new CompanyDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setIsLogo(true);
         dto.setIsBackground(true);
+        dto.setCompanyProfile(new CompanyProfileDto());
         dto.setIsEmbedded(true);
 
         return dto;
@@ -262,8 +268,11 @@ class CompanyFileServiceImplTest {
         dto.setRecdeleted(false);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
+        dto.setCompany(new CompanyDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setIsLogo(false);
         dto.setIsBackground(false);
+        dto.setCompanyProfile(new CompanyProfileDto());
         dto.setIsEmbedded(false);
 
         return dto;
@@ -284,8 +293,11 @@ class CompanyFileServiceImplTest {
         dto.setRecdeleted(true);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
+        dto.setCompany(new CompanyDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setIsLogo(true);
         dto.setIsBackground(true);
+        dto.setCompanyProfile(new CompanyProfileDto());
         dto.setIsEmbedded(true);
 
         return dto;

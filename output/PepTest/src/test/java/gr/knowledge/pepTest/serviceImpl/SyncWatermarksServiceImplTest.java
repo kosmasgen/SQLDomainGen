@@ -113,6 +113,20 @@ class SyncWatermarksServiceImplTest {
     }
 
     @Test
+    void shouldThrowBadRequestWhenCreateSyncWatermarksWithExistingTableName() {
+        SyncWatermarksDto requestDto = createSampleSyncWatermarksDto();
+
+        given(syncWatermarksRepository.existsByTableName(requestDto.getTableName())).willReturn(true);
+
+        GeneratedRuntimeException exception = assertThrows(GeneratedRuntimeException.class, () -> syncWatermarksService.createSyncWatermarks(requestDto));
+
+        assertEquals(ErrorCodes.BAD_REQUEST, exception.getCode());
+        assertEquals("SyncWatermarks", exception.getEntity());
+
+        verify(syncWatermarksRepository, never()).save(any());
+    }
+
+    @Test
     void shouldUpdateSyncWatermarksWhenEntityExists() {
         Long id = 1L;
 

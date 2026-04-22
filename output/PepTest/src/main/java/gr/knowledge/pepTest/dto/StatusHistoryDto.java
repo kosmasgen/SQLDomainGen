@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 import jakarta.validation.constraints.NotNull;
 import java.math.BigInteger;
-import gr.knowledge.pepTest.dto.CompanyDto;
-import gr.knowledge.pepTest.dto.CompanyStatusDto;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 import jakarta.validation.constraints.Size;

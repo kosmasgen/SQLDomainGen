@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -98,9 +101,9 @@ class CompanyArticleFileControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyArticleFileDto requestDto = createValidCreateCompanyArticleFileDto();
-        requestDto.setOrderSeq(null);
+        requestDto.setArticle(null);
 
         mockMvc.perform(post("/api/company-article-file")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -125,9 +128,21 @@ class CompanyArticleFileControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyArticleFileDto requestDto = createValidCreateCompanyArticleFileDto();
+        requestDto.setArticle(null);
+
+        mockMvc.perform(patch("/api/company-article-file/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyArticleFileDto requestDto = new CompanyArticleFileDto();
+        CompanyArticleFileDto requestDto = createValidCreateCompanyArticleFileDto();
         CompanyArticleFileDto responseDto = new CompanyArticleFileDto();
         given(companyArticleFileService.updateCompanyArticleFile(eq(id), any(CompanyArticleFileDto.class))).willReturn(responseDto);
 
@@ -143,7 +158,7 @@ class CompanyArticleFileControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyArticleFileDto requestDto = new CompanyArticleFileDto();
+        CompanyArticleFileDto requestDto = createValidCreateCompanyArticleFileDto();
         given(companyArticleFileService.updateCompanyArticleFile(eq(id), any(CompanyArticleFileDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -155,6 +170,19 @@ class CompanyArticleFileControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyArticleFileDto requestDto = createValidCreateCompanyArticleFileDto();
+        given(companyArticleFileService.updateCompanyArticleFile(eq(id), any(CompanyArticleFileDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-article-file/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

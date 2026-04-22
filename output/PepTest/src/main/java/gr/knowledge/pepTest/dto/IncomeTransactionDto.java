@@ -11,9 +11,7 @@ import java.math.BigInteger;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import gr.knowledge.pepTest.dto.IncomeTypeDto;
 import java.math.BigDecimal;
-import gr.knowledge.pepTest.dto.IncomePaymentMethodDto;
 
 /**
  * Data transfer object for IncomeTransaction.

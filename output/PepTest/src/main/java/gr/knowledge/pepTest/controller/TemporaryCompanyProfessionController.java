@@ -88,7 +88,7 @@ public class TemporaryCompanyProfessionController {
     public ResponseEntity<TemporaryCompanyProfessionDto> patch(
             @Parameter(description = "temporary company profession identifier", required = true)
             @PathVariable BigInteger id,
-            @RequestBody TemporaryCompanyProfessionDto dto) {
+            @Valid @RequestBody TemporaryCompanyProfessionDto dto) {
         return ResponseEntity.ok(temporaryCompanyProfessionService.updateTemporaryCompanyProfession(id, dto));
     }
 

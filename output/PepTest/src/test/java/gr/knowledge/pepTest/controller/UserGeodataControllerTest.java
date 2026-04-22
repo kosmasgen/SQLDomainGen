@@ -16,6 +16,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -97,9 +100,9 @@ class UserGeodataControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         UserGeodataDto requestDto = createValidCreateUserGeodataDto();
-        requestDto.setUsername(null);
+        requestDto.setCompany(null);
 
         mockMvc.perform(post("/api/user-geodata")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -124,9 +127,21 @@ class UserGeodataControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UserGeodataDto requestDto = createValidCreateUserGeodataDto();
+        requestDto.setCompany(null);
+
+        mockMvc.perform(patch("/api/user-geodata/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        UserGeodataDto requestDto = new UserGeodataDto();
+        UserGeodataDto requestDto = createValidCreateUserGeodataDto();
         UserGeodataDto responseDto = new UserGeodataDto();
         given(userGeodataService.updateUserGeodata(eq(id), any(UserGeodataDto.class))).willReturn(responseDto);
 
@@ -142,7 +157,7 @@ class UserGeodataControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        UserGeodataDto requestDto = new UserGeodataDto();
+        UserGeodataDto requestDto = createValidCreateUserGeodataDto();
         given(userGeodataService.updateUserGeodata(eq(id), any(UserGeodataDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -154,6 +169,19 @@ class UserGeodataControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UserGeodataDto requestDto = createValidCreateUserGeodataDto();
+        given(userGeodataService.updateUserGeodata(eq(id), any(UserGeodataDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/user-geodata/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -189,9 +217,9 @@ class UserGeodataControllerTest {
     private UserGeodataDto createValidCreateUserGeodataDto() {
         UserGeodataDto dto = new UserGeodataDto();
         dto.setCompany(new CompanyDto());
-        dto.setUsername("test");
-        dto.setLatitude("aaaaa");
-        dto.setLongitude("aaaaa");
+        dto.setUsername("A");
+        dto.setLatitude("A");
+        dto.setLongitude("A");
 
         return dto;
     }

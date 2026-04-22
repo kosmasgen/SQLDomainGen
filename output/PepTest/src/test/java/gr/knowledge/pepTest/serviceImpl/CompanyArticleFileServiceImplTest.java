@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CompanyArticleFile;
 import gr.knowledge.pepTest.dto.CompanyArticleFileDto;
+import gr.knowledge.pepTest.dto.CompanyYpArticleDto;
+import gr.knowledge.pepTest.dto.CompanyFileDto;
 import gr.knowledge.pepTest.repository.CompanyArticleFileRepository;
 import gr.knowledge.pepTest.mapper.CompanyArticleFileMapper;
 import java.util.UUID;
@@ -215,6 +217,8 @@ class CompanyArticleFileServiceImplTest {
     private CompanyArticleFileDto createSampleCompanyArticleFileDto() {
         CompanyArticleFileDto dto = new CompanyArticleFileDto();
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setArticle(new CompanyYpArticleDto());
+        dto.setFile(new CompanyFileDto());
         dto.setOrderSeq(1);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
@@ -230,6 +234,8 @@ class CompanyArticleFileServiceImplTest {
     private CompanyArticleFileDto createAnotherCompanyArticleFileDto() {
         CompanyArticleFileDto dto = new CompanyArticleFileDto();
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setArticle(new CompanyYpArticleDto());
+        dto.setFile(new CompanyFileDto());
         dto.setOrderSeq(2);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
@@ -244,6 +250,8 @@ class CompanyArticleFileServiceImplTest {
      */
     private CompanyArticleFileDto createPatchCompanyArticleFileDto() {
         CompanyArticleFileDto dto = new CompanyArticleFileDto();
+        dto.setArticle(new CompanyYpArticleDto());
+        dto.setFile(new CompanyFileDto());
         dto.setOrderSeq(3);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));

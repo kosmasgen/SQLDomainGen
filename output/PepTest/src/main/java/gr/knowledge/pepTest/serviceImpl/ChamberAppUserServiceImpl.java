@@ -66,10 +66,9 @@ public class ChamberAppUserServiceImpl implements ChamberAppUserService {
 
     /**
      * Updates an existing chamber app user record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the chamber app user id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link ChamberAppUserDto}
      */
     @Override

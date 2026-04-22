@@ -16,6 +16,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -97,9 +100,9 @@ class CompanyBgCooperationControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyBgCooperationDto requestDto = createValidCreateCompanyBgCooperationDto();
-        requestDto.setRecdeleted(null);
+        requestDto.setCompany(null);
 
         mockMvc.perform(post("/api/company-bg-cooperation")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -124,9 +127,21 @@ class CompanyBgCooperationControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyBgCooperationDto requestDto = createValidCreateCompanyBgCooperationDto();
+        requestDto.setCompany(null);
+
+        mockMvc.perform(patch("/api/company-bg-cooperation/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyBgCooperationDto requestDto = new CompanyBgCooperationDto();
+        CompanyBgCooperationDto requestDto = createValidCreateCompanyBgCooperationDto();
         CompanyBgCooperationDto responseDto = new CompanyBgCooperationDto();
         given(companyBgCooperationService.updateCompanyBgCooperation(eq(id), any(CompanyBgCooperationDto.class))).willReturn(responseDto);
 
@@ -142,7 +157,7 @@ class CompanyBgCooperationControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyBgCooperationDto requestDto = new CompanyBgCooperationDto();
+        CompanyBgCooperationDto requestDto = createValidCreateCompanyBgCooperationDto();
         given(companyBgCooperationService.updateCompanyBgCooperation(eq(id), any(CompanyBgCooperationDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -154,6 +169,19 @@ class CompanyBgCooperationControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyBgCooperationDto requestDto = createValidCreateCompanyBgCooperationDto();
+        given(companyBgCooperationService.updateCompanyBgCooperation(eq(id), any(CompanyBgCooperationDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-bg-cooperation/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

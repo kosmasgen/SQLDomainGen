@@ -88,7 +88,7 @@ public class ChAppUserContactController {
     public ResponseEntity<ChAppUserContactDto> patch(
             @Parameter(description = "ch app user contact identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody ChAppUserContactDto dto) {
+            @Valid @RequestBody ChAppUserContactDto dto) {
         return ResponseEntity.ok(chAppUserContactService.updateChAppUserContact(id, dto));
     }
 

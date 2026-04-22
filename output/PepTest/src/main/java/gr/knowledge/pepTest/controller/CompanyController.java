@@ -88,7 +88,7 @@ public class CompanyController {
     public ResponseEntity<CompanyDto> patch(
             @Parameter(description = "company identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody CompanyDto dto) {
+            @Valid @RequestBody CompanyDto dto) {
         return ResponseEntity.ok(companyService.updateCompany(id, dto));
     }
 

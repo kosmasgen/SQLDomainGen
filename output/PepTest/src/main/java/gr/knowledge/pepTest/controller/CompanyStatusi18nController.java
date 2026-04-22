@@ -94,7 +94,7 @@ public class CompanyStatusi18nController {
             @PathVariable UUID companyStatusId,
             @Parameter(description = "language id identifier", required = true)
             @PathVariable UUID languageId,
-            @RequestBody CompanyStatusi18nDto dto) {
+            @Valid @RequestBody CompanyStatusi18nDto dto) {
         return ResponseEntity.ok(companyStatusi18nService.updateCompanyStatusi18n(companyStatusId, languageId, dto));
     }
 

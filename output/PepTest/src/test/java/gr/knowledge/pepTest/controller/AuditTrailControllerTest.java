@@ -18,6 +18,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -99,7 +102,7 @@ class AuditTrailControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         AuditTrailDto requestDto = createValidCreateAuditTrailDto();
         requestDto.setIp(null);
 
@@ -126,9 +129,21 @@ class AuditTrailControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        AuditTrailDto requestDto = createValidCreateAuditTrailDto();
+        requestDto.setIp(null);
+
+        mockMvc.perform(patch("/api/audit-trail/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        AuditTrailDto requestDto = new AuditTrailDto();
+        AuditTrailDto requestDto = createValidCreateAuditTrailDto();
         AuditTrailDto responseDto = new AuditTrailDto();
         given(auditTrailService.updateAuditTrail(eq(id), any(AuditTrailDto.class))).willReturn(responseDto);
 
@@ -144,7 +159,7 @@ class AuditTrailControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        AuditTrailDto requestDto = new AuditTrailDto();
+        AuditTrailDto requestDto = createValidCreateAuditTrailDto();
         given(auditTrailService.updateAuditTrail(eq(id), any(AuditTrailDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -156,6 +171,19 @@ class AuditTrailControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        AuditTrailDto requestDto = createValidCreateAuditTrailDto();
+        given(auditTrailService.updateAuditTrail(eq(id), any(AuditTrailDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/audit-trail/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -190,10 +218,7 @@ class AuditTrailControllerTest {
      */
     private AuditTrailDto createValidCreateAuditTrailDto() {
         AuditTrailDto dto = new AuditTrailDto();
-        dto.setIp("aaaaa");
-        dto.setCompany(new CompanyDto());
-        dto.setProfile(new CompanyProfileDto());
-        dto.setCountry(new CountryDto());
+        dto.setIp("A");
 
         return dto;
     }

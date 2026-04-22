@@ -88,7 +88,7 @@ public class UserContactinfoController {
     public ResponseEntity<UserContactinfoDto> patch(
             @Parameter(description = "user contactinfo identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody UserContactinfoDto dto) {
+            @Valid @RequestBody UserContactinfoDto dto) {
         return ResponseEntity.ok(userContactinfoService.updateUserContactinfo(id, dto));
     }
 

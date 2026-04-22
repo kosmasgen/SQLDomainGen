@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.BusinessLocationI18n;
 import gr.knowledge.pepTest.dto.BusinessLocationI18nDto;
+import gr.knowledge.pepTest.dto.BusinessLocationDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.BusinessLocationI18nRepository;
 import gr.knowledge.pepTest.mapper.BusinessLocationI18nMapper;
 import gr.knowledge.pepTest.entity.BusinessLocationI18nKey;
@@ -75,16 +77,20 @@ class BusinessLocationI18nServiceImplTest {
         id.setBusinessLocationId(businessLocationId);
         id.setLanguageId(languageId);
 
+        BusinessLocationI18nKey expectedKey = new BusinessLocationI18nKey();
+        expectedKey.setBusinessLocationId(businessLocationId);
+        expectedKey.setLanguageId(languageId);
+
         BusinessLocationI18n businessLocationI18n = createSampleBusinessLocationI18nEntity();
         BusinessLocationI18nDto businessLocationI18nDto = createSampleBusinessLocationI18nDto();
 
-        given(businessLocationI18nRepository.findById(id)).willReturn(Optional.of(businessLocationI18n));
+        given(businessLocationI18nRepository.findById(expectedKey)).willReturn(Optional.of(businessLocationI18n));
         given(businessLocationI18nMapper.toDTO(businessLocationI18n)).willReturn(businessLocationI18nDto);
 
         BusinessLocationI18nDto result = businessLocationI18nService.getBusinessLocationI18nById(businessLocationId, languageId);
 
         assertSame(businessLocationI18nDto, result);
-        verify(businessLocationI18nRepository).findById(id);
+        verify(businessLocationI18nRepository).findById(expectedKey);
         verify(businessLocationI18nMapper).toDTO(businessLocationI18n);
     }
 
@@ -97,11 +103,15 @@ class BusinessLocationI18nServiceImplTest {
         id.setBusinessLocationId(businessLocationId);
         id.setLanguageId(languageId);
 
-        given(businessLocationI18nRepository.findById(id)).willReturn(Optional.empty());
+        BusinessLocationI18nKey expectedKey = new BusinessLocationI18nKey();
+        expectedKey.setBusinessLocationId(businessLocationId);
+        expectedKey.setLanguageId(languageId);
+
+        given(businessLocationI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> businessLocationI18nService.getBusinessLocationI18nById(businessLocationId, languageId));
 
-        verify(businessLocationI18nRepository).findById(id);
+        verify(businessLocationI18nRepository).findById(expectedKey);
         verify(businessLocationI18nMapper, never()).toDTO(any(BusinessLocationI18n.class));
     }
 
@@ -133,19 +143,23 @@ class BusinessLocationI18nServiceImplTest {
         id.setBusinessLocationId(businessLocationId);
         id.setLanguageId(languageId);
 
+        BusinessLocationI18nKey expectedKey = new BusinessLocationI18nKey();
+        expectedKey.setBusinessLocationId(businessLocationId);
+        expectedKey.setLanguageId(languageId);
+
         BusinessLocationI18nDto requestDto = createPatchBusinessLocationI18nDto();
         BusinessLocationI18n existingEntity = createSampleBusinessLocationI18nEntity();
         BusinessLocationI18n savedEntity = createAnotherBusinessLocationI18nEntity();
         BusinessLocationI18nDto responseDto = createAnotherBusinessLocationI18nDto();
 
-        given(businessLocationI18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(businessLocationI18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
         given(businessLocationI18nRepository.save(existingEntity)).willReturn(savedEntity);
         given(businessLocationI18nMapper.toDTO(savedEntity)).willReturn(responseDto);
 
         BusinessLocationI18nDto result = businessLocationI18nService.updateBusinessLocationI18n(businessLocationId, languageId, requestDto);
 
         assertSame(responseDto, result);
-        verify(businessLocationI18nRepository).findById(id);
+        verify(businessLocationI18nRepository).findById(expectedKey);
         verify(businessLocationI18nMapper).partialUpdate(existingEntity, requestDto);
         verify(businessLocationI18nRepository).save(existingEntity);
         verify(businessLocationI18nMapper).toDTO(savedEntity);
@@ -161,13 +175,17 @@ class BusinessLocationI18nServiceImplTest {
         id.setBusinessLocationId(businessLocationId);
         id.setLanguageId(languageId);
 
+        BusinessLocationI18nKey expectedKey = new BusinessLocationI18nKey();
+        expectedKey.setBusinessLocationId(businessLocationId);
+        expectedKey.setLanguageId(languageId);
+
         BusinessLocationI18nDto requestDto = createPatchBusinessLocationI18nDto();
 
-        given(businessLocationI18nRepository.findById(id)).willReturn(Optional.empty());
+        given(businessLocationI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> businessLocationI18nService.updateBusinessLocationI18n(businessLocationId, languageId, requestDto));
 
-        verify(businessLocationI18nRepository).findById(id);
+        verify(businessLocationI18nRepository).findById(expectedKey);
         verify(businessLocationI18nMapper, never()).partialUpdate(any(), any());
         verify(businessLocationI18nRepository, never()).save(any());
     }
@@ -181,14 +199,18 @@ class BusinessLocationI18nServiceImplTest {
         id.setBusinessLocationId(businessLocationId);
         id.setLanguageId(languageId);
 
+        BusinessLocationI18nKey expectedKey = new BusinessLocationI18nKey();
+        expectedKey.setBusinessLocationId(businessLocationId);
+        expectedKey.setLanguageId(languageId);
+
         BusinessLocationI18n existingEntity = createSampleBusinessLocationI18nEntity();
 
-        given(businessLocationI18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(businessLocationI18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
 
         businessLocationI18nService.deleteBusinessLocationI18n(businessLocationId, languageId);
 
-        verify(businessLocationI18nRepository).findById(id);
-        verify(businessLocationI18nRepository).deleteById(id);
+        verify(businessLocationI18nRepository).findById(expectedKey);
+        verify(businessLocationI18nRepository).deleteById(expectedKey);
     }
 
     @Test
@@ -200,12 +222,16 @@ class BusinessLocationI18nServiceImplTest {
         id.setBusinessLocationId(businessLocationId);
         id.setLanguageId(languageId);
 
-        given(businessLocationI18nRepository.findById(id)).willReturn(Optional.empty());
+        BusinessLocationI18nKey expectedKey = new BusinessLocationI18nKey();
+        expectedKey.setBusinessLocationId(businessLocationId);
+        expectedKey.setLanguageId(languageId);
+
+        given(businessLocationI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> businessLocationI18nService.deleteBusinessLocationI18n(businessLocationId, languageId));
 
-        verify(businessLocationI18nRepository).findById(id);
-        verify(businessLocationI18nRepository, never()).deleteById(id);
+        verify(businessLocationI18nRepository).findById(expectedKey);
+        verify(businessLocationI18nRepository, never()).deleteById(expectedKey);
     }
 
     /**
@@ -247,11 +273,18 @@ class BusinessLocationI18nServiceImplTest {
      */
     private BusinessLocationI18nDto createSampleBusinessLocationI18nDto() {
         BusinessLocationI18nDto dto = new BusinessLocationI18nDto();
+        BusinessLocationI18nKey id = new BusinessLocationI18nKey();
+        id.setBusinessLocationId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
         dto.setDescription("description-value-1");
         dto.setCode("code-value-1");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setRecdeleted(true);
+        dto.setBusinessLocation(new BusinessLocationDto());
+        dto.setLanguage(new LanguagesDto());
 
         return dto;
     }
@@ -263,11 +296,18 @@ class BusinessLocationI18nServiceImplTest {
      */
     private BusinessLocationI18nDto createAnotherBusinessLocationI18nDto() {
         BusinessLocationI18nDto dto = new BusinessLocationI18nDto();
+        BusinessLocationI18nKey id = new BusinessLocationI18nKey();
+        id.setBusinessLocationId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
         dto.setDescription("description-value-2");
         dto.setCode("code-value-2");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setRecdeleted(false);
+        dto.setBusinessLocation(new BusinessLocationDto());
+        dto.setLanguage(new LanguagesDto());
 
         return dto;
     }
@@ -284,6 +324,8 @@ class BusinessLocationI18nServiceImplTest {
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setRecdeleted(true);
+        dto.setBusinessLocation(new BusinessLocationDto());
+        dto.setLanguage(new LanguagesDto());
 
         return dto;
     }

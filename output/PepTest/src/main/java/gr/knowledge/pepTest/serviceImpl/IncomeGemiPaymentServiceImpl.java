@@ -68,10 +68,9 @@ public class IncomeGemiPaymentServiceImpl implements IncomeGemiPaymentService {
 
     /**
      * Updates an existing income gemi payment record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the income gemi payment id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link IncomeGemiPaymentDto}
      */
     @Override

@@ -88,7 +88,7 @@ public class CompanyYpFileController {
     public ResponseEntity<CompanyYpFileDto> patch(
             @Parameter(description = "company yp file identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody CompanyYpFileDto dto) {
+            @Valid @RequestBody CompanyYpFileDto dto) {
         return ResponseEntity.ok(companyYpFileService.updateCompanyYpFile(id, dto));
     }
 

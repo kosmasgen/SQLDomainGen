@@ -8,8 +8,6 @@ import lombok.NoArgsConstructor;
 import gr.knowledge.pepTest.entity.Producti18nKey;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
-import gr.knowledge.pepTest.dto.LanguagesDto;
-import gr.knowledge.pepTest.dto.ProductDto;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 

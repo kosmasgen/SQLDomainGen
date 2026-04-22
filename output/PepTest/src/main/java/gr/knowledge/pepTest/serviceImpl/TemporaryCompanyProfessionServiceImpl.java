@@ -66,10 +66,9 @@ public class TemporaryCompanyProfessionServiceImpl implements TemporaryCompanyPr
 
     /**
      * Updates an existing temporary company profession record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the temporary company profession id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link TemporaryCompanyProfessionDto}
      */
     @Override

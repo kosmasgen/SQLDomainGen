@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CompanyProfile;
 import gr.knowledge.pepTest.dto.CompanyProfileDto;
+import gr.knowledge.pepTest.dto.BusinessLocationDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
 import gr.knowledge.pepTest.repository.CompanyProfileRepository;
 import gr.knowledge.pepTest.mapper.CompanyProfileMapper;
 import java.util.UUID;
@@ -261,6 +263,8 @@ class CompanyProfileServiceImplTest {
         dto.setContactUrl("contactUrl-value-1");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
+        dto.setBusinessLocation(new BusinessLocationDto());
+        dto.setCompany(new CompanyDto());
         dto.setRecdeleted(true);
         dto.setShowBusinessGuide(true);
 
@@ -291,6 +295,8 @@ class CompanyProfileServiceImplTest {
         dto.setContactUrl("contactUrl-value-2");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
+        dto.setBusinessLocation(new BusinessLocationDto());
+        dto.setCompany(new CompanyDto());
         dto.setRecdeleted(false);
         dto.setShowBusinessGuide(false);
 
@@ -320,6 +326,8 @@ class CompanyProfileServiceImplTest {
         dto.setContactUrl("contactUrl-value-3");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
+        dto.setBusinessLocation(new BusinessLocationDto());
+        dto.setCompany(new CompanyDto());
         dto.setRecdeleted(true);
         dto.setShowBusinessGuide(true);
 

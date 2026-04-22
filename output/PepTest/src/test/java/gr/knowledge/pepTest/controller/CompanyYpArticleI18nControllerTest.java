@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,9 +105,9 @@ class CompanyYpArticleI18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyYpArticleI18nDto requestDto = createValidCreateCompanyYpArticleI18nDto();
-        requestDto.setRecdeleted(null);
+        requestDto.setCompanyArticle(null);
 
         mockMvc.perform(post("/api/company-yp-article-i18n")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,11 +132,24 @@ class CompanyYpArticleI18nControllerTest {
     }
 
     @Test
-    void shouldReturnOkForPatch() throws Exception {
+    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {
         UUID companyArticleId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
         CompanyYpArticleI18nDto requestDto = new CompanyYpArticleI18nDto();
+
+        mockMvc.perform(patch("/api/company-yp-article-i18n/{companyArticleId}/{languageId}", companyArticleId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void shouldReturnOkForPatch() throws Exception {
+        UUID companyArticleId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        CompanyYpArticleI18nDto requestDto = createValidCreateCompanyYpArticleI18nDto();
         CompanyYpArticleI18nDto responseDto = new CompanyYpArticleI18nDto();
         given(companyYpArticleI18nService.updateCompanyYpArticleI18n(eq(companyArticleId), eq(languageId), any(CompanyYpArticleI18nDto.class))).willReturn(responseDto);
 
@@ -151,7 +167,7 @@ class CompanyYpArticleI18nControllerTest {
         UUID companyArticleId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
-        CompanyYpArticleI18nDto requestDto = new CompanyYpArticleI18nDto();
+        CompanyYpArticleI18nDto requestDto = createValidCreateCompanyYpArticleI18nDto();
         given(companyYpArticleI18nService.updateCompanyYpArticleI18n(eq(companyArticleId), eq(languageId), any(CompanyYpArticleI18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -163,6 +179,21 @@ class CompanyYpArticleI18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID companyArticleId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        CompanyYpArticleI18nDto requestDto = createValidCreateCompanyYpArticleI18nDto();
+        given(companyYpArticleI18nService.updateCompanyYpArticleI18n(eq(companyArticleId), eq(languageId), any(CompanyYpArticleI18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-yp-article-i18n/{companyArticleId}/{languageId}", companyArticleId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

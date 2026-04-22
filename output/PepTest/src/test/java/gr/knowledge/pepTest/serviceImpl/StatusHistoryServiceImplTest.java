@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.StatusHistory;
 import gr.knowledge.pepTest.dto.StatusHistoryDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import gr.knowledge.pepTest.dto.CompanyStatusDto;
 import gr.knowledge.pepTest.repository.StatusHistoryRepository;
 import gr.knowledge.pepTest.mapper.StatusHistoryMapper;
 import java.util.UUID;
@@ -236,6 +238,8 @@ class StatusHistoryServiceImplTest {
         dto.setId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(1);
         dto.setChamberStatusHistoryId(new BigInteger("1"));
+        dto.setCompany(new CompanyDto());
+        dto.setCompanyStatus(new CompanyStatusDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setNotes("notes-value-1");
@@ -260,6 +264,8 @@ class StatusHistoryServiceImplTest {
         dto.setId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
         dto.setChamberId(2);
         dto.setChamberStatusHistoryId(new BigInteger("2"));
+        dto.setCompany(new CompanyDto());
+        dto.setCompanyStatus(new CompanyStatusDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setNotes("notes-value-2");
@@ -283,6 +289,8 @@ class StatusHistoryServiceImplTest {
         StatusHistoryDto dto = new StatusHistoryDto();
         dto.setChamberId(3);
         dto.setChamberStatusHistoryId(new BigInteger("3"));
+        dto.setCompany(new CompanyDto());
+        dto.setCompanyStatus(new CompanyStatusDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setNotes("notes-value-3");

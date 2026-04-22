@@ -88,7 +88,7 @@ public class CompanyViewRulesController {
     public ResponseEntity<CompanyViewRulesDto> patch(
             @Parameter(description = "company view rules identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody CompanyViewRulesDto dto) {
+            @Valid @RequestBody CompanyViewRulesDto dto) {
         return ResponseEntity.ok(companyViewRulesService.updateCompanyViewRules(id, dto));
     }
 

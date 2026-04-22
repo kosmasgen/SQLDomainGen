@@ -66,10 +66,9 @@ public class ExportCompProdCountryServiceImpl implements ExportCompProdCountrySe
 
     /**
      * Updates an existing export comp prod country record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the export comp prod country id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link ExportCompProdCountryDto}
      */
     @Override

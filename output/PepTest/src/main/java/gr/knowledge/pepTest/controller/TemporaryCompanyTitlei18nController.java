@@ -88,7 +88,7 @@ public class TemporaryCompanyTitlei18nController {
     public ResponseEntity<TemporaryCompanyTitlei18nDto> patch(
             @Parameter(description = "temporary company titlei18n identifier", required = true)
             @PathVariable BigInteger id,
-            @RequestBody TemporaryCompanyTitlei18nDto dto) {
+            @Valid @RequestBody TemporaryCompanyTitlei18nDto dto) {
         return ResponseEntity.ok(temporaryCompanyTitlei18nService.updateTemporaryCompanyTitlei18n(id, dto));
     }
 

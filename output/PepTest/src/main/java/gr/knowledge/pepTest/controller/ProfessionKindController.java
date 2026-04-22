@@ -88,7 +88,7 @@ public class ProfessionKindController {
     public ResponseEntity<ProfessionKindDto> patch(
             @Parameter(description = "profession kind identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody ProfessionKindDto dto) {
+            @Valid @RequestBody ProfessionKindDto dto) {
         return ResponseEntity.ok(professionKindService.updateProfessionKind(id, dto));
     }
 

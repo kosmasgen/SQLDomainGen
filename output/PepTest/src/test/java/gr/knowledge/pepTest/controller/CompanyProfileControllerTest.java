@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -98,7 +101,7 @@ class CompanyProfileControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyProfileDto requestDto = createValidCreateCompanyProfileDto();
         requestDto.setName(null);
 
@@ -125,9 +128,21 @@ class CompanyProfileControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyProfileDto requestDto = createValidCreateCompanyProfileDto();
+        requestDto.setName(null);
+
+        mockMvc.perform(patch("/api/company-profile/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyProfileDto requestDto = new CompanyProfileDto();
+        CompanyProfileDto requestDto = createValidCreateCompanyProfileDto();
         CompanyProfileDto responseDto = new CompanyProfileDto();
         given(companyProfileService.updateCompanyProfile(eq(id), any(CompanyProfileDto.class))).willReturn(responseDto);
 
@@ -143,7 +158,7 @@ class CompanyProfileControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyProfileDto requestDto = new CompanyProfileDto();
+        CompanyProfileDto requestDto = createValidCreateCompanyProfileDto();
         given(companyProfileService.updateCompanyProfile(eq(id), any(CompanyProfileDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -155,6 +170,19 @@ class CompanyProfileControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyProfileDto requestDto = createValidCreateCompanyProfileDto();
+        given(companyProfileService.updateCompanyProfile(eq(id), any(CompanyProfileDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-profile/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -189,8 +217,7 @@ class CompanyProfileControllerTest {
      */
     private CompanyProfileDto createValidCreateCompanyProfileDto() {
         CompanyProfileDto dto = new CompanyProfileDto();
-        dto.setName("aaaaa");
-        dto.setBusinessLocation(new BusinessLocationDto());
+        dto.setName("A");
         dto.setCompany(new CompanyDto());
 
         return dto;

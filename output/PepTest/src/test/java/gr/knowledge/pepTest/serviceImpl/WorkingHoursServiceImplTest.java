@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.WorkingHours;
 import gr.knowledge.pepTest.dto.WorkingHoursDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import gr.knowledge.pepTest.dto.CompanyProfileDto;
 import gr.knowledge.pepTest.repository.WorkingHoursRepository;
 import gr.knowledge.pepTest.mapper.WorkingHoursMapper;
 import java.util.UUID;
@@ -217,10 +219,12 @@ class WorkingHoursServiceImplTest {
     private WorkingHoursDto createSampleWorkingHoursDto() {
         WorkingHoursDto dto = new WorkingHoursDto();
         dto.setId(1L);
+        dto.setCompany(new CompanyDto());
         dto.setDayOfWeek("dayOfWeek-value-1");
         dto.setOpeningTime(LocalTime.of(10, 0, 0));
         dto.setClosingTime(LocalTime.of(10, 0, 0));
         dto.setIsClosed(true);
+        dto.setProfile(new CompanyProfileDto());
 
         return dto;
     }
@@ -233,10 +237,12 @@ class WorkingHoursServiceImplTest {
     private WorkingHoursDto createAnotherWorkingHoursDto() {
         WorkingHoursDto dto = new WorkingHoursDto();
         dto.setId(2L);
+        dto.setCompany(new CompanyDto());
         dto.setDayOfWeek("dayOfWeek-value-2");
         dto.setOpeningTime(LocalTime.of(11, 0, 0));
         dto.setClosingTime(LocalTime.of(11, 0, 0));
         dto.setIsClosed(false);
+        dto.setProfile(new CompanyProfileDto());
 
         return dto;
     }
@@ -248,10 +254,12 @@ class WorkingHoursServiceImplTest {
      */
     private WorkingHoursDto createPatchWorkingHoursDto() {
         WorkingHoursDto dto = new WorkingHoursDto();
+        dto.setCompany(new CompanyDto());
         dto.setDayOfWeek("dayOfWeek-value-3");
         dto.setOpeningTime(LocalTime.of(12, 0, 0));
         dto.setClosingTime(LocalTime.of(12, 0, 0));
         dto.setIsClosed(true);
+        dto.setProfile(new CompanyProfileDto());
 
         return dto;
     }

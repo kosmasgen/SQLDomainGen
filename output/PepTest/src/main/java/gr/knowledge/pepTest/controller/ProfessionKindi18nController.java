@@ -94,7 +94,7 @@ public class ProfessionKindi18nController {
             @PathVariable UUID professionKindId,
             @Parameter(description = "language id identifier", required = true)
             @PathVariable UUID languageId,
-            @RequestBody ProfessionKindi18nDto dto) {
+            @Valid @RequestBody ProfessionKindi18nDto dto) {
         return ResponseEntity.ok(professionKindi18nService.updateProfessionKindi18n(professionKindId, languageId, dto));
     }
 

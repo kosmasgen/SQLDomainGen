@@ -19,6 +19,10 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -100,7 +104,7 @@ class CompanyProfessionControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyProfessionDto requestDto = createValidCreateCompanyProfessionDto();
         requestDto.setChamberId(null);
 
@@ -127,9 +131,21 @@ class CompanyProfessionControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyProfessionDto requestDto = createValidCreateCompanyProfessionDto();
+        requestDto.setChamberId(null);
+
+        mockMvc.perform(patch("/api/company-profession/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyProfessionDto requestDto = new CompanyProfessionDto();
+        CompanyProfessionDto requestDto = createValidCreateCompanyProfessionDto();
         CompanyProfessionDto responseDto = new CompanyProfessionDto();
         given(companyProfessionService.updateCompanyProfession(eq(id), any(CompanyProfessionDto.class))).willReturn(responseDto);
 
@@ -145,7 +161,7 @@ class CompanyProfessionControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyProfessionDto requestDto = new CompanyProfessionDto();
+        CompanyProfessionDto requestDto = createValidCreateCompanyProfessionDto();
         given(companyProfessionService.updateCompanyProfession(eq(id), any(CompanyProfessionDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -157,6 +173,19 @@ class CompanyProfessionControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyProfessionDto requestDto = createValidCreateCompanyProfessionDto();
+        given(companyProfessionService.updateCompanyProfession(eq(id), any(CompanyProfessionDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-profession/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -194,9 +223,7 @@ class CompanyProfessionControllerTest {
         dto.setChamberId(1);
         dto.setCompany(new CompanyDto());
         dto.setProfession(new ProfessionDto());
-        dto.setProfessionKind(new ProfessionKindDto());
         dto.setRecdeleted(true);
-        dto.setProfile(new CompanyProfileDto());
 
         return dto;
     }

@@ -15,6 +15,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -114,7 +117,7 @@ class CompanyViewRulesControllerTest {
     @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyViewRulesDto requestDto = new CompanyViewRulesDto();
+        CompanyViewRulesDto requestDto = createValidCreateCompanyViewRulesDto();
         CompanyViewRulesDto responseDto = new CompanyViewRulesDto();
         given(companyViewRulesService.updateCompanyViewRules(eq(id), any(CompanyViewRulesDto.class))).willReturn(responseDto);
 
@@ -130,7 +133,7 @@ class CompanyViewRulesControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyViewRulesDto requestDto = new CompanyViewRulesDto();
+        CompanyViewRulesDto requestDto = createValidCreateCompanyViewRulesDto();
         given(companyViewRulesService.updateCompanyViewRules(eq(id), any(CompanyViewRulesDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -142,6 +145,19 @@ class CompanyViewRulesControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyViewRulesDto requestDto = createValidCreateCompanyViewRulesDto();
+        given(companyViewRulesService.updateCompanyViewRules(eq(id), any(CompanyViewRulesDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-view-rules/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

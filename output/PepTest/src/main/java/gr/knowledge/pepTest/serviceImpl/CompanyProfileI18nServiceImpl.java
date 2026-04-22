@@ -72,11 +72,10 @@ public class CompanyProfileI18nServiceImpl implements CompanyProfileI18nService 
 
     /**
      * Updates an existing company profile i18n record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param companyProfileId the companyProfileId value
      * @param languageId the languageId value
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link CompanyProfileI18nDto}
      */
     @Override
@@ -140,14 +139,14 @@ public class CompanyProfileI18nServiceImpl implements CompanyProfileI18nService 
      * @throws GeneratedRuntimeException if the entity already exists
      */
     private void validateCompanyProfileI18nDoesNotExist(CompanyProfileI18nDto dto) {
-        if (dto == null || (dto.getId() != null ? dto.getId().getCompanyProfileId() : null) == null || (dto.getId() != null ? dto.getId().getLanguageId() : null) == null) {
+        if (dto == null || dto.getId().getCompanyProfileId() == null || dto.getId().getLanguageId() == null) {
             return;
         }
 
-        CompanyProfileI18nKey key = buildKey((dto.getId() != null ? dto.getId().getCompanyProfileId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+        CompanyProfileI18nKey key = buildKey(dto.getId().getCompanyProfileId(), dto.getId().getLanguageId());
 
         if (companyProfileI18nRepository.existsById(key)) {
-            String compositeId = buildCompositeId((dto.getId() != null ? dto.getId().getCompanyProfileId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+            String compositeId = buildCompositeId(dto.getId().getCompanyProfileId(), dto.getId().getLanguageId());
             log.warn("CompanyProfileI18n already exists with composite id: {}", compositeId);
 
             throw GeneratedRuntimeException.builder()

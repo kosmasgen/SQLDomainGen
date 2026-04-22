@@ -88,7 +88,7 @@ public class CompanyYpPhotoController {
     public ResponseEntity<CompanyYpPhotoDto> patch(
             @Parameter(description = "company yp photo identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody CompanyYpPhotoDto dto) {
+            @Valid @RequestBody CompanyYpPhotoDto dto) {
         return ResponseEntity.ok(companyYpPhotoService.updateCompanyYpPhoto(id, dto));
     }
 

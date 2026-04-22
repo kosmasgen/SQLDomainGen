@@ -17,6 +17,8 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalTime;
+
 
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -97,9 +99,9 @@ class WorkingHoursControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         WorkingHoursDto requestDto = createValidCreateWorkingHoursDto();
-        requestDto.setDayOfWeek(null);
+        requestDto.setCompany(null);
 
         mockMvc.perform(post("/api/working-hours")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -124,9 +126,21 @@ class WorkingHoursControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        Long id = 1L;
+        WorkingHoursDto requestDto = createValidCreateWorkingHoursDto();
+        requestDto.setCompany(null);
+
+        mockMvc.perform(patch("/api/working-hours/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         Long id = 1L;
-        WorkingHoursDto requestDto = new WorkingHoursDto();
+        WorkingHoursDto requestDto = createValidCreateWorkingHoursDto();
         WorkingHoursDto responseDto = new WorkingHoursDto();
         given(workingHoursService.updateWorkingHours(eq(id), any(WorkingHoursDto.class))).willReturn(responseDto);
 
@@ -142,7 +156,7 @@ class WorkingHoursControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         Long id = 1L;
-        WorkingHoursDto requestDto = new WorkingHoursDto();
+        WorkingHoursDto requestDto = createValidCreateWorkingHoursDto();
         given(workingHoursService.updateWorkingHours(eq(id), any(WorkingHoursDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -154,6 +168,19 @@ class WorkingHoursControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        Long id = 1L;
+        WorkingHoursDto requestDto = createValidCreateWorkingHoursDto();
+        given(workingHoursService.updateWorkingHours(eq(id), any(WorkingHoursDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/working-hours/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -189,9 +216,8 @@ class WorkingHoursControllerTest {
     private WorkingHoursDto createValidCreateWorkingHoursDto() {
         WorkingHoursDto dto = new WorkingHoursDto();
         dto.setCompany(new CompanyDto());
-        dto.setDayOfWeek("aaaaa");
+        dto.setDayOfWeek("A");
         dto.setIsClosed(true);
-        dto.setProfile(new CompanyProfileDto());
 
         return dto;
     }

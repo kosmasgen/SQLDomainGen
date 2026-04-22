@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CorporateStatusViewRules;
 import gr.knowledge.pepTest.dto.CorporateStatusViewRulesDto;
+import gr.knowledge.pepTest.dto.CorporateStatusDto;
+import gr.knowledge.pepTest.dto.CompanyViewRulesDto;
 import gr.knowledge.pepTest.repository.CorporateStatusViewRulesRepository;
 import gr.knowledge.pepTest.mapper.CorporateStatusViewRulesMapper;
 import gr.knowledge.pepTest.entity.CorporateStatusViewRulesKey;
@@ -75,16 +77,20 @@ class CorporateStatusViewRulesServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setCompanyViewRulesId(companyViewRulesId);
 
+        CorporateStatusViewRulesKey expectedKey = new CorporateStatusViewRulesKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setCompanyViewRulesId(companyViewRulesId);
+
         CorporateStatusViewRules corporateStatusViewRules = createSampleCorporateStatusViewRulesEntity();
         CorporateStatusViewRulesDto corporateStatusViewRulesDto = createSampleCorporateStatusViewRulesDto();
 
-        given(corporateStatusViewRulesRepository.findById(id)).willReturn(Optional.of(corporateStatusViewRules));
+        given(corporateStatusViewRulesRepository.findById(expectedKey)).willReturn(Optional.of(corporateStatusViewRules));
         given(corporateStatusViewRulesMapper.toDTO(corporateStatusViewRules)).willReturn(corporateStatusViewRulesDto);
 
         CorporateStatusViewRulesDto result = corporateStatusViewRulesService.getCorporateStatusViewRulesById(corporateStatusId, companyViewRulesId);
 
         assertSame(corporateStatusViewRulesDto, result);
-        verify(corporateStatusViewRulesRepository).findById(id);
+        verify(corporateStatusViewRulesRepository).findById(expectedKey);
         verify(corporateStatusViewRulesMapper).toDTO(corporateStatusViewRules);
     }
 
@@ -97,11 +103,15 @@ class CorporateStatusViewRulesServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setCompanyViewRulesId(companyViewRulesId);
 
-        given(corporateStatusViewRulesRepository.findById(id)).willReturn(Optional.empty());
+        CorporateStatusViewRulesKey expectedKey = new CorporateStatusViewRulesKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setCompanyViewRulesId(companyViewRulesId);
+
+        given(corporateStatusViewRulesRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> corporateStatusViewRulesService.getCorporateStatusViewRulesById(corporateStatusId, companyViewRulesId));
 
-        verify(corporateStatusViewRulesRepository).findById(id);
+        verify(corporateStatusViewRulesRepository).findById(expectedKey);
         verify(corporateStatusViewRulesMapper, never()).toDTO(any(CorporateStatusViewRules.class));
     }
 
@@ -133,19 +143,23 @@ class CorporateStatusViewRulesServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setCompanyViewRulesId(companyViewRulesId);
 
+        CorporateStatusViewRulesKey expectedKey = new CorporateStatusViewRulesKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setCompanyViewRulesId(companyViewRulesId);
+
         CorporateStatusViewRulesDto requestDto = createPatchCorporateStatusViewRulesDto();
         CorporateStatusViewRules existingEntity = createSampleCorporateStatusViewRulesEntity();
         CorporateStatusViewRules savedEntity = createAnotherCorporateStatusViewRulesEntity();
         CorporateStatusViewRulesDto responseDto = createAnotherCorporateStatusViewRulesDto();
 
-        given(corporateStatusViewRulesRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(corporateStatusViewRulesRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
         given(corporateStatusViewRulesRepository.save(existingEntity)).willReturn(savedEntity);
         given(corporateStatusViewRulesMapper.toDTO(savedEntity)).willReturn(responseDto);
 
         CorporateStatusViewRulesDto result = corporateStatusViewRulesService.updateCorporateStatusViewRules(corporateStatusId, companyViewRulesId, requestDto);
 
         assertSame(responseDto, result);
-        verify(corporateStatusViewRulesRepository).findById(id);
+        verify(corporateStatusViewRulesRepository).findById(expectedKey);
         verify(corporateStatusViewRulesMapper).partialUpdate(existingEntity, requestDto);
         verify(corporateStatusViewRulesRepository).save(existingEntity);
         verify(corporateStatusViewRulesMapper).toDTO(savedEntity);
@@ -161,13 +175,17 @@ class CorporateStatusViewRulesServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setCompanyViewRulesId(companyViewRulesId);
 
+        CorporateStatusViewRulesKey expectedKey = new CorporateStatusViewRulesKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setCompanyViewRulesId(companyViewRulesId);
+
         CorporateStatusViewRulesDto requestDto = createPatchCorporateStatusViewRulesDto();
 
-        given(corporateStatusViewRulesRepository.findById(id)).willReturn(Optional.empty());
+        given(corporateStatusViewRulesRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> corporateStatusViewRulesService.updateCorporateStatusViewRules(corporateStatusId, companyViewRulesId, requestDto));
 
-        verify(corporateStatusViewRulesRepository).findById(id);
+        verify(corporateStatusViewRulesRepository).findById(expectedKey);
         verify(corporateStatusViewRulesMapper, never()).partialUpdate(any(), any());
         verify(corporateStatusViewRulesRepository, never()).save(any());
     }
@@ -181,14 +199,18 @@ class CorporateStatusViewRulesServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setCompanyViewRulesId(companyViewRulesId);
 
+        CorporateStatusViewRulesKey expectedKey = new CorporateStatusViewRulesKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setCompanyViewRulesId(companyViewRulesId);
+
         CorporateStatusViewRules existingEntity = createSampleCorporateStatusViewRulesEntity();
 
-        given(corporateStatusViewRulesRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(corporateStatusViewRulesRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
 
         corporateStatusViewRulesService.deleteCorporateStatusViewRules(corporateStatusId, companyViewRulesId);
 
-        verify(corporateStatusViewRulesRepository).findById(id);
-        verify(corporateStatusViewRulesRepository).deleteById(id);
+        verify(corporateStatusViewRulesRepository).findById(expectedKey);
+        verify(corporateStatusViewRulesRepository).deleteById(expectedKey);
     }
 
     @Test
@@ -200,12 +222,16 @@ class CorporateStatusViewRulesServiceImplTest {
         id.setCorporateStatusId(corporateStatusId);
         id.setCompanyViewRulesId(companyViewRulesId);
 
-        given(corporateStatusViewRulesRepository.findById(id)).willReturn(Optional.empty());
+        CorporateStatusViewRulesKey expectedKey = new CorporateStatusViewRulesKey();
+        expectedKey.setCorporateStatusId(corporateStatusId);
+        expectedKey.setCompanyViewRulesId(companyViewRulesId);
+
+        given(corporateStatusViewRulesRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> corporateStatusViewRulesService.deleteCorporateStatusViewRules(corporateStatusId, companyViewRulesId));
 
-        verify(corporateStatusViewRulesRepository).findById(id);
-        verify(corporateStatusViewRulesRepository, never()).deleteById(id);
+        verify(corporateStatusViewRulesRepository).findById(expectedKey);
+        verify(corporateStatusViewRulesRepository, never()).deleteById(expectedKey);
     }
 
     /**
@@ -245,6 +271,13 @@ class CorporateStatusViewRulesServiceImplTest {
      */
     private CorporateStatusViewRulesDto createSampleCorporateStatusViewRulesDto() {
         CorporateStatusViewRulesDto dto = new CorporateStatusViewRulesDto();
+        CorporateStatusViewRulesKey id = new CorporateStatusViewRulesKey();
+        id.setCorporateStatusId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        id.setCompanyViewRulesId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setCorporateStatus(new CorporateStatusDto());
+        dto.setCompanyViewRules(new CompanyViewRulesDto());
         dto.setExcludeCompanies(true);
         dto.setShowContactInfo(true);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
@@ -260,6 +293,13 @@ class CorporateStatusViewRulesServiceImplTest {
      */
     private CorporateStatusViewRulesDto createAnotherCorporateStatusViewRulesDto() {
         CorporateStatusViewRulesDto dto = new CorporateStatusViewRulesDto();
+        CorporateStatusViewRulesKey id = new CorporateStatusViewRulesKey();
+        id.setCorporateStatusId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        id.setCompanyViewRulesId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setCorporateStatus(new CorporateStatusDto());
+        dto.setCompanyViewRules(new CompanyViewRulesDto());
         dto.setExcludeCompanies(false);
         dto.setShowContactInfo(false);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
@@ -275,6 +315,8 @@ class CorporateStatusViewRulesServiceImplTest {
      */
     private CorporateStatusViewRulesDto createPatchCorporateStatusViewRulesDto() {
         CorporateStatusViewRulesDto dto = new CorporateStatusViewRulesDto();
+        dto.setCorporateStatus(new CorporateStatusDto());
+        dto.setCompanyViewRules(new CompanyViewRulesDto());
         dto.setExcludeCompanies(true);
         dto.setShowContactInfo(true);
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));

@@ -88,7 +88,7 @@ public class MunicipalityController {
     public ResponseEntity<MunicipalityDto> patch(
             @Parameter(description = "municipality identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody MunicipalityDto dto) {
+            @Valid @RequestBody MunicipalityDto dto) {
         return ResponseEntity.ok(municipalityService.updateMunicipality(id, dto));
     }
 

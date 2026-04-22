@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.Companyi18n;
 import gr.knowledge.pepTest.dto.Companyi18nDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.Companyi18nRepository;
 import gr.knowledge.pepTest.mapper.Companyi18nMapper;
 import gr.knowledge.pepTest.entity.Companyi18nKey;
@@ -77,16 +79,21 @@ class Companyi18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setChamberI18nId(chamberI18nId);
 
+        Companyi18nKey expectedKey = new Companyi18nKey();
+        expectedKey.setCompanyId(companyId);
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setChamberI18nId(chamberI18nId);
+
         Companyi18n companyi18n = createSampleCompanyi18nEntity();
         Companyi18nDto companyi18nDto = createSampleCompanyi18nDto();
 
-        given(companyi18nRepository.findById(id)).willReturn(Optional.of(companyi18n));
+        given(companyi18nRepository.findById(expectedKey)).willReturn(Optional.of(companyi18n));
         given(companyi18nMapper.toDTO(companyi18n)).willReturn(companyi18nDto);
 
         Companyi18nDto result = companyi18nService.getCompanyi18nById(companyId, languageId, chamberI18nId);
 
         assertSame(companyi18nDto, result);
-        verify(companyi18nRepository).findById(id);
+        verify(companyi18nRepository).findById(expectedKey);
         verify(companyi18nMapper).toDTO(companyi18n);
     }
 
@@ -101,11 +108,16 @@ class Companyi18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setChamberI18nId(chamberI18nId);
 
-        given(companyi18nRepository.findById(id)).willReturn(Optional.empty());
+        Companyi18nKey expectedKey = new Companyi18nKey();
+        expectedKey.setCompanyId(companyId);
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setChamberI18nId(chamberI18nId);
+
+        given(companyi18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> companyi18nService.getCompanyi18nById(companyId, languageId, chamberI18nId));
 
-        verify(companyi18nRepository).findById(id);
+        verify(companyi18nRepository).findById(expectedKey);
         verify(companyi18nMapper, never()).toDTO(any(Companyi18n.class));
     }
 
@@ -139,19 +151,24 @@ class Companyi18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setChamberI18nId(chamberI18nId);
 
+        Companyi18nKey expectedKey = new Companyi18nKey();
+        expectedKey.setCompanyId(companyId);
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setChamberI18nId(chamberI18nId);
+
         Companyi18nDto requestDto = createPatchCompanyi18nDto();
         Companyi18n existingEntity = createSampleCompanyi18nEntity();
         Companyi18n savedEntity = createAnotherCompanyi18nEntity();
         Companyi18nDto responseDto = createAnotherCompanyi18nDto();
 
-        given(companyi18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(companyi18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
         given(companyi18nRepository.save(existingEntity)).willReturn(savedEntity);
         given(companyi18nMapper.toDTO(savedEntity)).willReturn(responseDto);
 
         Companyi18nDto result = companyi18nService.updateCompanyi18n(companyId, languageId, chamberI18nId, requestDto);
 
         assertSame(responseDto, result);
-        verify(companyi18nRepository).findById(id);
+        verify(companyi18nRepository).findById(expectedKey);
         verify(companyi18nMapper).partialUpdate(existingEntity, requestDto);
         verify(companyi18nRepository).save(existingEntity);
         verify(companyi18nMapper).toDTO(savedEntity);
@@ -169,13 +186,18 @@ class Companyi18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setChamberI18nId(chamberI18nId);
 
+        Companyi18nKey expectedKey = new Companyi18nKey();
+        expectedKey.setCompanyId(companyId);
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setChamberI18nId(chamberI18nId);
+
         Companyi18nDto requestDto = createPatchCompanyi18nDto();
 
-        given(companyi18nRepository.findById(id)).willReturn(Optional.empty());
+        given(companyi18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> companyi18nService.updateCompanyi18n(companyId, languageId, chamberI18nId, requestDto));
 
-        verify(companyi18nRepository).findById(id);
+        verify(companyi18nRepository).findById(expectedKey);
         verify(companyi18nMapper, never()).partialUpdate(any(), any());
         verify(companyi18nRepository, never()).save(any());
     }
@@ -191,14 +213,19 @@ class Companyi18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setChamberI18nId(chamberI18nId);
 
+        Companyi18nKey expectedKey = new Companyi18nKey();
+        expectedKey.setCompanyId(companyId);
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setChamberI18nId(chamberI18nId);
+
         Companyi18n existingEntity = createSampleCompanyi18nEntity();
 
-        given(companyi18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(companyi18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
 
         companyi18nService.deleteCompanyi18n(companyId, languageId, chamberI18nId);
 
-        verify(companyi18nRepository).findById(id);
-        verify(companyi18nRepository).deleteById(id);
+        verify(companyi18nRepository).findById(expectedKey);
+        verify(companyi18nRepository).deleteById(expectedKey);
     }
 
     @Test
@@ -212,12 +239,17 @@ class Companyi18nServiceImplTest {
         id.setLanguageId(languageId);
         id.setChamberI18nId(chamberI18nId);
 
-        given(companyi18nRepository.findById(id)).willReturn(Optional.empty());
+        Companyi18nKey expectedKey = new Companyi18nKey();
+        expectedKey.setCompanyId(companyId);
+        expectedKey.setLanguageId(languageId);
+        expectedKey.setChamberI18nId(chamberI18nId);
+
+        given(companyi18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> companyi18nService.deleteCompanyi18n(companyId, languageId, chamberI18nId));
 
-        verify(companyi18nRepository).findById(id);
-        verify(companyi18nRepository, never()).deleteById(id);
+        verify(companyi18nRepository).findById(expectedKey);
+        verify(companyi18nRepository, never()).deleteById(expectedKey);
     }
 
     /**
@@ -265,6 +297,14 @@ class Companyi18nServiceImplTest {
      */
     private Companyi18nDto createSampleCompanyi18nDto() {
         Companyi18nDto dto = new Companyi18nDto();
+        Companyi18nKey id = new Companyi18nKey();
+        id.setCompanyId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        id.setChamberI18nId(1);
+        dto.setId(id);
+
+        dto.setCompany(new CompanyDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setCity("city-value-1");
         dto.setCoName("coName-value-1");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
@@ -284,6 +324,14 @@ class Companyi18nServiceImplTest {
      */
     private Companyi18nDto createAnotherCompanyi18nDto() {
         Companyi18nDto dto = new Companyi18nDto();
+        Companyi18nKey id = new Companyi18nKey();
+        id.setCompanyId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        id.setChamberI18nId(2);
+        dto.setId(id);
+
+        dto.setCompany(new CompanyDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setCity("city-value-2");
         dto.setCoName("coName-value-2");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
@@ -303,6 +351,8 @@ class Companyi18nServiceImplTest {
      */
     private Companyi18nDto createPatchCompanyi18nDto() {
         Companyi18nDto dto = new Companyi18nDto();
+        dto.setCompany(new CompanyDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setCity("city-value-3");
         dto.setCoName("coName-value-3");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));

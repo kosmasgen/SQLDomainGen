@@ -68,10 +68,9 @@ public class CompanyYpArticleServiceImpl implements CompanyYpArticleService {
 
     /**
      * Updates an existing company yp article record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the company yp article id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link CompanyYpArticleDto}
      */
     @Override
@@ -107,7 +106,7 @@ public class CompanyYpArticleServiceImpl implements CompanyYpArticleService {
             return;
         }
 
-        if ((dto.getCompany() != null ? dto.getCompany().getId() : null) != null && dto.getTitle() != null && companyYpArticleRepository.existsByCompanyIdAndTitle((dto.getCompany() != null ? dto.getCompany().getId() : null), dto.getTitle())) {
+        if (dto.getCompany() != null && dto.getCompany().getId() != null && dto.getTitle() != null && companyYpArticleRepository.existsByCompanyIdAndTitle((dto.getCompany() != null ? dto.getCompany().getId() : null), dto.getTitle())) {
             throw GeneratedRuntimeException.builder()
                     .code(ErrorCodes.BAD_REQUEST)
                     .entity("CompanyYpArticle")

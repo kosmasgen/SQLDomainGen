@@ -167,17 +167,7 @@ public class ServiceImplTestGenerator {
                     serviceVar,
                     primaryKeyType
             );
-            appendPatchValidationTests(
-                    content,
-                    table,
-                    dtoFields,
-                    entityName,
-                    dtoName,
-                    repositoryVar,
-                    mapperVar,
-                    serviceVar,
-                    primaryKeyType
-            );
+
             appendPatchNotFoundTest(
                     content,
                     table,
@@ -486,22 +476,52 @@ public class ServiceImplTestGenerator {
             String primaryKeyType
     ) {
         String serviceArguments = buildServicePrimaryKeyArguments(table);
+        boolean compositePrimaryKey = hasCompositePrimaryKey(table);
 
         content.append("    @Test\n");
         content.append("    void shouldReturnMappedDtoWhenGet").append(entityName).append("ByIdIsCalled() {\n");
         content.append(buildPrimaryKeyDeclarationCode(table, primaryKeyType));
+
+        if (compositePrimaryKey) {
+            content.append("        ").append(primaryKeyType).append(" expectedKey = new ")
+                    .append(primaryKeyType).append("();\n");
+
+            for (Column primaryKeyColumn : getPrimaryKeyColumns(table)) {
+                String variableName = resolvePrimaryKeyComponentVariableName(primaryKeyColumn);
+                String setterSuffix = NamingConverter.toPascalCase(variableName);
+
+                content.append("        expectedKey.set").append(setterSuffix)
+                        .append("(").append(variableName).append(");\n");
+            }
+
+            content.append("\n");
+        }
+
         content.append("        ").append(entityName).append(" ").append(entityVar).append(" = createSample")
                 .append(entityName).append("Entity();\n");
         content.append("        ").append(dtoName).append(" ").append(dtoVar).append(" = createSample")
                 .append(entityName).append("Dto();\n\n");
-        content.append("        given(").append(repositoryVar).append(".findById(id)).willReturn(Optional.of(")
-                .append(entityVar).append("));\n");
+
+        if (compositePrimaryKey) {
+            content.append("        given(").append(repositoryVar).append(".findById(expectedKey)).willReturn(Optional.of(")
+                    .append(entityVar).append("));\n");
+        } else {
+            content.append("        given(").append(repositoryVar).append(".findById(id)).willReturn(Optional.of(")
+                    .append(entityVar).append("));\n");
+        }
+
         content.append("        given(").append(mapperVar).append(".toDTO(").append(entityVar).append(")).willReturn(")
                 .append(dtoVar).append(");\n\n");
         content.append("        ").append(dtoName).append(" result = ").append(serviceVar)
                 .append(".get").append(entityName).append("ById(").append(serviceArguments).append(");\n\n");
         content.append("        assertSame(").append(dtoVar).append(", result);\n");
-        content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
+
+        if (compositePrimaryKey) {
+            content.append("        verify(").append(repositoryVar).append(").findById(expectedKey);\n");
+        } else {
+            content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
+        }
+
         content.append("        verify(").append(mapperVar).append(").toDTO(").append(entityVar).append(");\n");
         content.append("    }\n\n");
     }
@@ -528,14 +548,41 @@ public class ServiceImplTestGenerator {
             String primaryKeyType
     ) {
         String serviceArguments = buildServicePrimaryKeyArguments(table);
+        boolean compositePrimaryKey = hasCompositePrimaryKey(table);
 
         content.append("    @Test\n");
         content.append("    void shouldThrowWhenGet").append(entityName).append("ByIdCannotFindEntity() {\n");
         content.append(buildPrimaryKeyDeclarationCode(table, primaryKeyType));
-        content.append("        given(").append(repositoryVar).append(".findById(id)).willReturn(Optional.empty());\n\n");
+
+        if (compositePrimaryKey) {
+            content.append("        ").append(primaryKeyType).append(" expectedKey = new ")
+                    .append(primaryKeyType).append("();\n");
+
+            for (Column primaryKeyColumn : getPrimaryKeyColumns(table)) {
+                String variableName = resolvePrimaryKeyComponentVariableName(primaryKeyColumn);
+                String setterSuffix = NamingConverter.toPascalCase(variableName);
+
+                content.append("        expectedKey.set").append(setterSuffix)
+                        .append("(").append(variableName).append(");\n");
+            }
+
+            content.append("\n");
+            content.append("        given(").append(repositoryVar)
+                    .append(".findById(expectedKey)).willReturn(Optional.empty());\n\n");
+        } else {
+            content.append("        given(").append(repositoryVar)
+                    .append(".findById(id)).willReturn(Optional.empty());\n\n");
+        }
+
         content.append("        assertNotFound(() -> ").append(serviceVar).append(".get")
                 .append(entityName).append("ById(").append(serviceArguments).append("));\n\n");
-        content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
+
+        if (compositePrimaryKey) {
+            content.append("        verify(").append(repositoryVar).append(").findById(expectedKey);\n");
+        } else {
+            content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
+        }
+
         content.append("        verify(").append(mapperVar).append(", never()).toDTO(any(")
                 .append(entityName).append(".class));\n");
         content.append("    }\n\n");
@@ -584,6 +631,7 @@ public class ServiceImplTestGenerator {
 
     /**
      * Appends the successful update service test.
+     *
      * @param content generated test content
      * @param table current table
      * @param entityName entity simple name
@@ -604,10 +652,27 @@ public class ServiceImplTestGenerator {
             String primaryKeyType
     ) {
         String serviceArguments = buildServicePrimaryKeyArguments(table);
+        boolean compositePrimaryKey = hasCompositePrimaryKey(table);
 
         content.append("    @Test\n");
         content.append("    void shouldUpdate").append(entityName).append("WhenEntityExists() {\n");
         content.append(buildPrimaryKeyDeclarationCode(table, primaryKeyType));
+
+        if (compositePrimaryKey) {
+            content.append("        ").append(primaryKeyType).append(" expectedKey = new ")
+                    .append(primaryKeyType).append("();\n");
+
+            for (Column primaryKeyColumn : getPrimaryKeyColumns(table)) {
+                String variableName = resolvePrimaryKeyComponentVariableName(primaryKeyColumn);
+                String setterSuffix = NamingConverter.toPascalCase(variableName);
+
+                content.append("        expectedKey.set").append(setterSuffix)
+                        .append("(").append(variableName).append(");\n");
+            }
+
+            content.append("\n");
+        }
+
         content.append("        ").append(dtoName).append(" requestDto = createPatch").append(entityName)
                 .append("Dto();\n");
         content.append("        ").append(entityName).append(" existingEntity = createSample").append(entityName)
@@ -616,14 +681,28 @@ public class ServiceImplTestGenerator {
                 .append("Entity();\n");
         content.append("        ").append(dtoName).append(" responseDto = createAnother").append(entityName)
                 .append("Dto();\n\n");
-        content.append("        given(").append(repositoryVar).append(".findById(id)).willReturn(Optional.of(existingEntity));\n");
+
+        if (compositePrimaryKey) {
+            content.append("        given(").append(repositoryVar)
+                    .append(".findById(expectedKey)).willReturn(Optional.of(existingEntity));\n");
+        } else {
+            content.append("        given(").append(repositoryVar)
+                    .append(".findById(id)).willReturn(Optional.of(existingEntity));\n");
+        }
+
         content.append("        given(").append(repositoryVar).append(".save(existingEntity)).willReturn(savedEntity);\n");
         content.append("        given(").append(mapperVar).append(".toDTO(savedEntity)).willReturn(responseDto);\n\n");
         content.append("        ").append(dtoName).append(" result = ").append(serviceVar)
                 .append(".update").append(entityName).append("(").append(serviceArguments)
                 .append(", requestDto);\n\n");
         content.append("        assertSame(responseDto, result);\n");
-        content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
+
+        if (compositePrimaryKey) {
+            content.append("        verify(").append(repositoryVar).append(").findById(expectedKey);\n");
+        } else {
+            content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
+        }
+
         content.append("        verify(").append(mapperVar).append(").partialUpdate(existingEntity, requestDto);\n");
         content.append("        verify(").append(repositoryVar).append(").save(existingEntity);\n");
         content.append("        verify(").append(mapperVar).append(").toDTO(savedEntity);\n");
@@ -655,16 +734,47 @@ public class ServiceImplTestGenerator {
             String primaryKeyType
     ) {
         String serviceArguments = buildServicePrimaryKeyArguments(table);
+        boolean compositePrimaryKey = hasCompositePrimaryKey(table);
 
         content.append("    @Test\n");
         content.append("    void shouldThrowWhenUpdate").append(entityName).append("CannotFindEntity() {\n");
         content.append(buildPrimaryKeyDeclarationCode(table, primaryKeyType));
+
+        if (compositePrimaryKey) {
+            content.append("        ").append(primaryKeyType).append(" expectedKey = new ")
+                    .append(primaryKeyType).append("();\n");
+
+            for (Column primaryKeyColumn : getPrimaryKeyColumns(table)) {
+                String variableName = resolvePrimaryKeyComponentVariableName(primaryKeyColumn);
+                String setterSuffix = NamingConverter.toPascalCase(variableName);
+
+                content.append("        expectedKey.set").append(setterSuffix)
+                        .append("(").append(variableName).append(");\n");
+            }
+
+            content.append("\n");
+        }
+
         content.append("        ").append(dtoName).append(" requestDto = createPatch").append(entityName)
                 .append("Dto();\n\n");
-        content.append("        given(").append(repositoryVar).append(".findById(id)).willReturn(Optional.empty());\n\n");
+
+        if (compositePrimaryKey) {
+            content.append("        given(").append(repositoryVar)
+                    .append(".findById(expectedKey)).willReturn(Optional.empty());\n\n");
+        } else {
+            content.append("        given(").append(repositoryVar)
+                    .append(".findById(id)).willReturn(Optional.empty());\n\n");
+        }
+
         content.append("        assertNotFound(() -> ").append(serviceVar).append(".update")
                 .append(entityName).append("(").append(serviceArguments).append(", requestDto));\n\n");
-        content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
+
+        if (compositePrimaryKey) {
+            content.append("        verify(").append(repositoryVar).append(").findById(expectedKey);\n");
+        } else {
+            content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
+        }
+
         content.append("        verify(").append(mapperVar).append(", never()).partialUpdate(any(), any());\n");
         content.append("        verify(").append(repositoryVar).append(", never()).save(any());\n");
         content.append("    }\n\n");
@@ -689,17 +799,49 @@ public class ServiceImplTestGenerator {
             String primaryKeyType
     ) {
         String serviceArguments = buildServicePrimaryKeyArguments(table);
+        boolean compositePrimaryKey = hasCompositePrimaryKey(table);
 
         content.append("    @Test\n");
         content.append("    void shouldDelete").append(entityName).append("WhenEntityExists() {\n");
         content.append(buildPrimaryKeyDeclarationCode(table, primaryKeyType));
+
+        if (compositePrimaryKey) {
+            content.append("        ").append(primaryKeyType).append(" expectedKey = new ")
+                    .append(primaryKeyType).append("();\n");
+
+            for (Column primaryKeyColumn : getPrimaryKeyColumns(table)) {
+                String variableName = resolvePrimaryKeyComponentVariableName(primaryKeyColumn);
+                String setterSuffix = NamingConverter.toPascalCase(variableName);
+
+                content.append("        expectedKey.set").append(setterSuffix)
+                        .append("(").append(variableName).append(");\n");
+            }
+
+            content.append("\n");
+        }
+
         content.append("        ").append(entityName).append(" existingEntity = createSample").append(entityName)
                 .append("Entity();\n\n");
-        content.append("        given(").append(repositoryVar).append(".findById(id)).willReturn(Optional.of(existingEntity));\n\n");
+
+        if (compositePrimaryKey) {
+            content.append("        given(").append(repositoryVar)
+                    .append(".findById(expectedKey)).willReturn(Optional.of(existingEntity));\n\n");
+        } else {
+            content.append("        given(").append(repositoryVar)
+                    .append(".findById(id)).willReturn(Optional.of(existingEntity));\n\n");
+        }
+
         content.append("        ").append(serviceVar).append(".delete").append(entityName)
                 .append("(").append(serviceArguments).append(");\n\n");
-        content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
-        content.append("        verify(").append(repositoryVar).append(").deleteById(id);\n");
+
+        if (compositePrimaryKey) {
+            content.append("        verify(").append(repositoryVar).append(").findById(expectedKey);\n");
+            content.append("        verify(").append(repositoryVar).append(").deleteById(expectedKey);\n");
+        } else {
+            content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
+            content.append("        verify(").append(repositoryVar).append(").deleteById(id);\n");
+        }
+
         content.append("    }\n\n");
     }
 
@@ -722,15 +864,43 @@ public class ServiceImplTestGenerator {
             String primaryKeyType
     ) {
         String serviceArguments = buildServicePrimaryKeyArguments(table);
+        boolean compositePrimaryKey = hasCompositePrimaryKey(table);
 
         content.append("    @Test\n");
         content.append("    void shouldThrowWhenDelete").append(entityName).append("CannotFindEntity() {\n");
         content.append(buildPrimaryKeyDeclarationCode(table, primaryKeyType));
-        content.append("        given(").append(repositoryVar).append(".findById(id)).willReturn(Optional.empty());\n\n");
+
+        if (compositePrimaryKey) {
+            content.append("        ").append(primaryKeyType).append(" expectedKey = new ")
+                    .append(primaryKeyType).append("();\n");
+
+            for (Column primaryKeyColumn : getPrimaryKeyColumns(table)) {
+                String variableName = resolvePrimaryKeyComponentVariableName(primaryKeyColumn);
+                String setterSuffix = NamingConverter.toPascalCase(variableName);
+
+                content.append("        expectedKey.set").append(setterSuffix)
+                        .append("(").append(variableName).append(");\n");
+            }
+
+            content.append("\n");
+            content.append("        given(").append(repositoryVar)
+                    .append(".findById(expectedKey)).willReturn(Optional.empty());\n\n");
+        } else {
+            content.append("        given(").append(repositoryVar)
+                    .append(".findById(id)).willReturn(Optional.empty());\n\n");
+        }
+
         content.append("        assertNotFound(() -> ").append(serviceVar).append(".delete")
                 .append(entityName).append("(").append(serviceArguments).append("));\n\n");
-        content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
-        content.append("        verify(").append(repositoryVar).append(", never()).deleteById(id);\n");
+
+        if (compositePrimaryKey) {
+            content.append("        verify(").append(repositoryVar).append(").findById(expectedKey);\n");
+            content.append("        verify(").append(repositoryVar).append(", never()).deleteById(expectedKey);\n");
+        } else {
+            content.append("        verify(").append(repositoryVar).append(").findById(id);\n");
+            content.append("        verify(").append(repositoryVar).append(", never()).deleteById(id);\n");
+        }
+
         content.append("    }\n\n");
     }
 
@@ -765,113 +935,18 @@ public class ServiceImplTestGenerator {
                             .append("(requestDto.get").append(fieldName).append("()))")
                             .append(".willReturn(true);\n\n");
 
-                    content.append("        assertThrows(GeneratedRuntimeException.class, () -> ")
+                    content.append("        GeneratedRuntimeException exception = ")
+                            .append("assertThrows(GeneratedRuntimeException.class, () -> ")
                             .append(serviceVar).append(".create").append(entityName)
                             .append("(requestDto));\n\n");
+
+                    content.append("        assertEquals(ErrorCodes.BAD_REQUEST, exception.getCode());\n");
+                    content.append("        assertEquals(\"").append(entityName)
+                            .append("\", exception.getEntity());\n\n");
 
                     content.append("        verify(").append(repositoryVar).append(", never()).save(any());\n");
                     content.append("    }\n\n");
                 });
-    }
-
-    /**
-     * Appends update validation (not-null) tests.
-     */
-    private void appendPatchValidationTests(
-            StringBuilder content,
-            Table table,
-            List<Field> dtoFields,
-            String entityName,
-            String dtoName,
-            String repositoryVar,
-            String mapperVar,
-            String serviceVar,
-            String primaryKeyType
-    ) {
-        String serviceArguments = buildServicePrimaryKeyArguments(table);
-
-        loadRequiredDtoFields(table, dtoFields).forEach(field -> {
-
-            String fieldName = NamingConverter.toPascalCase(field.getName());
-
-            content.append("    @Test\n");
-            content.append("    void shouldThrowWhenUpdate").append(entityName)
-                    .append(fieldName).append("IsNull() {\n");
-
-            content.append(buildPrimaryKeyDeclarationCode(table, primaryKeyType));
-
-            content.append("        ").append(dtoName).append(" requestDto = createPatch")
-                    .append(entityName).append("Dto();\n");
-            content.append("        requestDto.set").append(fieldName).append("(null);\n\n");
-
-            content.append("        given(").append(repositoryVar)
-                    .append(".findById(id)).willReturn(Optional.of(createSample")
-                    .append(entityName).append("Entity()));\n\n");
-
-            content.append("        assertThrows(IllegalArgumentException.class, () -> ")
-                    .append(serviceVar).append(".update").append(entityName)
-                    .append("(").append(serviceArguments).append(", requestDto));\n\n");
-
-            content.append("        verify(").append(mapperVar).append(", never()).partialUpdate(any(), any());\n");
-            content.append("        verify(").append(repositoryVar).append(", never()).save(any());\n");
-            content.append("    }\n\n");
-        });
-    }
-
-    /**
-     * Loads required DTO fields that actually exist in the generated DTO source.
-     *
-     * @param table current table
-     * @param dtoFields actual generated DTO fields
-     * @return dto fields that are required and safe for null-validation tests
-     */
-    private List<Field> loadRequiredDtoFields(Table table, List<Field> dtoFields) {
-        if (dtoFields == null || dtoFields.isEmpty()) {
-            return List.of();
-        }
-
-        Set<String> requiredColumnFieldNames = table.getColumns().stream()
-                .filter(Objects::nonNull)
-                .filter(column -> !column.isNullable())
-                .filter(column -> !column.isPrimaryKey())
-                .map(Column::getName)
-                .filter(Objects::nonNull)
-                .map(GeneratorSupport::unquoteIdentifier)
-                .map(NamingConverter::toCamelCase)
-                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
-
-        return dtoFields.stream()
-                .filter(Objects::nonNull)
-                .filter(field -> field.getName() != null && !field.getName().isBlank())
-                .filter(field -> requiredColumnFieldNames.contains(field.getName()))
-                .filter(field -> !"id".equals(field.getName()))
-                .filter(field -> !"dateCreated".equals(field.getName()))
-                .filter(field -> !"lastUpdated".equals(field.getName()))
-                .filter(this::canAssignNullToField)
-                .toList();
-    }
-
-    /**
-     * Determines whether the generated DTO field can safely receive null in validation tests.
-     *
-     * @param field dto field metadata
-     * @return true when null can be assigned safely
-     */
-    private boolean canAssignNullToField(Field field) {
-        if (field == null) {
-            return false;
-        }
-
-        String fieldType = normalizeJavaType(field.getType());
-
-        return !"int".equals(fieldType)
-                && !"long".equals(fieldType)
-                && !"short".equals(fieldType)
-                && !"byte".equals(fieldType)
-                && !"boolean".equals(fieldType)
-                && !"double".equals(fieldType)
-                && !"float".equals(fieldType)
-                && !"char".equals(fieldType);
     }
 
     /**
@@ -954,6 +1029,32 @@ public class ServiceImplTestGenerator {
         content.append("     */\n");
         content.append("    private ").append(dtoName).append(" ").append(methodName).append("() {\n");
         content.append("        ").append(dtoName).append(" dto = new ").append(dtoName).append("();\n");
+
+        if (hasCompositePrimaryKey(table) && !skipPrimaryKeys) {
+            String keyClassName = dtoName.replace("Dto", "Key");
+
+            content.append("        ").append(keyClassName).append(" id = new ")
+                    .append(keyClassName).append("();\n");
+
+            for (Column primaryKeyColumn : getPrimaryKeyColumns(table)) {
+                String normalizedColumnName = GeneratorSupport.unquoteIdentifier(primaryKeyColumn.getName());
+                String setterName = "set" + NamingConverter.toPascalCase(normalizedColumnName);
+                String sampleValue = sampleLiteralForColumn(primaryKeyColumn, variant);
+
+                if ("null".equals(sampleValue)) {
+                    continue;
+                }
+
+                content.append("        id.")
+                        .append(setterName)
+                        .append("(")
+                        .append(sampleValue)
+                        .append(");\n");
+            }
+
+            content.append("        dto.setId(id);\n\n");
+        }
+
         appendDtoFixtureSetterLines(content, table, dtoFields, variant, skipPrimaryKeys);
         content.append("        return dto;\n");
         content.append("    }\n\n");
@@ -1483,7 +1584,7 @@ public class ServiceImplTestGenerator {
             throw new IllegalStateException("Composite PK not supported here");
         }
 
-        return detectJavaTypeForColumn(pkColumns.get(0));
+        return detectJavaTypeForColumn(pkColumns.getFirst());
     }
 
     /**
@@ -1530,7 +1631,7 @@ public class ServiceImplTestGenerator {
      * @return true when the field should be skipped
      */
     private boolean shouldSkipField(Table table, Field field, boolean skipPrimaryKeys) {
-        if (!skipPrimaryKeys || field == null) {
+        if (field == null) {
             return false;
         }
 
@@ -1540,19 +1641,24 @@ public class ServiceImplTestGenerator {
             return false;
         }
 
-        if ("id".equals(fieldName) && hasCompositePrimaryKey(table)) {
-            return true;
-        }
+        // FIX: do NOT skip PK fields when composite primary key exists
+        boolean isCompositePrimaryKey = hasCompositePrimaryKey(table);
 
-        for (Column primaryKeyColumn : getPrimaryKeyColumns(table)) {
-            String primaryKeyFieldName = NamingConverter.decapitalizeFirstLetter(
-                    NamingConverter.toPascalCase(
-                            GeneratorSupport.unquoteIdentifier(primaryKeyColumn.getName())
-                    )
-            );
-
-            if (fieldName.equals(primaryKeyFieldName)) {
+        if (skipPrimaryKeys && !isCompositePrimaryKey) {
+            if ("id".equals(fieldName)) {
                 return true;
+            }
+
+            for (Column primaryKeyColumn : getPrimaryKeyColumns(table)) {
+                String primaryKeyFieldName = NamingConverter.decapitalizeFirstLetter(
+                        NamingConverter.toPascalCase(
+                                GeneratorSupport.unquoteIdentifier(primaryKeyColumn.getName())
+                        )
+                );
+
+                if (fieldName.equals(primaryKeyFieldName)) {
+                    return true;
+                }
             }
         }
 

@@ -15,6 +15,11 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 import java.math.BigInteger;
 
@@ -97,7 +102,7 @@ class IncomeGemiPaymentControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         IncomeGemiPaymentDto requestDto = createValidCreateIncomeGemiPaymentDto();
         requestDto.setChamberId(null);
 
@@ -124,9 +129,21 @@ class IncomeGemiPaymentControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        IncomeGemiPaymentDto requestDto = createValidCreateIncomeGemiPaymentDto();
+        requestDto.setChamberId(null);
+
+        mockMvc.perform(patch("/api/income-gemi-payment/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        IncomeGemiPaymentDto requestDto = new IncomeGemiPaymentDto();
+        IncomeGemiPaymentDto requestDto = createValidCreateIncomeGemiPaymentDto();
         IncomeGemiPaymentDto responseDto = new IncomeGemiPaymentDto();
         given(incomeGemiPaymentService.updateIncomeGemiPayment(eq(id), any(IncomeGemiPaymentDto.class))).willReturn(responseDto);
 
@@ -142,7 +159,7 @@ class IncomeGemiPaymentControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        IncomeGemiPaymentDto requestDto = new IncomeGemiPaymentDto();
+        IncomeGemiPaymentDto requestDto = createValidCreateIncomeGemiPaymentDto();
         given(incomeGemiPaymentService.updateIncomeGemiPayment(eq(id), any(IncomeGemiPaymentDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -154,6 +171,19 @@ class IncomeGemiPaymentControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        IncomeGemiPaymentDto requestDto = createValidCreateIncomeGemiPaymentDto();
+        given(incomeGemiPaymentService.updateIncomeGemiPayment(eq(id), any(IncomeGemiPaymentDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/income-gemi-payment/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -190,7 +220,7 @@ class IncomeGemiPaymentControllerTest {
         IncomeGemiPaymentDto dto = new IncomeGemiPaymentDto();
         dto.setChamberId(1);
         dto.setGemiPaymentId(new BigInteger("1"));
-        dto.setPaymentMethod("aaaaa");
+        dto.setPaymentMethod("A");
 
         return dto;
     }

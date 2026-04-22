@@ -87,7 +87,7 @@ public class SyncrunsController {
     public ResponseEntity<SyncrunsDto> patch(
             @Parameter(description = "syncruns identifier", required = true)
             @PathVariable Long id,
-            @RequestBody SyncrunsDto dto) {
+            @Valid @RequestBody SyncrunsDto dto) {
         return ResponseEntity.ok(syncrunsService.updateSyncruns(id, dto));
     }
 

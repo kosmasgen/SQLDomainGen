@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -98,7 +101,7 @@ class CompanyYpFileControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyYpFileDto requestDto = createValidCreateCompanyYpFileDto();
         requestDto.setChamberId(null);
 
@@ -125,9 +128,21 @@ class CompanyYpFileControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyYpFileDto requestDto = createValidCreateCompanyYpFileDto();
+        requestDto.setChamberId(null);
+
+        mockMvc.perform(patch("/api/company-yp-file/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyYpFileDto requestDto = new CompanyYpFileDto();
+        CompanyYpFileDto requestDto = createValidCreateCompanyYpFileDto();
         CompanyYpFileDto responseDto = new CompanyYpFileDto();
         given(companyYpFileService.updateCompanyYpFile(eq(id), any(CompanyYpFileDto.class))).willReturn(responseDto);
 
@@ -143,7 +158,7 @@ class CompanyYpFileControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyYpFileDto requestDto = new CompanyYpFileDto();
+        CompanyYpFileDto requestDto = createValidCreateCompanyYpFileDto();
         given(companyYpFileService.updateCompanyYpFile(eq(id), any(CompanyYpFileDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -155,6 +170,19 @@ class CompanyYpFileControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyYpFileDto requestDto = createValidCreateCompanyYpFileDto();
+        given(companyYpFileService.updateCompanyYpFile(eq(id), any(CompanyYpFileDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-yp-file/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -190,8 +218,8 @@ class CompanyYpFileControllerTest {
     private CompanyYpFileDto createValidCreateCompanyYpFileDto() {
         CompanyYpFileDto dto = new CompanyYpFileDto();
         dto.setChamberId(1);
-        dto.setFileName("aaaaa");
-        dto.setMimeType("aaaaa");
+        dto.setFileName("A");
+        dto.setMimeType("A");
         dto.setFileSize(1);
         dto.setOrderSeq(1);
         dto.setCompany(new CompanyDto());

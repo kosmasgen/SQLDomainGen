@@ -88,7 +88,7 @@ public class StatsExpenseController {
     public ResponseEntity<StatsExpenseDto> patch(
             @Parameter(description = "stats expense identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody StatsExpenseDto dto) {
+            @Valid @RequestBody StatsExpenseDto dto) {
         return ResponseEntity.ok(statsExpenseService.updateStatsExpense(id, dto));
     }
 

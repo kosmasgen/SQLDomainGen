@@ -88,7 +88,7 @@ public class LanguagesController {
     public ResponseEntity<LanguagesDto> patch(
             @Parameter(description = "languages identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody LanguagesDto dto) {
+            @Valid @RequestBody LanguagesDto dto) {
         return ResponseEntity.ok(languagesService.updateLanguages(id, dto));
     }
 

@@ -88,7 +88,7 @@ public class IncomeTransactionController {
     public ResponseEntity<IncomeTransactionDto> patch(
             @Parameter(description = "income transaction identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody IncomeTransactionDto dto) {
+            @Valid @RequestBody IncomeTransactionDto dto) {
         return ResponseEntity.ok(incomeTransactionService.updateIncomeTransaction(id, dto));
     }
 

@@ -17,6 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.time.LocalDateTime;
 
+import java.time.LocalDateTime;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -96,7 +98,7 @@ class SyncWatermarksControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         SyncWatermarksDto requestDto = createValidCreateSyncWatermarksDto();
         requestDto.setTableName(null);
 
@@ -123,9 +125,21 @@ class SyncWatermarksControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        Long id = 1L;
+        SyncWatermarksDto requestDto = createValidCreateSyncWatermarksDto();
+        requestDto.setTableName(null);
+
+        mockMvc.perform(patch("/api/sync-watermarks/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         Long id = 1L;
-        SyncWatermarksDto requestDto = new SyncWatermarksDto();
+        SyncWatermarksDto requestDto = createValidCreateSyncWatermarksDto();
         SyncWatermarksDto responseDto = new SyncWatermarksDto();
         given(syncWatermarksService.updateSyncWatermarks(eq(id), any(SyncWatermarksDto.class))).willReturn(responseDto);
 
@@ -141,7 +155,7 @@ class SyncWatermarksControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         Long id = 1L;
-        SyncWatermarksDto requestDto = new SyncWatermarksDto();
+        SyncWatermarksDto requestDto = createValidCreateSyncWatermarksDto();
         given(syncWatermarksService.updateSyncWatermarks(eq(id), any(SyncWatermarksDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +167,19 @@ class SyncWatermarksControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        Long id = 1L;
+        SyncWatermarksDto requestDto = createValidCreateSyncWatermarksDto();
+        given(syncWatermarksService.updateSyncWatermarks(eq(id), any(SyncWatermarksDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/sync-watermarks/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -187,7 +214,7 @@ class SyncWatermarksControllerTest {
      */
     private SyncWatermarksDto createValidCreateSyncWatermarksDto() {
         SyncWatermarksDto dto = new SyncWatermarksDto();
-        dto.setTableName("aaaaa");
+        dto.setTableName("A");
         dto.setLastSyncTimestamp(LocalDateTime.of(2025, 1, 11, 10, 0));
         dto.setUpdatedAt(LocalDateTime.of(2025, 1, 11, 10, 0));
 

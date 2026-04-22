@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,7 +105,7 @@ class BusinessLocationI18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         BusinessLocationI18nDto requestDto = createValidCreateBusinessLocationI18nDto();
         requestDto.setDescription(null);
 
@@ -129,11 +132,24 @@ class BusinessLocationI18nControllerTest {
     }
 
     @Test
-    void shouldReturnOkForPatch() throws Exception {
+    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {
         UUID businessLocationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
         BusinessLocationI18nDto requestDto = new BusinessLocationI18nDto();
+
+        mockMvc.perform(patch("/api/business-location-i18n/{businessLocationId}/{languageId}", businessLocationId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void shouldReturnOkForPatch() throws Exception {
+        UUID businessLocationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        BusinessLocationI18nDto requestDto = createValidCreateBusinessLocationI18nDto();
         BusinessLocationI18nDto responseDto = new BusinessLocationI18nDto();
         given(businessLocationI18nService.updateBusinessLocationI18n(eq(businessLocationId), eq(languageId), any(BusinessLocationI18nDto.class))).willReturn(responseDto);
 
@@ -151,7 +167,7 @@ class BusinessLocationI18nControllerTest {
         UUID businessLocationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
-        BusinessLocationI18nDto requestDto = new BusinessLocationI18nDto();
+        BusinessLocationI18nDto requestDto = createValidCreateBusinessLocationI18nDto();
         given(businessLocationI18nService.updateBusinessLocationI18n(eq(businessLocationId), eq(languageId), any(BusinessLocationI18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -163,6 +179,21 @@ class BusinessLocationI18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID businessLocationId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        BusinessLocationI18nDto requestDto = createValidCreateBusinessLocationI18nDto();
+        given(businessLocationI18nService.updateBusinessLocationI18n(eq(businessLocationId), eq(languageId), any(BusinessLocationI18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/business-location-i18n/{businessLocationId}/{languageId}", businessLocationId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -201,8 +232,8 @@ class BusinessLocationI18nControllerTest {
      */
     private BusinessLocationI18nDto createValidCreateBusinessLocationI18nDto() {
         BusinessLocationI18nDto dto = new BusinessLocationI18nDto();
-        dto.setDescription("aaaaa");
-        dto.setCode("aaaaa");
+        dto.setDescription("A");
+        dto.setCode("A");
         dto.setRecdeleted(true);
         dto.setBusinessLocation(new BusinessLocationDto());
         dto.setLanguage(new LanguagesDto());

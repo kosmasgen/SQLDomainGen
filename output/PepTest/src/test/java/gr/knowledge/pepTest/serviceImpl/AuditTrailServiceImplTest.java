@@ -2,6 +2,9 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.AuditTrail;
 import gr.knowledge.pepTest.dto.AuditTrailDto;
+import gr.knowledge.pepTest.dto.CompanyDto;
+import gr.knowledge.pepTest.dto.CompanyProfileDto;
+import gr.knowledge.pepTest.dto.CountryDto;
 import gr.knowledge.pepTest.repository.AuditTrailRepository;
 import gr.knowledge.pepTest.mapper.AuditTrailMapper;
 import java.util.UUID;
@@ -220,7 +223,10 @@ class AuditTrailServiceImplTest {
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setIp("ip-value-1");
         dto.setCompleteUri("completeUri-value-1");
+        dto.setCompany(new CompanyDto());
+        dto.setProfile(new CompanyProfileDto());
         dto.setUriPath("uriPath-value-1");
+        dto.setCountry(new CountryDto());
 
         return dto;
     }
@@ -236,7 +242,10 @@ class AuditTrailServiceImplTest {
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setIp("ip-value-2");
         dto.setCompleteUri("completeUri-value-2");
+        dto.setCompany(new CompanyDto());
+        dto.setProfile(new CompanyProfileDto());
         dto.setUriPath("uriPath-value-2");
+        dto.setCountry(new CountryDto());
 
         return dto;
     }
@@ -251,7 +260,10 @@ class AuditTrailServiceImplTest {
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setIp("ip-value-3");
         dto.setCompleteUri("completeUri-value-3");
+        dto.setCompany(new CompanyDto());
+        dto.setProfile(new CompanyProfileDto());
         dto.setUriPath("uriPath-value-3");
+        dto.setCountry(new CountryDto());
 
         return dto;
     }

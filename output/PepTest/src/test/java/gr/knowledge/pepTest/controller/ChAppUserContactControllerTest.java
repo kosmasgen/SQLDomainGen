@@ -16,6 +16,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -97,9 +100,9 @@ class ChAppUserContactControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         ChAppUserContactDto requestDto = createValidCreateChAppUserContactDto();
-        requestDto.setRecdeleted(null);
+        requestDto.setChamberAppUser(null);
 
         mockMvc.perform(post("/api/ch-app-user-contact")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -124,9 +127,21 @@ class ChAppUserContactControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        ChAppUserContactDto requestDto = createValidCreateChAppUserContactDto();
+        requestDto.setChamberAppUser(null);
+
+        mockMvc.perform(patch("/api/ch-app-user-contact/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        ChAppUserContactDto requestDto = new ChAppUserContactDto();
+        ChAppUserContactDto requestDto = createValidCreateChAppUserContactDto();
         ChAppUserContactDto responseDto = new ChAppUserContactDto();
         given(chAppUserContactService.updateChAppUserContact(eq(id), any(ChAppUserContactDto.class))).willReturn(responseDto);
 
@@ -142,7 +157,7 @@ class ChAppUserContactControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        ChAppUserContactDto requestDto = new ChAppUserContactDto();
+        ChAppUserContactDto requestDto = createValidCreateChAppUserContactDto();
         given(chAppUserContactService.updateChAppUserContact(eq(id), any(ChAppUserContactDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -154,6 +169,19 @@ class ChAppUserContactControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        ChAppUserContactDto requestDto = createValidCreateChAppUserContactDto();
+        given(chAppUserContactService.updateChAppUserContact(eq(id), any(ChAppUserContactDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/ch-app-user-contact/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

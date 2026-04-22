@@ -15,6 +15,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -96,7 +99,7 @@ class BusinessLocationControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         BusinessLocationDto requestDto = createValidCreateBusinessLocationDto();
         requestDto.setCode(null);
 
@@ -123,9 +126,21 @@ class BusinessLocationControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        BusinessLocationDto requestDto = createValidCreateBusinessLocationDto();
+        requestDto.setCode(null);
+
+        mockMvc.perform(patch("/api/business-location/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        BusinessLocationDto requestDto = new BusinessLocationDto();
+        BusinessLocationDto requestDto = createValidCreateBusinessLocationDto();
         BusinessLocationDto responseDto = new BusinessLocationDto();
         given(businessLocationService.updateBusinessLocation(eq(id), any(BusinessLocationDto.class))).willReturn(responseDto);
 
@@ -141,7 +156,7 @@ class BusinessLocationControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        BusinessLocationDto requestDto = new BusinessLocationDto();
+        BusinessLocationDto requestDto = createValidCreateBusinessLocationDto();
         given(businessLocationService.updateBusinessLocation(eq(id), any(BusinessLocationDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +168,19 @@ class BusinessLocationControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        BusinessLocationDto requestDto = createValidCreateBusinessLocationDto();
+        given(businessLocationService.updateBusinessLocation(eq(id), any(BusinessLocationDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/business-location/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -187,7 +215,7 @@ class BusinessLocationControllerTest {
      */
     private BusinessLocationDto createValidCreateBusinessLocationDto() {
         BusinessLocationDto dto = new BusinessLocationDto();
-        dto.setCode("aaaaa");
+        dto.setCode("A");
         dto.setRecdeleted(true);
 
         return dto;

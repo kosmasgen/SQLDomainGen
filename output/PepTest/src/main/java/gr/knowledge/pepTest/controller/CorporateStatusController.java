@@ -88,7 +88,7 @@ public class CorporateStatusController {
     public ResponseEntity<CorporateStatusDto> patch(
             @Parameter(description = "corporate status identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody CorporateStatusDto dto) {
+            @Valid @RequestBody CorporateStatusDto dto) {
         return ResponseEntity.ok(corporateStatusService.updateCorporateStatus(id, dto));
     }
 

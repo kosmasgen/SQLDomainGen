@@ -88,7 +88,7 @@ public class AuditTrailController {
     public ResponseEntity<AuditTrailDto> patch(
             @Parameter(description = "audit trail identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody AuditTrailDto dto) {
+            @Valid @RequestBody AuditTrailDto dto) {
         return ResponseEntity.ok(auditTrailService.updateAuditTrail(id, dto));
     }
 

@@ -88,7 +88,7 @@ public class CompanyContactMessageController {
     public ResponseEntity<CompanyContactMessageDto> patch(
             @Parameter(description = "company contact message identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody CompanyContactMessageDto dto) {
+            @Valid @RequestBody CompanyContactMessageDto dto) {
         return ResponseEntity.ok(companyContactMessageService.updateCompanyContactMessage(id, dto));
     }
 

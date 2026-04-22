@@ -66,10 +66,9 @@ public class CompanyBgCooperationI18nServiceImpl implements CompanyBgCooperation
 
     /**
      * Updates an existing company bg cooperation i18n record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the company bg cooperation i18n id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link CompanyBgCooperationI18nDto}
      */
     @Override

@@ -88,7 +88,7 @@ public class FolderController {
     public ResponseEntity<FolderDto> patch(
             @Parameter(description = "folder identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody FolderDto dto) {
+            @Valid @RequestBody FolderDto dto) {
         return ResponseEntity.ok(folderService.updateFolder(id, dto));
     }
 

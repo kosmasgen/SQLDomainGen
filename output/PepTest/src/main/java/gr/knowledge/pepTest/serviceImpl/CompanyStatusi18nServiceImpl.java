@@ -74,11 +74,10 @@ public class CompanyStatusi18nServiceImpl implements CompanyStatusi18nService {
 
     /**
      * Updates an existing company statusi18n record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param companyStatusId the companyStatusId value
      * @param languageId the languageId value
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link CompanyStatusi18nDto}
      */
     @Override
@@ -118,11 +117,11 @@ public class CompanyStatusi18nServiceImpl implements CompanyStatusi18nService {
             return;
         }
 
-        if ((dto.getId() != null ? dto.getId().getCompanyStatusId() : null) != null && dto.getChamberI18nId() != null && companyStatusi18nRepository.existsByIdCompanyStatusIdAndChamberI18nId((dto.getId() != null ? dto.getId().getCompanyStatusId() : null), dto.getChamberI18nId())) {
+        if (dto.getId() != null && dto.getId().getCompanyStatusId() != null && dto.getChamberI18nId() != null && companyStatusi18nRepository.existsByIdCompanyStatusIdAndChamberI18nId(dto.getId().getCompanyStatusId(), dto.getChamberI18nId())) {
             throw GeneratedRuntimeException.builder()
                     .code(ErrorCodes.BAD_REQUEST)
                     .entity("CompanyStatusi18n")
-                    .message("CompanyStatusi18n already exists with " + "companyStatusId=" + (dto.getId() != null ? dto.getId().getCompanyStatusId() : null) + ", " + "chamberI18nId=" + dto.getChamberI18nId())
+                    .message("CompanyStatusi18n already exists with " + "companyStatusId=" + dto.getId().getCompanyStatusId() + ", " + "chamberI18nId=" + dto.getChamberI18nId())
                     .build();
         }
     }
@@ -161,14 +160,14 @@ public class CompanyStatusi18nServiceImpl implements CompanyStatusi18nService {
      * @throws GeneratedRuntimeException if the entity already exists
      */
     private void validateCompanyStatusi18nDoesNotExist(CompanyStatusi18nDto dto) {
-        if (dto == null || (dto.getId() != null ? dto.getId().getCompanyStatusId() : null) == null || (dto.getId() != null ? dto.getId().getLanguageId() : null) == null) {
+        if (dto == null || dto.getId().getCompanyStatusId() == null || dto.getId().getLanguageId() == null) {
             return;
         }
 
-        CompanyStatusi18nKey key = buildKey((dto.getId() != null ? dto.getId().getCompanyStatusId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+        CompanyStatusi18nKey key = buildKey(dto.getId().getCompanyStatusId(), dto.getId().getLanguageId());
 
         if (companyStatusi18nRepository.existsById(key)) {
-            String compositeId = buildCompositeId((dto.getId() != null ? dto.getId().getCompanyStatusId() : null), (dto.getId() != null ? dto.getId().getLanguageId() : null));
+            String compositeId = buildCompositeId(dto.getId().getCompanyStatusId(), dto.getId().getLanguageId());
             log.warn("CompanyStatusi18n already exists with composite id: {}", compositeId);
 
             throw GeneratedRuntimeException.builder()

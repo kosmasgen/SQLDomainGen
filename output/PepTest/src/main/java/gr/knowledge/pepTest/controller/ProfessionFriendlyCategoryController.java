@@ -87,7 +87,7 @@ public class ProfessionFriendlyCategoryController {
     public ResponseEntity<ProfessionFriendlyCategoryDto> patch(
             @Parameter(description = "profession friendly category identifier", required = true)
             @PathVariable String id,
-            @RequestBody ProfessionFriendlyCategoryDto dto) {
+            @Valid @RequestBody ProfessionFriendlyCategoryDto dto) {
         return ResponseEntity.ok(professionFriendlyCategoryService.updateProfessionFriendlyCategory(id, dto));
     }
 

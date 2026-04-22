@@ -3,13 +3,13 @@
 << /Type /Catalog /Pages 2 0 R >>
 endobj
 2 0 obj
-<< /Type /Pages /Count 3 /Kids [3 0 R 5 0 R 7 0 R ] >>
+<< /Type /Pages /Count 5 /Kids [3 0 R 5 0 R 7 0 R 9 0 R 11 0 R ] >>
 endobj
 3 0 obj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /Contents 4 0 R >>
 endobj
 4 0 obj
-<< /Length 1655 >>
+<< /Length 1374 >>
 stream
 BT
 /F1 10 Tf
@@ -19,7 +19,9 @@ BT
 T*
 () Tj
 T*
-(Generated at: 2026-04-16 16:38) Tj
+(Generated at: 2026-04-22 13:13) Tj
+T*
+(Author: kosmasgenaris@knowledge.gr) Tj
 T*
 (Input file: C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql) Tj
 T*
@@ -31,79 +33,77 @@ T*
 T*
 () Tj
 T*
-(SECTION: Generation Inputs) Tj
+(SECTION: Generation Summary) Tj
 T*
 (Details:) Tj
 T*
-( - Input file: C:/Users/kosma/IdeaProjects/SQLDomainGen/input/test_script.sql) Tj
+(Parsed tables: 68) Tj
 T*
-( - Output directory: C:/Users/kosma/IdeaProjects/SQLDomainGen/output/PepTest) Tj
+(Generated files:) Tj
 T*
-( - Base package: gr.knowledge.pepTest) Tj
+(Entities: 83) Tj
 T*
-( - Parsed tables: 68) Tj
+(Dto: 67) Tj
 T*
-( - Java generation tables: 67) Tj
+(Repositories: 67) Tj
 T*
-( - Generated entity models: 67) Tj
+(Mappers: 68 \(include BaseMapper\)) Tj
 T*
-(Violations:) Tj
+(Services: 67) Tj
 T*
-( - None) Tj
+(ServiceImpls: 67) Tj
+T*
+(Controllers: 67) Tj
+T*
+(Violations: None) Tj
 T*
 () Tj
 T*
-(SECTION: Generated File Counts) Tj
+(SECTION: Infrastructure) Tj
 T*
 (Details:) Tj
 T*
-( - Expected generated table count: 67) Tj
+(Config Classes: 3) Tj
 T*
-( - Expected generated entity model count: 67) Tj
+(Exception Classes: 4) Tj
 T*
-( - Entity java files: 83) Tj
+(Build Files \(pom.xml\): 1) Tj
 T*
-( - DTO java files: 67) Tj
-T*
-( - Repository java files: 67) Tj
-T*
-( - Mapper java files: 68) Tj
-T*
-( - Service java files: 67) Tj
-T*
-( - ServiceImpl java files: 67) Tj
-T*
-( - Controller java files: 67) Tj
-T*
-(Violations:) Tj
-T*
-( - None) Tj
+(Configuration Files \(application.properties\): 1) Tj
 T*
 () Tj
 T*
-(SECTION: Liquibase Output) Tj
+(SECTION: Schema Tables) Tj
 T*
 (Details:) Tj
 T*
-( - Liquibase changelog root: C:\\Users\\kosma\\IdeaProjects\\SQLDomainGen\\output\\PepTest\\src\\main\\resour) Tj
+(1. audit_trail) Tj
 T*
-(ces\\db\\migration\\changelogs\\v0.1.0) Tj
+(2. bg_poi) Tj
 T*
-( - Liquibase xml file count: 70) Tj
+(3. bg_poi_i18n) Tj
 T*
-(Violations:) Tj
+(4. business_location) Tj
 T*
-( - None) Tj
+(5. business_location_i18n) Tj
 T*
-() Tj
+(6. ch_app_user_contact) Tj
 T*
-(SECTION: Schema Validation Checklist) Tj
+(7. ch_app_user_contact_i18n) Tj
 T*
-(Details:) Tj
+(8. chamber_app_user) Tj
 T*
-( - Total checks: 34) Tj
+(9. chamber_department) Tj
 T*
-( - 1. Checks that the schema SQL file exists) Tj
+(10. chamber_departmenti18n) Tj
+T*
+(11. company) Tj
+T*
+(12. company_article_file) Tj
+T*
+(13. company_bg_cooperation) Tj
+T*
+(14. company_bg_cooperation_i18n) Tj
 ET
 endstream
 endobj
@@ -111,101 +111,101 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /Contents 6 0 R >>
 endobj
 6 0 obj
-<< /Length 2990 >>
+<< /Length 1324 >>
 stream
 BT
 /F1 10 Tf
 50 790 Td
 14 TL
-( - 2. Checks that the generated Java root exists) Tj
+(15. company_contact_message) Tj
 T*
-( - 3. Scans generated entity source files under the entity package) Tj
+(16. company_favourites) Tj
 T*
-( - 4. Parses @Entity, @Embeddable, @Table, fields, and annotations from source files) Tj
+(17. company_file) Tj
 T*
-( - 5. Prints generated entities that still contain TODO comments) Tj
+(18. company_profession) Tj
 T*
-( - 6. Checks that each entity has @Table\(name=...\)) Tj
+(19. company_profile) Tj
 T*
-( - 7. Checks that each entity has @Id or @EmbeddedId) Tj
+(20. company_profile_i18n) Tj
 T*
-( - 8. Checks simple field-to-column mappings against SQL table columns) Tj
+(21. company_status) Tj
 T*
-( - 9. Checks embedded id fields against SQL columns) Tj
+(22. company_status_view_rules) Tj
 T*
-( - 10. Checks Java field types against SQL column types using TypeMapper) Tj
+(23. company_statusi18n) Tj
 T*
-( - 11. Checks Java field constraints against SQL column nullability, uniqueness, and length/precisio) Tj
+(24. company_title) Tj
 T*
-(n metadata) Tj
+(25. company_titlei18n) Tj
 T*
-( - 12. Checks @ManyToOne fields for @JoinColumn/@JoinColumns presence) Tj
+(26. company_view_rules) Tj
 T*
-( - 13. Checks @ManyToOne join columns exist in the owning SQL table) Tj
+(27. company_yp_article) Tj
 T*
-( - 14. Checks @ManyToOne join columns are backed by a foreign key) Tj
+(28. company_yp_article_i18n) Tj
 T*
-( - 15. Checks @OneToOne owning-side fields for @JoinColumn/@JoinColumns presence) Tj
+(29. company_yp_file) Tj
 T*
-( - 16. Checks @OneToOne join columns exist in the owning SQL table) Tj
+(30. company_yp_photo) Tj
 T*
-( - 17. Checks @OneToOne join columns are backed by a foreign key) Tj
+(31. companyi18n) Tj
 T*
-( - 18. Checks @OneToMany fields define mappedBy) Tj
+(32. corporate_status) Tj
 T*
-( - 19. Checks @OneToMany mappedBy points to a real field on the target entity) Tj
+(33. corporate_status_view_rules) Tj
 T*
-( - 20. Checks @OneToMany mappedBy points to a @ManyToOne or @OneToOne owning field) Tj
+(34. corporate_statusi18n) Tj
 T*
-( - 21. Checks owning @ManyToMany fields define @JoinTable\(name=...\)) Tj
+(35. country) Tj
 T*
-( - 22. Checks @ManyToMany join table exists in the parsed SQL schema) Tj
+(36. country_i18n) Tj
 T*
-( - 23. Checks @ManyToMany joinColumns and inverseJoinColumns exist in the join table) Tj
+(37. data_staging) Tj
 T*
-( - 24. Checks @ManyToMany join table columns are backed by foreign keys) Tj
+(38. export_comp_prod_country) Tj
 T*
-( - 25. Checks relation target entity type matches the local foreign-key target table when resolvable) Tj
+(39. export_company) Tj
 T*
-( - 26. Checks referencedColumnName matches the foreign-key target column when declared) Tj
+(40. folder) Tj
 T*
-( - 27. Ignores foreign keys pointing to external tables not present in the parsed schema) Tj
+(41. income_gemi_payment) Tj
 T*
-( - 28. Checks local foreign keys are not left as scalar fields instead of relations) Tj
+(42. income_payment_method) Tj
 T*
-( - 29. Checks local foreign keys are not missing relation fields entirely) Tj
+(43. income_transaction) Tj
 T*
-( - 30. Checks @NotNull usage against SQL column nullability) Tj
+(44. income_type) Tj
 T*
-( - 31. Checks @Size\(max=...\) against SQL varchar/char length) Tj
+(45. languages) Tj
 T*
-( - 32. Checks @Digits\(integer=..., fraction=...\) against SQL numeric precision/scale) Tj
+(46. municipality) Tj
 T*
-( - 33. Checks presence of SQL default/check metadata for future constraint validation) Tj
+(47. municipality_i18n) Tj
 T*
-( - 34. Checks for unmapped non-audit SQL columns) Tj
+(48. product) Tj
 T*
-(Violations:) Tj
+(49. producti18n) Tj
 T*
-( - None) Tj
+(50. profession) Tj
 T*
-() Tj
+(51. profession_friendly_category) Tj
 T*
-(SECTION: Generated Entity Classes With TODO Comments) Tj
+(52. profession_kind) Tj
 T*
-(Details:) Tj
+(53. profession_kindi18n) Tj
 T*
-( - Total classes with TODO: 2) Tj
+(54. profession_system) Tj
 T*
-( - gr.knowledge.pepTest.entity.ChamberAppUser) Tj
+(55. professioni18n) Tj
 T*
-( - gr.knowledge.pepTest.entity.Company) Tj
+(56. stats_expense) Tj
 T*
-(Violations:) Tj
+(57. status_history) Tj
 T*
-( - None) Tj
+(58. sync_watermarks) Tj
 T*
-() Tj
+(59. syncruns) Tj
 ET
 endstream
 endobj
@@ -213,41 +213,325 @@ endobj
 << /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /Contents 8 0 R >>
 endobj
 8 0 obj
-<< /Length 207 >>
+<< /Length 1181 >>
 stream
 BT
 /F1 10 Tf
 50 790 Td
 14 TL
-(SECTION: Schema Validation) Tj
+(60. syncruns_error_log) Tj
+T*
+(61. temporary_company) Tj
+T*
+(62. temporary_company_profession) Tj
+T*
+(63. temporary_company_title) Tj
+T*
+(64. temporary_company_titlei18n) Tj
+T*
+(65. temporary_companyi18n) Tj
+T*
+(66. user_contactinfo) Tj
+T*
+(67. user_geodata) Tj
+T*
+(68. working_hours) Tj
+T*
+(Violations: None) Tj
+T*
+() Tj
+T*
+(SECTION: Generated Models) Tj
 T*
 (Details:) Tj
 T*
-( - Schema validation executed.) Tj
+(Total models: 67) Tj
 T*
-( - No schema violations detected.) Tj
+(BgPoi) Tj
 T*
-(Violations:) Tj
+(BusinessLocation) Tj
 T*
-( - None) Tj
+(ChamberDepartment) Tj
+T*
+(CompanyContactMessage) Tj
+T*
+(CompanyStatus) Tj
+T*
+(CompanyViewRules) Tj
+T*
+(CorporateStatus) Tj
+T*
+(Country) Tj
+T*
+(DataStaging) Tj
+T*
+(Folder) Tj
+T*
+(IncomeGemiPayment) Tj
+T*
+(IncomePaymentMethod) Tj
+T*
+(IncomeType) Tj
+T*
+(Languages) Tj
+T*
+(Municipality) Tj
+T*
+(Product) Tj
+T*
+(ProfessionFriendlyCategory) Tj
+T*
+(ProfessionKind) Tj
+T*
+(ProfessionSystem) Tj
+T*
+(StatsExpense) Tj
+T*
+(SyncWatermarks) Tj
+T*
+(Syncruns) Tj
+T*
+(TemporaryCompany) Tj
+T*
+(TemporaryCompanyProfession) Tj
+T*
+(TemporaryCompanyTitle) Tj
+T*
+(TemporaryCompanyTitlei18n) Tj
+T*
+(TemporaryCompanyi18n) Tj
+T*
+(BgPoiI18n) Tj
+T*
+(BusinessLocationI18n) Tj
+T*
+(ChamberDepartmenti18n) Tj
+T*
+(CompanyStatusViewRules) Tj
+ET
+endstream
+endobj
+9 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /Contents 10 0 R >>
+endobj
+10 0 obj
+<< /Length 1116 >>
+stream
+BT
+/F1 10 Tf
+50 790 Td
+14 TL
+(CompanyStatusi18n) Tj
+T*
+(CorporateStatusViewRules) Tj
+T*
+(CorporateStatusi18n) Tj
+T*
+(CountryI18n) Tj
+T*
+(IncomeTransaction) Tj
+T*
+(MunicipalityI18n) Tj
+T*
+(Producti18n) Tj
+T*
+(Profession) Tj
+T*
+(ProfessionKindi18n) Tj
+T*
+(Professioni18n) Tj
+T*
+(AuditTrail) Tj
+T*
+(ChAppUserContact) Tj
+T*
+(ChAppUserContactI18n) Tj
+T*
+(ChamberAppUser) Tj
+T*
+(Company) Tj
+T*
+(CompanyArticleFile) Tj
+T*
+(CompanyBgCooperation) Tj
+T*
+(CompanyBgCooperationI18n) Tj
+T*
+(CompanyFavourites) Tj
+T*
+(CompanyFile) Tj
+T*
+(CompanyProfession) Tj
+T*
+(CompanyProfile) Tj
+T*
+(CompanyProfileI18n) Tj
+T*
+(CompanyTitle) Tj
+T*
+(CompanyTitlei18n) Tj
+T*
+(CompanyYpArticle) Tj
+T*
+(CompanyYpArticleI18n) Tj
+T*
+(CompanyYpFile) Tj
+T*
+(CompanyYpPhoto) Tj
+T*
+(Companyi18n) Tj
+T*
+(ExportCompProdCountry) Tj
+T*
+(ExportCompany) Tj
+T*
+(StatusHistory) Tj
+T*
+(UserContactinfo) Tj
+T*
+(UserGeodata) Tj
+T*
+(WorkingHours) Tj
+T*
+(Violations: None) Tj
+T*
+() Tj
+T*
+(SECTION: Liquibase Output) Tj
+T*
+(Details:) Tj
+T*
+(Liquibase xml files: 70) Tj
+T*
+(Violations: None) Tj
+T*
+() Tj
+T*
+(SECTION: Schema Validation Checklist) Tj
+T*
+(Details:) Tj
+ET
+endstream
+endobj
+11 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595 842] /Resources << /Font << /F1 << /Type /Font /Subtype /Type1 /BaseFont /Helvetica >> >> >> /Contents 12 0 R >>
+endobj
+12 0 obj
+<< /Length 2935 >>
+stream
+BT
+/F1 10 Tf
+50 790 Td
+14 TL
+(Total checks: 34) Tj
+T*
+(1. Checks that the schema SQL file exists) Tj
+T*
+(2. Checks that the generated Java root exists) Tj
+T*
+(3. Scans generated entity source files under the entity package) Tj
+T*
+(4. Parses @Entity, @Embeddable, @Table, fields, and annotations from source files) Tj
+T*
+(5. Prints generated entities that still contain TODO comments) Tj
+T*
+(6. Checks that each entity has @Table\(name=...\)) Tj
+T*
+(7. Checks that each entity has @Id or @EmbeddedId) Tj
+T*
+(8. Checks simple field-to-column mappings against SQL table columns) Tj
+T*
+(9. Checks embedded id fields against SQL columns) Tj
+T*
+(10. Checks Java field types against SQL column types using TypeMapper) Tj
+T*
+(11. Checks Java field constraints against SQL column nullability, uniqueness, and length/precision m) Tj
+T*
+(etadata) Tj
+T*
+(12. Checks @ManyToOne fields for @JoinColumn/@JoinColumns presence) Tj
+T*
+(13. Checks @ManyToOne join columns exist in the owning SQL table) Tj
+T*
+(14. Checks @ManyToOne join columns are backed by a foreign key) Tj
+T*
+(15. Checks @OneToOne owning-side fields for @JoinColumn/@JoinColumns presence) Tj
+T*
+(16. Checks @OneToOne join columns exist in the owning SQL table) Tj
+T*
+(17. Checks @OneToOne join columns are backed by a foreign key) Tj
+T*
+(18. Checks @OneToMany fields define mappedBy) Tj
+T*
+(19. Checks @OneToMany mappedBy points to a real field on the target entity) Tj
+T*
+(20. Checks @OneToMany mappedBy points to a @ManyToOne or @OneToOne owning field) Tj
+T*
+(21. Checks owning @ManyToMany fields define @JoinTable\(name=...\)) Tj
+T*
+(22. Checks @ManyToMany join table exists in the parsed SQL schema) Tj
+T*
+(23. Checks @ManyToMany joinColumns and inverseJoinColumns exist in the join table) Tj
+T*
+(24. Checks @ManyToMany join table columns are backed by foreign keys) Tj
+T*
+(25. Checks relation target entity type matches the local foreign-key target table when resolvable) Tj
+T*
+(26. Checks referencedColumnName matches the foreign-key target column when declared) Tj
+T*
+(27. Ignores foreign keys pointing to external tables not present in the parsed schema) Tj
+T*
+(28. Checks local foreign keys are not left as scalar fields instead of relations) Tj
+T*
+(29. Checks local foreign keys are not missing relation fields entirely) Tj
+T*
+(30. Checks @NotNull usage against SQL column nullability) Tj
+T*
+(31. Checks @Size\(max=...\) against SQL varchar/char length) Tj
+T*
+(32. Checks @Digits\(integer=..., fraction=...\) against SQL numeric precision/scale) Tj
+T*
+(33. Checks presence of SQL default/check metadata for future constraint validation) Tj
+T*
+(34. Checks for unmapped non-audit SQL columns) Tj
+T*
+(Violations: None) Tj
+T*
+() Tj
+T*
+(SECTION: Generated Entity Classes With TODO Comments) Tj
+T*
+(Details:) Tj
+T*
+(Total classes with TODO: 2) Tj
+T*
+(gr.knowledge.pepTest.entity.ChamberAppUser) Tj
+T*
+(gr.knowledge.pepTest.entity.Company) Tj
+T*
+(Violations: None) Tj
 T*
 () Tj
 ET
 endstream
 endobj
 xref
-0 9
+0 13
 0000000000 65535 f 
 0000000009 00000 n 
 0000000058 00000 n 
-0000000128 00000 n 
-0000000303 00000 n 
-0000002009 00000 n 
-0000002184 00000 n 
-0000005225 00000 n 
-0000005400 00000 n 
+0000000141 00000 n 
+0000000316 00000 n 
+0000001741 00000 n 
+0000001916 00000 n 
+0000003291 00000 n 
+0000003466 00000 n 
+0000004698 00000 n 
+0000004874 00000 n 
+0000006042 00000 n 
+0000006219 00000 n 
 trailer
-<< /Size 9 /Root 1 0 R >>
+<< /Size 13 /Root 1 0 R >>
 startxref
-5657
+9206
 %%EOF

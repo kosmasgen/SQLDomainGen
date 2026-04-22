@@ -17,6 +17,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -102,9 +105,9 @@ class CompanyProfileI18nControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyProfileI18nDto requestDto = createValidCreateCompanyProfileI18nDto();
-        requestDto.setRecDeleted(null);
+        requestDto.setCompanyProfile(null);
 
         mockMvc.perform(post("/api/company-profile-i18n")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -129,11 +132,24 @@ class CompanyProfileI18nControllerTest {
     }
 
     @Test
-    void shouldReturnOkForPatch() throws Exception {
+    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {
         UUID companyProfileId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
         CompanyProfileI18nDto requestDto = new CompanyProfileI18nDto();
+
+        mockMvc.perform(patch("/api/company-profile-i18n/{companyProfileId}/{languageId}", companyProfileId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
+    void shouldReturnOkForPatch() throws Exception {
+        UUID companyProfileId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        CompanyProfileI18nDto requestDto = createValidCreateCompanyProfileI18nDto();
         CompanyProfileI18nDto responseDto = new CompanyProfileI18nDto();
         given(companyProfileI18nService.updateCompanyProfileI18n(eq(companyProfileId), eq(languageId), any(CompanyProfileI18nDto.class))).willReturn(responseDto);
 
@@ -151,7 +167,7 @@ class CompanyProfileI18nControllerTest {
         UUID companyProfileId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
         UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
 
-        CompanyProfileI18nDto requestDto = new CompanyProfileI18nDto();
+        CompanyProfileI18nDto requestDto = createValidCreateCompanyProfileI18nDto();
         given(companyProfileI18nService.updateCompanyProfileI18n(eq(companyProfileId), eq(languageId), any(CompanyProfileI18nDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -163,6 +179,21 @@ class CompanyProfileI18nControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID companyProfileId = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        UUID languageId = UUID.fromString("223e4567-e89b-12d3-a456-426614174000");
+
+        CompanyProfileI18nDto requestDto = createValidCreateCompanyProfileI18nDto();
+        given(companyProfileI18nService.updateCompanyProfileI18n(eq(companyProfileId), eq(languageId), any(CompanyProfileI18nDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-profile-i18n/{companyProfileId}/{languageId}", companyProfileId, languageId)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test

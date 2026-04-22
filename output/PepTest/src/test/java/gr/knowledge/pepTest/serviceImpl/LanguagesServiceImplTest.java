@@ -113,6 +113,34 @@ class LanguagesServiceImplTest {
     }
 
     @Test
+    void shouldThrowBadRequestWhenCreateLanguagesWithExistingCd() {
+        LanguagesDto requestDto = createSampleLanguagesDto();
+
+        given(languagesRepository.existsByCd(requestDto.getCd())).willReturn(true);
+
+        GeneratedRuntimeException exception = assertThrows(GeneratedRuntimeException.class, () -> languagesService.createLanguages(requestDto));
+
+        assertEquals(ErrorCodes.BAD_REQUEST, exception.getCode());
+        assertEquals("Languages", exception.getEntity());
+
+        verify(languagesRepository, never()).save(any());
+    }
+
+    @Test
+    void shouldThrowBadRequestWhenCreateLanguagesWithExistingChamberLanguageId() {
+        LanguagesDto requestDto = createSampleLanguagesDto();
+
+        given(languagesRepository.existsByChamberLanguageId(requestDto.getChamberLanguageId())).willReturn(true);
+
+        GeneratedRuntimeException exception = assertThrows(GeneratedRuntimeException.class, () -> languagesService.createLanguages(requestDto));
+
+        assertEquals(ErrorCodes.BAD_REQUEST, exception.getCode());
+        assertEquals("Languages", exception.getEntity());
+
+        verify(languagesRepository, never()).save(any());
+    }
+
+    @Test
     void shouldUpdateLanguagesWhenEntityExists() {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
 

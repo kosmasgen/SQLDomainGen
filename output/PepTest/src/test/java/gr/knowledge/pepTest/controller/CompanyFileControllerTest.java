@@ -18,6 +18,9 @@ import org.springframework.test.context.bean.override.mockito.MockitoBean;
 import org.springframework.test.web.servlet.MockMvc;
 
 import java.util.List;
+import java.time.LocalDateTime;
+import java.util.UUID;
+
 import java.util.UUID;
 
 import static org.mockito.ArgumentMatchers.any;
@@ -99,7 +102,7 @@ class CompanyFileControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         CompanyFileDto requestDto = createValidCreateCompanyFileDto();
         requestDto.setFileName(null);
 
@@ -126,9 +129,21 @@ class CompanyFileControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyFileDto requestDto = createValidCreateCompanyFileDto();
+        requestDto.setFileName(null);
+
+        mockMvc.perform(patch("/api/company-file/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyFileDto requestDto = new CompanyFileDto();
+        CompanyFileDto requestDto = createValidCreateCompanyFileDto();
         CompanyFileDto responseDto = new CompanyFileDto();
         given(companyFileService.updateCompanyFile(eq(id), any(CompanyFileDto.class))).willReturn(responseDto);
 
@@ -144,7 +159,7 @@ class CompanyFileControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
-        CompanyFileDto requestDto = new CompanyFileDto();
+        CompanyFileDto requestDto = createValidCreateCompanyFileDto();
         given(companyFileService.updateCompanyFile(eq(id), any(CompanyFileDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -156,6 +171,19 @@ class CompanyFileControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        UUID id = UUID.fromString("123e4567-e89b-12d3-a456-426614174000");
+        CompanyFileDto requestDto = createValidCreateCompanyFileDto();
+        given(companyFileService.updateCompanyFile(eq(id), any(CompanyFileDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/company-file/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -190,13 +218,11 @@ class CompanyFileControllerTest {
      */
     private CompanyFileDto createValidCreateCompanyFileDto() {
         CompanyFileDto dto = new CompanyFileDto();
-        dto.setFileName("aaaaa");
+        dto.setFileName("A");
         dto.setFileSize(1);
-        dto.setBlobUri("aaaaa");
+        dto.setBlobUri("A");
         dto.setOrderSeq(1);
         dto.setCompany(new CompanyDto());
-        dto.setLanguage(new LanguagesDto());
-        dto.setCompanyProfile(new CompanyProfileDto());
         dto.setIsEmbedded(true);
 
         return dto;

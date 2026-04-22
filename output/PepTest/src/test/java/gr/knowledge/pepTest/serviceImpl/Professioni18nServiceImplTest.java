@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.Professioni18n;
 import gr.knowledge.pepTest.dto.Professioni18nDto;
+import gr.knowledge.pepTest.dto.ProfessionDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.Professioni18nRepository;
 import gr.knowledge.pepTest.mapper.Professioni18nMapper;
 import gr.knowledge.pepTest.entity.Professioni18nKey;
@@ -75,16 +77,20 @@ class Professioni18nServiceImplTest {
         id.setProfessionId(professionId);
         id.setLanguageId(languageId);
 
+        Professioni18nKey expectedKey = new Professioni18nKey();
+        expectedKey.setProfessionId(professionId);
+        expectedKey.setLanguageId(languageId);
+
         Professioni18n professioni18n = createSampleProfessioni18nEntity();
         Professioni18nDto professioni18nDto = createSampleProfessioni18nDto();
 
-        given(professioni18nRepository.findById(id)).willReturn(Optional.of(professioni18n));
+        given(professioni18nRepository.findById(expectedKey)).willReturn(Optional.of(professioni18n));
         given(professioni18nMapper.toDTO(professioni18n)).willReturn(professioni18nDto);
 
         Professioni18nDto result = professioni18nService.getProfessioni18nById(professionId, languageId);
 
         assertSame(professioni18nDto, result);
-        verify(professioni18nRepository).findById(id);
+        verify(professioni18nRepository).findById(expectedKey);
         verify(professioni18nMapper).toDTO(professioni18n);
     }
 
@@ -97,11 +103,15 @@ class Professioni18nServiceImplTest {
         id.setProfessionId(professionId);
         id.setLanguageId(languageId);
 
-        given(professioni18nRepository.findById(id)).willReturn(Optional.empty());
+        Professioni18nKey expectedKey = new Professioni18nKey();
+        expectedKey.setProfessionId(professionId);
+        expectedKey.setLanguageId(languageId);
+
+        given(professioni18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> professioni18nService.getProfessioni18nById(professionId, languageId));
 
-        verify(professioni18nRepository).findById(id);
+        verify(professioni18nRepository).findById(expectedKey);
         verify(professioni18nMapper, never()).toDTO(any(Professioni18n.class));
     }
 
@@ -133,19 +143,23 @@ class Professioni18nServiceImplTest {
         id.setProfessionId(professionId);
         id.setLanguageId(languageId);
 
+        Professioni18nKey expectedKey = new Professioni18nKey();
+        expectedKey.setProfessionId(professionId);
+        expectedKey.setLanguageId(languageId);
+
         Professioni18nDto requestDto = createPatchProfessioni18nDto();
         Professioni18n existingEntity = createSampleProfessioni18nEntity();
         Professioni18n savedEntity = createAnotherProfessioni18nEntity();
         Professioni18nDto responseDto = createAnotherProfessioni18nDto();
 
-        given(professioni18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(professioni18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
         given(professioni18nRepository.save(existingEntity)).willReturn(savedEntity);
         given(professioni18nMapper.toDTO(savedEntity)).willReturn(responseDto);
 
         Professioni18nDto result = professioni18nService.updateProfessioni18n(professionId, languageId, requestDto);
 
         assertSame(responseDto, result);
-        verify(professioni18nRepository).findById(id);
+        verify(professioni18nRepository).findById(expectedKey);
         verify(professioni18nMapper).partialUpdate(existingEntity, requestDto);
         verify(professioni18nRepository).save(existingEntity);
         verify(professioni18nMapper).toDTO(savedEntity);
@@ -161,13 +175,17 @@ class Professioni18nServiceImplTest {
         id.setProfessionId(professionId);
         id.setLanguageId(languageId);
 
+        Professioni18nKey expectedKey = new Professioni18nKey();
+        expectedKey.setProfessionId(professionId);
+        expectedKey.setLanguageId(languageId);
+
         Professioni18nDto requestDto = createPatchProfessioni18nDto();
 
-        given(professioni18nRepository.findById(id)).willReturn(Optional.empty());
+        given(professioni18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> professioni18nService.updateProfessioni18n(professionId, languageId, requestDto));
 
-        verify(professioni18nRepository).findById(id);
+        verify(professioni18nRepository).findById(expectedKey);
         verify(professioni18nMapper, never()).partialUpdate(any(), any());
         verify(professioni18nRepository, never()).save(any());
     }
@@ -181,14 +199,18 @@ class Professioni18nServiceImplTest {
         id.setProfessionId(professionId);
         id.setLanguageId(languageId);
 
+        Professioni18nKey expectedKey = new Professioni18nKey();
+        expectedKey.setProfessionId(professionId);
+        expectedKey.setLanguageId(languageId);
+
         Professioni18n existingEntity = createSampleProfessioni18nEntity();
 
-        given(professioni18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(professioni18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
 
         professioni18nService.deleteProfessioni18n(professionId, languageId);
 
-        verify(professioni18nRepository).findById(id);
-        verify(professioni18nRepository).deleteById(id);
+        verify(professioni18nRepository).findById(expectedKey);
+        verify(professioni18nRepository).deleteById(expectedKey);
     }
 
     @Test
@@ -200,12 +222,16 @@ class Professioni18nServiceImplTest {
         id.setProfessionId(professionId);
         id.setLanguageId(languageId);
 
-        given(professioni18nRepository.findById(id)).willReturn(Optional.empty());
+        Professioni18nKey expectedKey = new Professioni18nKey();
+        expectedKey.setProfessionId(professionId);
+        expectedKey.setLanguageId(languageId);
+
+        given(professioni18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> professioni18nService.deleteProfessioni18n(professionId, languageId));
 
-        verify(professioni18nRepository).findById(id);
-        verify(professioni18nRepository, never()).deleteById(id);
+        verify(professioni18nRepository).findById(expectedKey);
+        verify(professioni18nRepository, never()).deleteById(expectedKey);
     }
 
     /**
@@ -247,6 +273,13 @@ class Professioni18nServiceImplTest {
      */
     private Professioni18nDto createSampleProfessioni18nDto() {
         Professioni18nDto dto = new Professioni18nDto();
+        Professioni18nKey id = new Professioni18nKey();
+        id.setProfessionId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setProfession(new ProfessionDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setRecdeleted(true);
         dto.setDescription("description-value-1");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
@@ -263,6 +296,13 @@ class Professioni18nServiceImplTest {
      */
     private Professioni18nDto createAnotherProfessioni18nDto() {
         Professioni18nDto dto = new Professioni18nDto();
+        Professioni18nKey id = new Professioni18nKey();
+        id.setProfessionId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setProfession(new ProfessionDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setRecdeleted(false);
         dto.setDescription("description-value-2");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
@@ -279,6 +319,8 @@ class Professioni18nServiceImplTest {
      */
     private Professioni18nDto createPatchProfessioni18nDto() {
         Professioni18nDto dto = new Professioni18nDto();
+        dto.setProfession(new ProfessionDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setRecdeleted(true);
         dto.setDescription("description-value-3");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));

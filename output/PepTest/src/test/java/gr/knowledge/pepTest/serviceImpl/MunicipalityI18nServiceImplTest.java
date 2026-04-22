@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.MunicipalityI18n;
 import gr.knowledge.pepTest.dto.MunicipalityI18nDto;
+import gr.knowledge.pepTest.dto.MunicipalityDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.MunicipalityI18nRepository;
 import gr.knowledge.pepTest.mapper.MunicipalityI18nMapper;
 import gr.knowledge.pepTest.entity.MunicipalityI18nKey;
@@ -75,16 +77,20 @@ class MunicipalityI18nServiceImplTest {
         id.setMunicipalityId(municipalityId);
         id.setLanguageId(languageId);
 
+        MunicipalityI18nKey expectedKey = new MunicipalityI18nKey();
+        expectedKey.setMunicipalityId(municipalityId);
+        expectedKey.setLanguageId(languageId);
+
         MunicipalityI18n municipalityI18n = createSampleMunicipalityI18nEntity();
         MunicipalityI18nDto municipalityI18nDto = createSampleMunicipalityI18nDto();
 
-        given(municipalityI18nRepository.findById(id)).willReturn(Optional.of(municipalityI18n));
+        given(municipalityI18nRepository.findById(expectedKey)).willReturn(Optional.of(municipalityI18n));
         given(municipalityI18nMapper.toDTO(municipalityI18n)).willReturn(municipalityI18nDto);
 
         MunicipalityI18nDto result = municipalityI18nService.getMunicipalityI18nById(municipalityId, languageId);
 
         assertSame(municipalityI18nDto, result);
-        verify(municipalityI18nRepository).findById(id);
+        verify(municipalityI18nRepository).findById(expectedKey);
         verify(municipalityI18nMapper).toDTO(municipalityI18n);
     }
 
@@ -97,11 +103,15 @@ class MunicipalityI18nServiceImplTest {
         id.setMunicipalityId(municipalityId);
         id.setLanguageId(languageId);
 
-        given(municipalityI18nRepository.findById(id)).willReturn(Optional.empty());
+        MunicipalityI18nKey expectedKey = new MunicipalityI18nKey();
+        expectedKey.setMunicipalityId(municipalityId);
+        expectedKey.setLanguageId(languageId);
+
+        given(municipalityI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> municipalityI18nService.getMunicipalityI18nById(municipalityId, languageId));
 
-        verify(municipalityI18nRepository).findById(id);
+        verify(municipalityI18nRepository).findById(expectedKey);
         verify(municipalityI18nMapper, never()).toDTO(any(MunicipalityI18n.class));
     }
 
@@ -133,19 +143,23 @@ class MunicipalityI18nServiceImplTest {
         id.setMunicipalityId(municipalityId);
         id.setLanguageId(languageId);
 
+        MunicipalityI18nKey expectedKey = new MunicipalityI18nKey();
+        expectedKey.setMunicipalityId(municipalityId);
+        expectedKey.setLanguageId(languageId);
+
         MunicipalityI18nDto requestDto = createPatchMunicipalityI18nDto();
         MunicipalityI18n existingEntity = createSampleMunicipalityI18nEntity();
         MunicipalityI18n savedEntity = createAnotherMunicipalityI18nEntity();
         MunicipalityI18nDto responseDto = createAnotherMunicipalityI18nDto();
 
-        given(municipalityI18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(municipalityI18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
         given(municipalityI18nRepository.save(existingEntity)).willReturn(savedEntity);
         given(municipalityI18nMapper.toDTO(savedEntity)).willReturn(responseDto);
 
         MunicipalityI18nDto result = municipalityI18nService.updateMunicipalityI18n(municipalityId, languageId, requestDto);
 
         assertSame(responseDto, result);
-        verify(municipalityI18nRepository).findById(id);
+        verify(municipalityI18nRepository).findById(expectedKey);
         verify(municipalityI18nMapper).partialUpdate(existingEntity, requestDto);
         verify(municipalityI18nRepository).save(existingEntity);
         verify(municipalityI18nMapper).toDTO(savedEntity);
@@ -161,13 +175,17 @@ class MunicipalityI18nServiceImplTest {
         id.setMunicipalityId(municipalityId);
         id.setLanguageId(languageId);
 
+        MunicipalityI18nKey expectedKey = new MunicipalityI18nKey();
+        expectedKey.setMunicipalityId(municipalityId);
+        expectedKey.setLanguageId(languageId);
+
         MunicipalityI18nDto requestDto = createPatchMunicipalityI18nDto();
 
-        given(municipalityI18nRepository.findById(id)).willReturn(Optional.empty());
+        given(municipalityI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> municipalityI18nService.updateMunicipalityI18n(municipalityId, languageId, requestDto));
 
-        verify(municipalityI18nRepository).findById(id);
+        verify(municipalityI18nRepository).findById(expectedKey);
         verify(municipalityI18nMapper, never()).partialUpdate(any(), any());
         verify(municipalityI18nRepository, never()).save(any());
     }
@@ -181,14 +199,18 @@ class MunicipalityI18nServiceImplTest {
         id.setMunicipalityId(municipalityId);
         id.setLanguageId(languageId);
 
+        MunicipalityI18nKey expectedKey = new MunicipalityI18nKey();
+        expectedKey.setMunicipalityId(municipalityId);
+        expectedKey.setLanguageId(languageId);
+
         MunicipalityI18n existingEntity = createSampleMunicipalityI18nEntity();
 
-        given(municipalityI18nRepository.findById(id)).willReturn(Optional.of(existingEntity));
+        given(municipalityI18nRepository.findById(expectedKey)).willReturn(Optional.of(existingEntity));
 
         municipalityI18nService.deleteMunicipalityI18n(municipalityId, languageId);
 
-        verify(municipalityI18nRepository).findById(id);
-        verify(municipalityI18nRepository).deleteById(id);
+        verify(municipalityI18nRepository).findById(expectedKey);
+        verify(municipalityI18nRepository).deleteById(expectedKey);
     }
 
     @Test
@@ -200,12 +222,16 @@ class MunicipalityI18nServiceImplTest {
         id.setMunicipalityId(municipalityId);
         id.setLanguageId(languageId);
 
-        given(municipalityI18nRepository.findById(id)).willReturn(Optional.empty());
+        MunicipalityI18nKey expectedKey = new MunicipalityI18nKey();
+        expectedKey.setMunicipalityId(municipalityId);
+        expectedKey.setLanguageId(languageId);
+
+        given(municipalityI18nRepository.findById(expectedKey)).willReturn(Optional.empty());
 
         assertNotFound(() -> municipalityI18nService.deleteMunicipalityI18n(municipalityId, languageId));
 
-        verify(municipalityI18nRepository).findById(id);
-        verify(municipalityI18nRepository, never()).deleteById(id);
+        verify(municipalityI18nRepository).findById(expectedKey);
+        verify(municipalityI18nRepository, never()).deleteById(expectedKey);
     }
 
     /**
@@ -247,6 +273,13 @@ class MunicipalityI18nServiceImplTest {
      */
     private MunicipalityI18nDto createSampleMunicipalityI18nDto() {
         MunicipalityI18nDto dto = new MunicipalityI18nDto();
+        MunicipalityI18nKey id = new MunicipalityI18nKey();
+        id.setMunicipalityId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("123e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setMunicipality(new MunicipalityDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDescription("description-value-1");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
@@ -263,6 +296,13 @@ class MunicipalityI18nServiceImplTest {
      */
     private MunicipalityI18nDto createAnotherMunicipalityI18nDto() {
         MunicipalityI18nDto dto = new MunicipalityI18nDto();
+        MunicipalityI18nKey id = new MunicipalityI18nKey();
+        id.setMunicipalityId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        id.setLanguageId(UUID.fromString("223e4567-e89b-12d3-a456-426614174000"));
+        dto.setId(id);
+
+        dto.setMunicipality(new MunicipalityDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDescription("description-value-2");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
@@ -279,6 +319,8 @@ class MunicipalityI18nServiceImplTest {
      */
     private MunicipalityI18nDto createPatchMunicipalityI18nDto() {
         MunicipalityI18nDto dto = new MunicipalityI18nDto();
+        dto.setMunicipality(new MunicipalityDto());
+        dto.setLanguage(new LanguagesDto());
         dto.setDescription("description-value-3");
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));

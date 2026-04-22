@@ -323,8 +323,6 @@ public class ServiceGenerator {
         String validateDoesNotExistMethodName = "validate" + entityName + "DoesNotExist";
         String buildKeyMethodName = "buildKey";
         String buildCompositeIdMethodName = "buildCompositeId";
-        String validateNotNullFieldsMethodName = "validateNotNullFields";
-        String validateRequiredMethodName = "validateRequired";
 
         StringBuilder stringBuilder = new StringBuilder();
 
@@ -388,7 +386,6 @@ public class ServiceGenerator {
                 mapperVariableName,
                 findByIdOrThrowMethodName,
                 buildCompositeIdMethodName,
-                validateNotNullFieldsMethodName,
                 primaryKeyType,
                 primaryKeyColumns,
                 compositePrimaryKey
@@ -413,18 +410,6 @@ public class ServiceGenerator {
                 dtoName,
                 repositoryVariableName,
                 compositePrimaryKey
-        );
-
-        appendValidateRequiredMethod(
-                stringBuilder,
-                validateRequiredMethodName
-        );
-        appendValidateNotNullFieldsMethod(
-                stringBuilder,
-                table,
-                dtoName,
-                validateNotNullFieldsMethodName,
-                validateRequiredMethodName
         );
 
         appendFindByIdOrThrowServiceMethod(
@@ -821,7 +806,6 @@ public class ServiceGenerator {
      * @param mapperVariableName mapper variable name
      * @param findByIdOrThrowMethodName helper method name
      * @param buildCompositeIdMethodName composite id helper method name
-     * @param validateNotNullFieldsMethodName not-null validation helper method name
      * @param primaryKeyType primary key simple type or composite key type
      * @param primaryKeyColumns primary key columns
      * @param compositePrimaryKey true when the entity uses a composite primary key
@@ -835,7 +819,6 @@ public class ServiceGenerator {
             String mapperVariableName,
             String findByIdOrThrowMethodName,
             String buildCompositeIdMethodName,
-            String validateNotNullFieldsMethodName,
             String primaryKeyType,
             List<Column> primaryKeyColumns,
             boolean compositePrimaryKey
@@ -882,7 +865,6 @@ public class ServiceGenerator {
 
         stringBuilder.append("        ").append(entityName).append(" existingEntity = ")
                 .append(findByIdOrThrowMethodName).append("(").append(idArguments).append(");\n");
-        stringBuilder.append("        ").append(validateNotNullFieldsMethodName).append("(dto);\n");
         stringBuilder.append("        ").append(mapperVariableName)
                 .append(".partialUpdate(existingEntity, dto);\n");
         stringBuilder.append("        ").append(entityName).append(" savedEntity = ")
@@ -893,196 +875,6 @@ public class ServiceGenerator {
         stringBuilder.append("    }\n\n");
     }
 
-    /**
-     * Appends the not-null validation helper method for update operations.
-     *
-     * @param stringBuilder target source builder
-     * @param table source table metadata
-     * @param dtoName dto simple name
-     * @param validateNotNullFieldsMethodName helper method name
-     * @param validateRequiredMethodName required value validation helper method name
-     */
-    private void appendValidateNotNullFieldsMethod(
-            StringBuilder stringBuilder,
-            Table table,
-            String dtoName,
-            String validateNotNullFieldsMethodName,
-            String validateRequiredMethodName
-    ) {
-        List<Column> requiredDtoColumns = getRequiredDtoValidationColumns(table);
-
-        stringBuilder.append("    /**\n");
-        stringBuilder.append("     * Validates that required DTO fields are not null.\n");
-        stringBuilder.append("     * <p>\n");
-        stringBuilder.append("     * This validation applies only to fields marked as required\n");
-        stringBuilder.append("     * in the generated DTO.\n");
-        stringBuilder.append("     *\n");
-        stringBuilder.append("     * @param dto dto to validate\n");
-        stringBuilder.append("     * @throws IllegalArgumentException if dto is null or a required field is null\n");
-        stringBuilder.append("     */\n");
-        stringBuilder.append("    private void ")
-                .append(validateNotNullFieldsMethodName)
-                .append("(")
-                .append(dtoName)
-                .append(" dto) {\n");
-
-        stringBuilder.append("        if (dto == null) {\n");
-        stringBuilder.append("            throw new IllegalArgumentException(\"DTO must not be null\");\n");
-        stringBuilder.append("        }\n\n");
-
-        for (Column column : requiredDtoColumns) {
-            String dtoAccessExpression = buildDtoValidationAccessExpressionForColumn(table, column);
-            String readableName = resolveDtoValidationFieldLabel(table, column);
-
-            stringBuilder.append("        ")
-                    .append(validateRequiredMethodName)
-                    .append("(")
-                    .append(dtoAccessExpression)
-                    .append(", \"")
-                    .append(readableName)
-                    .append("\");\n");
-        }
-
-        if (!requiredDtoColumns.isEmpty()) {
-            stringBuilder.append("\n");
-        }
-
-        stringBuilder.append("    }\n\n");
-    }
-
-
-
-    /**
-     * Appends the generic required value validation helper method.
-     *
-     * @param stringBuilder target source builder
-     * @param validateRequiredMethodName helper method name
-     */
-    private void appendValidateRequiredMethod(
-            StringBuilder stringBuilder,
-            String validateRequiredMethodName
-    ) {
-        stringBuilder.append("    /**\n");
-        stringBuilder.append("     * Validates that the given value is not null.\n");
-        stringBuilder.append("     *\n");
-        stringBuilder.append("     * @param value value to validate\n");
-        stringBuilder.append("     * @param fieldName field name used in error messages\n");
-        stringBuilder.append("     * @throws IllegalArgumentException if value is null\n");
-        stringBuilder.append("     */\n");
-        stringBuilder.append("    private void ")
-                .append(validateRequiredMethodName)
-                .append("(Object value, String fieldName) {\n");
-        stringBuilder.append("        if (value == null) {\n");
-        stringBuilder.append("            throw new IllegalArgumentException(fieldName + \" must not be null\");\n");
-        stringBuilder.append("        }\n");
-        stringBuilder.append("    }\n\n");
-    }
-
-
-    /**
-     * Returns the columns that should be validated as required DTO fields.
-     *
-     * @param table table metadata
-     * @return required DTO validation columns
-     */
-    private List<Column> getRequiredDtoValidationColumns(Table table) {
-        return table.getColumns().stream()
-                .filter(Objects::nonNull)
-                .filter(column -> !column.isNullable())
-                .filter(column -> !column.isPrimaryKey())
-                .filter(column -> !isAuditManagedColumn(column))
-                .toList();
-    }
-
-    /**
-     * Returns whether the column is managed internally and should not be treated as a required DTO field.
-     *
-     * @param column table column
-     * @return true when the column should be excluded from required DTO validation
-     */
-    private boolean isAuditManagedColumn(Column column) {
-        if (column == null || column.getName() == null || column.getName().isBlank()) {
-            return false;
-        }
-
-        String normalizedColumnName = GeneratorSupport.unquoteIdentifier(column.getName());
-        if (normalizedColumnName == null || normalizedColumnName.isBlank()) {
-            return false;
-        }
-
-        String lowerCaseColumnName = normalizedColumnName.toLowerCase();
-
-        return "date_created".equals(lowerCaseColumnName)
-                || "last_updated".equals(lowerCaseColumnName);
-    }
-
-    /**
-     * Resolves the readable DTO field label used in validation error messages.
-     *
-     * @param table table metadata
-     * @param column table column
-     * @return readable DTO field label
-     */
-    private String resolveDtoValidationFieldLabel(Table table, Column column) {
-        String columnName = column == null
-                ? null
-                : GeneratorSupport.unquoteIdentifier(column.getName());
-
-        if (columnName == null || columnName.isBlank()) {
-            return "field";
-        }
-
-        boolean isRelationship = table.getRelationships() != null
-                && table.getRelationships().stream().anyMatch(relationship ->
-                columnName.equalsIgnoreCase(relationship.getSourceColumn())
-                        && relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
-        );
-
-        if (isRelationship) {
-            String relationName = NamingConverter.toCamelCase(
-                    columnName.replaceAll("_id$", "")
-            );
-            return NamingConverter.toLogLabel(relationName);
-        }
-
-        String fieldName = NamingConverter.toCamelCase(columnName);
-        return NamingConverter.toLogLabel(fieldName);
-    }
-
-    /**
-     * Builds the DTO access expression used by required field validation.
-     *
-     * @param table table metadata
-     * @param column table column
-     * @return DTO access expression for validation
-     */
-    private String buildDtoValidationAccessExpressionForColumn(Table table, Column column) {
-        String columnName = column == null
-                ? null
-                : GeneratorSupport.unquoteIdentifier(column.getName());
-
-        if (columnName == null || columnName.isBlank()) {
-            return "null";
-        }
-
-        boolean isRelationship = table.getRelationships() != null
-                && table.getRelationships().stream().anyMatch(relationship ->
-                columnName.equalsIgnoreCase(relationship.getSourceColumn())
-                        && relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
-        );
-
-        if (isRelationship) {
-            String relationName = NamingConverter.toCamelCase(
-                    columnName.replaceAll("_id$", "")
-            );
-            String relationGetterSuffix = NamingConverter.toPascalCase(relationName);
-            return "dto.get" + relationGetterSuffix + "()";
-        }
-
-        String fieldName = NamingConverter.toCamelCase(columnName);
-        String getterSuffix = NamingConverter.toPascalCase(fieldName);
-        return "dto.get" + getterSuffix + "()";
-    }
 
     /**
      * Creates a new entity record.
@@ -1719,10 +1511,15 @@ public class ServiceGenerator {
             );
             String repositoryMethodName = buildExistsByMethodName(table, List.of(column.getName()));
             String dtoAccessExpression = buildDtoAccessExpressionForColumn(table, column, compositePrimaryKey);
+            String dtoPresenceCheckExpression = buildDtoPresenceCheckExpressionForColumn(
+                    table,
+                    column,
+                    compositePrimaryKey
+            );
 
             stringBuilder.append("        if (")
-                    .append(dtoAccessExpression)
-                    .append(" != null && ")
+                    .append(dtoPresenceCheckExpression)
+                    .append(" && ")
                     .append(repositoryVariableName)
                     .append(".")
                     .append(repositoryMethodName)
@@ -1769,9 +1566,14 @@ public class ServiceGenerator {
         }
 
         String nullCheckExpression = uniqueColumns.stream()
-                .map(column -> buildDtoAccessExpressionForColumn(table, column, compositePrimaryKey) + " != null")
+                .map(column -> buildDtoPresenceCheckExpressionForColumn(table, column, compositePrimaryKey))
                 .reduce((left, right) -> left + " && " + right)
                 .orElse("");
+
+        if (compositePrimaryKey && !nullCheckExpression.isBlank()) {
+            nullCheckExpression = "dto.getId() != null && " + nullCheckExpression;
+        }
+
 
         String repositoryMethodName = buildExistsByMethodName(table, uniqueConstraint.getColumns());
 
@@ -1801,6 +1603,54 @@ public class ServiceGenerator {
                 .append(" already exists with \" + ").append(messageExpression).append(")\n");
         stringBuilder.append("                    .build();\n");
         stringBuilder.append("        }\n");
+    }
+
+    /**
+     * Builds the DTO presence-check expression for a column.
+     *
+     * @param table table metadata
+     * @param column table column
+     * @param compositePrimaryKey true when the entity uses a composite primary key
+     * @return DTO presence-check expression
+     */
+    private String buildDtoPresenceCheckExpressionForColumn(
+            Table table,
+            Column column,
+            boolean compositePrimaryKey
+    ) {
+        String columnName = column == null
+                ? ""
+                : GeneratorSupport.unquoteIdentifier(column.getName());
+
+        if (columnName == null || columnName.isBlank()) {
+            return "false";
+        }
+
+        String getterSuffix = NamingConverter.toPascalCase(
+                NamingConverter.toCamelCase(columnName)
+        );
+
+        if (compositePrimaryKey && isPrimaryKeyColumn(table, columnName)) {
+            return "dto.getId().get" + getterSuffix + "() != null";
+        }
+
+        boolean isRelationship = table.getRelationships() != null &&
+                table.getRelationships().stream().anyMatch(rel ->
+                        columnName.equalsIgnoreCase(rel.getSourceColumn())
+                                && rel.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                );
+
+        if (isRelationship) {
+            String relationName = NamingConverter.toCamelCase(
+                    columnName.replaceAll("_id$", "")
+            );
+            String relationGetterSuffix = NamingConverter.toPascalCase(relationName);
+
+            return "dto.get" + relationGetterSuffix + "() != null && dto.get"
+                    + relationGetterSuffix + "().getId() != null";
+        }
+
+        return "dto.get" + getterSuffix + "() != null";
     }
 
     /**

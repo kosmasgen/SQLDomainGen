@@ -8,7 +8,6 @@ import lombok.NoArgsConstructor;
 import java.util.UUID;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import gr.knowledge.pepTest.dto.ChamberAppUserDto;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 

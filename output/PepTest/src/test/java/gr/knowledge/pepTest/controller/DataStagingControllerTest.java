@@ -17,6 +17,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import java.util.List;
 import java.time.LocalDateTime;
 
+import java.time.LocalDateTime;
+
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.BDDMockito.given;
@@ -96,7 +98,7 @@ class DataStagingControllerTest {
     }
 
     @Test
-    void shouldReturnUnprocessableEntityForCreateWhenValidationFails() throws Exception {
+    void shouldReturnUnprocessableEntityForCreateValidationFailure() throws Exception {
         DataStagingDto requestDto = createValidCreateDataStagingDto();
         requestDto.setLegacyTableName(null);
 
@@ -123,9 +125,21 @@ class DataStagingControllerTest {
     }
 
     @Test
+    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {
+        Long id = 1L;
+        DataStagingDto requestDto = createValidCreateDataStagingDto();
+        requestDto.setLegacyTableName(null);
+
+        mockMvc.perform(patch("/api/data-staging/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isUnprocessableEntity());
+    }
+
+    @Test
     void shouldReturnOkForPatch() throws Exception {
         Long id = 1L;
-        DataStagingDto requestDto = new DataStagingDto();
+        DataStagingDto requestDto = createValidCreateDataStagingDto();
         DataStagingDto responseDto = new DataStagingDto();
         given(dataStagingService.updateDataStaging(eq(id), any(DataStagingDto.class))).willReturn(responseDto);
 
@@ -141,7 +155,7 @@ class DataStagingControllerTest {
     @Test
     void shouldReturnNotFoundForPatch() throws Exception {
         Long id = 1L;
-        DataStagingDto requestDto = new DataStagingDto();
+        DataStagingDto requestDto = createValidCreateDataStagingDto();
         given(dataStagingService.updateDataStaging(eq(id), any(DataStagingDto.class)))
                 .willThrow(GeneratedRuntimeException.builder()
                         .code(ErrorCodes.NOT_FOUND)
@@ -153,6 +167,19 @@ class DataStagingControllerTest {
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(requestDto)))
                 .andExpect(status().isNotFound());
+    }
+
+    @Test
+    void shouldReturnInternalServerErrorForPatchWhenServiceThrowsUnexpectedException() throws Exception {
+        Long id = 1L;
+        DataStagingDto requestDto = createValidCreateDataStagingDto();
+        given(dataStagingService.updateDataStaging(eq(id), any(DataStagingDto.class)))
+                .willThrow(new RuntimeException("Unexpected error"));
+
+        mockMvc.perform(patch("/api/data-staging/{id}", id)
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(requestDto)))
+                .andExpect(status().isInternalServerError());
     }
 
     @Test
@@ -187,12 +214,12 @@ class DataStagingControllerTest {
      */
     private DataStagingDto createValidCreateDataStagingDto() {
         DataStagingDto dto = new DataStagingDto();
-        dto.setLegacyTableName("aaaaa");
-        dto.setLegacyRecordId("aaaaa");
-        dto.setRawData("test");
+        dto.setLegacyTableName("A");
+        dto.setLegacyRecordId("A");
+        dto.setRawData("A");
         dto.setLegacyUpdatedAt(LocalDateTime.of(2025, 1, 11, 10, 0));
         dto.setPulledAt(LocalDateTime.of(2025, 1, 11, 10, 0));
-        dto.setStatus("aaaaa");
+        dto.setStatus("A");
 
         return dto;
     }

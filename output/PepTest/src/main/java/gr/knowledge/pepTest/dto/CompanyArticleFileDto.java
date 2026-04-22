@@ -6,9 +6,7 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 import java.util.UUID;
-import gr.knowledge.pepTest.dto.CompanyYpArticleDto;
 import jakarta.validation.constraints.NotNull;
-import gr.knowledge.pepTest.dto.CompanyFileDto;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
 

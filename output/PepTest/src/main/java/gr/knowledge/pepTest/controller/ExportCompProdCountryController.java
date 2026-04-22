@@ -88,7 +88,7 @@ public class ExportCompProdCountryController {
     public ResponseEntity<ExportCompProdCountryDto> patch(
             @Parameter(description = "export comp prod country identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody ExportCompProdCountryDto dto) {
+            @Valid @RequestBody ExportCompProdCountryDto dto) {
         return ResponseEntity.ok(exportCompProdCountryService.updateExportCompProdCountry(id, dto));
     }
 

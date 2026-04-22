@@ -94,7 +94,7 @@ public class CorporateStatusViewRulesController {
             @PathVariable UUID corporateStatusId,
             @Parameter(description = "company view rules id identifier", required = true)
             @PathVariable UUID companyViewRulesId,
-            @RequestBody CorporateStatusViewRulesDto dto) {
+            @Valid @RequestBody CorporateStatusViewRulesDto dto) {
         return ResponseEntity.ok(corporateStatusViewRulesService.updateCorporateStatusViewRules(corporateStatusId, companyViewRulesId, dto));
     }
 

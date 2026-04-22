@@ -88,7 +88,7 @@ public class BgPoiI18nController {
     public ResponseEntity<BgPoiI18nDto> patch(
             @Parameter(description = "bg poi i18n identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody BgPoiI18nDto dto) {
+            @Valid @RequestBody BgPoiI18nDto dto) {
         return ResponseEntity.ok(bgPoiI18nService.updateBgPoiI18n(id, dto));
     }
 

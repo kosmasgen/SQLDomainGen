@@ -87,7 +87,7 @@ public class SyncWatermarksController {
     public ResponseEntity<SyncWatermarksDto> patch(
             @Parameter(description = "sync watermarks identifier", required = true)
             @PathVariable Long id,
-            @RequestBody SyncWatermarksDto dto) {
+            @Valid @RequestBody SyncWatermarksDto dto) {
         return ResponseEntity.ok(syncWatermarksService.updateSyncWatermarks(id, dto));
     }
 

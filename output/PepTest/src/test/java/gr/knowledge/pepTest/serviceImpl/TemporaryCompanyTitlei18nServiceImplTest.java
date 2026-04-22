@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.TemporaryCompanyTitlei18n;
 import gr.knowledge.pepTest.dto.TemporaryCompanyTitlei18nDto;
+import gr.knowledge.pepTest.dto.TemporaryCompanyTitleDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.TemporaryCompanyTitlei18nRepository;
 import gr.knowledge.pepTest.mapper.TemporaryCompanyTitlei18nMapper;
 import java.math.BigInteger;
@@ -228,7 +230,9 @@ class TemporaryCompanyTitlei18nServiceImplTest {
         TemporaryCompanyTitlei18nDto dto = new TemporaryCompanyTitlei18nDto();
         dto.setId(new BigInteger("1"));
         dto.setVersion(new BigInteger("1"));
+        dto.setCompanyTitle(new TemporaryCompanyTitleDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
+        dto.setLanguage(new LanguagesDto());
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setRecdeleted(new BigInteger("1"));
         dto.setTitle("title-value-1");
@@ -248,7 +252,9 @@ class TemporaryCompanyTitlei18nServiceImplTest {
         TemporaryCompanyTitlei18nDto dto = new TemporaryCompanyTitlei18nDto();
         dto.setId(new BigInteger("2"));
         dto.setVersion(new BigInteger("2"));
+        dto.setCompanyTitle(new TemporaryCompanyTitleDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
+        dto.setLanguage(new LanguagesDto());
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setRecdeleted(new BigInteger("2"));
         dto.setTitle("title-value-2");
@@ -267,7 +273,9 @@ class TemporaryCompanyTitlei18nServiceImplTest {
     private TemporaryCompanyTitlei18nDto createPatchTemporaryCompanyTitlei18nDto() {
         TemporaryCompanyTitlei18nDto dto = new TemporaryCompanyTitlei18nDto();
         dto.setVersion(new BigInteger("3"));
+        dto.setCompanyTitle(new TemporaryCompanyTitleDto());
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
+        dto.setLanguage(new LanguagesDto());
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setRecdeleted(new BigInteger("3"));
         dto.setTitle("title-value-3");

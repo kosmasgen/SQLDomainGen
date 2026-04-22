@@ -2,6 +2,8 @@ package gr.knowledge.pepTest.serviceImpl;
 
 import gr.knowledge.pepTest.entity.CompanyBgCooperationI18n;
 import gr.knowledge.pepTest.dto.CompanyBgCooperationI18nDto;
+import gr.knowledge.pepTest.dto.CompanyBgCooperationDto;
+import gr.knowledge.pepTest.dto.LanguagesDto;
 import gr.knowledge.pepTest.repository.CompanyBgCooperationI18nRepository;
 import gr.knowledge.pepTest.mapper.CompanyBgCooperationI18nMapper;
 import java.util.UUID;
@@ -221,6 +223,8 @@ class CompanyBgCooperationI18nServiceImplTest {
         dto.setDateCreated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 1, 10, 0, 0));
         dto.setRecdeleted(true);
+        dto.setCooperation(new CompanyBgCooperationDto());
+        dto.setLanguage(new LanguagesDto());
 
         return dto;
     }
@@ -237,6 +241,8 @@ class CompanyBgCooperationI18nServiceImplTest {
         dto.setDateCreated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 2, 10, 0, 0));
         dto.setRecdeleted(false);
+        dto.setCooperation(new CompanyBgCooperationDto());
+        dto.setLanguage(new LanguagesDto());
 
         return dto;
     }
@@ -252,6 +258,8 @@ class CompanyBgCooperationI18nServiceImplTest {
         dto.setDateCreated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setLastUpdated(LocalDateTime.of(2025, 1, 3, 10, 0, 0));
         dto.setRecdeleted(true);
+        dto.setCooperation(new CompanyBgCooperationDto());
+        dto.setLanguage(new LanguagesDto());
 
         return dto;
     }

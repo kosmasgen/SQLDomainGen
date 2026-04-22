@@ -87,7 +87,7 @@ public class WorkingHoursController {
     public ResponseEntity<WorkingHoursDto> patch(
             @Parameter(description = "working hours identifier", required = true)
             @PathVariable Long id,
-            @RequestBody WorkingHoursDto dto) {
+            @Valid @RequestBody WorkingHoursDto dto) {
         return ResponseEntity.ok(workingHoursService.updateWorkingHours(id, dto));
     }
 

@@ -10,9 +10,6 @@ import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import java.time.LocalDateTime;
 import com.fasterxml.jackson.annotation.JsonFormat;
-import gr.knowledge.pepTest.dto.CompanyDto;
-import gr.knowledge.pepTest.dto.LanguagesDto;
-import gr.knowledge.pepTest.dto.CompanyProfileDto;
 
 /**
  * Data transfer object for CompanyFile.

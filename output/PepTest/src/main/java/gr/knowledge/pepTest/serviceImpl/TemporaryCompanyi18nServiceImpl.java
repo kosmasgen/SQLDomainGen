@@ -66,10 +66,9 @@ public class TemporaryCompanyi18nServiceImpl implements TemporaryCompanyi18nServ
 
     /**
      * Updates an existing temporary companyi18n record.
-     * <p>
-     * Only non null fields from the DTO are applied to the existing entity.
+     *
      * @param id the temporary companyi18n id
-     * @param dto input payload with partial fields
+     * @param dto input payload
      * @return updated {@link TemporaryCompanyi18nDto}
      */
     @Override

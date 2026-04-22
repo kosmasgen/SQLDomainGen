@@ -88,7 +88,7 @@ public class ProductController {
     public ResponseEntity<ProductDto> patch(
             @Parameter(description = "product identifier", required = true)
             @PathVariable UUID id,
-            @RequestBody ProductDto dto) {
+            @Valid @RequestBody ProductDto dto) {
         return ResponseEntity.ok(productService.updateProduct(id, dto));
     }
 
