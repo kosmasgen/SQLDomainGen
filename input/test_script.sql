@@ -1,3 +1,8 @@
+-- pep_schema.bg_poi definition
+
+-- Drop table
+
+-- DROP TABLE bg_poi;
 CREATE TABLE pep_schema.bg_poi (
                                    id uuid DEFAULT gen_random_uuid() NOT NULL,
                                    chamber_id int4 NOT NULL,
@@ -8,9 +13,11 @@ CREATE TABLE pep_schema.bg_poi (
                                    longitude varchar(255) NOT NULL,
                                    CONSTRAINT pk_bg_poi PRIMARY KEY (id)
 );
+-- pep_schema.business_location definition
 
+-- Drop table
 
-
+-- DROP TABLE pep_schema.business_location
 CREATE TABLE pep_schema.business_location (
                                               id uuid DEFAULT gen_random_uuid() NOT NULL,
                                               code varchar(255) NOT NULL,
@@ -22,7 +29,11 @@ CREATE TABLE pep_schema.business_location (
 );
 
 
+-- pep_schema.bg_poi definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.bg_poi
 CREATE TABLE pep_schema.chamber_department (
                                                id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                chamber_department_id int4 NULL,
@@ -37,6 +48,11 @@ CREATE TABLE pep_schema.chamber_department (
 
 
 
+-- pep_schema.company_status definition
+
+-- Drop table
+
+-- DROP TABLE pep_schema.company_status
 CREATE TABLE pep_schema.company_contact_message (
                                                     id uuid NOT NULL,
                                                     full_name varchar(100) NULL,
@@ -47,11 +63,11 @@ CREATE TABLE pep_schema.company_contact_message (
                                                     company_id uuid NULL,
                                                     CONSTRAINT company_contact_message_pkey PRIMARY KEY (id)
 );
+-- pep_schema.company_status definition
 
+-- Drop table
 
-
-
-
+-- DROP TABLE pep_schema.company_status
 CREATE TABLE pep_schema.company_status (
                                            id uuid DEFAULT gen_random_uuid() NOT NULL,
                                            chamber_id int4 NOT NULL,
@@ -63,7 +79,11 @@ CREATE TABLE pep_schema.company_status (
                                            CONSTRAINT uk_company_status UNIQUE (chamber_id, chamber_company_status_id)
 );
 
+-- pep_schema.company_view_rules definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_view_rules
 CREATE TABLE pep_schema.company_view_rules (
                                                id uuid NOT NULL,
                                                date_created timestamp DEFAULT now() NOT NULL,
@@ -76,10 +96,6 @@ CREATE TABLE pep_schema.company_view_rules (
                                                show_business_information bool NULL,
                                                CONSTRAINT company_view_rules_pkey PRIMARY KEY (id)
 );
-
-
-
-
 CREATE TABLE pep_schema.corporate_status (
                                              id uuid DEFAULT gen_random_uuid() NOT NULL,
                                              chamber_corporate_status_id int4 NULL,
@@ -92,8 +108,11 @@ CREATE TABLE pep_schema.corporate_status (
                                              CONSTRAINT uk_corporate_status UNIQUE (chamber_id, chamber_corporate_status_id)
 );
 
+-- pep_schema.country definition
 
+-- Drop table
 
+-- DROP TABLE pep_schema.country
 CREATE TABLE pep_schema.country (
                                     id uuid DEFAULT gen_random_uuid() NOT NULL,
                                     date_created timestamp DEFAULT now() NULL,
@@ -106,7 +125,11 @@ CREATE TABLE pep_schema.country (
                                     CONSTRAINT pk_country PRIMARY KEY (id)
 );
 
+-- pep_schema.data_staging definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.data_staging
 CREATE TABLE pep_schema.data_staging (
                                          id bigserial NOT NULL,
                                          legacy_table_name varchar(100) NOT NULL,
@@ -122,7 +145,11 @@ CREATE INDEX idx_staging_status ON pep_schema.data_staging USING btree (status, 
 CREATE INDEX idx_staging_table_status ON pep_schema.data_staging USING btree (legacy_table_name, status);
 
 
+-- pep_schema.folder definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.folder
 CREATE TABLE pep_schema.folder (
                                    id uuid DEFAULT gen_random_uuid() NOT NULL,
                                    descr text NOT NULL,
@@ -134,7 +161,11 @@ CREATE TABLE pep_schema.folder (
 );
 
 
+-- pep_schema.income_gemi_payment definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.income_gemi_payment
 CREATE TABLE pep_schema.income_gemi_payment (
                                                 id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                 chamber_id int4 NOT NULL,
@@ -168,7 +199,11 @@ CREATE INDEX idx_gemi_pay_comp ON pep_schema.income_gemi_payment USING btree (co
 CREATE INDEX idx_gemi_pay_dt ON pep_schema.income_gemi_payment USING btree (sale_ts);
 
 
+-- pep_schema.income_payment_method definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.income_payment_method
 CREATE TABLE pep_schema.income_payment_method (
                                                   id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                   chamber_id int4 NOT NULL,
@@ -182,7 +217,11 @@ CREATE TABLE pep_schema.income_payment_method (
 
 
 
+-- pep_schema.income_payment_method definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.income_payment_method
 CREATE TABLE pep_schema.income_type (
                                         id uuid DEFAULT gen_random_uuid() NOT NULL,
                                         chamber_id int4 NOT NULL,
@@ -195,7 +234,11 @@ CREATE TABLE pep_schema.income_type (
                                         CONSTRAINT uk_income_type UNIQUE (chamber_id, chamber_type_id)
 );
 
+-- pep_schema.languages definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.languages
 CREATE TABLE pep_schema.languages (
                                       id uuid DEFAULT gen_random_uuid() NOT NULL,
                                       chamber_id int4 NOT NULL,
@@ -207,7 +250,11 @@ CREATE TABLE pep_schema.languages (
                                       CONSTRAINT uk_languages_cd UNIQUE (cd)
 );
 
+-- pep_schema.municipality definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.municipality
 CREATE TABLE pep_schema.municipality (
                                          id uuid DEFAULT gen_random_uuid() NOT NULL,
                                          chamber_id int8 NULL,
@@ -222,7 +269,11 @@ CREATE TABLE pep_schema.municipality (
                                          CONSTRAINT municipality_pkey PRIMARY KEY (id)
 );
 
+-- pep_schema.product definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.product
 CREATE TABLE pep_schema.product (
                                     id uuid DEFAULT gen_random_uuid() NOT NULL,
                                     chamber_id int4 NULL,
@@ -237,7 +288,11 @@ CREATE TABLE pep_schema.product (
                                     CONSTRAINT product_pkey PRIMARY KEY (id)
 );
 
+-- pep_schema.profession_friendly_category definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.profession_friendly_category
 CREATE TABLE pep_schema.profession_friendly_category (
                                                          id varchar(100) NOT NULL,
                                                          descr varchar(1000) NULL,
@@ -245,7 +300,11 @@ CREATE TABLE pep_schema.profession_friendly_category (
 );
 
 
+-- pep_schema.profession_kind definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.profession_kind
 CREATE TABLE pep_schema.profession_kind (
                                             id uuid DEFAULT gen_random_uuid() NOT NULL,
                                             chamber_id int4 NOT NULL,
@@ -259,7 +318,11 @@ CREATE TABLE pep_schema.profession_kind (
 );
 
 
+-- pep_schema.profession_system definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.profession_system
 CREATE TABLE pep_schema.profession_system (
                                               id uuid DEFAULT gen_random_uuid() NOT NULL,
                                               chamber_id int4 NOT NULL,
@@ -274,7 +337,11 @@ CREATE TABLE pep_schema.profession_system (
 );
 
 
+-- pep_schema.stats_expense definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.stats_expense
 CREATE TABLE pep_schema.stats_expense (
                                           id uuid DEFAULT gen_random_uuid() NOT NULL,
                                           chamber_id int4 NOT NULL,
@@ -292,7 +359,11 @@ CREATE INDEX idx_stats_expense ON pep_schema.stats_expense USING btree (group_de
 CREATE INDEX idx_stats_expenseer ON pep_schema.stats_expense USING btree (chamber_id);
 
 
+-- pep_schema.sync_watermarks definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.sync_watermarks
 CREATE TABLE pep_schema.sync_watermarks (
                                             id bigserial NOT NULL,
                                             table_name varchar(100) NOT NULL,
@@ -303,7 +374,11 @@ CREATE TABLE pep_schema.sync_watermarks (
 );
 
 
+-- pep_schema.syncruns definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.syncruns
 CREATE TABLE pep_schema.syncruns (
                                      id bigint NOT NULL,
                                      last_run timestamp NULL,
@@ -312,6 +387,11 @@ CREATE TABLE pep_schema.syncruns (
                                      CONSTRAINT pk_syncruns PRIMARY KEY (id)
 );
 
+-- pep_schema.syncruns_error_log definition
+
+-- Drop table
+
+-- DROP TABLE pep_schema.syncruns_error_log
 CREATE TABLE pep_schema.syncruns_error_log (
                                                id serial4 NOT NULL,
                                                date_created timestamp DEFAULT now() NOT NULL,
@@ -323,7 +403,11 @@ CREATE TABLE pep_schema.syncruns_error_log (
 );
 
 
+-- pep_schema.temporary_company definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.temporary_company
 CREATE TABLE pep_schema.temporary_company (
                                               id numeric(19) NOT NULL,
                                               "version" numeric(19) NOT NULL,
@@ -480,7 +564,11 @@ CREATE TABLE pep_schema.temporary_company (
 );
 
 
+-- pep_schema.temporary_company_profession definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.temporary_company_profession
 CREATE TABLE pep_schema.temporary_company_profession (
                                                          id numeric(19) NOT NULL,
                                                          "version" numeric(19) NOT NULL,
@@ -497,7 +585,11 @@ CREATE TABLE pep_schema.temporary_company_profession (
                                                          gemi_last_updated date NULL,
                                                          CONSTRAINT pk_company_profession PRIMARY KEY (id)
 );
+-- pep_schema.temporary_company_title definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.temporary_company_title
 CREATE TABLE pep_schema.temporary_company_title (
                                                     id numeric(19) NOT NULL,
                                                     "version" numeric(19) NOT NULL,
@@ -519,7 +611,11 @@ CREATE TABLE pep_schema.temporary_company_title (
                                                     CONSTRAINT pk_temporary_company_title PRIMARY KEY (id)
 );
 
+-- pep_schema.temporary_company_titlei18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.temporary_company_titlei18n
 CREATE TABLE pep_schema.temporary_company_titlei18n (
                                                         id numeric(19) NOT NULL,
                                                         "version" numeric(19) NOT NULL,
@@ -543,7 +639,11 @@ CREATE TABLE pep_schema.temporary_company_titlei18n (
 
 
 
+-- pep_schema.temporary_companyi18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.temporary_companyi18n
 CREATE TABLE pep_schema.temporary_companyi18n (
                                                   id numeric(19) NOT NULL,
                                                   "version" numeric(19) NOT NULL,
@@ -572,7 +672,11 @@ CREATE TABLE pep_schema.temporary_companyi18n (
                                                           REFERENCES pep_schema.languages(id)
 );
 
+-- pep_schema.bg_poi_i18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.bg_poi_i18n
 CREATE TABLE pep_schema.bg_poi_i18n (
                                         id uuid DEFAULT gen_random_uuid() NOT NULL,
                                         date_created timestamp DEFAULT now() NOT NULL,
@@ -586,7 +690,11 @@ CREATE TABLE pep_schema.bg_poi_i18n (
                                         CONSTRAINT fk_poi_id FOREIGN KEY (poi_id) REFERENCES pep_schema.bg_poi(id)
 );
 
+-- pep_schema.business_location_i18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.business_location_i18n
 CREATE TABLE pep_schema.business_location_i18n (
                                                    description varchar(255) NOT NULL,
                                                    code varchar(255) NOT NULL,
@@ -599,7 +707,11 @@ CREATE TABLE pep_schema.business_location_i18n (
                                                    CONSTRAINT fk_business_location FOREIGN KEY (business_location_id) REFERENCES pep_schema.business_location(id) ON DELETE CASCADE,
                                                    CONSTRAINT fk_business_location_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
+-- pep_schema.chamber_departmenti18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.chamber_departmenti18n
 CREATE TABLE pep_schema.chamber_departmenti18n (
                                                    department_id uuid NOT NULL,
                                                    language_id uuid NOT NULL,
@@ -613,7 +725,11 @@ CREATE TABLE pep_schema.chamber_departmenti18n (
                                                    CONSTRAINT fk_chamber_dep_i18n FOREIGN KEY (department_id) REFERENCES pep_schema.chamber_department(id),
                                                    CONSTRAINT fk_chamber_dep_i18n_lang FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
+-- pep_schema.company_status_view_rules definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_status_view_rules
 CREATE TABLE pep_schema.company_status_view_rules (
                                                       company_status_id uuid NOT NULL,
                                                       company_view_rules_id uuid NOT NULL,
@@ -628,7 +744,11 @@ CREATE INDEX idx_company_status_view_rules_company_status_id ON pep_schema.compa
 CREATE INDEX idx_company_status_view_rules_company_view_rules_id ON pep_schema.company_status_view_rules USING btree (company_view_rules_id);
 CREATE INDEX idx_company_status_view_rules_exclude_companies ON pep_schema.company_status_view_rules USING btree (exclude_companies) WHERE (exclude_companies = true);
 
+-- pep_schema.company_statusi18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_statusi18n
 CREATE TABLE pep_schema.company_statusi18n (
                                                company_status_id uuid NOT NULL,
                                                language_id uuid NOT NULL,
@@ -642,7 +762,11 @@ CREATE TABLE pep_schema.company_statusi18n (
                                                CONSTRAINT fk_co_status_i18n FOREIGN KEY (company_status_id) REFERENCES pep_schema.company_status(id),
                                                CONSTRAINT fk_co_status_i18n_lang FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
+-- pep_schema.corporate_status_view_rules definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.corporate_status_view_rules
 CREATE TABLE pep_schema.corporate_status_view_rules (
                                                         corporate_status_id uuid NOT NULL,
                                                         company_view_rules_id uuid NOT NULL,
@@ -659,7 +783,11 @@ CREATE INDEX idx_corporate_status_view_rules_corporate_status_id ON pep_schema.c
 CREATE INDEX idx_corporate_status_view_rules_exclude_companies ON pep_schema.corporate_status_view_rules USING btree (exclude_companies) WHERE (exclude_companies = true);
 CREATE INDEX idx_corporate_status_view_rules_show_contact_info ON pep_schema.corporate_status_view_rules USING btree (show_contact_info) WHERE (show_contact_info = false);
 
+-- pep_schema.corporate_statusi18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.corporate_statusi18n
 CREATE TABLE pep_schema.corporate_statusi18n (
                                                  corporate_status_id uuid NOT NULL,
                                                  language_id uuid NOT NULL,
@@ -676,7 +804,11 @@ CREATE TABLE pep_schema.corporate_statusi18n (
 );
 
 
+-- pep_schema.country_i18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.country_i18n
 CREATE TABLE pep_schema.country_i18n (
                                          country_id uuid NOT NULL,
                                          language_id uuid NOT NULL,
@@ -692,7 +824,11 @@ CREATE TABLE pep_schema.country_i18n (
 );
 
 
+-- pep_schema.income_transaction definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.income_transaction
 CREATE TABLE pep_schema.income_transaction (
                                                id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                chamber_id int4 NOT NULL,
@@ -726,7 +862,11 @@ CREATE INDEX idx_in_trans_pay ON pep_schema.income_transaction USING btree (inco
 CREATE INDEX idx_in_trans_type ON pep_schema.income_transaction USING btree (income_type_id);
 
 
+-- pep_schema.municipality_i18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.municipality_i18n
 CREATE TABLE pep_schema.municipality_i18n (
                                               municipality_id uuid NOT NULL,
                                               language_id uuid NOT NULL,
@@ -741,7 +881,11 @@ CREATE TABLE pep_schema.municipality_i18n (
                                               CONSTRAINT fk_municipality_i18n_lang FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
 
+-- pep_schema.producti18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.producti18n
 CREATE TABLE pep_schema.producti18n (
                                         "version" int4 NOT NULL,
                                         description varchar(500) NOT NULL,
@@ -757,7 +901,11 @@ CREATE TABLE pep_schema.producti18n (
                                         CONSTRAINT fk_producti18n_product FOREIGN KEY (product_id) REFERENCES pep_schema.product(id)
 );
 
+-- pep_schema.profession definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.profession
 CREATE TABLE pep_schema.profession (
                                        id uuid DEFAULT gen_random_uuid() NOT NULL,
                                        chamber_id int4 NOT NULL,
@@ -785,7 +933,11 @@ CREATE INDEX "profession_recdeleted_IDX" ON pep_schema.profession USING btree (r
 
 
 
+-- pep_schema.profession_kindi18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.profession_kindi18n
 CREATE TABLE pep_schema.profession_kindi18n (
                                                 profession_kind_id uuid NOT NULL,
                                                 language_id uuid NOT NULL,
@@ -799,7 +951,11 @@ CREATE TABLE pep_schema.profession_kindi18n (
                                                 CONSTRAINT fk_prof_kind_i18n FOREIGN KEY (profession_kind_id) REFERENCES pep_schema.profession_kind(id),
                                                 CONSTRAINT fk_prof_kind_i18n_lang FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
+-- pep_schema.professioni18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.professioni18n
 CREATE TABLE pep_schema.professioni18n (
                                            profession_id uuid NOT NULL,
                                            language_id uuid NOT NULL,
@@ -819,7 +975,11 @@ CREATE INDEX "professioni18n_last_updated_IDX" ON pep_schema.professioni18n USIN
 CREATE INDEX "professioni18n_recdeleted_IDX" ON pep_schema.professioni18n USING btree (recdeleted);
 
 
+-- pep_schema.audit_trail definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.audit_trail
 CREATE TABLE pep_schema.audit_trail (
                                         id uuid DEFAULT gen_random_uuid() NOT NULL,
                                         date_created timestamp DEFAULT now() NOT NULL,
@@ -837,7 +997,11 @@ CREATE TABLE pep_schema.audit_trail (
 CREATE INDEX idx_audit_trail_uri_path ON pep_schema.audit_trail USING btree (uri_path);
 
 
+-- pep_schema.ch_app_user_contact definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.ch_app_user_contact
 CREATE TABLE pep_schema.ch_app_user_contact (
                                                 id uuid NOT NULL,
                                                 date_created timestamp DEFAULT now() NULL,
@@ -862,7 +1026,11 @@ CREATE TABLE pep_schema.ch_app_user_contact (
                                                 CONSTRAINT fk_ch_app_user_contact_chamber_app_user
                                                     FOREIGN KEY (chamber_app_user_id) REFERENCES pep_schema.chamber_app_user(id)
 );
+-- pep_schema.ch_app_user_contact_i18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.ch_app_user_contact_i18n
 CREATE TABLE pep_schema.ch_app_user_contact_i18n (
                                                      ch_app_user_contact_id uuid NOT NULL,
                                                      language_id uuid NOT NULL,
@@ -875,7 +1043,11 @@ CREATE TABLE pep_schema.ch_app_user_contact_i18n (
                                                      CONSTRAINT fk_ch_app_user_contact FOREIGN KEY (ch_app_user_contact_id) REFERENCES pep_schema.ch_app_user_contact(id),
                                                      CONSTRAINT fk_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
+-- pep_schema.chamber_app_user definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.chamber_app_user
 CREATE TABLE pep_schema.chamber_app_user (
                                              id uuid NOT NULL,
                                              date_created timestamp DEFAULT CURRENT_TIMESTAMP NULL,
@@ -896,7 +1068,11 @@ CREATE TABLE pep_schema.chamber_app_user (
 
 
 
+-- pep_schema.company definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company
 CREATE TABLE pep_schema.company (
                                     id uuid NOT NULL,
                                     afm varchar(9) NULL,
@@ -995,7 +1171,11 @@ CREATE INDEX idx_company_status ON pep_schema.company USING btree (company_statu
 
 
 
+-- pep_schema.company_article_file definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_article_file
 CREATE TABLE pep_schema.company_article_file (
                                                  id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                  article_id uuid NOT NULL,
@@ -1007,7 +1187,11 @@ CREATE TABLE pep_schema.company_article_file (
                                                  CONSTRAINT fk_article FOREIGN KEY (article_id) REFERENCES pep_schema.company_yp_article(id),
                                                  CONSTRAINT fk_file FOREIGN KEY (file_id) REFERENCES pep_schema.company_file(id)
 );
+-- pep_schema.company_bg_cooperation definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_bg_cooperation
 CREATE TABLE pep_schema.company_bg_cooperation (
                                                    id uuid NOT NULL,
                                                    chamber_id int4 NULL,
@@ -1021,7 +1205,11 @@ CREATE TABLE pep_schema.company_bg_cooperation (
                                                    CONSTRAINT fk_company_bg_cooperation_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
                                                    CONSTRAINT fk_company_bg_cooperation_coop_company FOREIGN KEY (coop_company_id) REFERENCES pep_schema.company(id)
 );
+-- pep_schema.company_bg_cooperation_i18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_bg_cooperation_i18n
 CREATE TABLE pep_schema.company_bg_cooperation_i18n (
                                                         id uuid NOT NULL,
                                                         description varchar(1000) NULL,
@@ -1034,7 +1222,11 @@ CREATE TABLE pep_schema.company_bg_cooperation_i18n (
                                                         CONSTRAINT fk_cooperation_id FOREIGN KEY (cooperation_id) REFERENCES pep_schema.company_bg_cooperation(id),
                                                         CONSTRAINT fk_language_id FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
+-- pep_schema.company_favourites definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_favourites
 CREATE TABLE pep_schema.company_favourites (
                                                id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                company_id uuid NOT NULL,
@@ -1048,7 +1240,11 @@ CREATE TABLE pep_schema.company_favourites (
                                                CONSTRAINT fk_company_favourites_favourite FOREIGN KEY (favourite_company_id) REFERENCES pep_schema.company(id),
                                                CONSTRAINT fk_company_favourites_profile FOREIGN KEY (favourite_profile_id) REFERENCES pep_schema.company_profile(id)
 );
+-- pep_schema.company_file definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_file
 CREATE TABLE pep_schema.company_file (
                                          id uuid NOT NULL,
                                          chamber_id int4 NULL,
@@ -1070,7 +1266,11 @@ CREATE TABLE pep_schema.company_file (
                                          CONSTRAINT fk_company_file_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id),
                                          CONSTRAINT fk_company_profile FOREIGN KEY (company_profile_id) REFERENCES pep_schema.company_profile(id)
 );
+-- pep_schema.company_profession definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_profession
 CREATE TABLE pep_schema.company_profession (
                                                id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                chamber_id int4 NOT NULL,
@@ -1100,7 +1300,11 @@ CREATE INDEX idx_cp_chamber_profession_idx ON pep_schema.company_profession USIN
 
 
 
+-- pep_schema.company_profile definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_profile
 CREATE TABLE pep_schema.company_profile (
                                             id uuid NOT NULL,
                                             "name" varchar(1000) NOT NULL,
@@ -1127,7 +1331,11 @@ CREATE TABLE pep_schema.company_profile (
                                             CONSTRAINT fk_company_profile_business_location FOREIGN KEY (business_location_id) REFERENCES pep_schema.business_location(id),
                                             CONSTRAINT fk_company_profile_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );
+-- pep_schema.company_profile_i18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_profile_i18n
 CREATE TABLE pep_schema.company_profile_i18n (
                                                  company_profile_id uuid NOT NULL,
                                                  language_id uuid NOT NULL,
@@ -1143,7 +1351,11 @@ CREATE TABLE pep_schema.company_profile_i18n (
                                                  CONSTRAINT fk_company_profile_i18n_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id),
                                                  CONSTRAINT fk_company_profile_i18n_profile FOREIGN KEY (company_profile_id) REFERENCES pep_schema.company_profile(id)
 );
+-- pep_schema.company_title definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_title
 CREATE TABLE pep_schema.company_title (
                                           id uuid DEFAULT gen_random_uuid() NOT NULL,
                                           chamber_id int4 NOT NULL,
@@ -1159,7 +1371,11 @@ CREATE TABLE pep_schema.company_title (
 );
 CREATE INDEX "company_title_company_id_IDX" ON pep_schema.company_title USING btree (company_id);
 
+-- pep_schema.company_titlei18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_titlei18n
 CREATE TABLE pep_schema.company_titlei18n (
                                               company_title_id uuid NOT NULL,
                                               language_id uuid NOT NULL,
@@ -1182,6 +1398,12 @@ CREATE INDEX "company_titlei18n_company_title_id_IDX"
 CREATE INDEX company_titlei18n_title_idx
     ON pep_schema.company_titlei18n USING btree (title);
 
+
+-- pep_schema.company_yp_article definition
+
+-- Drop table
+
+-- DROP TABLE pep_schema.company_yp_article
 CREATE TABLE pep_schema.company_yp_article (
                                                id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                chamber_id int4 NULL,
@@ -1204,7 +1426,11 @@ CREATE TABLE pep_schema.company_yp_article (
 
 
 
+-- pep_schema.company_yp_article_i18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_yp_article_i18n
 CREATE TABLE pep_schema.company_yp_article_i18n (
                                                     company_article_id uuid NOT NULL,
                                                     title text NULL,
@@ -1217,7 +1443,11 @@ CREATE TABLE pep_schema.company_yp_article_i18n (
                                                     CONSTRAINT fk_company_article_i18n_company_article FOREIGN KEY (company_article_id) REFERENCES pep_schema.company_yp_article(id),
                                                     CONSTRAINT fk_company_article_i18n_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
+-- pep_schema.company_yp_file definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_yp_file
 CREATE TABLE pep_schema.company_yp_file (
                                             id uuid NOT NULL,
                                             chamber_id int4 NOT NULL,
@@ -1236,7 +1466,11 @@ CREATE TABLE pep_schema.company_yp_file (
                                             CONSTRAINT fk_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
                                             CONSTRAINT fk_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
 );
+-- pep_schema.company_yp_photo definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.company_yp_photo
 CREATE TABLE pep_schema.company_yp_photo (
                                              id uuid DEFAULT gen_random_uuid() NOT NULL,
                                              chamber_id int4 NOT NULL,
@@ -1254,7 +1488,11 @@ CREATE TABLE pep_schema.company_yp_photo (
                                              CONSTRAINT pk_company_photo PRIMARY KEY (id),
                                              CONSTRAINT fk_company_photo FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );
+-- pep_schema.companyi18n definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.companyi18n
 CREATE TABLE pep_schema.companyi18n (
                                         company_id uuid NOT NULL,
                                         language_id uuid NOT NULL,
@@ -1276,7 +1514,11 @@ CREATE TABLE pep_schema.companyi18n (
 
 
 
+-- pep_schema.export_comp_prod_country definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.export_comp_prod_country
 CREATE TABLE pep_schema.export_comp_prod_country (
                                                      id uuid DEFAULT gen_random_uuid() NOT NULL,
                                                      export_company_id uuid NOT NULL,
@@ -1293,7 +1535,11 @@ CREATE TABLE pep_schema.export_comp_prod_country (
                                                      CONSTRAINT fk_export_comp_prod_country_product FOREIGN KEY (product_id) REFERENCES pep_schema.product(id)
 );
 
+-- pep_schema.export_company definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.export_company
 CREATE TABLE pep_schema.export_company (
                                            id uuid DEFAULT gen_random_uuid() NOT NULL,
                                            date_created timestamp NOT NULL,
@@ -1309,7 +1555,11 @@ CREATE TABLE pep_schema.export_company (
 
 
 
+-- pep_schema.status_history definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.status_history
 CREATE TABLE pep_schema.status_history (
                                            id uuid DEFAULT gen_random_uuid() NOT NULL,
                                            chamber_id int4 NOT NULL,
@@ -1334,7 +1584,11 @@ CREATE TABLE pep_schema.status_history (
 CREATE INDEX sh_company_id_idx ON pep_schema.status_history USING btree (company_id);
 
 
+-- pep_schema.user_contactinfo definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.user_contactinfo
 CREATE TABLE pep_schema.user_contactinfo (
                                              id uuid DEFAULT gen_random_uuid() NOT NULL,
                                              chamber_id int4 NULL,
@@ -1352,7 +1606,11 @@ CREATE TABLE pep_schema.user_contactinfo (
 
 
 
+-- pep_schema.user_geodata definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.user_geodata
 CREATE TABLE pep_schema.user_geodata (
                                          id uuid DEFAULT gen_random_uuid() NOT NULL,
                                          chamber_id int4 NULL,
@@ -1365,7 +1623,11 @@ CREATE TABLE pep_schema.user_geodata (
                                          CONSTRAINT user_geodata_pkey PRIMARY KEY (id),
                                          CONSTRAINT fk_user_geodata_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );
+-- pep_schema.working_hours definition
 
+-- Drop table
+
+-- DROP TABLE pep_schema.working_hours
 CREATE TABLE pep_schema.working_hours (
                                           id int8 GENERATED ALWAYS AS IDENTITY( INCREMENT BY 1 MINVALUE 1
                                               MAXVALUE 9223372036854775807 START 1 CACHE 1 NO CYCLE) NOT NULL,
@@ -1379,4 +1641,3 @@ CREATE TABLE pep_schema.working_hours (
                                           CONSTRAINT fk_working_hours_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
                                           CONSTRAINT fk_working_hours_profile FOREIGN KEY (profile_id) REFERENCES pep_schema.company_profile(id)
 );
-

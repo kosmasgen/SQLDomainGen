@@ -606,6 +606,7 @@ value
 
 
 
+
 expressionList
     : expression (',' expression)*
     ;
@@ -709,6 +710,15 @@ NUMBER
     ;
 
 DIGIT : [0-9] ;
+
+LINE_COMMENT
+    : '--' ~[\r\n]* -> skip
+    ;
+
+BLOCK_COMMENT
+    : '/*' .*? '*/' -> skip
+    ;
+
 
 // Παραβλέπει κενά διαστήματα
 WS
