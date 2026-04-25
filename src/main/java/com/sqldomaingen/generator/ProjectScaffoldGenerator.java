@@ -53,6 +53,7 @@ public class ProjectScaffoldGenerator {
         writePom(projectRoot, groupId, artifactId, overwrite);
         writeApplication(projectRoot, pkg, overwrite);
         createApplicationProperties(projectRoot, artifactId, defaultSchemaName, overwrite);
+        writeGitignore(projectRoot, overwrite);
 
         GeneratorSupport.ensureDirectory(resolveBaseJavaDir(projectRoot, pkg, true));
 
@@ -499,5 +500,25 @@ springdoc.writer-with-order-by-keys=true
         }
     }
 
-}
+    /**
+     * Generates a minimal .gitignore file for the project.
+     *
+     * @param projectRoot project root directory
+     * @param overwrite whether to overwrite existing file
+     */
+    private void writeGitignore(Path projectRoot, boolean overwrite) {
+        Path gitignore = projectRoot.resolve(".gitignore");
 
+        String content = """
+target/
+*.class
+*.jar
+*.log
+
+.idea/
+*.iml
+""";
+
+        GeneratorSupport.writeFile(gitignore, content, overwrite);
+    }
+}
