@@ -264,13 +264,19 @@ public class IncomeTransactionController {
     private final IncomeTransactionService incomeTransactionService;
 
     /**
-     * Retrieves all income transactions.
-     * @return list of IncomeTransactionDto
+     * Creates a new income transaction record.
+     * @param dto income transaction payload
+     * @return created IncomeTransactionDto
      */
-    @Operation(summary = "Get all income transactions")
-    @GetMapping
-    public ResponseEntity<List<IncomeTransactionDto>> getAll() {
-        return ResponseEntity.ok(incomeTransactionService.getAllIncomeTransactions());
+    @Operation(summary = "Create Income Transaction")
+    @ApiResponses({
+            @ApiResponse(responseCode = "201", description = "Created")
+    })
+    @PostMapping
+    public ResponseEntity<IncomeTransactionDto> create(
+            @Valid @RequestBody IncomeTransactionDto dto) {
+        IncomeTransactionDto created = incomeTransactionService.createIncomeTransaction(dto);
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
 }
