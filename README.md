@@ -233,7 +233,7 @@ All generated components are validated for:
 
 ## Features
 
-* Parses SQL DDL using ANTLR
+* Parses SQL DDL (ANTLR-based)
 * Supports foreign keys and relationships
 * Supports table-level constraints (UNIQUE, CHECK, FOREIGN KEY)
 * Supports index detection and generation
