@@ -27,7 +27,7 @@ It significantly reduces boilerplate and accelerates backend development.
 
 ## Quick Start
 
-Example CLI command:
+CLI Example
 
 ```bash
 generate-entity \
