@@ -29,7 +29,7 @@ It eliminates up to 75% of backend development time.
 
 Example CLI command:
 
-```bash id="7r7rxt"
+```bash
 generate-entity \
  -i "path/to/input.sql" \
  -o "path/to/output" \
@@ -59,7 +59,7 @@ CREATE TABLE income_payment (
     description varchar(255) NOT NULL,
     last_updated timestamp NOT NULL,
     recdeleted int4 NULL,
-    CONSTRAINT pk_income_payment_method PRIMARY KEY (id),
+    CONSTRAINT pk_income_payment PRIMARY KEY (id),
     CONSTRAINT uk_in_pay_method UNIQUE (chamber_id, chamber_pay_method_id)
 );
 
@@ -102,10 +102,11 @@ CREATE TABLE income_transaction (
     is_kratisi numeric NULL,
     CONSTRAINT pk_income_transaction PRIMARY KEY (id),
     CONSTRAINT uk_income_trans UNIQUE (chamber_id, chamber_in_transd_id, is_kratisi),
-    CONSTRAINT fk_income_pay_method FOREIGN KEY (income_pay_method_id) REFERENCES income_payment_method(id),
+    CONSTRAINT fk_income_pay_method FOREIGN KEY (income_pay_method_id) REFERENCES income_payment(id),
     CONSTRAINT fk_income_type FOREIGN KEY (income_type_id) REFERENCES income_type(id)
 );
 
+-- Indexes
 CREATE INDEX idx_in_trans_chamber ON income_transaction (chamber_id);
 CREATE INDEX idx_in_trans_type ON income_transaction (income_type_id);
 ```
