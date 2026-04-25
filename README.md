@@ -27,17 +27,16 @@ It significantly reduces boilerplate and accelerates backend development.
 
 ## Quick Start
 
-CLI Example
+Run the CLI:
 
 ```bash
 generate-entity \
- -i "path/to/input.sql" \
- -o "path/to/output" \
- -p "com.example.project" \
- -w true \
- -b true \
- -a "your@email.com"
-```
+  -i "path/to/input.sql" \
+  -o "path/to/output" \
+  -p "com.example.project" \
+  -w true \
+  -b true \
+  -a "your@email.com"
 
 ---
 
