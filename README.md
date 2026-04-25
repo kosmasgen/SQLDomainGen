@@ -161,8 +161,10 @@ public class IncomePayment {
 
     private String description;
 }
+```
 
-
+#### DTO
+```java
 @Data
 @Builder
 public class IncomePaymentDto {
@@ -173,18 +175,19 @@ public class IncomePaymentDto {
     @Size(max = 255)
     private String description;
 }
+```
 
-@Data
-@Builder
-public class IncomePaymentDto {
+#### Controller
+```java
+@RestController
+@RequestMapping("/api/income-payment")
+public class IncomePaymentController {
 
-    @NotNull
-    private Integer chamberId;
-
-    @Size(max = 255)
-    private String description;
+    @GetMapping
+    public ResponseEntity<List<IncomePaymentDto>> getAll() {
+        return ResponseEntity.ok(service.getAllIncomePayments());
+    }
 }
-
 ```
 
 ### Validation Report
