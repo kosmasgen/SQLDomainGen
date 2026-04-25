@@ -1,3 +1,0 @@
-1738879314436:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite false --use-builder false
-1738914450618:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite true --use-builder false
-1738914593564:generate-entity --input-file input/test_script.sql --output-dir output/entities --package-name com.example.entities --overwrite false --use-builder false
