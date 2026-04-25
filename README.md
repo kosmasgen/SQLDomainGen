@@ -131,7 +131,7 @@ This information is used to generate a fully structured backend.
 
 SpringForge generates:
 
-* `IncomeTransaction`, `IncomeType`, and `IncomePaymentMethod` entities
+* `IncomeTransaction`, `IncomeType`, and `IncomePayment` entities
 * DTO with validation annotations
 * Repositories with proper key mappings
 * Service and service implementation layers
@@ -150,7 +150,8 @@ Example output (based on the above schema):
 - Parsed tables: 3
 - Generated entities: 3
 - DTO: 3
-- Mapper: 4
+- Mapper: 3
+- Base mapper: 1
 - Repositories: 3
 - Services: 3
 - ServicesImpl: 3
