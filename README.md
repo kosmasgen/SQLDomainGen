@@ -141,6 +141,50 @@ SpringForge generates:
  
 ---
 
+### Sample Generated Code
+
+```java
+@Entity
+@Audited
+@Table(name = "income_payment")
+public class IncomePayment {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.UUID)
+    private UUID id;
+
+    @Column(nullable = false)
+    private Integer chamberId;
+
+    @Column(nullable = false)
+    private Integer chamberPayMethodId;
+
+    private String description;
+}
+
+@Data
+@Builder
+public class IncomePaymentDto {
+
+    @NotNull
+    private Integer chamberId;
+
+    @Size(max = 255)
+    private String description;
+}
+
+@RestController
+@RequestMapping("/api/income-payment")
+public class IncomePaymentController {
+
+    @GetMapping
+    public ResponseEntity<List<IncomePaymentDto>> getAll() {
+        return ResponseEntity.ok(service.getAllIncomePayments());
+    }
+}
+
+```
+
 ### Validation Report
 
 SpringForge includes a built-in validation system that verifies the generated backend against the original SQL schema.
