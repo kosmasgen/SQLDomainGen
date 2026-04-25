@@ -1,4 +1,0 @@
--------------------------------------------------------------------------------
-Test set: gr.knowledge.pepTest.serviceImpl.UserGeodataServiceImplTest
--------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.199 s -- in gr.knowledge.pepTest.serviceImpl.UserGeodataServiceImplTest
