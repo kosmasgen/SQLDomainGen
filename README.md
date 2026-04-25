@@ -136,7 +136,7 @@ SpringForge generates:
 * Repositories with proper key mappings
 * Service and service implementation layers
 * REST controllers
-* Liquibase changelogs with constraints, foreign keys, and indexes
+* Liquibase changelogs (versioned)
 * Unit and integration tests
  
 ---
