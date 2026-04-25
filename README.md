@@ -180,12 +180,22 @@ public class IncomePaymentDto {
 #### Controller
 ```java
 @RestController
+@RequiredArgsConstructor
+@Tag(name = "Income Payment", description = "Income Payment API")
 @RequestMapping("/api/income-payment")
 public class IncomePaymentController {
 
+    private final IncomePaymentService incomePaymentService;
+
+    /**
+     * Retrieves all income payments.
+     *
+     * @return list of IncomePaymentDto
+     */
+    @Operation(summary = "Get all income payments")
     @GetMapping
     public ResponseEntity<List<IncomePaymentDto>> getAll() {
-        return ResponseEntity.ok(service.getAllIncomePayments());
+        return ResponseEntity.ok(incomePaymentService.getAllIncomePayments());
     }
 }
 ```
