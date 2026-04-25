@@ -14,6 +14,7 @@ It automatically generates:
 * REST controllers
 * Liquibase changelogs
 * Tests for controller, DTO, entity, mapper, and service implementation layers
+  
 ---
 
 ## Why SpringForge
@@ -219,7 +220,7 @@ SpringForge follows a multi-step generation pipeline:
 
 SpringForge generates a complete Spring Boot project:
 
-```text id="c3k6vj"
+```text
 src/main/java/com/example/project/
  ├── entity/
  ├── dto/
