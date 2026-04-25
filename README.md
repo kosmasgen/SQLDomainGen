@@ -132,7 +132,7 @@ This information is used to generate a fully structured backend.
 SpringForge generates:
 
 * `IncomeTransaction`, `IncomeType`, and `IncomePayment` entities
-* DTO with validation annotations
+* DTOs with validation annotations
 * Repositories with proper key mappings
 * Service and service implementation layers
 * REST controllers
@@ -147,20 +147,21 @@ SpringForge includes a built-in validation system that verifies the generated ba
 
 Example output (based on the above schema):
 
-- Parsed tables: 3
-- Generated entities: 3
-- DTO: 3
-- Mapper: 3
-- Base mapper: 1
-- Repositories: 3
-- Services: 3
-- ServicesImpl: 3
-- Controllers: 3
-- Liquibase files: 4
-- Foreign keys detected: 2
-- Indexes detected: 2
-- Total validation checks: 34
-- Violations: 0
+```text
+Parsed tables: 3
+Generated entities: 3
+DTOs: 3
+Mapper: 3
+Base mapper: 1
+Repositories: 3
+Services: 3
+ServicesImpl: 3
+Controllers: 3
+Liquibase files: 4
+Foreign keys detected: 2
+Indexes detected: 2
+Total validation checks: 34
+Violations: 0
 
 All generated components are validated for:
 
