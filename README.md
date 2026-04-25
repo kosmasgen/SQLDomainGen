@@ -136,9 +136,7 @@ SpringForge generates:
 * Service and service implementation layers
 * REST controllers
 * Liquibase changelogs with constraints, foreign keys, and indexes
-* Unit tests (DTO, Mapper, Service) 
-* Integration tests (Controller layer) 
-
+ 
 ---
 
 ### Validation Report
