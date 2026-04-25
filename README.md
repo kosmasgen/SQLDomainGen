@@ -272,6 +272,8 @@ public class IncomeTransactionController {
     public ResponseEntity<List<IncomeTransactionDto>> getAll() {
         return ResponseEntity.ok(incomeTransactionService.getAllIncomeTransactions());
     }
+
+}
 ```
 
 ### Validation Report
