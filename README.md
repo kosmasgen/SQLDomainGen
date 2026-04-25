@@ -235,7 +235,7 @@ src/main/java/com/example/project/
 
 src/main/resources/
  ├── application.properties
- ├── db/changelog/
+ ├── db/changelog/v0.1.0/
 
 src/test/java/com/example/project/
  ├── controller/
