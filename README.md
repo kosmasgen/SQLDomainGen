@@ -1,8 +1,8 @@
 # SpringForge
 
-SpringForge is a CLI tool that parses SQL DDL and generates a Spring Boot backend.
+SpringForge is a CLI tool that parses SQL DDL and generates a structured Spring Boot backend.
 
-It generates a complete backend project, not just individual classes.
+It generates a full backend project structure, not just individual classes.
 
 It automatically generates:
 
@@ -199,85 +199,6 @@ public class IncomeTransaction {
 
     @Column(name = "is_kratisi")
     private BigInteger isKratisi;
-
-}
-```
-
-#### DTO
-```java
-@Data
-@Builder
-@NoArgsConstructor
-@AllArgsConstructor
-@JsonInclude(JsonInclude.Include.NON_NULL)
-public class IncomeTransactionDto {
-
-    private UUID id;
-
-    @NotNull
-    private Integer chamberId;
-
-    @NotNull
-    private BigInteger chamberInTransdId;
-
-    @NotNull
-    @Size(max = 4)
-    private String cdUse;
-
-    @NotNull
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime dt;
-
-    private Integer isMember;
-
-    private UUID companyId;
-
-    @Size(max = 255)
-    private String accountCd;
-
-    private IncomeTypeDto incomeType;
-
-    private BigDecimal amount;
-
-    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
-    private LocalDateTime lastUpdated;
-
-    @NotNull
-    private BigInteger recdeleted;
-
-    private IncomePaymentDto incomePayMethod;
-
-    private BigInteger isKratisi;
-
-}
-```
-
-#### Controller
-```java
-@RestController
-@RequiredArgsConstructor
-@Log4j2
-@Tag(name = "Income Transaction", description = "Income Transaction API")
-@RequestMapping("/api/income-transaction")
-public class IncomeTransactionController {
-
-    private final IncomeTransactionService incomeTransactionService;
-
-    /**
-     * Creates a new income transaction record.
-     * @param dto income transaction payload
-     * @return created IncomeTransactionDto
-     */
-    @Operation(summary = "Create Income Transaction")
-    @ApiResponses({
-            @ApiResponse(responseCode = "201", description = "Created")
-    })
-    @PostMapping
-    public ResponseEntity<IncomeTransactionDto> create(
-            @Valid @RequestBody IncomeTransactionDto dto) {
-        IncomeTransactionDto created = incomeTransactionService.createIncomeTransaction(dto);
-        return ResponseEntity.status(HttpStatus.CREATED).body(created);
-    }
 
 }
 ```
