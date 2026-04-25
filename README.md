@@ -162,6 +162,7 @@ Foreign keys detected: 2
 Indexes detected: 2
 Total validation checks: 34
 Violations: 0
+
 ```
 All generated components are validated for:
 
