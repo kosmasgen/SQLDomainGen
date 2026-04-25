@@ -264,6 +264,7 @@ pom.xml
 * Better handling of advanced SQL constraints
 * Custom template support
 * CLI improvements
+* Extended validation reporting
 
 ---
 
