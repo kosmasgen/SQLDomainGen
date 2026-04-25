@@ -128,136 +128,6 @@ This information is used to generate a fully structured backend.
 
 ### Generated Output
 
-# SpringForge
-
-SpringForge is a CLI tool that parses SQL DDL and generates a structured Spring Boot backend.
-
-It generates a full backend project structure, not just individual classes.
-
-It automatically generates:
-
-* JPA entities (with Envers auditing)
-* DTOs
-* Mappers (ModelMapper)
-* Repositories
-* Services and service implementations
-* REST controllers
-* Liquibase changelogs
-* Tests for controller, DTO, entity, mapper, and service implementation layers
-  
----
-
-## Why SpringForge
-
-Building backend layers manually is repetitive and error-prone.
-
-SpringForge generates a structured Spring Boot backend directly from your SQL schema, including entities, DTOs, mappers, repositories, services, controllers, Liquibase changelogs, and tests.
-
-It reduces boilerplate and accelerates backend development.
-
-## Quick Start
-
-Run the CLI:
-
-```bash
-generate-entity \
-  -i "path/to/input.sql" \
-  -o "path/to/output" \
-  -p "com.example.project" \
-  -w true \
-  -b true \
-  -a "your@email.com"
-```
----
-
-## Example
-Minimal example (full schema available in /examples):
-### Input SQL
-
-```sql
-
--- -- pep_schema.income_payment definition
-
--- Drop table
--- DROP TABLE pep_schema.income_payment;
-
-CREATE TABLE pep_schema.income_payment (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    chamber_id int4 NOT NULL,
-    chamber_pay_method_id int4 NOT NULL,
-    description varchar(255) NOT NULL,
-    last_updated timestamp NOT NULL,
-    recdeleted int4 NULL,
-    CONSTRAINT pk_income_payment PRIMARY KEY (id),
-    CONSTRAINT uk_in_pay_method UNIQUE (chamber_id, chamber_pay_method_id)
-);
-
--- -- pep_schema.income_type definition
-
--- Drop table
--- DROP TABLE pep_schema.income_type;
-
-CREATE TABLE pep_schema.income_type (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    chamber_id int4 NOT NULL,
-    chamber_type_id int4 NOT NULL,
-    description varchar(255) NOT NULL,
-    last_updated timestamp NOT NULL,
-    recdeleted bool NULL,
-    date_created timestamp NULL,
-    CONSTRAINT pk_income_type PRIMARY KEY (id),
-    CONSTRAINT uk_income_type UNIQUE (chamber_id, chamber_type_id)
-);
-
--- -- pep_schema.income_transaction definition
-
--- Drop table
--- DROP TABLE pep_schema.income_transaction;
-
-CREATE TABLE pep_schema.income_transaction (
-    id uuid DEFAULT gen_random_uuid() NOT NULL,
-    chamber_id int4 NOT NULL,
-    chamber_in_transd_id numeric NOT NULL,
-    cd_use varchar(4) NOT NULL,
-    dt timestamp NOT NULL,
-    is_member int4 NULL,
-    company_id uuid NULL,
-    account_cd varchar(255) NULL,
-    income_type_id uuid NULL,
-    amount numeric(19, 2) NULL,
-    last_updated timestamp NOT NULL,
-    recdeleted numeric NOT NULL,
-    income_pay_method_id uuid NULL,
-    is_kratisi numeric NULL,
-    CONSTRAINT pk_income_transaction PRIMARY KEY (id),
-    CONSTRAINT uk_income_trans UNIQUE (chamber_id, chamber_in_transd_id, is_kratisi),
-    CONSTRAINT fk_income_pay_method FOREIGN KEY (income_pay_method_id) REFERENCES pep_schema.income_payment(id),
-    CONSTRAINT fk_income_type FOREIGN KEY (income_type_id) REFERENCES pep_schema.income_type(id)
-);
-
--- Indexes
-CREATE INDEX idx_in_trans_chamber ON pep_schema.income_transaction (chamber_id);
-CREATE INDEX idx_in_trans_type ON pep_schema.income_transaction (income_type_id);
-```
-
----
-
-### What SpringForge extracts
-
-From this schema, SpringForge detects:
-
-* Table relationships (foreign keys)
-* Unique and composite constraints
-* Indexes for optimized queries
-* Field types and nullability
-* Default values and timestamps
-
-This information is used to generate a fully structured backend.
-
----
-
-### Generated Output
-
 SpringForge generates:
 
 * `IncomeTransaction`, `IncomeType`, and `IncomePayment` entities
@@ -335,6 +205,7 @@ public class IncomeTransaction {
 ```
 
 ### Validation Report
+
 SpringForge validates the generated backend against the source schema.
 
 Example output (based on the above schema):
@@ -474,5 +345,3 @@ Email: kosmasgenaris [at] gmail [dot] com
 
 For direct inquiries or collaboration, you can reach out via email.
 
- 
-ration, you can reach out via email.
