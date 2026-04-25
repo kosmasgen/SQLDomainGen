@@ -1,6 +1,6 @@
 # SpringForge
 
-SpringForge is a CLI tool that parses SQL DDL and generates a production-ready Spring Boot backend.
+SpringForge is a CLI tool that parses SQL DDL and generates a Spring Boot backend.
 
 It generates a complete backend project, not just individual classes.
 
