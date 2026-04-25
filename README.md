@@ -205,7 +205,7 @@ SpringForge follows a multi-step generation pipeline:
    Based on the model, SpringForge generates:
 
    * Entities
-   * DTO
+   * DTOs
    * Mapper
    * Repositories
    * Services and service implementations
