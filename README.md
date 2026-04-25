@@ -181,13 +181,28 @@ public class IncomePayment {
 ```java
 @Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
+@JsonInclude(JsonInclude.Include.NON_NULL)
 public class IncomePaymentDto {
+
+    private UUID id;
 
     @NotNull
     private Integer chamberId;
 
+    @NotNull
+    private Integer chamberPayMethodId;
+
+    @NotNull
     @Size(max = 255)
     private String description;
+
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime lastUpdated;
+
+    private Integer recdeleted;
+
 }
 ```
 
