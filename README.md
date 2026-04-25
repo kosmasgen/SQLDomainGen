@@ -13,7 +13,7 @@ It automatically generates:
 * Services and service implementations
 * REST controllers
 * Liquibase changelogs
-* Unit and integration tests
+* Tests for controller, DTO, entity, mapper, and serviceImpl
 
 ---
 
