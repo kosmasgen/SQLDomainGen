@@ -7,7 +7,7 @@ It generates a complete backend project, not just individual classes.
 It automatically generates:
 
 * JPA entities (with Envers auditing)
-* DTO
+* DTOs
 * Mapper (ModelMapper)
 * Repositories
 * Services and service implementations
