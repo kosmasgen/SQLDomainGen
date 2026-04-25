@@ -214,7 +214,7 @@ Example output (based on the above schema):
 Parsed tables: 3
 Generated entities: 3
 DTOs: 3
-Mapper: 3
+Mappers: 3
 Base mapper: 1
 Repositories: 3
 Services: 3
