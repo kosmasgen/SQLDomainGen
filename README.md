@@ -143,16 +143,15 @@ SpringForge generates:
 ### Sample Generated Code
 
 #### Entity
-```java
 @Entity
 @Audited
-@Table(name = "income_payment", uniqueConstraints = @UniqueConstraint(columnNames = {"chamber_id", "chamber_pay_method_id"}))
+@Table(name = "income_transaction", uniqueConstraints = @UniqueConstraint(columnNames = {"chamber_id", "chamber_in_transd_id", "is_kratisi"}))
 @Getter
 @Setter
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class IncomePayment {
+public class IncomeTransaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -162,17 +161,43 @@ public class IncomePayment {
     @Column(name = "chamber_id", nullable = false)
     private Integer chamberId;
 
-    @Column(name = "chamber_pay_method_id", nullable = false)
-    private Integer chamberPayMethodId;
+    @Column(name = "chamber_in_transd_id", nullable = false)
+    private BigInteger chamberInTransdId;
 
-    @Column(name = "description", nullable = false)
-    private String description;
+    @Column(name = "cd_use", length = 4, nullable = false)
+    private String cdUse;
+
+    @Column(name = "dt", nullable = false)
+    private LocalDateTime dt;
+
+    @Column(name = "is_member")
+    private Integer isMember;
+
+    @Column(name = "company_id")
+    private UUID companyId;
+
+    @Column(name = "account_cd")
+    private String accountCd;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "income_type_id")
+    private IncomeType incomeType;
+
+    @Column(name = "amount", precision = 19, scale = 2)
+    private BigDecimal amount;
 
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated;
 
-    @Column(name = "recdeleted")
-    private Integer recdeleted;
+    @Column(name = "recdeleted", nullable = false)
+    private BigInteger recdeleted;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "income_pay_method_id")
+    private IncomePayment incomePayMethod;
+
+    @Column(name = "is_kratisi")
+    private BigInteger isKratisi;
 
 }
 ```
@@ -184,7 +209,7 @@ public class IncomePayment {
 @NoArgsConstructor
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
-public class IncomePaymentDto {
+public class IncomeTransactionDto {
 
     private UUID id;
 
@@ -192,16 +217,36 @@ public class IncomePaymentDto {
     private Integer chamberId;
 
     @NotNull
-    private Integer chamberPayMethodId;
+    private BigInteger chamberInTransdId;
 
     @NotNull
+    @Size(max = 4)
+    private String cdUse;
+
+    @NotNull
+    @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
+    private LocalDateTime dt;
+
+    private Integer isMember;
+
+    private UUID companyId;
+
     @Size(max = 255)
-    private String description;
+    private String accountCd;
+
+    private IncomeTypeDto incomeType;
+
+    private BigDecimal amount;
 
     @JsonFormat(pattern = "yyyy-MM-dd HH:mm:ss")
     private LocalDateTime lastUpdated;
 
-    private Integer recdeleted;
+    @NotNull
+    private BigInteger recdeleted;
+
+    private IncomePaymentDto incomePayMethod;
+
+    private BigInteger isKratisi;
 
 }
 ```
@@ -210,23 +255,22 @@ public class IncomePaymentDto {
 ```java
 @RestController
 @RequiredArgsConstructor
-@Tag(name = "Income Payment", description = "Income Payment API")
-@RequestMapping("/api/income-payment")
-public class IncomePaymentController {
+@Log4j2
+@Tag(name = "Income Transaction", description = "Income Transaction API")
+@RequestMapping("/api/income-transaction")
+public class IncomeTransactionController {
 
-    private final IncomePaymentService incomePaymentService;
+    private final IncomeTransactionService incomeTransactionService;
 
     /**
-     * Retrieves all income payments.
-     *
-     * @return list of IncomePaymentDto
+     * Retrieves all income transactions.
+     * @return list of IncomeTransactionDto
      */
-    @Operation(summary = "Get all income payments")
+    @Operation(summary = "Get all income transactions")
     @GetMapping
-    public ResponseEntity<List<IncomePaymentDto>> getAll() {
-        return ResponseEntity.ok(incomePaymentService.getAllIncomePayments());
+    public ResponseEntity<List<IncomeTransactionDto>> getAll() {
+        return ResponseEntity.ok(incomeTransactionService.getAllIncomeTransactions());
     }
-}
 ```
 
 ### Validation Report
