@@ -143,6 +143,7 @@ SpringForge generates:
 ### Sample Generated Code
 
 #### Entity
+```java
 @Entity
 @Audited
 @Table(name = "income_transaction", uniqueConstraints = @UniqueConstraint(columnNames = {"chamber_id", "chamber_in_transd_id", "is_kratisi"}))
