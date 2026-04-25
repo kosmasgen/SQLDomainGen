@@ -225,6 +225,7 @@ src/test/java/com/example/project/
  ├── mapper/
 
 pom.xml
+.gitignore
 ```
 
 ---
