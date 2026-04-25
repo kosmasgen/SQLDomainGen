@@ -9,25 +9,27 @@ import static org.junit.jupiter.api.Assertions.*;
 import com.sqldomaingen.parser.PostgreSQLLexer;
 import com.sqldomaingen.parser.PostgreSQLParser;
 import org.antlr.v4.runtime.*;
-import org.antlr.v4.runtime.tree.ParseTree;
 
 @Log4j2
 class ColumnDefinitionTest {
 
 
     private PostgreSQLParser.ColumnDefContext getColumnDefContext(String sql) {
-        PostgreSQLLexer lexer = new PostgreSQLLexer(CharStreams.fromString("CREATE TABLE test (" + sql + ");"));
+        PostgreSQLLexer lexer = new PostgreSQLLexer(
+                CharStreams.fromString("CREATE TABLE test (" + sql + ");")
+        );
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         PostgreSQLParser parser = new PostgreSQLParser(tokens);
-        ParseTree tree = parser.createTableStatement();
-        return ((PostgreSQLParser.CreateTableStatementContext) tree).columnDef(0);
+
+        PostgreSQLParser.CreateTableStatementContext ctx = parser.createTableStatement();
+        return ctx.columnDef(0);
     }
 
     private void logColumnDetails(ColumnDefinition column, String testName) {
         log.info("Starting test: {}", testName);
         log.info("Column Details - Name: {}, SQL Type: {}, Base SQL Type: {}, Length: {}, Precision: {}, Scale: {}, Primary Key: {}, Foreign Key: {}, Nullable: {}, Unique: {}, Default: {}, Check Constraint: {}",
                 column.getColumnName(), column.getSqlType(), column.getBaseSqlType(), column.getLength(),
-                column.getPrecision(), column.getScale(), // ✅ Προσθέσαμε Precision & Scale
+                column.getPrecision(), column.getScale(),
                 column.isPrimaryKey(), column.isForeignKey(), column.isNullable(), column.isUnique(),
                 column.getDefaultValue(), column.getCheckConstraint());
     }

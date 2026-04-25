@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/chamberDepartment.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="create-chamber-department-table-and-audit" author="kosmasgenaris@knowledge.gr">
+        <createTable tableName="chamber_department" schemaName="pep_schema">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" primaryKeyName="chamber_department_pkey" nullable="false"/>
+            </column>
+            <column name="chamber_department_id" type="INTEGER">
+            </column>
+            <column name="chamber_id" type="INTEGER">
+            </column>
+            <column name="date_created" type="TIMESTAMP" defaultValueComputed="now()">
+            </column>
+            <column name="last_updated" type="TIMESTAMP" defaultValueComputed="now()">
+            </column>
+            <column name="recdeleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cd" type="VARCHAR(5)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+
+
+        <addUniqueConstraint tableName="chamber_department" schemaName="pep_schema" columnNames="chamber_id, chamber_department_id" constraintName="uk_chamber_department"/>
+
+
+
+        <createTable tableName="chamber_department_aud" schemaName="audit">
+            <column name="id" type="UUID"/>
+            <column name="chamber_department_id" type="INTEGER"/>
+            <column name="chamber_id" type="INTEGER"/>
+            <column name="date_created" type="TIMESTAMP"/>
+            <column name="last_updated" type="TIMESTAMP"/>
+            <column name="recdeleted" type="BOOLEAN"/>
+            <column name="cd" type="VARCHAR(5)"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+        </createTable>
+
+        <addPrimaryKey tableName="chamber_department_aud"
+                       columnNames="id, rev"
+                       constraintName="pk_chamber_department_aud"
+                       schemaName="audit"/>
+
+        <addForeignKeyConstraint baseTableName="chamber_department_aud"
+                                 baseColumnNames="rev"
+                                 constraintName="fk_chamber_department_aud_revinfo"
+                                 referencedTableName="REVINFO"
+                                 referencedColumnNames="REV"
+                                 baseTableSchemaName="audit"
+                                 referencedTableSchemaName="audit"/>
+
+    </changeSet>
+
+</databaseChangeLog>

@@ -280,8 +280,6 @@ onUpdateClause
     : 'ON UPDATE' 'CURRENT_TIMESTAMP'
     ;
 
-
-
 // In-line constraints (για μεμονωμένες στήλες)
 constraint
     : NOT NULL
@@ -291,11 +289,14 @@ constraint
     | DEFAULT value
     | CHECK LPAREN condition RPAREN
     | REFERENCES (schemaName DOT)? tableName LPAREN columnName RPAREN onAction?
+    | FOREIGN_KEY LPAREN columnNameList RPAREN REFERENCES (schemaName DOT)? tableName LPAREN columnNameList RPAREN (RELATIONSHIP relationshipType)? onAction*
     | FOREIGN KEY LPAREN columnNameList RPAREN REFERENCES (schemaName DOT)? tableName LPAREN columnNameList RPAREN (RELATIONSHIP relationshipType)? onAction*
     | EXCLUDE USING IDENTIFIER LPAREN excludeElementList RPAREN ('WHERE' condition)?
     | 'AUTO_INCREMENT'
+    | PRIMARY_KEY
     | PRIMARY KEY
     ;
+
 
 // Table-level constraints (για ολόκληρο τον πίνακα)
 tableConstraint

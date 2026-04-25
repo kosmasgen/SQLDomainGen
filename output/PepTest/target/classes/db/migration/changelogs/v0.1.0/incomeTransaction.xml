@@ -1,0 +1,138 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/incomeTransaction.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="create-income-transaction-table-and-audit" author="kosmasgenaris@knowledge.gr">
+        <createTable tableName="income_transaction" schemaName="pep_schema">
+            <column name="id" type="UUID" defaultValueComputed="gen_random_uuid()">
+                <constraints primaryKey="true" primaryKeyName="pk_income_transaction" nullable="false"/>
+            </column>
+            <column name="chamber_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="chamber_in_transd_id" type="NUMERIC">
+                <constraints nullable="false"/>
+            </column>
+            <column name="cd_use" type="VARCHAR(4)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="dt" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="is_member" type="INTEGER">
+            </column>
+            <column name="company_id" type="UUID">
+            </column>
+            <column name="account_cd" type="VARCHAR(255)">
+            </column>
+            <column name="income_type_id" type="UUID">
+            </column>
+            <column name="amount" type="NUMERIC(19,2)">
+            </column>
+            <column name="last_updated" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recdeleted" type="NUMERIC">
+                <constraints nullable="false"/>
+            </column>
+            <column name="income_pay_method_id" type="UUID">
+            </column>
+            <column name="is_echamber" type="INTEGER">
+            </column>
+            <column name="block_ser" type="VARCHAR(3)">
+            </column>
+            <column name="is_kratisi" type="NUMERIC">
+            </column>
+            <column name="chamber_comp_id" type="NUMERIC">
+            </column>
+            <column name="chamber_method" type="NUMERIC">
+            </column>
+            <column name="chamber_type" type="NUMERIC">
+            </column>
+        </createTable>
+
+
+
+        <addUniqueConstraint tableName="income_transaction" schemaName="pep_schema" columnNames="chamber_id, chamber_in_transd_id, is_kratisi" constraintName="uk_income_trans"/>
+
+        <createIndex tableName="income_transaction" schemaName="pep_schema" indexName="idx_in_trans_chamber">
+            <column name="chamber_id"/>
+        </createIndex>
+        <createIndex tableName="income_transaction" schemaName="pep_schema" indexName="idx_in_trans_comp">
+            <column name="company_id"/>
+        </createIndex>
+        <createIndex tableName="income_transaction" schemaName="pep_schema" indexName="idx_in_trans_dt">
+            <column name="dt"/>
+        </createIndex>
+        <createIndex tableName="income_transaction" schemaName="pep_schema" indexName="idx_in_trans_member">
+            <column name="is_member"/>
+        </createIndex>
+        <createIndex tableName="income_transaction" schemaName="pep_schema" indexName="idx_in_trans_pay">
+            <column name="income_pay_method_id"/>
+        </createIndex>
+        <createIndex tableName="income_transaction" schemaName="pep_schema" indexName="idx_in_trans_type">
+            <column name="income_type_id"/>
+        </createIndex>
+
+        <addForeignKeyConstraint
+                                 baseTableName="income_transaction"
+                                 baseColumnNames="income_type_id"
+                                 constraintName="fk_income_type"
+                                 referencedTableName="income_type"
+                                 referencedColumnNames="id"
+                                baseTableSchemaName="pep_schema"
+                                referencedTableSchemaName="pep_schema"/>
+        <addForeignKeyConstraint
+                                 baseTableName="income_transaction"
+                                 baseColumnNames="income_pay_method_id"
+                                 constraintName="fk_income_pay_method"
+                                 referencedTableName="income_payment_method"
+                                 referencedColumnNames="id"
+                                baseTableSchemaName="pep_schema"
+                                referencedTableSchemaName="pep_schema"/>
+
+        <createTable tableName="income_transaction_aud" schemaName="audit">
+            <column name="id" type="UUID"/>
+            <column name="chamber_id" type="INTEGER"/>
+            <column name="chamber_in_transd_id" type="NUMERIC"/>
+            <column name="cd_use" type="VARCHAR(4)"/>
+            <column name="dt" type="TIMESTAMP"/>
+            <column name="is_member" type="INTEGER"/>
+            <column name="company_id" type="UUID"/>
+            <column name="account_cd" type="VARCHAR(255)"/>
+            <column name="income_type_id" type="UUID"/>
+            <column name="amount" type="NUMERIC(19,2)"/>
+            <column name="last_updated" type="TIMESTAMP"/>
+            <column name="recdeleted" type="NUMERIC"/>
+            <column name="income_pay_method_id" type="UUID"/>
+            <column name="is_echamber" type="INTEGER"/>
+            <column name="block_ser" type="VARCHAR(3)"/>
+            <column name="is_kratisi" type="NUMERIC"/>
+            <column name="chamber_comp_id" type="NUMERIC"/>
+            <column name="chamber_method" type="NUMERIC"/>
+            <column name="chamber_type" type="NUMERIC"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+        </createTable>
+
+        <addPrimaryKey tableName="income_transaction_aud"
+                       columnNames="id, rev"
+                       constraintName="pk_income_transaction_aud"
+                       schemaName="audit"/>
+
+        <addForeignKeyConstraint baseTableName="income_transaction_aud"
+                                 baseColumnNames="rev"
+                                 constraintName="fk_income_transaction_aud_revinfo"
+                                 referencedTableName="REVINFO"
+                                 referencedColumnNames="REV"
+                                 baseTableSchemaName="audit"
+                                 referencedTableSchemaName="audit"/>
+
+    </changeSet>
+
+</databaseChangeLog>

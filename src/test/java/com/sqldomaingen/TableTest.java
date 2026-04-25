@@ -14,13 +14,11 @@ public class TableTest {
 
     @Test
     public void testAddDecimalColumnToEventAssignmentTable() {
-        log.info("🔵 Testing addColumn with DECIMAL column in 'event_assignment' table...");
+        log.info("Testing addColumn with DECIMAL column in 'event_assignment' table...");
 
-        // Δημιουργία πίνακα
         Table table = new Table();
         table.setName("event_assignment");
 
-        // Δημιουργία και προσθήκη στηλών
         Column id = new Column();
         id.setName("assignment_id");
         id.setSqlType("SERIAL");
@@ -49,15 +47,14 @@ public class TableTest {
         note.setSqlType("TEXT");
         note.setNullable(true);
 
-        // Προσθήκη όλων των στηλών
         table.addColumn(id);
         table.addColumn(eventId);
         table.addColumn(userId);
         table.addColumn(workload);
         table.addColumn(note);
 
-        // Logging
-        log.info("📋 Final table: {}", table);
+
+        log.info(" Final table: {}", table);
 
         // Assertions
         Assertions.assertEquals(5, table.getColumns().size());
@@ -76,47 +73,47 @@ public class TableTest {
 
     @Test
     public void testAddConstraints() {
-        log.info("✅ Testing addConstraints with current schema...");
+        log.info("Testing addConstraints with current schema...");
 
-        // Δημιουργία πίνακα
+
         Table table = new Table();
         table.setName("user");
 
-        // Στήλη με in-line PRIMARY KEY
+
         Column userId = new Column();
         userId.setName("user_id");
         userId.setSqlType("SERIAL");
         userId.setPrimaryKey(true);
 
-        // Κανονική στήλη
+
         Column departmentId = new Column();
         departmentId.setName("department_id");
         departmentId.setSqlType("INT");
 
-        // Προσθήκη στηλών
+
         table.addColumn(userId);
         table.addColumn(departmentId);
 
-        // Προσθήκη table-level constraint (FOREIGN KEY)
+        // table-level constraint (FOREIGN KEY)
         table.addConstraints(List.of("FOREIGN KEY (department_id) REFERENCES department(department_id)"));
 
         // Logging
-        log.info("🧱 Columns: {}", table.getColumns());
-        log.info("🔗 Constraints: {}", table.getConstraints());
+        log.info("Columns: {}", table.getColumns());
+        log.info("Constraints: {}", table.getConstraints());
 
         // Assertions
         Assertions.assertEquals(2, table.getColumns().size());
-        Assertions.assertEquals("user_id", table.getColumns().get(0).getName());
-        Assertions.assertTrue(table.getColumns().get(0).isPrimaryKey());
+        Assertions.assertEquals("user_id", table.getColumns().getFirst().getName());
+        Assertions.assertTrue(table.getColumns().getFirst().isPrimaryKey());
 
         Assertions.assertEquals(1, table.getConstraints().size());
-        Assertions.assertTrue(table.getConstraints().get(0).contains("FOREIGN KEY"));
+        Assertions.assertTrue(table.getConstraints().getFirst().contains("FOREIGN KEY"));
     }
 
 
     @Test
     void testParseCreateDepartmentTable_ToStringValidation() {
-        log.info("🔵 Testing Table.toString with parsed 'department' table structure...");
+        log.info("Testing Table.toString with parsed 'department' table structure...");
 
         Table table = new Table();
         table.setName("department");
@@ -168,17 +165,15 @@ public class TableTest {
         ));
 
         String expected = "Table{name='department', columns=[" +
-                "Column(name=department_id, sqlType=SERIAL, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=null, primaryKey=true, unique=false, manyToMany=false, nullable=false, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null), " +
-                "Column(name=name, sqlType=VARCHAR, length=100, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=null, primaryKey=false, unique=false, manyToMany=false, nullable=false, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null), " +
-                "Column(name=description, sqlType=TEXT, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=null, primaryKey=false, unique=false, manyToMany=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null), " +
-                "Column(name=parent_dept_id, sqlType=INT, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=null, primaryKey=false, unique=false, manyToMany=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null), " +
-                "Column(name=created_at, sqlType=TIMESTAMP, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=CURRENT_TIMESTAMP, primaryKey=false, unique=false, manyToMany=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null), " +
-                "Column(name=updated_at, sqlType=TIMESTAMP, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=CURRENT_TIMESTAMP, primaryKey=false, unique=false, manyToMany=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null)" +
-                "], constraints=[PRIMARY KEY (department_id), FOREIGN KEY (parent_dept_id) REFERENCES department(department_id)], relationships=[], manyToManyRelations=[], pureJoinTable=false}";
+                "Column(name=department_id, sqlType=SERIAL, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=null, primaryKey=true, unique=false, manyToMany=false, nullable=false, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null, fieldName=null, primaryKeyConstraintName=null, foreignKeyConstraintName=null), " +
+                "Column(name=name, sqlType=VARCHAR, length=100, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=null, primaryKey=false, unique=false, manyToMany=false, nullable=false, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null, fieldName=null, primaryKeyConstraintName=null, foreignKeyConstraintName=null), " +
+                "Column(name=description, sqlType=TEXT, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=null, primaryKey=false, unique=false, manyToMany=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null, fieldName=null, primaryKeyConstraintName=null, foreignKeyConstraintName=null), " +
+                "Column(name=parent_dept_id, sqlType=INT, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=null, primaryKey=false, unique=false, manyToMany=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null, fieldName=null, primaryKeyConstraintName=null, foreignKeyConstraintName=null), " +
+                "Column(name=created_at, sqlType=TIMESTAMP, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=CURRENT_TIMESTAMP, primaryKey=false, unique=false, manyToMany=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null, fieldName=null, primaryKeyConstraintName=null, foreignKeyConstraintName=null), " +
+                "Column(name=updated_at, sqlType=TIMESTAMP, length=0, isIdentity=false, identityGeneration=null, sequenceName=null, constraints=[], defaultValue=CURRENT_TIMESTAMP, primaryKey=false, unique=false, manyToMany=false, nullable=true, isDefaultExpression=null, defaultExpression=null, checkConstraint=null, targetTable=null, joinTableName=null, inverseJoinColumn=null, isRelationship=false, onUpdate=null, onDelete=null, generatedAs=null, javaType=null, foreignKey=false, formattedName=null, referencedTable=null, referencedColumn=null, precision=0, scale=0, mappedBy=null, fieldName=null, primaryKeyConstraintName=null, foreignKeyConstraintName=null)" +
+                "], constraints=[PRIMARY KEY (department_id), FOREIGN KEY (parent_dept_id) REFERENCES department(department_id)], relationships=[], manyToManyRelations=[], pureJoinTable=false, indexes=[]}";
 
-        log.info("✅ Table state: {}", table);
-        System.out.println("🔎 Actual table.toString():\n");
-        System.out.println("📌 Expected:\n" + expected);
+        log.info("Table state: {}", table);
 
         Assertions.assertEquals(expected, table.toString(), "Table toString should match the expected format.");
     }
@@ -186,7 +181,7 @@ public class TableTest {
 
     @Test
     public void testRecurringPatternTable_WithForeignKeyColumn() {
-        log.info("🟡 Testing parsed structure of 'recurring_pattern' table...");
+        log.info("Testing parsed structure of 'recurring_pattern' table...");
 
         Table table = new Table();
         table.setName("recurring_pattern");
@@ -220,7 +215,7 @@ public class TableTest {
                 "FOREIGN KEY (event_id) REFERENCES event(event_id)"
         ));
 
-        log.info("📋 Recurring Pattern table:\n{}", table);
+        log.info(" Recurring Pattern table:\n{}", table);
 
         Assertions.assertEquals(3, table.getColumns().size());
         Column fk = table.getColumns().get(2);
@@ -231,7 +226,7 @@ public class TableTest {
 
     @Test
     public void testDepartmentTableStructure_UnaffectedByTrigger() {
-        log.info("🟢 Testing 'department' table structure – ignoring trigger effects...");
+        log.info("Testing 'department' table structure – ignoring trigger effects...");
 
         Table table = new Table();
         table.setName("department");
@@ -260,7 +255,7 @@ public class TableTest {
 
         table.setConstraints(List.of("PRIMARY KEY (department_id)"));
 
-        log.info("📋 Department table (static structure):\n{}", table);
+        log.info("Department table (static structure):\n{}", table);
 
         Assertions.assertEquals(3, table.getColumns().size());
         Assertions.assertEquals("updated_at", table.getColumns().get(2).getName());
@@ -268,7 +263,7 @@ public class TableTest {
 
     @Test
     public void testEmployeeDepartmentTable_WithCompositePrimaryKeyAndFKs() {
-        log.info("🟣 Testing 'employee_department' table with composite PK and two FKs...");
+        log.info("Testing 'employee_department' table with composite PK and two FKs...");
 
         Table table = new Table();
         table.setName("employee_department");
@@ -314,16 +309,16 @@ public class TableTest {
                 "FOREIGN KEY (department_id) REFERENCES department(id)"
         ));
 
-        log.info("📋 Employee-Department table:\n{}", table);
+        log.info(" Employee-Department table:\n{}", table);
 
         Assertions.assertEquals(4, table.getColumns().size());
         Assertions.assertEquals(3, table.getConstraints().size());
 
-        // Έλεγχος composite PK
+
         long pkCount = table.getColumns().stream().filter(Column::isPrimaryKey).count();
         Assertions.assertEquals(2, pkCount, "There should be 2 primary key columns");
 
-        // Έλεγχος FK ιδιοτήτων
+
         Assertions.assertTrue(employeeId.isForeignKey());
         Assertions.assertEquals("employee", employeeId.getReferencedTable());
         Assertions.assertEquals("id", employeeId.getReferencedColumn());
@@ -335,7 +330,7 @@ public class TableTest {
 
     @Test
     public void testUserProfileTable_WithManyToManyConstraint() {
-        log.info("🧪 Testing 'user_profile' table with MANYTOMANY pseudo-constraint...");
+        log.info("Testing 'user_profile' table with MANYTOMANY pseudo-constraint...");
 
         Table table = new Table();
         table.setName("user_profile");
@@ -380,7 +375,7 @@ public class TableTest {
                 "FOREIGN KEY (user_id) REFERENCES user(user_id)"
         ));
 
-        log.info("📋 User Profile table:\n{}", table);
+        log.info(" User Profile table:\n{}", table);
 
         Assertions.assertEquals(4, table.getColumns().size());
 

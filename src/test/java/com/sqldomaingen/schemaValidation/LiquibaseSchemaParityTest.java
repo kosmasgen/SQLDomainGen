@@ -107,16 +107,6 @@ class LiquibaseSchemaParityTest {
             if (Files.exists(tableXmlPath)) {
                 String tableXml = Files.readString(tableXmlPath);
 
-                if ("pep_schema.company_status_view_rules".equals(table.getName())) {
-                    System.out.println("==========================================");
-                    System.out.println("DEBUG TABLE: " + table.getName());
-                    System.out.println("FILE PATH: " + tableXmlPath.toAbsolutePath());
-                    System.out.println("HAS createIndex: " + tableXml.contains("<createIndex"));
-                    System.out.println("==========================================");
-                    System.out.println(tableXml);
-                    System.out.println("==========================================");
-                }
-
                 assertIndexes(tableXml, sql, table, violations);
             }
         }

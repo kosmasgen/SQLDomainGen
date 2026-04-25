@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/syncruns.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="create-syncruns-table-and-audit" author="kosmasgenaris@knowledge.gr">
+        <createTable tableName="syncruns" schemaName="pep_schema">
+            <column name="id" type="BIGINT">
+                <constraints primaryKey="true" primaryKeyName="pk_syncruns" nullable="false"/>
+            </column>
+            <column name="last_run" type="TIMESTAMP">
+            </column>
+            <column name="trades_last_run" type="TIMESTAMP">
+            </column>
+            <column name="is_running" type="BOOLEAN" defaultValueBoolean="false">
+            </column>
+        </createTable>
+
+
+
+
+
+
+        <createTable tableName="syncruns_aud" schemaName="audit">
+            <column name="id" type="BIGINT"/>
+            <column name="last_run" type="TIMESTAMP"/>
+            <column name="trades_last_run" type="TIMESTAMP"/>
+            <column name="is_running" type="BOOLEAN"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+        </createTable>
+
+        <addPrimaryKey tableName="syncruns_aud"
+                       columnNames="id, rev"
+                       constraintName="pk_syncruns_aud"
+                       schemaName="audit"/>
+
+        <addForeignKeyConstraint baseTableName="syncruns_aud"
+                                 baseColumnNames="rev"
+                                 constraintName="fk_syncruns_aud_revinfo"
+                                 referencedTableName="REVINFO"
+                                 referencedColumnNames="REV"
+                                 baseTableSchemaName="audit"
+                                 referencedTableSchemaName="audit"/>
+
+    </changeSet>
+
+</databaseChangeLog>

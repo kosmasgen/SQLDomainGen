@@ -1,4 +1,4 @@
 -------------------------------------------------------------------------------
 Test set: com.sqldomaingen.ColumnDefinitionScaleTest
 -------------------------------------------------------------------------------
-Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.88 s - in com.sqldomaingen.ColumnDefinitionScaleTest
+Tests run: 8, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.707 s - in com.sqldomaingen.ColumnDefinitionScaleTest

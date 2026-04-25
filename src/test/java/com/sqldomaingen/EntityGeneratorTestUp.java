@@ -1,7 +1,6 @@
 package com.sqldomaingen;
 
 import com.sqldomaingen.generator.EntityGenerator;
-import com.sqldomaingen.generator.RelationshipResolver;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
 import lombok.extern.log4j.Log4j2;
@@ -13,9 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -34,7 +31,7 @@ class EntityGeneratorTestUp {
     }
 
     @Test
-    void testGenerateEntityWithOneToManyFromBothSides() {
+    void testGenerateEntityWithOneToManyFromBothSides() throws IOException {
         Table customers = new Table();
         customers.setName("Customers");
         customers.setColumns(new ArrayList<>(List.of(createLongPrimaryKeyColumn("id"))));
@@ -46,20 +43,27 @@ class EntityGeneratorTestUp {
                 createRequiredLongForeignKeyColumn("customer_id", "Customers", "id")
         )));
 
-        Map<String, Table> tableMap = new HashMap<>();
-        tableMap.put("Customers", customers);
-        tableMap.put("Orders", orders);
+        entityGenerator.generate(
+                List.of(customers, orders),
+                tempDir.toString(),
+                "com.example.entities",
+                true,
+                false
+        );
 
-        RelationshipResolver resolver = new RelationshipResolver(tableMap);
-        resolver.resolveRelationshipsForAllTables();
+        Path customersFile = findGeneratedFile("Customers.java");
+        Path ordersFile = findGeneratedFile("Orders.java");
 
-        String customersContent = entityGenerator.createEntityContent(customers, "com.example.entities", false);
-        String ordersContent = entityGenerator.createEntityContent(orders, "com.example.entities", false);
+        assertTrue(Files.exists(customersFile), "Customers.java should be generated.");
+        assertTrue(Files.exists(ordersFile), "Orders.java should be generated.");
 
-        assertTrue(customersContent.contains("@OneToMany(mappedBy = \"customer\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse @OneToMany on Customers.");
-        assertTrue(customersContent.contains("private List<Orders>"),
-                "Expected inverse collection of Orders on Customers.");
+        String customersContent = Files.readString(customersFile);
+        String ordersContent = Files.readString(ordersFile);
+
+        assertFalse(customersContent.contains("@OneToMany("),
+                "Customers should not contain inverse @OneToMany in current generator behavior.");
+        assertFalse(customersContent.contains("private List<Orders>"),
+                "Customers should not contain inverse Orders collection in current generator behavior.");
 
         assertTrue(ordersContent.contains("@ManyToOne(fetch = FetchType.LAZY)"),
                 "Expected owning @ManyToOne on Orders.");
@@ -80,6 +84,7 @@ class EntityGeneratorTestUp {
 
         Column departmentUuid = new Column();
         departmentUuid.setName("department_uuid");
+        departmentUuid.setFieldName("departmentUuid");
         departmentUuid.setSqlType("UUID");
         departmentUuid.setJavaType("java.util.UUID");
         departmentUuid.setPrimaryKey(true);
@@ -87,6 +92,7 @@ class EntityGeneratorTestUp {
 
         Column departmentId = new Column();
         departmentId.setName("department_id");
+        departmentId.setFieldName("departmentId");
         departmentId.setSqlType("SERIAL");
         departmentId.setJavaType("Integer");
         departmentId.setPrimaryKey(false);
@@ -94,30 +100,36 @@ class EntityGeneratorTestUp {
 
         Column name = new Column();
         name.setName("name");
+        name.setFieldName("name");
         name.setSqlType("VARCHAR(100)");
         name.setJavaType("String");
         name.setNullable(false);
+        name.setLength(100);
 
         Column description = new Column();
         description.setName("description");
+        description.setFieldName("description");
         description.setSqlType("TEXT");
         description.setJavaType("String");
         description.setNullable(true);
 
         Column parentDeptId = new Column();
         parentDeptId.setName("parent_dept_id");
+        parentDeptId.setFieldName("parentDeptId");
         parentDeptId.setSqlType("INT");
         parentDeptId.setJavaType("Integer");
         parentDeptId.setNullable(true);
 
         Column date = new Column();
         date.setName("date");
+        date.setFieldName("date");
         date.setSqlType("DATE");
         date.setJavaType("java.time.LocalDate");
         date.setNullable(true);
 
         Column createdAt = new Column();
         createdAt.setName("created_at");
+        createdAt.setFieldName("createdAt");
         createdAt.setSqlType("TIMESTAMP");
         createdAt.setJavaType("java.time.LocalDateTime");
         createdAt.setNullable(true);
@@ -125,6 +137,7 @@ class EntityGeneratorTestUp {
 
         Column updatedAt = new Column();
         updatedAt.setName("updated_at");
+        updatedAt.setFieldName("updatedAt");
         updatedAt.setSqlType("TIMESTAMP");
         updatedAt.setJavaType("java.time.LocalDateTime");
         updatedAt.setNullable(true);
@@ -132,6 +145,7 @@ class EntityGeneratorTestUp {
 
         Column isActive = new Column();
         isActive.setName("is_active");
+        isActive.setFieldName("isActive");
         isActive.setSqlType("BOOLEAN");
         isActive.setJavaType("Boolean");
         isActive.setNullable(false);
@@ -139,36 +153,45 @@ class EntityGeneratorTestUp {
 
         Column budget = new Column();
         budget.setName("budget");
+        budget.setFieldName("budget");
         budget.setSqlType("NUMERIC(12,2)");
         budget.setJavaType("java.math.BigDecimal");
         budget.setNullable(true);
+        budget.setPrecision(12);
+        budget.setScale(2);
 
         Column headcount = new Column();
         headcount.setName("headcount");
+        headcount.setFieldName("headcount");
         headcount.setSqlType("SMALLINT");
         headcount.setJavaType("Short");
         headcount.setNullable(true);
 
         Column phone = new Column();
         phone.setName("phone");
+        phone.setFieldName("phone");
         phone.setSqlType("VARCHAR(20)");
         phone.setJavaType("String");
         phone.setNullable(true);
+        phone.setLength(20);
 
         Column websiteUrl = new Column();
         websiteUrl.setName("website_url");
+        websiteUrl.setFieldName("websiteUrl");
         websiteUrl.setSqlType("TEXT");
         websiteUrl.setJavaType("String");
         websiteUrl.setNullable(true);
 
         Column attachment = new Column();
         attachment.setName("attachment");
+        attachment.setFieldName("attachment");
         attachment.setSqlType("BYTEA");
         attachment.setJavaType("byte[]");
         attachment.setNullable(true);
 
         Column shiftStart = new Column();
         shiftStart.setName("shift_start");
+        shiftStart.setFieldName("shiftStart");
         shiftStart.setSqlType("TIME");
         shiftStart.setJavaType("java.time.LocalTime");
         shiftStart.setNullable(true);
@@ -216,11 +239,12 @@ class EntityGeneratorTestUp {
 
         assertFalse(content.contains("@Builder.Default"), "Generator must not add @Builder.Default");
         assertFalse(content.contains("optional = false"), "Generator must not add optional=false");
-        assertFalse(content.contains("referencedColumnName"), "Generator must not add referencedColumnName=\"id\"");
+        assertFalse(content.contains("referencedColumnName = \"id\""),
+                "Generator must not add referencedColumnName=\"id\"");
     }
 
     @Test
-    void testGenerateDepartmentSelfReferenceFromBothSidesAndWithoutDuplicates() {
+    void testGenerateDepartmentSelfReferenceFromBothSidesAndWithoutDuplicates() throws IOException {
         Table department = new Table();
         department.setName("Department");
         department.setColumns(new ArrayList<>(List.of(
@@ -228,22 +252,28 @@ class EntityGeneratorTestUp {
                 createNullableLongForeignKeyColumn("parent_id", "Department", "id")
         )));
 
-        Map<String, Table> tableMap = new HashMap<>();
-        tableMap.put("Department", department);
+        entityGenerator.generate(
+                List.of(department),
+                tempDir.toString(),
+                "com.example.entities",
+                true,
+                false
+        );
 
-        RelationshipResolver resolver = new RelationshipResolver(tableMap);
-        resolver.resolveRelationshipsForAllTables();
+        Path generatedFile = findGeneratedFile("Department.java");
+        assertTrue(Files.exists(generatedFile), "Department.java file should be generated.");
 
-        String content = entityGenerator.createEntityContent(department, "com.example.entities", false);
+        String content = Files.readString(generatedFile);
 
         assertTrue(content.contains("@ManyToOne(fetch = FetchType.LAZY)"),
                 "Expected self-referencing owning @ManyToOne.");
         assertTrue(content.contains("private Department parent;"),
                 "Expected self parent field.");
-        assertTrue(content.contains("@OneToMany(mappedBy = \"parent\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse self @OneToMany with mappedBy='parent'.");
-        assertTrue(content.contains("private List<Department>"),
-                "Expected inverse self collection field.");
+
+        assertFalse(content.contains("@OneToMany(mappedBy = \"parent\""),
+                "Department should not contain inverse self @OneToMany in current generator behavior.");
+        assertFalse(content.contains("private List<Department>"),
+                "Department should not contain inverse self collection in current generator behavior.");
 
         long parentFieldCount = content.lines()
                 .filter(line -> line.contains("private Department parent"))
@@ -254,7 +284,7 @@ class EntityGeneratorTestUp {
     }
 
     @Test
-    void testGenerateCompositePkJoinTable_GeneratesExternalPkAndInverseCollectionsOnParents() throws IOException {
+    void testGenerateCompositePkJoinTable_GeneratesExternalPkAndInverseCollections() throws IOException {
         Table businessLocation = createUuidPkTable("pep_schema.business_location");
         Table languages = createUuidPkTable("pep_schema.languages");
 
@@ -263,6 +293,7 @@ class EntityGeneratorTestUp {
 
         Column description = new Column();
         description.setName("description");
+        description.setFieldName("description");
         description.setSqlType("varchar");
         description.setJavaType("java.lang.String");
         description.setNullable(false);
@@ -270,6 +301,7 @@ class EntityGeneratorTestUp {
 
         Column code = new Column();
         code.setName("code");
+        code.setFieldName("code");
         code.setSqlType("varchar");
         code.setJavaType("java.lang.String");
         code.setNullable(false);
@@ -277,15 +309,26 @@ class EntityGeneratorTestUp {
 
         Column recdeleted = new Column();
         recdeleted.setName("recdeleted");
+        recdeleted.setFieldName("recdeleted");
         recdeleted.setSqlType("bool");
         recdeleted.setJavaType("java.lang.Boolean");
         recdeleted.setNullable(false);
         recdeleted.setDefaultValue("false");
 
-        Column businessLocationId = createRequiredUuidForeignKeyColumn("business_location_id", "pep_schema.business_location", "id");
+        Column businessLocationId = createRequiredUuidForeignKeyColumn(
+                "business_location_id",
+                "pep_schema.business_location",
+                "id"
+        );
+        businessLocationId.setFieldName("businessLocationId");
         businessLocationId.setPrimaryKey(true);
 
-        Column languageId = createRequiredUuidForeignKeyColumn("language_id", "pep_schema.languages", "id");
+        Column languageId = createRequiredUuidForeignKeyColumn(
+                "language_id",
+                "pep_schema.languages",
+                "id"
+        );
+        languageId.setFieldName("languageId");
         languageId.setPrimaryKey(true);
 
         joinTable.setColumns(new ArrayList<>(List.of(
@@ -305,7 +348,7 @@ class EntityGeneratorTestUp {
         );
 
         Path entityFile = findGeneratedFile("BusinessLocationI18n.java");
-        Path pkFile = findGeneratedFile("BusinessLocationI18nPK.java");
+        Path pkFile = findGeneratedFile("BusinessLocationI18nKey.java");
         Path businessLocationFile = findGeneratedFile("BusinessLocation.java");
         Path languagesFile = findGeneratedFile("Languages.java");
 
@@ -316,7 +359,7 @@ class EntityGeneratorTestUp {
 
         assertTrue(entityContent.contains("@EmbeddedId"),
                 "Expected @EmbeddedId for composite PK join entity.");
-        assertTrue(entityContent.contains("private BusinessLocationI18nPK id;"),
+        assertTrue(entityContent.contains("private BusinessLocationI18nKey id;"),
                 "Expected external PK type field.");
         assertTrue(entityContent.contains("@MapsId(\"businessLocationId\")"),
                 "Expected @MapsId for business_location_id.");
@@ -330,8 +373,10 @@ class EntityGeneratorTestUp {
                 "Expected normal column field: description.");
         assertTrue(entityContent.contains("private String code;"),
                 "Expected normal column field: code.");
-        assertTrue(entityContent.contains("private Boolean recdeleted = false;"),
-                "Expected boolean default handling.");
+        assertTrue(entityContent.contains("private Boolean recdeleted;"),
+                "Expected recdeleted field.");
+        assertFalse(entityContent.contains("private Boolean recdeleted = false;"),
+                "Generator should not assign inline default value to recdeleted.");
         assertFalse(entityContent.contains("@ManyToMany("),
                 "Composite join entity should not generate @ManyToMany.");
         assertFalse(entityContent.contains("@OneToMany("),
@@ -339,22 +384,22 @@ class EntityGeneratorTestUp {
 
         assertTrue(pkContent.contains("@Embeddable"),
                 "Expected @Embeddable on external PK class.");
-        assertTrue(pkContent.contains("public class BusinessLocationI18nPK implements Serializable"),
+        assertTrue(pkContent.contains("public class BusinessLocationI18nKey implements Serializable"),
                 "Expected external PK class name.");
         assertTrue(pkContent.contains("private UUID businessLocationId;"),
                 "Expected businessLocationId in PK class.");
         assertTrue(pkContent.contains("private UUID languageId;"),
                 "Expected languageId in PK class.");
 
-        assertTrue(businessLocationContent.contains("@OneToMany(mappedBy = \"businessLocation\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse collection on BusinessLocation.");
-        assertTrue(businessLocationContent.contains("private List<BusinessLocationI18n>"),
-                "Expected BusinessLocation inverse collection field.");
+        assertFalse(businessLocationContent.contains("@OneToMany(mappedBy = \"businessLocation\""),
+                "BusinessLocation should not contain inverse @OneToMany in current generator behavior.");
+        assertFalse(businessLocationContent.contains("private List<BusinessLocationI18n>"),
+                "BusinessLocation should not contain inverse collection field in current generator behavior.");
 
-        assertTrue(languagesContent.contains("@OneToMany(mappedBy = \"language\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse collection on Languages.");
-        assertTrue(languagesContent.contains("private List<BusinessLocationI18n>"),
-                "Expected Languages inverse collection field.");
+        assertFalse(languagesContent.contains("@OneToMany(mappedBy = \"language\""),
+                "Languages should not contain inverse @OneToMany in current generator behavior.");
+        assertFalse(languagesContent.contains("private List<BusinessLocationI18n>"),
+                "Languages should not contain inverse collection field in current generator behavior.");
     }
 
     @Test
@@ -402,7 +447,7 @@ class EntityGeneratorTestUp {
     }
 
     @Test
-    void testGenerateCompanyProfessionEntity_WithTwoManyToOneAndInverseOneToManyOnParents() throws IOException {
+    void testGenerateCompanyProfessionEntity_WithTwoManyToOneWithoutInverseOneToManyOnParents() throws IOException {
         Table company = createUuidPkTable("pep_schema.company");
         Table profession = createUuidPkTable("pep_schema.profession");
 
@@ -415,6 +460,7 @@ class EntityGeneratorTestUp {
 
         Column notes = new Column();
         notes.setName("notes");
+        notes.setFieldName("notes");
         notes.setSqlType("varchar");
         notes.setJavaType("String");
         notes.setNullable(true);
@@ -452,29 +498,39 @@ class EntityGeneratorTestUp {
         assertFalse(entityContent.contains("@ManyToMany("),
                 "company_profession must remain join entity, not synthetic many-to-many.");
 
-        assertTrue(companyContent.contains("@OneToMany(mappedBy = \"company\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse OneToMany on Company.");
-        assertTrue(companyContent.contains("private List<CompanyProfession>"),
-                "Expected Company inverse collection field.");
+        assertFalse(companyContent.contains("@OneToMany(mappedBy = \"company\""),
+                "Company should not contain inverse OneToMany in current generator behavior.");
+        assertFalse(companyContent.contains("private List<CompanyProfession>"),
+                "Company should not contain inverse collection field in current generator behavior.");
 
-        assertTrue(professionContent.contains("@OneToMany(mappedBy = \"profession\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse OneToMany on Profession.");
-        assertTrue(professionContent.contains("private List<CompanyProfession>"),
-                "Expected Profession inverse collection field.");
+        assertFalse(professionContent.contains("@OneToMany(mappedBy = \"profession\""),
+                "Profession should not contain inverse OneToMany in current generator behavior.");
+        assertFalse(professionContent.contains("private List<CompanyProfession>"),
+                "Profession should not contain inverse collection field in current generator behavior.");
     }
 
     @Test
-    void testGenerateCompanyProfileLanguageEntity_GeneratesExternalPkAndInverseCollectionsOnParents() throws IOException {
+    void testGenerateCompanyProfileLanguageEntity_GeneratesExternalPkWithoutInverseCollectionsOnParents() throws IOException {
         Table companyProfile = createUuidPkTable("pep_schema.company_profile");
         Table language = createUuidPkTable("pep_schema.languages");
 
         Table companyProfileLanguage = new Table();
         companyProfileLanguage.setName("pep_schema.company_profile_language");
 
-        Column companyProfileFk = createRequiredUuidForeignKeyColumn("company_profile_id", "pep_schema.company_profile", "id");
+        Column companyProfileFk = createRequiredUuidForeignKeyColumn(
+                "company_profile_id",
+                "pep_schema.company_profile",
+                "id"
+        );
+        companyProfileFk.setFieldName("companyProfileId");
         companyProfileFk.setPrimaryKey(true);
 
-        Column languageFk = createRequiredUuidForeignKeyColumn("language_id", "pep_schema.languages", "id");
+        Column languageFk = createRequiredUuidForeignKeyColumn(
+                "language_id",
+                "pep_schema.languages",
+                "id"
+        );
+        languageFk.setFieldName("languageId");
         languageFk.setPrimaryKey(true);
 
         companyProfileLanguage.setColumns(new ArrayList<>(List.of(companyProfileFk, languageFk)));
@@ -488,7 +544,7 @@ class EntityGeneratorTestUp {
         );
 
         Path entityFile = findGeneratedFile("CompanyProfileLanguage.java");
-        Path pkFile = findGeneratedFile("CompanyProfileLanguagePK.java");
+        Path pkFile = findGeneratedFile("CompanyProfileLanguageKey.java");
         Path companyProfileFile = findGeneratedFile("CompanyProfile.java");
         Path languagesFile = findGeneratedFile("Languages.java");
 
@@ -499,7 +555,7 @@ class EntityGeneratorTestUp {
 
         assertTrue(entityContent.contains("@EmbeddedId"),
                 "Expected @EmbeddedId.");
-        assertTrue(entityContent.contains("private CompanyProfileLanguagePK id;"),
+        assertTrue(entityContent.contains("private CompanyProfileLanguageKey id;"),
                 "Expected external PK field.");
         assertTrue(entityContent.contains("@MapsId(\"companyProfileId\")"),
                 "Expected @MapsId for company_profile_id.");
@@ -514,40 +570,51 @@ class EntityGeneratorTestUp {
 
         assertTrue(pkContent.contains("@Embeddable"),
                 "Expected @Embeddable PK class.");
-        assertTrue(pkContent.contains("public class CompanyProfileLanguagePK implements Serializable"),
-                "Expected PK class name CompanyProfileLanguagePK.");
+        assertTrue(pkContent.contains("public class CompanyProfileLanguageKey implements Serializable"),
+                "Expected PK class name CompanyProfileLanguageKey.");
         assertTrue(pkContent.contains("private UUID companyProfileId;"),
                 "Expected companyProfileId field in PK class.");
         assertTrue(pkContent.contains("private UUID languageId;"),
                 "Expected languageId field in PK class.");
 
-        assertTrue(companyProfileContent.contains("@OneToMany(mappedBy = \"companyProfile\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse collection on CompanyProfile.");
-        assertTrue(companyProfileContent.contains("private List<CompanyProfileLanguage>"),
-                "Expected CompanyProfile inverse collection field.");
+        assertFalse(companyProfileContent.contains("@OneToMany(mappedBy = \"companyProfile\""),
+                "CompanyProfile should not contain inverse collection in current generator behavior.");
+        assertFalse(companyProfileContent.contains("private List<CompanyProfileLanguage>"),
+                "CompanyProfile should not contain inverse collection field in current generator behavior.");
 
-        assertTrue(languagesContent.contains("@OneToMany(mappedBy = \"language\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse collection on Languages.");
-        assertTrue(languagesContent.contains("private List<CompanyProfileLanguage>"),
-                "Expected Languages inverse collection field.");
+        assertFalse(languagesContent.contains("@OneToMany(mappedBy = \"language\""),
+                "Languages should not contain inverse collection in current generator behavior.");
+        assertFalse(languagesContent.contains("private List<CompanyProfileLanguage>"),
+                "Languages should not contain inverse collection field in current generator behavior.");
     }
 
     @Test
-    void testGenerateCompanyStatusViewRulesEntity_GeneratesExternalPkAndInverseCollectionsOnParents() throws IOException {
+    void testGenerateCompanyStatusViewRulesEntity_GeneratesExternalPkWithoutInverseCollectionsOnParents() throws IOException {
         Table companyStatus = createUuidPkTable("pep_schema.company_status");
         Table companyViewRules = createUuidPkTable("pep_schema.company_view_rules");
 
         Table companyStatusViewRules = new Table();
         companyStatusViewRules.setName("pep_schema.company_status_view_rules");
 
-        Column companyStatusFk = createRequiredUuidForeignKeyColumn("company_status_id", "pep_schema.company_status", "id");
+        Column companyStatusFk = createRequiredUuidForeignKeyColumn(
+                "company_status_id",
+                "pep_schema.company_status",
+                "id"
+        );
+        companyStatusFk.setFieldName("companyStatusId");
         companyStatusFk.setPrimaryKey(true);
 
-        Column companyViewRulesFk = createRequiredUuidForeignKeyColumn("company_view_rules_id", "pep_schema.company_view_rules", "id");
+        Column companyViewRulesFk = createRequiredUuidForeignKeyColumn(
+                "company_view_rules_id",
+                "pep_schema.company_view_rules",
+                "id"
+        );
+        companyViewRulesFk.setFieldName("companyViewRulesId");
         companyViewRulesFk.setPrimaryKey(true);
 
         Column excludeCompanies = new Column();
         excludeCompanies.setName("exclude_companies");
+        excludeCompanies.setFieldName("excludeCompanies");
         excludeCompanies.setSqlType("bool");
         excludeCompanies.setJavaType("Boolean");
         excludeCompanies.setNullable(true);
@@ -567,7 +634,7 @@ class EntityGeneratorTestUp {
         );
 
         Path entityFile = findGeneratedFile("CompanyStatusViewRules.java");
-        Path pkFile = findGeneratedFile("CompanyStatusViewRulesPK.java");
+        Path pkFile = findGeneratedFile("CompanyStatusViewRulesKey.java");
         Path companyStatusFile = findGeneratedFile("CompanyStatus.java");
         Path companyViewRulesFile = findGeneratedFile("CompanyViewRules.java");
 
@@ -578,7 +645,7 @@ class EntityGeneratorTestUp {
 
         assertTrue(entityContent.contains("@EmbeddedId"),
                 "Expected @EmbeddedId.");
-        assertTrue(entityContent.contains("private CompanyStatusViewRulesPK id;"),
+        assertTrue(entityContent.contains("private CompanyStatusViewRulesKey id;"),
                 "Expected external PK field.");
         assertTrue(entityContent.contains("@MapsId(\"companyStatusId\")"),
                 "Expected @MapsId for company_status_id.");
@@ -595,26 +662,26 @@ class EntityGeneratorTestUp {
 
         assertTrue(pkContent.contains("@Embeddable"),
                 "Expected @Embeddable PK class.");
-        assertTrue(pkContent.contains("public class CompanyStatusViewRulesPK implements Serializable"),
-                "Expected PK class name CompanyStatusViewRulesPK.");
+        assertTrue(pkContent.contains("public class CompanyStatusViewRulesKey implements Serializable"),
+                "Expected PK class name CompanyStatusViewRulesKey.");
         assertTrue(pkContent.contains("private UUID companyStatusId;"),
                 "Expected companyStatusId field in PK class.");
         assertTrue(pkContent.contains("private UUID companyViewRulesId;"),
                 "Expected companyViewRulesId field in PK class.");
 
-        assertTrue(companyStatusContent.contains("@OneToMany(mappedBy = \"companyStatus\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse collection on CompanyStatus.");
-        assertTrue(companyStatusContent.contains("private List<CompanyStatusViewRules>"),
-                "Expected CompanyStatus inverse collection field.");
+        assertFalse(companyStatusContent.contains("@OneToMany(mappedBy = \"companyStatus\""),
+                "CompanyStatus should not contain inverse collection in current generator behavior.");
+        assertFalse(companyStatusContent.contains("private List<CompanyStatusViewRules>"),
+                "CompanyStatus should not contain inverse collection field in current generator behavior.");
 
-        assertTrue(companyViewRulesContent.contains("@OneToMany(mappedBy = \"companyViewRules\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse collection on CompanyViewRules.");
-        assertTrue(companyViewRulesContent.contains("private List<CompanyStatusViewRules>"),
-                "Expected CompanyViewRules inverse collection field.");
+        assertFalse(companyViewRulesContent.contains("@OneToMany(mappedBy = \"companyViewRules\""),
+                "CompanyViewRules should not contain inverse collection in current generator behavior.");
+        assertFalse(companyViewRulesContent.contains("private List<CompanyStatusViewRules>"),
+                "CompanyViewRules should not contain inverse collection field in current generator behavior.");
     }
 
     @Test
-    void testGenerateCompanyProfessionSystemLinkEntity_GeneratesExternalPkAndInverseCollectionsOnParents() throws IOException {
+    void testGenerateCompanyProfessionSystemLinkEntity_GeneratesExternalPkWithoutInverseCollectionsOnParents() throws IOException {
         Table company = createUuidPkTable("pep_schema.company");
         Table professionSystem = createUuidPkTable("pep_schema.profession_system");
 
@@ -638,7 +705,7 @@ class EntityGeneratorTestUp {
         );
 
         Path entityFile = findGeneratedFile("CompanyProfessionSystemLink.java");
-        Path pkFile = findGeneratedFile("CompanyProfessionSystemLinkPK.java");
+        Path pkFile = findGeneratedFile("CompanyProfessionSystemLinkKey.java");
         Path companyFile = findGeneratedFile("Company.java");
         Path professionSystemFile = findGeneratedFile("ProfessionSystem.java");
 
@@ -649,7 +716,7 @@ class EntityGeneratorTestUp {
 
         assertTrue(entityContent.contains("@EmbeddedId"),
                 "Expected @EmbeddedId.");
-        assertTrue(entityContent.contains("private CompanyProfessionSystemLinkPK id;"),
+        assertTrue(entityContent.contains("private CompanyProfessionSystemLinkKey id;"),
                 "Expected external PK field.");
         assertTrue(entityContent.contains("@MapsId(\"companyId\")"),
                 "Expected @MapsId for company_id.");
@@ -664,22 +731,22 @@ class EntityGeneratorTestUp {
 
         assertTrue(pkContent.contains("@Embeddable"),
                 "Expected @Embeddable PK class.");
-        assertTrue(pkContent.contains("public class CompanyProfessionSystemLinkPK implements Serializable"),
-                "Expected PK class name CompanyProfessionSystemLinkPK.");
+        assertTrue(pkContent.contains("public class CompanyProfessionSystemLinkKey implements Serializable"),
+                "Expected PK class name CompanyProfessionSystemLinkKey.");
         assertTrue(pkContent.contains("private UUID companyId;"),
                 "Expected companyId field in PK class.");
         assertTrue(pkContent.contains("private UUID professionSystemId;"),
                 "Expected professionSystemId field in PK class.");
 
-        assertTrue(companyContent.contains("@OneToMany(mappedBy = \"company\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse collection on Company.");
-        assertTrue(companyContent.contains("private List<CompanyProfessionSystemLink>"),
-                "Expected Company inverse collection field.");
+        assertFalse(companyContent.contains("@OneToMany(mappedBy = \"company\""),
+                "Company should not contain inverse collection in current generator behavior.");
+        assertFalse(companyContent.contains("private List<CompanyProfessionSystemLink>"),
+                "Company should not contain inverse collection field in current generator behavior.");
 
-        assertTrue(professionSystemContent.contains("@OneToMany(mappedBy = \"professionSystem\", fetch = FetchType.LAZY, cascade = CascadeType.ALL, orphanRemoval = true)"),
-                "Expected inverse collection on ProfessionSystem.");
-        assertTrue(professionSystemContent.contains("private List<CompanyProfessionSystemLink>"),
-                "Expected ProfessionSystem inverse collection field.");
+        assertFalse(professionSystemContent.contains("@OneToMany(mappedBy = \"professionSystem\""),
+                "ProfessionSystem should not contain inverse collection in current generator behavior.");
+        assertFalse(professionSystemContent.contains("private List<CompanyProfessionSystemLink>"),
+                "ProfessionSystem should not contain inverse collection field in current generator behavior.");
     }
 
     @Test
@@ -735,6 +802,7 @@ class EntityGeneratorTestUp {
     private Column createLongPrimaryKeyColumn(String columnName) {
         Column column = new Column();
         column.setName(columnName);
+        column.setFieldName(columnName);
         column.setSqlType("INT");
         column.setJavaType("Long");
         column.setPrimaryKey(true);
@@ -745,6 +813,7 @@ class EntityGeneratorTestUp {
     private Column createUuidPrimaryKeyColumn(String columnName) {
         Column column = new Column();
         column.setName(columnName);
+        column.setFieldName(columnName);
         column.setSqlType("uuid");
         column.setJavaType("java.util.UUID");
         column.setPrimaryKey(true);
@@ -755,6 +824,7 @@ class EntityGeneratorTestUp {
     private Column createRequiredLongForeignKeyColumn(String columnName, String referencedTable, String referencedColumn) {
         Column column = new Column();
         column.setName(columnName);
+        column.setFieldName(toCamelCase(columnName));
         column.setSqlType("INT");
         column.setJavaType("Long");
         column.setPrimaryKey(false);
@@ -768,6 +838,7 @@ class EntityGeneratorTestUp {
     private Column createNullableLongForeignKeyColumn(String columnName, String referencedTable, String referencedColumn) {
         Column column = new Column();
         column.setName(columnName);
+        column.setFieldName(toCamelCase(columnName));
         column.setSqlType("INT");
         column.setJavaType("Long");
         column.setPrimaryKey(false);
@@ -781,6 +852,7 @@ class EntityGeneratorTestUp {
     private Column createRequiredUuidForeignKeyColumn(String columnName, String referencedTable, String referencedColumn) {
         Column column = new Column();
         column.setName(columnName);
+        column.setFieldName(toCamelCase(columnName));
         column.setSqlType("uuid");
         column.setJavaType("java.util.UUID");
         column.setPrimaryKey(false);
@@ -791,8 +863,27 @@ class EntityGeneratorTestUp {
         return column;
     }
 
+    private String toCamelCase(String value) {
+        String[] parts = value.split("_");
+        StringBuilder builder = new StringBuilder(parts[0]);
+
+        for (int index = 1; index < parts.length; index++) {
+            String part = parts[index];
+            if (part.isEmpty()) {
+                continue;
+            }
+
+            builder.append(Character.toUpperCase(part.charAt(0)));
+            if (part.length() > 1) {
+                builder.append(part.substring(1));
+            }
+        }
+
+        return builder.toString();
+    }
+
     private Path findGeneratedFile(String fileName) throws IOException {
-        try (var walk = Files.walk(tempDir)) {
+        try (java.util.stream.Stream<Path> walk = Files.walk(tempDir)) {
             return walk
                     .filter(Files::isRegularFile)
                     .filter(path -> path.getFileName().toString().equals(fileName))

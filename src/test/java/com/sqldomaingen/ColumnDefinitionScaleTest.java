@@ -6,7 +6,6 @@ import com.sqldomaingen.parser.PostgreSQLParser;
 import lombok.extern.log4j.Log4j2;
 import org.antlr.v4.runtime.CharStreams;
 import org.antlr.v4.runtime.CommonTokenStream;
-import org.antlr.v4.runtime.tree.ParseTree;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -20,8 +19,9 @@ class ColumnDefinitionScaleTest {
         );
         CommonTokenStream tokens = new CommonTokenStream(lexer);
         PostgreSQLParser parser = new PostgreSQLParser(tokens);
-        ParseTree tree = parser.createTableStatement();
-        return ((PostgreSQLParser.CreateTableStatementContext) tree).columnDef(0);
+        PostgreSQLParser.CreateTableStatementContext createTableStatementContext = parser.createTableStatement();
+
+        return createTableStatementContext.columnDef(0);
     }
 
     private ColumnDefinition parseColumn(String sql) {

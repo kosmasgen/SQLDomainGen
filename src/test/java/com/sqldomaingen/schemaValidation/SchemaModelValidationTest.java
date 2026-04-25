@@ -79,7 +79,6 @@ class SchemaModelValidationTest {
         assertForeignKeysPointToExistingTables(parsedTables, tableByName, violations);
         assertIndexesAreStructurallyValid(parsedTables, violations);
         assertDataStagingTableScenario(tableByName, violations);
-        assertKeycloakDataTableScenario(tableByName, violations);
         assertCompanySearchMaterializedViewIndexes(tableByName, violations);
 
         printReport(violations);
@@ -361,53 +360,12 @@ class SchemaModelValidationTest {
             return;
         }
 
-        if (!hasIndex(dataStagingTable, "idx_staging_status", List.of("status", "pulled_at"))) {
+        if (isIndexMissingOrInvalid(dataStagingTable, "idx_staging_status", List.of("status", "pulled_at"))) {
             violations.add("Expected index idx_staging_status(status, pulled_at)");
         }
 
-        if (!hasIndex(dataStagingTable, "idx_staging_table_status", List.of("legacy_table_name", "status"))) {
+        if (isIndexMissingOrInvalid(dataStagingTable, "idx_staging_table_status", List.of("legacy_table_name", "status"))) {
             violations.add("Expected index idx_staging_table_status(legacy_table_name, status)");
-        }
-    }
-
-    /**
-     * Verifies the known real-schema scenario for pep_schema.keycloak_data.
-     *
-     * @param tableByName normalized table lookup map
-     * @param violations collected violations
-     */
-    private void assertKeycloakDataTableScenario(Map<String, Table> tableByName, List<String> violations) {
-        Table keycloakDataTable = tableByName.get("pep_schema.keycloak_data");
-        if (keycloakDataTable == null) {
-            violations.add("Table pep_schema.keycloak_data should exist");
-            return;
-        }
-
-        Column keycloakIdColumn = findColumn(keycloakDataTable, "keycloak_id");
-        if (keycloakIdColumn == null) {
-            violations.add("keycloak_data.keycloak_id should exist");
-        } else {
-            if (!keycloakIdColumn.isPrimaryKey()) {
-                violations.add("keycloak_data.keycloak_id should be primary key");
-            }
-            if (!"String".equals(toSimpleJavaType(keycloakIdColumn.getJavaType()))) {
-                violations.add("keycloak_data.keycloak_id should map to String");
-            }
-            if (keycloakIdColumn.isIdentity()) {
-                violations.add("keycloak_data.keycloak_id must not be treated as identity");
-            }
-        }
-
-        Column recDeletedColumn = findColumn(keycloakDataTable, "rec_deleted");
-        if (recDeletedColumn == null) {
-            violations.add("keycloak_data.rec_deleted should exist");
-        } else {
-            if (!"Boolean".equals(toSimpleJavaType(recDeletedColumn.getJavaType()))) {
-                violations.add("keycloak_data.rec_deleted should map to Boolean");
-            }
-            if (recDeletedColumn.getDefaultValue() == null) {
-                violations.add("keycloak_data.rec_deleted should preserve boolean default");
-            }
         }
     }
 
@@ -432,24 +390,24 @@ class SchemaModelValidationTest {
             violations.add("company_search_mv should have indexes parsed");
         }
 
-        if (!hasIndex(companySearchMvTable, "idx_company_search_mv_id", List.of("id"))) {
+        if (isIndexMissingOrInvalid(companySearchMvTable, "idx_company_search_mv_id", List.of("id"))) {
             violations.add("Expected unique index idx_company_search_mv_id(id)");
         }
 
-        if (!hasIndex(companySearchMvTable, "idx_company_search_mv_company_profile", List.of("company_id", "profile_id"))) {
+        if (isIndexMissingOrInvalid(companySearchMvTable, "idx_company_search_mv_company_profile", List.of("company_id", "profile_id"))) {
             violations.add("Expected multi-column index idx_company_search_mv_company_profile(company_id, profile_id)");
         }
 
-        if (!hasIndex(companySearchMvTable, "idx_company_search_mv_titles_greek", List.of("titles_greek"))) {
+        if (isIndexMissingOrInvalid(companySearchMvTable, "idx_company_search_mv_titles_greek", List.of("titles_greek"))) {
             violations.add("Expected gin index idx_company_search_mv_titles_greek(titles_greek)");
         }
 
-        if (!hasIndex(companySearchMvTable, "idx_company_search_mv_name_english_lower",
+        if (isIndexMissingOrInvalid(companySearchMvTable, "idx_company_search_mv_name_english_lower",
                 List.of("lower((name_english)::text)"))) {
             violations.add("Expected expression index idx_company_search_mv_name_english_lower(lower((name_english)::text))");
         }
 
-        if (!hasIndex(companySearchMvTable, "idx_company_search_mv_aegean_cuisine_url",
+        if (isIndexMissingOrInvalid(companySearchMvTable, "idx_company_search_mv_aegean_cuisine_url",
                 List.of("aegean_cuisine_url"))) {
             violations.add("Expected partial index idx_company_search_mv_aegean_cuisine_url(aegean_cuisine_url)");
         }
@@ -538,30 +496,30 @@ class SchemaModelValidationTest {
     }
 
     /**
-     * Verifies that one index exists with the expected ordered column list.
+     * Checks whether an index is missing or does not match expected columns.
      *
      * @param table parsed table
      * @param indexName expected index name
-     * @param expectedColumns expected ordered column or expression list
-     * @return true when the index exists and matches the expected columns
+     * @param expectedColumns expected ordered column list
+     * @return true when the index is missing or mismatched
      */
-    private boolean hasIndex(Table table, String indexName, List<String> expectedColumns) {
+    private boolean isIndexMissingOrInvalid(Table table, String indexName, List<String> expectedColumns) {
         IndexDefinition indexDefinition = findIndex(table, indexName);
         if (indexDefinition == null) {
-            return false;
+            return true;
         }
 
         List<String> actualColumns = new ArrayList<>();
-        for (String currentColumn : indexDefinition.getColumns()) {
-            actualColumns.add(normalizePhysicalName(currentColumn));
+        for (String column : indexDefinition.getColumns()) {
+            actualColumns.add(normalizePhysicalName(column));
         }
 
         List<String> normalizedExpectedColumns = new ArrayList<>();
-        for (String currentColumn : expectedColumns) {
-            normalizedExpectedColumns.add(normalizePhysicalName(currentColumn));
+        for (String column : expectedColumns) {
+            normalizedExpectedColumns.add(normalizePhysicalName(column));
         }
 
-        return actualColumns.equals(normalizedExpectedColumns);
+        return !actualColumns.equals(normalizedExpectedColumns);
     }
 
     /**

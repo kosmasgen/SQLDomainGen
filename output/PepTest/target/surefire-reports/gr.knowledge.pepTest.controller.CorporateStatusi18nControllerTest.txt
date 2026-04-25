@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: gr.knowledge.pepTest.controller.CorporateStatusi18nControllerTest
+-------------------------------------------------------------------------------
+Tests run: 12, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 0.670 s -- in gr.knowledge.pepTest.controller.CorporateStatusi18nControllerTest

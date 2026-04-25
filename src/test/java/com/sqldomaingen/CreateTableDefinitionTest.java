@@ -134,7 +134,7 @@ class CreateTableDefinitionTest {
 
         assertNotNull(primaryKeys, "Primary key list must not be null.");
         assertEquals(1, primaryKeys.size(), "Unexpected number of primary keys.");
-        assertEquals("id", primaryKeys.get(0), "Primary key column was not extracted correctly.");
+        assertEquals("id", primaryKeys.getFirst(), "Primary key column was not extracted correctly.");
     }
 
     @Test
@@ -427,8 +427,8 @@ class CreateTableDefinitionTest {
     void testExtractColumns_NumericPrecisionAndScale_ShouldBePreservedInColumnModel() {
         String sql = """
         CREATE TABLE income_gemi_payment (
-            chamber_amount NUMERIC(19, 2) NULL,
-            total_amount_paid NUMERIC(19, 2) NULL
+            chamber_amount NUMERIC(19,2) NULL,
+            total_amount_paid NUMERIC(19,2) NULL
         );
         """;
 
@@ -443,13 +443,13 @@ class CreateTableDefinitionTest {
 
         Column chamberAmount = findColumn(table, "chamber_amount");
 
-        assertEquals("NUMERIC(19, 2)", chamberAmount.getSqlType(), "SQL type must preserve precision/scale");
+        assertEquals("NUMERIC(19,2)", chamberAmount.getSqlType(), "SQL type must preserve precision/scale");
         assertEquals(19, chamberAmount.getPrecision(), "Precision must be 19");
         assertEquals(2, chamberAmount.getScale(), "Scale must be 2");
 
         Column totalAmount = findColumn(table, "total_amount_paid");
 
-        assertEquals("NUMERIC(19, 2)", totalAmount.getSqlType(), "SQL type must preserve precision/scale");
+        assertEquals("NUMERIC(19,2)", totalAmount.getSqlType(), "SQL type must preserve precision/scale");
         assertEquals(19, totalAmount.getPrecision(), "Precision must be 19");
         assertEquals(2, totalAmount.getScale(), "Scale must be 2");
     }

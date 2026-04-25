@@ -111,7 +111,7 @@ class TableParsingTest {
         assertEquals(1, capture.createTables.size(),
                 "Expected exactly one CREATE TABLE statement in script.");
 
-        CreateTableCapture table = capture.createTables.get(0);
+        CreateTableCapture table = capture.createTables.getFirst();
 
         assertEquals(normalize(expectedTableName), normalize(table.tableName),
                 "Parsed table name mismatch.");
@@ -409,18 +409,18 @@ class TableParsingTest {
     @Test
     void testParseHolidayTable() {
         String sql = """
-                CREATE TABLE holiday (
-                    holiday_id SERIAL PRIMARY KEY,
-                    name VARCHAR(100) NOT NULL,
-                    description TEXT,
-                    date DATE NOT NULL,
-                    is_recurring BOOLEAN DEFAULT FALSE,
-                    recur_pattern_id INT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
-                );
-                """;
+            CREATE TABLE holiday (
+                holiday_id SERIAL PRIMARY KEY,
+                name VARCHAR(100) NOT NULL,
+                description TEXT,
+                holiday_date DATE NOT NULL,
+                is_recurring BOOLEAN DEFAULT FALSE,
+                recur_pattern_id INT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
+            );
+            """;
 
         parseCreateTableAndValidate(
                 sql,
@@ -429,7 +429,7 @@ class TableParsingTest {
                 "holiday_id SERIAL PRIMARY KEY",
                 "name VARCHAR(100) NOT NULL",
                 "description TEXT",
-                "date DATE NOT NULL",
+                "holiday_date DATE NOT NULL",
                 "is_recurring BOOLEAN DEFAULT FALSE",
                 "recur_pattern_id INT",
                 "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",
@@ -441,20 +441,20 @@ class TableParsingTest {
     @Test
     void testParseDepartmentDayOffTable() {
         String sql = """
-                CREATE TABLE department_day_off (
-                    day_off_id SERIAL PRIMARY KEY,
-                    department_id INT NOT NULL,
-                    name VARCHAR(100) NOT NULL,
-                    description TEXT,
-                    date DATE NOT NULL,
-                    is_recurring BOOLEAN DEFAULT FALSE,
-                    recur_pattern_id INT,
-                    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
-                    FOREIGN KEY (department_id) REFERENCES department(department_id),
-                    FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
-                );
-                """;
+            CREATE TABLE department_day_off (
+                day_off_id SERIAL PRIMARY KEY,
+                department_id INT NOT NULL,
+                name VARCHAR(100) NOT NULL,
+                description TEXT,
+                day_off_date DATE NOT NULL,
+                is_recurring BOOLEAN DEFAULT FALSE,
+                recur_pattern_id INT,
+                created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                FOREIGN KEY (department_id) REFERENCES department(department_id),
+                FOREIGN KEY (recur_pattern_id) REFERENCES recurring_pattern(pattern_id)
+            );
+            """;
 
         parseCreateTableAndValidate(
                 sql,
@@ -464,7 +464,7 @@ class TableParsingTest {
                 "department_id INT NOT NULL",
                 "name VARCHAR(100) NOT NULL",
                 "description TEXT",
-                "date DATE NOT NULL",
+                "day_off_date DATE NOT NULL",
                 "is_recurring BOOLEAN DEFAULT FALSE",
                 "recur_pattern_id INT",
                 "created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP",

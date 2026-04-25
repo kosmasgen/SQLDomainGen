@@ -1,7 +1,6 @@
 package com.sqldomaingen;
 
 import com.sqldomaingen.generator.EntityGenerator;
-import com.sqldomaingen.generator.RelationshipResolver;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
 import lombok.extern.log4j.Log4j2;
@@ -13,9 +12,7 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -30,12 +27,12 @@ class EntityGeneratorTest {
     @BeforeEach
     void setUp() {
         entityGenerator = new EntityGenerator();
-        log.info("🔧 Setting up EntityGeneratorTest...");
+        log.info(" Setting up EntityGeneratorTest...");
     }
 
     @Test
-    void testGenerateEntityWithOneToMany() {
-        log.info("🟢 Running testGenerateEntityWithOneToMany...");
+    void testGenerateEntityWithOneToMany() throws IOException {
+        log.info("Running testGenerateEntityWithOneToMany...");
 
         Table customers = new Table();
         customers.setName("Customers");
@@ -48,6 +45,7 @@ class EntityGeneratorTest {
         customerId.setSqlType("INT");
         customerId.setJavaType("Long");
         customerId.setPrimaryKey(true);
+        customerId.setNullable(false);
         customers.setColumns(new ArrayList<>(List.of(customerId)));
 
         Column orderId = new Column();
@@ -55,6 +53,7 @@ class EntityGeneratorTest {
         orderId.setSqlType("INT");
         orderId.setJavaType("Long");
         orderId.setPrimaryKey(true);
+        orderId.setNullable(false);
 
         Column customerIdFk = new Column();
         customerIdFk.setName("customer_id");
@@ -68,48 +67,37 @@ class EntityGeneratorTest {
 
         orders.setColumns(new ArrayList<>(List.of(orderId, customerIdFk)));
 
-        // Δημιουργούμε το map που περιμένει ο RelationshipResolver
-        Map<String, Table> tableMap = new HashMap<>();
-        tableMap.put("Customers", customers);
-        tableMap.put("Orders", orders);
+        entityGenerator.generate(
+                List.of(customers, orders),
+                tempDir.toString(),
+                "com.example",
+                true,
+                false
+        );
 
-        RelationshipResolver resolver = new RelationshipResolver(tableMap);
-        resolver.resolveRelationshipsForAllTables();
+        Path customersFile = findGeneratedFile("Customers.java");
+        Path ordersFile = findGeneratedFile("Orders.java");
 
-        EntityGenerator generator = new EntityGenerator();
-        String content = generator.createEntityContent(customers, "com.example.entities", false);
+        assertTrue(Files.exists(customersFile), "Customers.java should be generated.");
+        assertTrue(Files.exists(ordersFile), "Orders.java should be generated.");
 
-        log.debug("📄 Generated content of Customers.java:\n{}", content);
+        String customersContent = Files.readString(customersFile);
+        String ordersContent = Files.readString(ordersFile);
 
-        boolean hasOneToMany = content.contains("@OneToMany");
-        boolean hasCorrectMappedBy = content.contains("mappedBy = \"customer\"");
-        boolean hasCorrectListField = content.contains("private List<Orders> orders");
+        assertFalse(customersContent.contains("@OneToMany"),
+                "Customers.java should not contain inverse @OneToMany in current generator behavior.");
 
-        if (!hasOneToMany) {
-            log.error("❌ @OneToMany annotation is missing!");
-        }
-
-        if (!hasCorrectMappedBy) {
-            log.error("❌ mappedBy = \"customer\" is missing or incorrect!");
-        }
-
-        if (!hasCorrectListField) {
-            log.error("❌ Field 'private List<Orders> orders' is missing or incorrect!");
-        }
-
-        System.out.println("---- Customers.java (OneToMany) ----");
-        System.out.println(content);
-        System.out.println("-------------------------------");
-
-
-        assertTrue(hasOneToMany, "⚠️ Δεν βρέθηκε η σχέση OneToMany");
-        assertTrue(hasCorrectMappedBy, "⚠️ Το mappedBy δεν είναι σωστό");
-        assertTrue(hasCorrectListField, "⚠️ Το όνομα της λίστας δεν είναι σωστό");
+        assertTrue(ordersContent.contains("@ManyToOne(fetch = FetchType.LAZY)"),
+                "Orders.java should contain owning @ManyToOne relation.");
+        assertTrue(ordersContent.contains("@JoinColumn(name = \"customer_id\", nullable = false)"),
+                "Orders.java should contain correct JoinColumn for customer_id.");
+        assertTrue(ordersContent.contains("private Customers customer;"),
+                "Orders.java should contain relation field 'customer'.");
     }
 
     @Test
     void testGenerateDepartmentEntity_WithUuidPk_AndFields() throws IOException {
-        log.info("🟢 Running testGenerateDepartmentEntity_WithUuidPk_AndFields...");
+        log.info("Running testGenerateDepartmentEntity_WithUuidPk_AndFields...");
 
         String packageName = "com.example.entities";
 
@@ -118,6 +106,7 @@ class EntityGeneratorTest {
 
         Column departmentUuid = new Column();
         departmentUuid.setName("department_uuid");
+        departmentUuid.setFieldName("departmentUuid");
         departmentUuid.setSqlType("UUID");
         departmentUuid.setJavaType("java.util.UUID");
         departmentUuid.setPrimaryKey(true);
@@ -125,6 +114,7 @@ class EntityGeneratorTest {
 
         Column departmentId = new Column();
         departmentId.setName("department_id");
+        departmentId.setFieldName("departmentId");
         departmentId.setSqlType("SERIAL");
         departmentId.setJavaType("Integer");
         departmentId.setPrimaryKey(false);
@@ -132,30 +122,36 @@ class EntityGeneratorTest {
 
         Column name = new Column();
         name.setName("name");
+        name.setFieldName("name");
         name.setSqlType("VARCHAR(100)");
         name.setJavaType("String");
         name.setNullable(false);
+        name.setLength(100);
 
         Column description = new Column();
         description.setName("description");
+        description.setFieldName("description");
         description.setSqlType("TEXT");
         description.setJavaType("String");
         description.setNullable(true);
 
         Column parentDeptId = new Column();
         parentDeptId.setName("parent_dept_id");
+        parentDeptId.setFieldName("parentDeptId");
         parentDeptId.setSqlType("INT");
         parentDeptId.setJavaType("Integer");
         parentDeptId.setNullable(true);
 
         Column date = new Column();
         date.setName("date");
+        date.setFieldName("date");
         date.setSqlType("DATE");
         date.setJavaType("java.time.LocalDate");
         date.setNullable(true);
 
         Column createdAt = new Column();
         createdAt.setName("created_at");
+        createdAt.setFieldName("createdAt");
         createdAt.setSqlType("TIMESTAMP");
         createdAt.setJavaType("java.time.LocalDateTime");
         createdAt.setNullable(true);
@@ -163,6 +159,7 @@ class EntityGeneratorTest {
 
         Column updatedAt = new Column();
         updatedAt.setName("updated_at");
+        updatedAt.setFieldName("updatedAt");
         updatedAt.setSqlType("TIMESTAMP");
         updatedAt.setJavaType("java.time.LocalDateTime");
         updatedAt.setNullable(true);
@@ -170,6 +167,7 @@ class EntityGeneratorTest {
 
         Column isActive = new Column();
         isActive.setName("is_active");
+        isActive.setFieldName("isActive");
         isActive.setSqlType("BOOLEAN");
         isActive.setJavaType("Boolean");
         isActive.setNullable(false);
@@ -177,36 +175,45 @@ class EntityGeneratorTest {
 
         Column budget = new Column();
         budget.setName("budget");
+        budget.setFieldName("budget");
         budget.setSqlType("NUMERIC(12,2)");
         budget.setJavaType("java.math.BigDecimal");
         budget.setNullable(true);
+        budget.setPrecision(12);
+        budget.setScale(2);
 
         Column headcount = new Column();
         headcount.setName("headcount");
+        headcount.setFieldName("headcount");
         headcount.setSqlType("SMALLINT");
         headcount.setJavaType("Short");
         headcount.setNullable(true);
 
         Column phone = new Column();
         phone.setName("phone");
+        phone.setFieldName("phone");
         phone.setSqlType("VARCHAR(20)");
         phone.setJavaType("String");
         phone.setNullable(true);
+        phone.setLength(20);
 
         Column websiteUrl = new Column();
         websiteUrl.setName("website_url");
+        websiteUrl.setFieldName("websiteUrl");
         websiteUrl.setSqlType("TEXT");
         websiteUrl.setJavaType("String");
         websiteUrl.setNullable(true);
 
         Column attachment = new Column();
         attachment.setName("attachment");
+        attachment.setFieldName("attachment");
         attachment.setSqlType("BYTEA");
         attachment.setJavaType("byte[]");
         attachment.setNullable(true);
 
         Column shiftStart = new Column();
         shiftStart.setName("shift_start");
+        shiftStart.setFieldName("shiftStart");
         shiftStart.setSqlType("TIME");
         shiftStart.setJavaType("java.time.LocalTime");
         shiftStart.setNullable(true);
@@ -229,49 +236,42 @@ class EntityGeneratorTest {
                 shiftStart
         ));
 
-        entityGenerator.generate(List.of(table), tempDir.toString(), packageName, true, false);
+        entityGenerator.generate(
+                List.of(table),
+                tempDir.toString(),
+                packageName,
+                true,
+                false
+        );
 
-        // Expected output path: <tempDir>/com/example/entities/Department.java
-        Path expectedFile = tempDir
-                .resolve(packageName.replace('.', java.io.File.separatorChar))
-                .resolve("Department.java");
-
-        // More robust: search for Department.java anywhere under tempDir
-        Path generatedFile;
-        try (java.util.stream.Stream<Path> walk = Files.walk(tempDir)) {
-            generatedFile = walk
-                    .filter(p -> p.getFileName().toString().equals("Department.java"))
-                    .findFirst()
-                    .orElse(expectedFile);
-        }
-
-        if (!Files.exists(generatedFile)) {
-            // Dump generated files for debugging
-            try (java.util.stream.Stream<Path> walk = Files.walk(tempDir)) {
-                String filesDump = walk
-                        .filter(Files::isRegularFile)
-                        .map(p -> tempDir.relativize(p).toString())
-                        .sorted()
-                        .reduce("", (a, b) -> a + "\n" + b);
-                log.error("❌ Department.java was not generated. Files under tempDir:{}", filesDump);
-            }
-        }
-
-        assertTrue(Files.exists(generatedFile),
-                "Department.java should be generated under the package folder. Expected: " + expectedFile);
+        Path generatedFile = findGeneratedFile("Department.java");
+        assertTrue(Files.exists(generatedFile), "Department.java should be generated.");
 
         String content = Files.readString(generatedFile);
         log.debug("Generated Department.java:\n{}", content);
 
-        // Minimal sanity checks (expand as you like)
         assertTrue(content.contains("public class Department"), "Class name not generated correctly");
         assertTrue(content.contains("@Entity"), "@Entity annotation missing");
         assertTrue(content.contains("private UUID departmentUuid"), "UUID PK field not generated correctly");
+        assertTrue(content.contains("private Integer departmentId"), "departmentId field not generated correctly");
+        assertTrue(content.contains("private String name"), "name field not generated correctly");
+        assertTrue(content.contains("private String description"), "description field not generated correctly");
+        assertTrue(content.contains("private Integer parentDeptId"), "parentDeptId field not generated correctly");
+        assertTrue(content.contains("private LocalDate date"), "date field not generated correctly");
+        assertTrue(content.contains("private LocalDateTime createdAt"), "createdAt field not generated correctly");
+        assertTrue(content.contains("private LocalDateTime updatedAt"), "updatedAt field not generated correctly");
+        assertTrue(content.contains("private Boolean isActive"), "isActive field not generated correctly");
+        assertTrue(content.contains("private BigDecimal budget"), "budget field not generated correctly");
+        assertTrue(content.contains("private Short headcount"), "headcount field not generated correctly");
+        assertTrue(content.contains("private String phone"), "phone field not generated correctly");
+        assertTrue(content.contains("private String websiteUrl"), "websiteUrl field not generated correctly");
+        assertTrue(content.contains("private byte[] attachment"), "attachment field not generated correctly");
+        assertTrue(content.contains("private LocalTime shiftStart"), "shiftStart field not generated correctly");
 
-        // Your generator rules
         assertFalse(content.contains("@Builder.Default"), "Generator must not add @Builder.Default");
         assertFalse(content.contains("optional = false"), "Generator must not add optional=false");
-        assertFalse(content.contains("referencedColumnName"), "Generator must not add referencedColumnName=\"id\"");
+        assertFalse(content.contains("referencedColumnName = \"id\""),
+                "Generator must not add referencedColumnName=\"id\"");
     }
 
 
@@ -279,47 +279,51 @@ class EntityGeneratorTest {
 
     @Test
     void testNoDuplicateRelationshipFields() throws IOException {
-        log.info("🟢 Running testNoDuplicateRelationshipFields...");
+        log.info("Running testNoDuplicateRelationshipFields...");
 
         Table department = new Table();
         department.setName("Department");
 
         Column id = new Column();
         id.setName("id");
+        id.setFieldName("id");
         id.setSqlType("INT");
         id.setJavaType("Long");
         id.setPrimaryKey(true);
-        department.setColumns(new ArrayList<>(List.of(id)));
+        id.setNullable(false);
 
         Column parentId = new Column();
         parentId.setName("parent_id");
+        parentId.setFieldName("parentId");
         parentId.setSqlType("INT");
         parentId.setJavaType("Long");
         parentId.setForeignKey(true);
+        parentId.setNullable(true);
         parentId.setReferencedTable("Department");
         parentId.setReferencedColumn("id");
-        department.getColumns().add(parentId);
 
-        // Δημιουργούμε το map που περιμένει ο RelationshipResolver
-        Map<String, Table> tableMap = new HashMap<>();
-        tableMap.put("Department", department);
+        department.setColumns(new ArrayList<>(List.of(id, parentId)));
 
-        RelationshipResolver resolver = new RelationshipResolver(tableMap);
-        resolver.resolveRelationshipsForAllTables();
+        entityGenerator.generate(
+                List.of(department),
+                tempDir.toString(),
+                "com.example.entities",
+                true,
+                false
+        );
 
-        EntityGenerator generator = new EntityGenerator();
-        String content = generator.createEntityContent(department, "com.example.entities", false);
+        Path generatedFile = findGeneratedFile("Department.java");
+        assertTrue(Files.exists(generatedFile),
+                "Department.java file should be generated.");
 
-        System.out.println("---- Department.java ----");
-        System.out.println(content);
-        System.out.println("-------------------------");
+        String content = Files.readString(generatedFile);
 
-        // ✅ Πρέπει να υπάρχει ΜΟΝΟ ΜΙΑ private Department parent σχέση
         long fieldCount = content.lines()
                 .filter(line -> line.contains("private Department parent"))
                 .count();
 
-        assertEquals(1, fieldCount, "❌ Πρέπει να υπάρχει μόνο ένα πεδίο 'parent' για self-referencing σχέση.");
+        assertEquals(1, fieldCount,
+                "There must be exactly one 'parent' field for self-referencing relationship.");
     }
 
     @Test
@@ -329,6 +333,7 @@ class EntityGeneratorTest {
 
         Column businessLocationPk = new Column();
         businessLocationPk.setName("id");
+        businessLocationPk.setFieldName("id");
         businessLocationPk.setSqlType("uuid");
         businessLocationPk.setJavaType("java.util.UUID");
         businessLocationPk.setPrimaryKey(true);
@@ -341,6 +346,7 @@ class EntityGeneratorTest {
 
         Column languagesPk = new Column();
         languagesPk.setName("id");
+        languagesPk.setFieldName("id");
         languagesPk.setSqlType("uuid");
         languagesPk.setJavaType("java.util.UUID");
         languagesPk.setPrimaryKey(true);
@@ -353,6 +359,7 @@ class EntityGeneratorTest {
 
         Column description = new Column();
         description.setName("description");
+        description.setFieldName("description");
         description.setSqlType("varchar");
         description.setJavaType("java.lang.String");
         description.setNullable(false);
@@ -360,6 +367,7 @@ class EntityGeneratorTest {
 
         Column code = new Column();
         code.setName("code");
+        code.setFieldName("code");
         code.setSqlType("varchar");
         code.setJavaType("java.lang.String");
         code.setNullable(false);
@@ -367,6 +375,7 @@ class EntityGeneratorTest {
 
         Column recdeleted = new Column();
         recdeleted.setName("recdeleted");
+        recdeleted.setFieldName("recdeleted");
         recdeleted.setSqlType("bool");
         recdeleted.setJavaType("java.lang.Boolean");
         recdeleted.setNullable(false);
@@ -374,6 +383,7 @@ class EntityGeneratorTest {
 
         Column businessLocationId = new Column();
         businessLocationId.setName("business_location_id");
+        businessLocationId.setFieldName("businessLocationId");
         businessLocationId.setSqlType("uuid");
         businessLocationId.setJavaType("java.util.UUID");
         businessLocationId.setPrimaryKey(true);
@@ -384,6 +394,7 @@ class EntityGeneratorTest {
 
         Column languageId = new Column();
         languageId.setName("language_id");
+        languageId.setFieldName("languageId");
         languageId.setSqlType("uuid");
         languageId.setJavaType("java.util.UUID");
         languageId.setPrimaryKey(true);
@@ -405,10 +416,10 @@ class EntityGeneratorTest {
         );
 
         Path entityFile = findGeneratedFile("BusinessLocationI18n.java");
-        Path pkFile = findGeneratedFile("BusinessLocationI18nPK.java");
+        Path pkFile = findGeneratedFile("BusinessLocationI18nKey.java");
 
         assertTrue(Files.exists(entityFile), "BusinessLocationI18n.java should be generated.");
-        assertTrue(Files.exists(pkFile), "BusinessLocationI18nPK.java should be generated.");
+        assertTrue(Files.exists(pkFile), "BusinessLocationI18nKey.java should be generated.");
 
         String entityContent = Files.readString(entityFile);
         String pkContent = Files.readString(pkFile);
@@ -419,7 +430,7 @@ class EntityGeneratorTest {
                 "Expected correct @Table annotation.");
         assertTrue(entityContent.contains("@EmbeddedId"),
                 "Expected @EmbeddedId for composite PK join entity.");
-        assertTrue(entityContent.contains("private BusinessLocationI18nPK id;"),
+        assertTrue(entityContent.contains("private BusinessLocationI18nKey id;"),
                 "Expected external PK type field.");
 
         assertTrue(entityContent.contains("@MapsId(\"businessLocationId\")"),
@@ -436,8 +447,10 @@ class EntityGeneratorTest {
                 "Expected normal column field: description.");
         assertTrue(entityContent.contains("private String code;"),
                 "Expected normal column field: code.");
-        assertTrue(entityContent.contains("private Boolean recdeleted = false;"),
-                "Expected boolean default handling.");
+        assertTrue(entityContent.contains("private Boolean recdeleted"),
+                "Expected recdeleted field.");
+        assertFalse(entityContent.contains("private Boolean recdeleted = false;"),
+                "Generator should not assign inline default value to recdeleted.");
 
         assertFalse(entityContent.contains("public static class Id"),
                 "Entity should not contain nested Id class anymore.");
@@ -450,8 +463,8 @@ class EntityGeneratorTest {
 
         assertTrue(pkContent.contains("@Embeddable"),
                 "Expected @Embeddable on external PK class.");
-        assertTrue(pkContent.contains("public class BusinessLocationI18nPK implements Serializable"),
-                "Expected external PK class name BusinessLocationI18nPK.");
+        assertTrue(pkContent.contains("public class BusinessLocationI18nKey implements Serializable"),
+                "Expected external PK class name BusinessLocationI18nKey.");
         assertTrue(pkContent.contains("private UUID businessLocationId;"),
                 "Expected businessLocationId in PK class.");
         assertTrue(pkContent.contains("private UUID languageId;"),
@@ -533,6 +546,7 @@ class EntityGeneratorTest {
 
         Column companyId = new Column();
         companyId.setName("id");
+        companyId.setFieldName("id");
         companyId.setSqlType("uuid");
         companyId.setJavaType("java.util.UUID");
         companyId.setPrimaryKey(true);
@@ -544,6 +558,7 @@ class EntityGeneratorTest {
 
         Column professionId = new Column();
         professionId.setName("id");
+        professionId.setFieldName("id");
         professionId.setSqlType("uuid");
         professionId.setJavaType("java.util.UUID");
         professionId.setPrimaryKey(true);
@@ -555,6 +570,7 @@ class EntityGeneratorTest {
 
         Column id = new Column();
         id.setName("id");
+        id.setFieldName("id");
         id.setSqlType("uuid");
         id.setJavaType("java.util.UUID");
         id.setPrimaryKey(true);
@@ -562,6 +578,7 @@ class EntityGeneratorTest {
 
         Column companyFk = new Column();
         companyFk.setName("company_id");
+        companyFk.setFieldName("companyId");
         companyFk.setSqlType("uuid");
         companyFk.setJavaType("java.util.UUID");
         companyFk.setForeignKey(true);
@@ -571,6 +588,7 @@ class EntityGeneratorTest {
 
         Column professionFk = new Column();
         professionFk.setName("profession_id");
+        professionFk.setFieldName("professionId");
         professionFk.setSqlType("uuid");
         professionFk.setJavaType("java.util.UUID");
         professionFk.setForeignKey(true);
@@ -580,6 +598,7 @@ class EntityGeneratorTest {
 
         Column notes = new Column();
         notes.setName("notes");
+        notes.setFieldName("notes");
         notes.setSqlType("varchar");
         notes.setJavaType("String");
         notes.setNullable(true);
@@ -624,6 +643,7 @@ class EntityGeneratorTest {
 
         Column companyProfileId = new Column();
         companyProfileId.setName("id");
+        companyProfileId.setFieldName("id");
         companyProfileId.setSqlType("uuid");
         companyProfileId.setJavaType("java.util.UUID");
         companyProfileId.setPrimaryKey(true);
@@ -635,6 +655,7 @@ class EntityGeneratorTest {
 
         Column languageId = new Column();
         languageId.setName("id");
+        languageId.setFieldName("id");
         languageId.setSqlType("uuid");
         languageId.setJavaType("java.util.UUID");
         languageId.setPrimaryKey(true);
@@ -646,6 +667,7 @@ class EntityGeneratorTest {
 
         Column companyProfileFk = new Column();
         companyProfileFk.setName("company_profile_id");
+        companyProfileFk.setFieldName("companyProfileId");
         companyProfileFk.setSqlType("uuid");
         companyProfileFk.setJavaType("java.util.UUID");
         companyProfileFk.setPrimaryKey(true);
@@ -656,6 +678,7 @@ class EntityGeneratorTest {
 
         Column languageFk = new Column();
         languageFk.setName("language_id");
+        languageFk.setFieldName("languageId");
         languageFk.setSqlType("uuid");
         languageFk.setJavaType("java.util.UUID");
         languageFk.setPrimaryKey(true);
@@ -675,17 +698,17 @@ class EntityGeneratorTest {
         );
 
         Path entityFile = findGeneratedFile("CompanyProfileLanguage.java");
-        Path pkFile = findGeneratedFile("CompanyProfileLanguagePK.java");
+        Path pkFile = findGeneratedFile("CompanyProfileLanguageKey.java");
 
         assertTrue(Files.exists(entityFile), "CompanyProfileLanguage.java should be generated.");
-        assertTrue(Files.exists(pkFile), "CompanyProfileLanguagePK.java should be generated.");
+        assertTrue(Files.exists(pkFile), "CompanyProfileLanguageKey.java should be generated.");
 
         String entityContent = Files.readString(entityFile);
         String pkContent = Files.readString(pkFile);
 
         assertTrue(entityContent.contains("@EmbeddedId"),
                 "Expected @EmbeddedId.");
-        assertTrue(entityContent.contains("private CompanyProfileLanguagePK id;"),
+        assertTrue(entityContent.contains("private CompanyProfileLanguageKey id;"),
                 "Expected external PK field.");
         assertTrue(entityContent.contains("@MapsId(\"companyProfileId\")"),
                 "Expected @MapsId for company_profile_id.");
@@ -700,8 +723,8 @@ class EntityGeneratorTest {
 
         assertTrue(pkContent.contains("@Embeddable"),
                 "Expected @Embeddable PK class.");
-        assertTrue(pkContent.contains("public class CompanyProfileLanguagePK implements Serializable"),
-                "Expected PK class name CompanyProfileLanguagePK.");
+        assertTrue(pkContent.contains("public class CompanyProfileLanguageKey implements Serializable"),
+                "Expected PK class name CompanyProfileLanguageKey.");
         assertTrue(pkContent.contains("private UUID companyProfileId;"),
                 "Expected companyProfileId field in PK class.");
         assertTrue(pkContent.contains("private UUID languageId;"),
@@ -716,6 +739,7 @@ class EntityGeneratorTest {
 
         Column companyStatusId = new Column();
         companyStatusId.setName("id");
+        companyStatusId.setFieldName("id");
         companyStatusId.setSqlType("uuid");
         companyStatusId.setJavaType("java.util.UUID");
         companyStatusId.setPrimaryKey(true);
@@ -727,6 +751,7 @@ class EntityGeneratorTest {
 
         Column companyViewRulesId = new Column();
         companyViewRulesId.setName("id");
+        companyViewRulesId.setFieldName("id");
         companyViewRulesId.setSqlType("uuid");
         companyViewRulesId.setJavaType("java.util.UUID");
         companyViewRulesId.setPrimaryKey(true);
@@ -738,6 +763,7 @@ class EntityGeneratorTest {
 
         Column companyStatusFk = new Column();
         companyStatusFk.setName("company_status_id");
+        companyStatusFk.setFieldName("companyStatusId");
         companyStatusFk.setSqlType("uuid");
         companyStatusFk.setJavaType("java.util.UUID");
         companyStatusFk.setPrimaryKey(true);
@@ -748,6 +774,7 @@ class EntityGeneratorTest {
 
         Column companyViewRulesFk = new Column();
         companyViewRulesFk.setName("company_view_rules_id");
+        companyViewRulesFk.setFieldName("companyViewRulesId");
         companyViewRulesFk.setSqlType("uuid");
         companyViewRulesFk.setJavaType("java.util.UUID");
         companyViewRulesFk.setPrimaryKey(true);
@@ -758,6 +785,7 @@ class EntityGeneratorTest {
 
         Column excludeCompanies = new Column();
         excludeCompanies.setName("exclude_companies");
+        excludeCompanies.setFieldName("excludeCompanies");
         excludeCompanies.setSqlType("bool");
         excludeCompanies.setJavaType("Boolean");
         excludeCompanies.setNullable(true);
@@ -777,10 +805,10 @@ class EntityGeneratorTest {
         );
 
         Path entityFile = findGeneratedFile("CompanyStatusViewRules.java");
-        Path pkFile = findGeneratedFile("CompanyStatusViewRulesPK.java");
+        Path pkFile = findGeneratedFile("CompanyStatusViewRulesKey.java");
 
         assertTrue(Files.exists(entityFile), "CompanyStatusViewRules.java should be generated.");
-        assertTrue(Files.exists(pkFile), "CompanyStatusViewRulesPK.java should be generated.");
+        assertTrue(Files.exists(pkFile), "CompanyStatusViewRulesKey.java should be generated.");
 
         String entityContent = Files.readString(entityFile);
         String pkContent = Files.readString(pkFile);
@@ -791,7 +819,7 @@ class EntityGeneratorTest {
                 "Expected correct @Table annotation.");
         assertTrue(entityContent.contains("@EmbeddedId"),
                 "Expected @EmbeddedId.");
-        assertTrue(entityContent.contains("private CompanyStatusViewRulesPK id;"),
+        assertTrue(entityContent.contains("private CompanyStatusViewRulesKey id;"),
                 "Expected external PK field.");
 
         assertTrue(entityContent.contains("@MapsId(\"companyStatusId\")"),
@@ -814,8 +842,8 @@ class EntityGeneratorTest {
 
         assertTrue(pkContent.contains("@Embeddable"),
                 "Expected @Embeddable PK class.");
-        assertTrue(pkContent.contains("public class CompanyStatusViewRulesPK implements Serializable"),
-                "Expected PK class name CompanyStatusViewRulesPK.");
+        assertTrue(pkContent.contains("public class CompanyStatusViewRulesKey implements Serializable"),
+                "Expected PK class name CompanyStatusViewRulesKey.");
         assertTrue(pkContent.contains("private UUID companyStatusId;"),
                 "Expected companyStatusId field in PK class.");
         assertTrue(pkContent.contains("private UUID companyViewRulesId;"),
@@ -830,6 +858,7 @@ class EntityGeneratorTest {
 
         Column companyId = new Column();
         companyId.setName("id");
+        companyId.setFieldName("id");
         companyId.setSqlType("uuid");
         companyId.setJavaType("java.util.UUID");
         companyId.setPrimaryKey(true);
@@ -841,6 +870,7 @@ class EntityGeneratorTest {
 
         Column professionSystemId = new Column();
         professionSystemId.setName("id");
+        professionSystemId.setFieldName("id");
         professionSystemId.setSqlType("uuid");
         professionSystemId.setJavaType("java.util.UUID");
         professionSystemId.setPrimaryKey(true);
@@ -852,6 +882,7 @@ class EntityGeneratorTest {
 
         Column companyFk = new Column();
         companyFk.setName("company_id");
+        companyFk.setFieldName("companyId");
         companyFk.setSqlType("uuid");
         companyFk.setJavaType("java.util.UUID");
         companyFk.setPrimaryKey(true);
@@ -862,6 +893,7 @@ class EntityGeneratorTest {
 
         Column professionSystemFk = new Column();
         professionSystemFk.setName("profession_system_id");
+        professionSystemFk.setFieldName("professionSystemId");
         professionSystemFk.setSqlType("uuid");
         professionSystemFk.setJavaType("java.util.UUID");
         professionSystemFk.setPrimaryKey(true);
@@ -881,10 +913,10 @@ class EntityGeneratorTest {
         );
 
         Path entityFile = findGeneratedFile("CompanyProfessionSystemLink.java");
-        Path pkFile = findGeneratedFile("CompanyProfessionSystemLinkPK.java");
+        Path pkFile = findGeneratedFile("CompanyProfessionSystemLinkKey.java");
 
         assertTrue(Files.exists(entityFile), "CompanyProfessionSystemLink.java should be generated.");
-        assertTrue(Files.exists(pkFile), "CompanyProfessionSystemLinkPK.java should be generated.");
+        assertTrue(Files.exists(pkFile), "CompanyProfessionSystemLinkKey.java should be generated.");
 
         String entityContent = Files.readString(entityFile);
         String pkContent = Files.readString(pkFile);
@@ -895,7 +927,7 @@ class EntityGeneratorTest {
                 "Expected correct @Table annotation.");
         assertTrue(entityContent.contains("@EmbeddedId"),
                 "Expected @EmbeddedId.");
-        assertTrue(entityContent.contains("private CompanyProfessionSystemLinkPK id;"),
+        assertTrue(entityContent.contains("private CompanyProfessionSystemLinkKey id;"),
                 "Expected external PK field.");
 
         assertTrue(entityContent.contains("@MapsId(\"companyId\")"),
@@ -915,13 +947,14 @@ class EntityGeneratorTest {
 
         assertTrue(pkContent.contains("@Embeddable"),
                 "Expected @Embeddable PK class.");
-        assertTrue(pkContent.contains("public class CompanyProfessionSystemLinkPK implements Serializable"),
-                "Expected PK class name CompanyProfessionSystemLinkPK.");
+        assertTrue(pkContent.contains("public class CompanyProfessionSystemLinkKey implements Serializable"),
+                "Expected PK class name CompanyProfessionSystemLinkKey.");
         assertTrue(pkContent.contains("private UUID companyId;"),
                 "Expected companyId field in PK class.");
         assertTrue(pkContent.contains("private UUID professionSystemId;"),
                 "Expected professionSystemId field in PK class.");
     }
+
 
     @Test
     void testGenerateEntity_WithNumericPrecisionAndScale_ShouldRenderColumnMetadata() throws IOException {
@@ -1018,14 +1051,6 @@ class EntityGeneratorTest {
     }
 
     
-
-
-
-
-
-
-
-
     private Path findGeneratedFile(String fileName) throws IOException {
         try (var walk = Files.walk(tempDir)) {
             return walk

@@ -30,7 +30,7 @@ class CreateIndexDefinitionTest {
         assertNotNull(context, "SqlScriptContext should not be null.");
         assertEquals(1, context.createIndexStatement().size(), "Expected exactly one CREATE INDEX statement.");
 
-        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().get(0);
+        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().getFirst();
         assertNotNull(indexContext, "CreateIndexStatementContext should not be null.");
 
         CreateIndexDefinition createIndexDefinition = new CreateIndexDefinition();
@@ -65,7 +65,7 @@ class CreateIndexDefinitionTest {
         assertNotNull(context, "SqlScriptContext should not be null.");
         assertEquals(1, context.createIndexStatement().size(), "Expected exactly one CREATE INDEX statement.");
 
-        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().get(0);
+        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().getFirst();
         assertNotNull(indexContext, "CreateIndexStatementContext should not be null.");
 
         CreateIndexDefinition createIndexDefinition = new CreateIndexDefinition();
@@ -100,7 +100,7 @@ class CreateIndexDefinitionTest {
         assertNotNull(context, "SqlScriptContext should not be null.");
         assertEquals(1, context.createIndexStatement().size(), "Expected exactly one CREATE INDEX statement.");
 
-        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().get(0);
+        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().getFirst();
         assertNotNull(indexContext, "CreateIndexStatementContext should not be null.");
 
         CreateIndexDefinition createIndexDefinition = new CreateIndexDefinition();
@@ -114,7 +114,7 @@ class CreateIndexDefinitionTest {
 
             assertNotNull(indexDefinition.getColumns(), "Index columns should not be null.");
             assertEquals(1, indexDefinition.getColumns().size(), "Expected one indexed column.");
-            assertEquals("contact_email", indexDefinition.getColumns().get(0), "Unexpected indexed column.");
+            assertEquals("contact_email", indexDefinition.getColumns().getFirst(), "Unexpected indexed column.");
 
             assertTrue(indexDefinition.isUnique(), "Index should be unique.");
         });
@@ -135,7 +135,7 @@ class CreateIndexDefinitionTest {
         assertNotNull(context, "SqlScriptContext should not be null.");
         assertEquals(1, context.createIndexStatement().size(), "Expected exactly one CREATE INDEX statement.");
 
-        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().get(0);
+        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().getFirst();
         assertNotNull(indexContext, "CreateIndexStatementContext should not be null.");
 
         CreateIndexDefinition createIndexDefinition = new CreateIndexDefinition();
@@ -149,7 +149,7 @@ class CreateIndexDefinitionTest {
 
             assertNotNull(indexDefinition.getColumns(), "Index columns should not be null.");
             assertEquals(1, indexDefinition.getColumns().size(), "Expected one indexed column.");
-            assertEquals("titles_greek", indexDefinition.getColumns().get(0), "Unexpected indexed column.");
+            assertEquals("titles_greek", indexDefinition.getColumns().getFirst(), "Unexpected indexed column.");
 
             assertFalse(indexDefinition.isUnique(), "Index should not be unique.");
         });
@@ -171,7 +171,7 @@ class CreateIndexDefinitionTest {
         assertNotNull(context, "SqlScriptContext should not be null.");
         assertEquals(1, context.createIndexStatement().size(), "Expected exactly one CREATE INDEX statement.");
 
-        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().get(0);
+        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().getFirst();
         assertNotNull(indexContext, "CreateIndexStatementContext should not be null.");
 
         CreateIndexDefinition createIndexDefinition = new CreateIndexDefinition();
@@ -185,7 +185,7 @@ class CreateIndexDefinitionTest {
 
             assertNotNull(indexDefinition.getColumns(), "Index columns should not be null.");
             assertEquals(1, indexDefinition.getColumns().size(), "Expected one indexed column.");
-            assertEquals("aegean_cuisine_url", indexDefinition.getColumns().get(0), "Unexpected indexed column.");
+            assertEquals("aegean_cuisine_url", indexDefinition.getColumns().getFirst(), "Unexpected indexed column.");
 
             assertFalse(indexDefinition.isUnique(), "Index should not be unique.");
         });
@@ -206,7 +206,7 @@ class CreateIndexDefinitionTest {
         assertNotNull(context, "SqlScriptContext should not be null.");
         assertEquals(1, context.createIndexStatement().size(), "Expected exactly one CREATE INDEX statement.");
 
-        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().get(0);
+        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().getFirst();
         assertNotNull(indexContext, "CreateIndexStatementContext should not be null.");
 
         CreateIndexDefinition createIndexDefinition = new CreateIndexDefinition();
@@ -220,7 +220,7 @@ class CreateIndexDefinitionTest {
 
             assertNotNull(indexDefinition.getColumns(), "Index columns should not be null.");
             assertEquals(1, indexDefinition.getColumns().size(), "Expected one index element.");
-            assertEquals("lower((name_english)::text)", indexDefinition.getColumns().get(0), "Unexpected expression index element.");
+            assertEquals("lower((name_english)::text)", indexDefinition.getColumns().getFirst(), "Unexpected expression index element.");
 
             assertFalse(indexDefinition.isUnique(), "Index should not be unique.");
         });
@@ -258,19 +258,19 @@ class CreateIndexDefinitionTest {
         IndexDefinition fourthIndex = createIndexDefinition.processCreateIndex(context.createIndexStatement().get(3));
 
         assertEquals("idx_company_search_mv_afm", firstIndex.getName());
-        assertEquals("afm", firstIndex.getColumns().get(0));
+        assertEquals("afm", firstIndex.getColumns().getFirst());
         assertFalse(firstIndex.isUnique());
 
         assertEquals("idx_company_search_mv_id", secondIndex.getName());
-        assertEquals("id", secondIndex.getColumns().get(0));
+        assertEquals("id", secondIndex.getColumns().getFirst());
         assertTrue(secondIndex.isUnique());
 
         assertEquals("idx_company_search_mv_titles_greek", thirdIndex.getName());
-        assertEquals("titles_greek", thirdIndex.getColumns().get(0));
+        assertEquals("titles_greek", thirdIndex.getColumns().getFirst());
         assertFalse(thirdIndex.isUnique());
 
         assertEquals("idx_company_search_mv_aegean_cuisine_url", fourthIndex.getName());
-        assertEquals("aegean_cuisine_url", fourthIndex.getColumns().get(0));
+        assertEquals("aegean_cuisine_url", fourthIndex.getColumns().getFirst());
         assertFalse(fourthIndex.isUnique());
     }
 
@@ -288,10 +288,10 @@ class CreateIndexDefinitionTest {
                 PRIMARY KEY (id)
             );
 
-            CREATE INDEX idx_staging_status 
+            CREATE INDEX idx_staging_status
             ON pep_schema.data_staging USING btree (status, pulled_at);
 
-            CREATE INDEX idx_staging_table_status 
+            CREATE INDEX idx_staging_table_status
             ON pep_schema.data_staging USING btree (legacy_table_name, status);
             """;
 
@@ -305,7 +305,7 @@ class CreateIndexDefinitionTest {
         assertNotNull(tables);
         assertEquals(1, tables.size(), "Should parse exactly one table");
 
-        Table table = tables.get(0);
+        Table table = tables.getFirst();
 
         assertEquals("pep_schema.data_staging", table.getName());
 

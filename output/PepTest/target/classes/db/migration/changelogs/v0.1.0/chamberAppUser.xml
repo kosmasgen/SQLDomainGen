@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/chamberAppUser.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="create-chamber-app-user-table-and-audit" author="kosmasgenaris@knowledge.gr">
+        <createTable tableName="chamber_app_user" schemaName="pep_schema">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" primaryKeyName="pk_chamber_app_user" nullable="false"/>
+            </column>
+            <column name="date_created" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+            </column>
+            <column name="last_updated" type="TIMESTAMP" defaultValueComputed="CURRENT_TIMESTAMP">
+            </column>
+            <column name="chamber_id" type="INTEGER">
+                <constraints nullable="false"/>
+            </column>
+            <column name="chamber_app_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="company_id" type="UUID">
+            </column>
+            <column name="recdeleted" type="BOOLEAN" defaultValueBoolean="false">
+                <constraints nullable="false"/>
+            </column>
+            <column name="profile_id" type="UUID">
+            </column>
+            <column name="person_id" type="UUID">
+            </column>
+        </createTable>
+
+
+        <sql><![CDATA[
+            ALTER TABLE pep_schema.chamber_app_user
+            ADD CONSTRAINT chk_chamber_app_user_company_or_person CHECK (((company_id IS NOT NULL) OR (person_id IS NOT NULL)));
+        ]]></sql>
+
+
+
+        <addForeignKeyConstraint
+                                 baseTableName="chamber_app_user"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_chamber_app_user_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                baseTableSchemaName="pep_schema"
+                                referencedTableSchemaName="pep_schema"/>
+
+        <createTable tableName="chamber_app_user_aud" schemaName="audit">
+            <column name="id" type="UUID"/>
+            <column name="date_created" type="TIMESTAMP"/>
+            <column name="last_updated" type="TIMESTAMP"/>
+            <column name="chamber_id" type="INTEGER"/>
+            <column name="chamber_app_id" type="UUID"/>
+            <column name="company_id" type="UUID"/>
+            <column name="recdeleted" type="BOOLEAN"/>
+            <column name="profile_id" type="UUID"/>
+            <column name="person_id" type="UUID"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+        </createTable>
+
+        <addPrimaryKey tableName="chamber_app_user_aud"
+                       columnNames="id, rev"
+                       constraintName="pk_chamber_app_user_aud"
+                       schemaName="audit"/>
+
+        <addForeignKeyConstraint baseTableName="chamber_app_user_aud"
+                                 baseColumnNames="rev"
+                                 constraintName="fk_chamber_app_user_aud_revinfo"
+                                 referencedTableName="REVINFO"
+                                 referencedColumnNames="REV"
+                                 baseTableSchemaName="audit"
+                                 referencedTableSchemaName="audit"/>
+
+    </changeSet>
+
+</databaseChangeLog>

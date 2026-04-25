@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/dataStaging.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="create-data-staging-table-and-audit" author="kosmasgenaris@knowledge.gr">
+        <createTable tableName="data_staging" schemaName="pep_schema">
+            <column name="id" type="BIGINT" autoIncrement="true">
+                <constraints primaryKey="true" primaryKeyName="data_staging_pkey" nullable="false"/>
+            </column>
+            <column name="legacy_table_name" type="VARCHAR(100)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="legacy_record_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="raw_data" type="JSONB">
+                <constraints nullable="false"/>
+            </column>
+            <column name="legacy_updated_at" type="TIMESTAMP">
+                <constraints nullable="false"/>
+            </column>
+            <column name="pulled_at" type="TIMESTAMP" defaultValueComputed="now()">
+                <constraints nullable="false"/>
+            </column>
+            <column name="status" type="VARCHAR(20)" defaultValue="PENDING">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+
+
+
+        <addUniqueConstraint tableName="data_staging" schemaName="pep_schema" columnNames="legacy_table_name, legacy_record_id, legacy_updated_at" constraintName="data_staging_legacy_table_name_legacy_record_id_legacy_upda_key"/>
+
+        <createIndex tableName="data_staging" schemaName="pep_schema" indexName="idx_staging_status">
+            <column name="status"/>
+            <column name="pulled_at"/>
+        </createIndex>
+        <createIndex tableName="data_staging" schemaName="pep_schema" indexName="idx_staging_table_status">
+            <column name="legacy_table_name"/>
+            <column name="status"/>
+        </createIndex>
+
+
+        <createTable tableName="data_staging_aud" schemaName="audit">
+            <column name="id" type="BIGINT"/>
+            <column name="legacy_table_name" type="VARCHAR(100)"/>
+            <column name="legacy_record_id" type="VARCHAR(255)"/>
+            <column name="raw_data" type="JSONB"/>
+            <column name="legacy_updated_at" type="TIMESTAMP"/>
+            <column name="pulled_at" type="TIMESTAMP"/>
+            <column name="status" type="VARCHAR(20)"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+        </createTable>
+
+        <addPrimaryKey tableName="data_staging_aud"
+                       columnNames="id, rev"
+                       constraintName="pk_data_staging_aud"
+                       schemaName="audit"/>
+
+        <addForeignKeyConstraint baseTableName="data_staging_aud"
+                                 baseColumnNames="rev"
+                                 constraintName="fk_data_staging_aud_revinfo"
+                                 referencedTableName="REVINFO"
+                                 referencedColumnNames="REV"
+                                 baseTableSchemaName="audit"
+                                 referencedTableSchemaName="audit"/>
+
+    </changeSet>
+
+</databaseChangeLog>

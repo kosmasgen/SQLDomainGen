@@ -1,0 +1,121 @@
+<?xml version="1.0" encoding="utf-8"?>
+<databaseChangeLog
+        logicalFilePath="v0.1.0/companyProfile.xml"
+        xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+        xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-4.11.xsd">
+
+    <changeSet id="create-company-profile-table-and-audit" author="kosmasgenaris@knowledge.gr">
+        <createTable tableName="company_profile" schemaName="pep_schema">
+            <column name="id" type="UUID">
+                <constraints primaryKey="true" primaryKeyName="company_profile_pkey" nullable="false"/>
+            </column>
+            <column name="name" type="VARCHAR(1000)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="address_city" type="VARCHAR(50)">
+            </column>
+            <column name="address_latitude" type="VARCHAR(255)">
+            </column>
+            <column name="address_longitude" type="VARCHAR(255)">
+            </column>
+            <column name="address_region" type="VARCHAR(50)">
+            </column>
+            <column name="address_street" type="VARCHAR(255)">
+            </column>
+            <column name="address_street_number" type="VARCHAR(255)">
+            </column>
+            <column name="address_zip_code" type="VARCHAR(12)">
+            </column>
+            <column name="contact_email" type="VARCHAR(100)">
+            </column>
+            <column name="contact_mobile" type="VARCHAR(50)">
+            </column>
+            <column name="contact_phone1" type="VARCHAR(20)">
+            </column>
+            <column name="contact_phone2" type="VARCHAR(20)">
+            </column>
+            <column name="contact_phone3" type="VARCHAR(20)">
+            </column>
+            <column name="contact_url" type="VARCHAR(100)">
+            </column>
+            <column name="date_created" type="TIMESTAMP">
+            </column>
+            <column name="last_updated" type="TIMESTAMP">
+            </column>
+            <column name="business_location_id" type="UUID">
+            </column>
+            <column name="company_id" type="UUID">
+                <constraints nullable="false"/>
+            </column>
+            <column name="recdeleted" type="BOOLEAN" defaultValueBoolean="false">
+            </column>
+            <column name="show_business_guide" type="BOOLEAN" defaultValueBoolean="true">
+            </column>
+        </createTable>
+
+
+
+
+
+        <addForeignKeyConstraint
+                                 baseTableName="company_profile"
+                                 baseColumnNames="business_location_id"
+                                 constraintName="fk_company_profile_business_location"
+                                 referencedTableName="business_location"
+                                 referencedColumnNames="id"
+                                baseTableSchemaName="pep_schema"
+                                referencedTableSchemaName="pep_schema"/>
+        <addForeignKeyConstraint
+                                 baseTableName="company_profile"
+                                 baseColumnNames="company_id"
+                                 constraintName="fk_company_profile_company"
+                                 referencedTableName="company"
+                                 referencedColumnNames="id"
+                                baseTableSchemaName="pep_schema"
+                                referencedTableSchemaName="pep_schema"/>
+
+        <createTable tableName="company_profile_aud" schemaName="audit">
+            <column name="id" type="UUID"/>
+            <column name="name" type="VARCHAR(1000)"/>
+            <column name="address_city" type="VARCHAR(50)"/>
+            <column name="address_latitude" type="VARCHAR(255)"/>
+            <column name="address_longitude" type="VARCHAR(255)"/>
+            <column name="address_region" type="VARCHAR(50)"/>
+            <column name="address_street" type="VARCHAR(255)"/>
+            <column name="address_street_number" type="VARCHAR(255)"/>
+            <column name="address_zip_code" type="VARCHAR(12)"/>
+            <column name="contact_email" type="VARCHAR(100)"/>
+            <column name="contact_mobile" type="VARCHAR(50)"/>
+            <column name="contact_phone1" type="VARCHAR(20)"/>
+            <column name="contact_phone2" type="VARCHAR(20)"/>
+            <column name="contact_phone3" type="VARCHAR(20)"/>
+            <column name="contact_url" type="VARCHAR(100)"/>
+            <column name="date_created" type="TIMESTAMP"/>
+            <column name="last_updated" type="TIMESTAMP"/>
+            <column name="business_location_id" type="UUID"/>
+            <column name="company_id" type="UUID"/>
+            <column name="recdeleted" type="BOOLEAN"/>
+            <column name="show_business_guide" type="BOOLEAN"/>
+            <column name="rev" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="revtype" type="SMALLINT"/>
+        </createTable>
+
+        <addPrimaryKey tableName="company_profile_aud"
+                       columnNames="id, rev"
+                       constraintName="pk_company_profile_aud"
+                       schemaName="audit"/>
+
+        <addForeignKeyConstraint baseTableName="company_profile_aud"
+                                 baseColumnNames="rev"
+                                 constraintName="fk_company_profile_aud_revinfo"
+                                 referencedTableName="REVINFO"
+                                 referencedColumnNames="REV"
+                                 baseTableSchemaName="audit"
+                                 referencedTableSchemaName="audit"/>
+
+    </changeSet>
+
+</databaseChangeLog>
