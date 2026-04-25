@@ -37,7 +37,7 @@ generate-entity \
   -w true \
   -b true \
   -a "your@email.com"
-
+```
 ---
 
 ## Example
