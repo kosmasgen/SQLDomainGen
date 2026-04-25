@@ -146,20 +146,34 @@ SpringForge generates:
 ```java
 @Entity
 @Audited
-@Table(name = "income_payment")
+@Table(name = "income_payment", uniqueConstraints = @UniqueConstraint(columnNames = {"chamber_id", "chamber_pay_method_id"}))
+@Getter
+@Setter
+@Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class IncomePayment {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
+    @Column(name = "id", nullable = false)
     private UUID id;
 
-    @Column(nullable = false)
+    @Column(name = "chamber_id", nullable = false)
     private Integer chamberId;
 
-    @Column(nullable = false)
+    @Column(name = "chamber_pay_method_id", nullable = false)
     private Integer chamberPayMethodId;
 
+    @Column(name = "description", nullable = false)
     private String description;
+
+    @Column(name = "last_updated", nullable = false)
+    private LocalDateTime lastUpdated;
+
+    @Column(name = "recdeleted")
+    private Integer recdeleted;
+
 }
 ```
 
