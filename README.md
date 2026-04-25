@@ -45,8 +45,14 @@ generate-entity \
 
 ### Input SQL
 
-```sql id="x9gq1z"
-CREATE TABLE income_payment_method (
+```sql
+
+-- -- income_payment definition
+
+-- Drop table
+-- DROP TABLE income_payment;
+
+CREATE TABLE income_payment (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     chamber_id int4 NOT NULL,
     chamber_pay_method_id int4 NOT NULL,
@@ -56,6 +62,11 @@ CREATE TABLE income_payment_method (
     CONSTRAINT pk_income_payment_method PRIMARY KEY (id),
     CONSTRAINT uk_in_pay_method UNIQUE (chamber_id, chamber_pay_method_id)
 );
+
+-- -- income_type definition
+
+-- Drop table
+-- DROP TABLE income_type;
 
 CREATE TABLE income_type (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
@@ -68,6 +79,11 @@ CREATE TABLE income_type (
     CONSTRAINT pk_income_type PRIMARY KEY (id),
     CONSTRAINT uk_income_type UNIQUE (chamber_id, chamber_type_id)
 );
+
+-- -- income_transaction definition
+
+-- Drop table
+-- DROP TABLE income_transaction;
 
 CREATE TABLE income_transaction (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
