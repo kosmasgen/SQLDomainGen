@@ -47,12 +47,12 @@ generate-entity \
 
 ```sql
 
--- -- income_payment definition
+-- -- pep_schema.income_payment definition
 
 -- Drop table
--- DROP TABLE income_payment;
+-- DROP TABLE pep_schema.income_payment;
 
-CREATE TABLE income_payment (
+CREATE TABLE pep_schema.income_payment (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     chamber_id int4 NOT NULL,
     chamber_pay_method_id int4 NOT NULL,
@@ -63,12 +63,12 @@ CREATE TABLE income_payment (
     CONSTRAINT uk_in_pay_method UNIQUE (chamber_id, chamber_pay_method_id)
 );
 
--- -- income_type definition
+-- -- pep_schema.income_type definition
 
 -- Drop table
--- DROP TABLE income_type;
+-- DROP TABLE pep_schema.income_type;
 
-CREATE TABLE income_type (
+CREATE TABLE pep_schema.income_type (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     chamber_id int4 NOT NULL,
     chamber_type_id int4 NOT NULL,
@@ -80,12 +80,12 @@ CREATE TABLE income_type (
     CONSTRAINT uk_income_type UNIQUE (chamber_id, chamber_type_id)
 );
 
--- -- income_transaction definition
+-- -- pep_schema.income_transaction definition
 
 -- Drop table
--- DROP TABLE income_transaction;
+-- DROP TABLE pep_schema.income_transaction;
 
-CREATE TABLE income_transaction (
+CREATE TABLE pep_schema.income_transaction (
     id uuid DEFAULT gen_random_uuid() NOT NULL,
     chamber_id int4 NOT NULL,
     chamber_in_transd_id numeric NOT NULL,
@@ -102,13 +102,13 @@ CREATE TABLE income_transaction (
     is_kratisi numeric NULL,
     CONSTRAINT pk_income_transaction PRIMARY KEY (id),
     CONSTRAINT uk_income_trans UNIQUE (chamber_id, chamber_in_transd_id, is_kratisi),
-    CONSTRAINT fk_income_pay_method FOREIGN KEY (income_pay_method_id) REFERENCES income_payment(id),
-    CONSTRAINT fk_income_type FOREIGN KEY (income_type_id) REFERENCES income_type(id)
+    CONSTRAINT fk_income_pay_method FOREIGN KEY (income_pay_method_id) REFERENCES pep_schema.income_payment(id),
+    CONSTRAINT fk_income_type FOREIGN KEY (income_type_id) REFERENCES pep_schema.income_type(id)
 );
 
 -- Indexes
-CREATE INDEX idx_in_trans_chamber ON income_transaction (chamber_id);
-CREATE INDEX idx_in_trans_type ON income_transaction (income_type_id);
+CREATE INDEX idx_in_trans_chamber ON pep_schema.income_transaction (chamber_id);
+CREATE INDEX idx_in_trans_type ON pep_schema.income_transaction (income_type_id);
 ```
 
 ---
