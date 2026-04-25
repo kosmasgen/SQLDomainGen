@@ -162,7 +162,6 @@ Foreign keys detected: 2
 Indexes detected: 2
 Total validation checks: 34
 Violations: 0
-
 ```
 All generated components are validated for:
 
@@ -189,7 +188,7 @@ All generated components are validated for:
 
 ## Architecture
 
-```
+```text
 SQL DDL → ANTLR Parser → Domain Model → Code Generator → Spring Boot Project
 ```
 ## How It Works
