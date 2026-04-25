@@ -245,7 +245,7 @@ Repositories: 3
 Services: 3
 ServicesImpl: 3
 Controllers: 3
-Liquibase files: 4
+Liquibase files (excluding master): 5
 Foreign keys detected: 2
 Indexes detected: 2
 Total validation checks: 34
