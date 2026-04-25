@@ -137,6 +137,7 @@ SpringForge generates:
 * Service and service implementation layers
 * REST controllers
 * Liquibase changelogs with constraints, foreign keys, and indexes
+* * Unit and integration tests
  
 ---
 
@@ -240,6 +241,8 @@ src/test/java/com/example/project/
  ├── controller/
  ├── service/
  ├── mapper/
+ ├── entity/
+ ├── dto/
 
 pom.xml
 .gitignore
