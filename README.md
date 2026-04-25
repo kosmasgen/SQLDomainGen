@@ -13,8 +13,7 @@ It automatically generates:
 * Services and service implementations
 * REST controllers
 * Liquibase changelogs
-* Tests for controller, DTO, entity, mapper, and serviceImpl
-
+* Tests for controller, DTO, entity, mapper, and service implementation layers
 ---
 
 ## Why SpringForge
