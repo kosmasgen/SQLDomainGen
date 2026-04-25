@@ -142,6 +142,7 @@ SpringForge generates:
 
 ### Sample Generated Code
 
+#### Entity
 ```java
 @Entity
 @Audited
@@ -161,6 +162,7 @@ public class IncomePayment {
     private String description;
 }
 
+
 @Data
 @Builder
 public class IncomePaymentDto {
@@ -172,14 +174,15 @@ public class IncomePaymentDto {
     private String description;
 }
 
-@RestController
-@RequestMapping("/api/income-payment")
-public class IncomePaymentController {
+@Data
+@Builder
+public class IncomePaymentDto {
 
-    @GetMapping
-    public ResponseEntity<List<IncomePaymentDto>> getAll() {
-        return ResponseEntity.ok(service.getAllIncomePayments());
-    }
+    @NotNull
+    private Integer chamberId;
+
+    @Size(max = 255)
+    private String description;
 }
 
 ```
