@@ -23,7 +23,7 @@ Building backend layers manually is repetitive and error-prone.
 
 SpringForge generates a Spring Boot backend directly from your SQL schema, including entities, DTOs, mappers, repositories, services, controllers, Liquibase changelogs, and tests.
 
-It significantly reduces boilerplate and accelerates backend development.
+It reduces boilerplate and accelerates backend development.
 
 ## Quick Start
 
