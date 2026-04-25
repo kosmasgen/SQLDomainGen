@@ -8,7 +8,7 @@ It automatically generates:
 
 * JPA entities (with Envers auditing)
 * DTOs
-* Mapper (ModelMapper)
+* Mappers (ModelMapper)
 * Repositories
 * Services and service implementations
 * REST controllers
@@ -21,7 +21,7 @@ It automatically generates:
 
 Building backend layers manually is repetitive and error-prone.
 
-SpringForge generates a Spring Boot backend directly from your SQL schema, including entities, DTOs, mappers, repositories, services, controllers, Liquibase changelogs, and tests.
+SpringForge generates a structured Spring Boot backend directly from your SQL schema, including entities, DTOs, mappers, repositories, services, controllers, Liquibase changelogs, and tests.
 
 It reduces boilerplate and accelerates backend development.
 
@@ -41,7 +41,7 @@ generate-entity \
 ---
 
 ## Example
-
+Minimal example (full schema available in /examples):
 ### Input SQL
 
 ```sql
@@ -204,8 +204,7 @@ public class IncomeTransaction {
 ```
 
 ### Validation Report
-
-SpringForge includes a built-in validation system that verifies the generated backend against the original SQL schema.
+SpringForge validates the generated backend against the source schema.
 
 Example output (based on the above schema):
 
@@ -251,7 +250,7 @@ All generated components are validated for:
 ## Architecture
 
 ```text
-SQL DDL → ANTLR Parser → Domain Model → Code Generator → Spring Boot Project
+SQL DDL → Parser → Domain Model → Code Generator → Spring Boot Project
 ```
 ## How It Works
 
