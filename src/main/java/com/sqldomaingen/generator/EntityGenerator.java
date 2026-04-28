@@ -2195,6 +2195,12 @@ public class EntityGenerator {
                 || normalizedDefaultValue.equals("localtimestamp");
     }
 
+    /**
+     * Determines whether the column should use Hibernate's update timestamp handling.
+     *
+     * @param column the source column
+     * @return true when the column represents an auto-managed update timestamp
+     */
     private boolean shouldUseUpdateTimestamp(Column column) {
         if (column == null) {
             return false;
@@ -2210,7 +2216,16 @@ public class EntityGenerator {
             return false;
         }
 
-        return false;
+        String defaultValue = column.getDefaultValue();
+        if (defaultValue == null || defaultValue.isBlank()) {
+            return false;
+        }
+
+        String normalizedDefaultValue = defaultValue.trim().toLowerCase(Locale.ROOT);
+
+        return normalizedDefaultValue.contains("now()")
+                || normalizedDefaultValue.equals("current_timestamp")
+                || normalizedDefaultValue.equals("localtimestamp");
     }
 
     /**
