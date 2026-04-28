@@ -28,7 +28,7 @@ It reduces boilerplate and accelerates backend development.
 ## Build
 
 ```bash
-mvn clean compile
+mvn clean install
 
 ```
 
