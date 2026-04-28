@@ -34,7 +34,10 @@ mvn clean compile
 
 ## Quick Start
 
-Run the CLI:
+Run with Spring Shell:
+
+```bash
+mvn spring-boot:run
 
  generate-entity 
    -i "path/to/input.sql" 
