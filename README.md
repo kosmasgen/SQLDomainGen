@@ -43,7 +43,6 @@ generate-entity -i "path/to/input.sql" -o "path/to/output" -p "com.example.proje
 ```
 ---
 
-## Example
 
 ## Example
 Minimal example (full schema available in /examples):
