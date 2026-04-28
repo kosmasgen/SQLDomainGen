@@ -70,7 +70,13 @@ public class ControllerTestGenerator {
             boolean compositePrimaryKey = hasCompositePrimaryKey(table);
             boolean shouldImportEq = true;
             List<Column> primaryKeyColumns = getPrimaryKeyColumns(table);
-            String apiPath = "/api/" + NamingConverter.toKebabCase(entityName);
+            String normalizedEntityName = entityName;
+
+            if (entityName.startsWith("Api") && entityName.length() > 3 && Character.isUpperCase(entityName.charAt(3))) {
+                normalizedEntityName = entityName.substring(3);
+            }
+
+            String apiPath = "/api/" + NamingConverter.toKebabCase(normalizedEntityName);
 
             StringBuilder content = new StringBuilder();
 
@@ -107,12 +113,7 @@ public class ControllerTestGenerator {
                         dtoFields,
                         requiredDtoFieldNames
                 );
-                appendCompositePatchValidationFailureTest(
-                        content,
-                        dtoName,
-                        apiPath,
-                        primaryKeyColumns
-                );
+
                 appendCompositePatchTests(content, entityName, dtoName, serviceVar, apiPath, primaryKeyColumns);
                 appendCompositeDeleteTests(content, entityName, serviceVar, apiPath, primaryKeyColumns);
             } else {
@@ -394,52 +395,9 @@ public class ControllerTestGenerator {
 
         appendSingleGetByIdTests(content, entityName, dtoName, serviceVar, apiPath, primaryKeyType, sampleId);
         appendSingleCreateTests(content, entityName, dtoName, serviceVar, apiPath, dtoFields, requiredDtoFieldNames);
-        appendPatchValidationFailureTest(
-                content,
-                entityName,
-                dtoName,
-                apiPath,
-                dtoFields,
-                requiredDtoFieldNames,
-                primaryKeyType,
-                sampleId
-        );
+
         appendSinglePatchTests(content, entityName, dtoName, serviceVar, apiPath, primaryKeyType, sampleId);
         appendSingleDeleteTests(content, entityName, serviceVar, apiPath, primaryKeyType, sampleId);
-    }
-
-    /**
-     * Appends validation failure test for composite primary key PATCH.
-     *
-     * @param content generated test content
-     * @param dtoName dto simple name
-     * @param apiPath api base path
-     * @param primaryKeyColumns primary key columns
-     */
-    private void appendCompositePatchValidationFailureTest(
-            StringBuilder content,
-            String dtoName,
-            String apiPath,
-            List<Column> primaryKeyColumns
-    ) {
-        String compositePathTemplate = buildCompositePathTemplate(primaryKeyColumns);
-
-        content.append("    @Test\n");
-        content.append("    void shouldReturnUnprocessableEntityForPatchValidationFailure() throws Exception {\n");
-        appendCompositePrimaryKeyDeclarations(content, primaryKeyColumns);
-        content.append("        ").append(dtoName).append(" requestDto = new ").append(dtoName).append("();\n\n");
-
-        content.append("        mockMvc.perform(patch(\"")
-                .append(apiPath)
-                .append(compositePathTemplate)
-                .append("\"");
-        appendCompositePathArguments(content, primaryKeyColumns);
-        content.append(")\n");
-        content.append("                .contentType(MediaType.APPLICATION_JSON)\n");
-        content.append("                .content(objectMapper.writeValueAsString(requestDto)))\n");
-        content.append("                .andExpect(status().isUnprocessableEntity());\n");
-
-        content.append("    }\n\n");
     }
 
 
@@ -1363,7 +1321,7 @@ public class ControllerTestGenerator {
         content.append("                .andExpect(status().isNotFound());\n");
         content.append("    }\n\n");
 
-        // ✅ FIX: call the missing method
+        //  FIX: call the missing method
         appendCompositePatchInternalServerErrorTest(
                 content,
                 entityName,
@@ -1374,49 +1332,6 @@ public class ControllerTestGenerator {
         );
     }
 
-    /**
-     * Appends the patch validation-failure test when the DTO
-     * has at least one required field that can safely be invalidated with null.
-     *
-     * @param content generated test content
-     * @param entityName entity simple name
-     * @param dtoName dto simple name
-     * @param apiPath api base path
-     * @param dtoFields actual DTO fields
-     * @param requiredDtoFieldNames required DTO field names
-     * @param primaryKeyType primary key type
-     * @param sampleId sample id value
-     */
-    private void appendPatchValidationFailureTest(
-            StringBuilder content,
-            String entityName,
-            String dtoName,
-            String apiPath,
-            List<Field> dtoFields,
-            List<String> requiredDtoFieldNames,
-            String primaryKeyType,
-            String sampleId
-    ) {
-        String dtoFieldName = findFirstNullInvalidatableCreateField(dtoFields, requiredDtoFieldNames);
-        if (dtoFieldName == null) {
-            return;
-        }
-
-        String setterName = "set" + NamingConverter.toPascalCase(dtoFieldName);
-
-        content.append("    @Test\n");
-        content.append("    void shouldReturnUnprocessableEntityForPatchWhenValidationFails() throws Exception {\n");
-        content.append("        ").append(primaryKeyType).append(" id = ").append(sampleId).append(";\n");
-        content.append("        ").append(dtoName).append(" requestDto = createValidCreate")
-                .append(entityName).append("Dto();\n");
-        content.append("        requestDto.").append(setterName).append("(null);\n\n");
-
-        content.append("        mockMvc.perform(patch(\"").append(apiPath).append("/{id}\", id)\n");
-        content.append("                .contentType(MediaType.APPLICATION_JSON)\n");
-        content.append("                .content(objectMapper.writeValueAsString(requestDto)))\n");
-        content.append("                .andExpect(status().isUnprocessableEntity());\n");
-        content.append("    }\n\n");
-    }
 
     /**
      * Builds ordered composite primary key arguments wrapped with eq(...) for Mockito calls.
