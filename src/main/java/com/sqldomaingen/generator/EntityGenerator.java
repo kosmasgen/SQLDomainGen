@@ -629,6 +629,9 @@ public class EntityGenerator {
         if (relationship == null || relationship.getMappedBy() == null || relationship.getMappedBy().isBlank()) {
             return false;
         }
+        if (relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE) {
+            return true;
+        }
 
         Optional<Table> targetTableOptional = findTargetTableInGeneratorMap(relationship.getTargetTable());
         if (targetTableOptional.isEmpty()) {
