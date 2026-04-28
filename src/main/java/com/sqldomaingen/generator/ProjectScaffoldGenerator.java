@@ -47,10 +47,9 @@ public class ProjectScaffoldGenerator {
         Path projectRoot = Path.of(out);
         GeneratorSupport.ensureDirectory(projectRoot);
 
-        String groupId = pkg;
         String artifactId = resolveArtifactId(pkg);
 
-        writePom(projectRoot, groupId, artifactId, overwrite);
+        writePom(projectRoot, pkg, artifactId, overwrite);
         writeApplication(projectRoot, pkg, overwrite);
         createApplicationProperties(projectRoot, artifactId, defaultSchemaName, overwrite);
         writeGitignore(projectRoot, overwrite);
@@ -96,7 +95,6 @@ public class ProjectScaffoldGenerator {
 
         String safeGroupId = (groupId == null || groupId.isBlank()) ? "com.generated" : groupId.trim();
         String safeArtifactId = (artifactId == null || artifactId.isBlank()) ? "generated-app" : artifactId.trim();
-        String projectName = safeArtifactId;
 
         String content = """
 <?xml version="1.0" encoding="UTF-8"?>
@@ -248,7 +246,7 @@ public class ProjectScaffoldGenerator {
                 SPRING_BOOT_VERSION,
                 safeGroupId,
                 safeArtifactId,
-                projectName,
+                safeArtifactId,
                 SPRINGDOC_VERSION,
                 MODELMAPPER_VERSION
         );

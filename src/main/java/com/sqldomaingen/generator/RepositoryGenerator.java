@@ -583,7 +583,7 @@ public class RepositoryGenerator {
         }
 
         if (parameters.size() == 1) {
-            return parameters.get(0);
+            return parameters.getFirst();
         }
 
         if (parameters.size() == 2) {
@@ -592,7 +592,7 @@ public class RepositoryGenerator {
 
         return String.join(", ", parameters.subList(0, parameters.size() - 1))
                 + " and "
-                + parameters.get(parameters.size() - 1);
+                + parameters.getLast();
     }
 
     /**

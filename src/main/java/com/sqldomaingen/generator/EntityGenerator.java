@@ -517,7 +517,7 @@ public class EntityGenerator {
                 continue;
             }
 
-            if (!shouldGenerateInverseRelationship(relationship)) {
+            if (shouldGenerateInverseRelationship(relationship)) {
                 log.debug("Skipping inverse relationship field for sourceTable='{}', target='{}', mappedBy='{}' because the owning side will not be generated as a relation field.",
                         relationship.getSourceTable(),
                         relationship.getTargetTable(),
@@ -600,7 +600,7 @@ public class EntityGenerator {
                 continue;
             }
 
-            if (!shouldGenerateInverseRelationship(relationship)) {
+            if (shouldGenerateInverseRelationship(relationship)) {
                 log.debug("Skipping inverse @OneToOne for sourceTable='{}', target='{}', mappedBy='{}' because the owning side will not be generated as a relation field.",
                         relationship.getSourceTable(),
                         relationship.getTargetTable(),
@@ -625,16 +625,6 @@ public class EntityGenerator {
     }
 
 
-    /**
-     * Determines whether an inverse relationship should be generated.
-     * <p>
-     * An inverse field is valid only when the owning side can actually be generated
-     * as a JPA relation field in the target entity. This prevents broken mappings
-     * such as mappedBy = "company" when the target entity only contains companyId.
-     *
-     * @param relationship inverse relationship metadata
-     * @return true when the owning side will be generated as a relation field
-     */
     private boolean shouldGenerateInverseRelationship(Relationship relationship) {
         if (relationship == null || relationship.getMappedBy() == null || relationship.getMappedBy().isBlank()) {
             return false;
@@ -642,8 +632,6 @@ public class EntityGenerator {
 
         Optional<Table> targetTableOptional = findTargetTableInGeneratorMap(relationship.getTargetTable());
         if (targetTableOptional.isEmpty()) {
-            log.debug("Skipping inverse relationship because target table '{}' could not be resolved.",
-                    relationship.getTargetTable());
             return false;
         }
 
@@ -671,7 +659,8 @@ public class EntityGenerator {
             String resolvedParentTable = stripSchema(resolvedOwningRelationship.getTargetTable());
             String resolvedFieldName = resolveRelationFieldName(column.getName());
 
-            if (expectedParentTable.equals(resolvedParentTable) && expectedMappedBy.equals(resolvedFieldName)) {
+            if (expectedParentTable.equals(resolvedParentTable)
+                    && expectedMappedBy.equals(resolvedFieldName)) {
                 return true;
             }
         }
@@ -2029,7 +2018,7 @@ public class EntityGenerator {
                 continue;
             }
 
-            if (!shouldGenerateInverseRelationship(relationship)) {
+            if (shouldGenerateInverseRelationship(relationship)) {
                 log.debug("Skipping inverse metadata field for sourceTable='{}', target='{}', mappedBy='{}' " +
                                 "because the owning side will not be generated as a relation field.",
                         relationship.getSourceTable(),
@@ -2196,36 +2185,15 @@ public class EntityGenerator {
     }
 
     /**
-     * Determines whether the column should use Hibernate's update timestamp handling.
-     *
-     * @param column the source column
-     * @return true when the column represents an auto-managed update timestamp
+     * Determines if a column should use @UpdateTimestamp.
      */
     private boolean shouldUseUpdateTimestamp(Column column) {
         if (column == null) {
             return false;
         }
 
-        String javaType = column.getJavaType();
-        if (!isLocalDateTimeType(javaType)) {
-            return false;
-        }
-
-        String columnName = column.getName();
-        if (!isUpdateTimestampColumnName(columnName)) {
-            return false;
-        }
-
-        String defaultValue = column.getDefaultValue();
-        if (defaultValue == null || defaultValue.isBlank()) {
-            return false;
-        }
-
-        String normalizedDefaultValue = defaultValue.trim().toLowerCase(Locale.ROOT);
-
-        return normalizedDefaultValue.contains("now()")
-                || normalizedDefaultValue.equals("current_timestamp")
-                || normalizedDefaultValue.equals("localtimestamp");
+        return isLocalDateTimeType(column.getJavaType())
+                && isUpdateTimestampColumnName(column.getName());
     }
 
     /**

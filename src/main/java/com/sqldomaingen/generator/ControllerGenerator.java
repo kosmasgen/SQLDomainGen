@@ -91,7 +91,14 @@ public class ControllerGenerator {
         List<Column> pkColumns = getPrimaryKeyColumns(table);
 
         String pkType = compositePk ? null : detectSinglePrimaryKeyType(table);
-        String apiPath = "/api/" + NamingConverter.toKebabCase(entityName);
+
+        String normalizedEntityName = entityName;
+
+        if (entityName.startsWith("Api") && entityName.length() > 3 && Character.isUpperCase(entityName.charAt(3))) {
+            normalizedEntityName = entityName.substring(3);
+        }
+
+        String apiPath = "/api/" + NamingConverter.toKebabCase(normalizedEntityName);
 
         JavaImportCollector importCollector = new JavaImportCollector();
         importCollector.addImport("import " + dtoPackage + "." + dtoName + ";");
@@ -103,7 +110,6 @@ public class ControllerGenerator {
         importCollector.addImport("import io.swagger.v3.oas.annotations.tags.Tag;");
         importCollector.addImport("import jakarta.validation.Valid;");
         importCollector.addImport("import lombok.RequiredArgsConstructor;");
-        importCollector.addImport("import lombok.extern.log4j.Log4j2;");
         importCollector.addImport("import org.springframework.http.HttpStatus;");
         importCollector.addImport("import org.springframework.http.ResponseEntity;");
         importCollector.addImport("import org.springframework.web.bind.annotation.*;");
@@ -123,7 +129,6 @@ public class ControllerGenerator {
         sourceBuilder.append(" */\n");
         sourceBuilder.append("@RestController\n");
         sourceBuilder.append("@RequiredArgsConstructor\n");
-        sourceBuilder.append("@Log4j2\n");
         sourceBuilder.append("@Tag(name = \"").append(displayLabel).append("\", description = \"").append(displayLabel).append(" API\")\n");
         sourceBuilder.append("@RequestMapping(\"").append(apiPath).append("\")\n");
         sourceBuilder.append("public class ").append(entityName).append("Controller {\n\n");
@@ -397,7 +402,7 @@ public class ControllerGenerator {
                 stringBuilder.append(",\n");
             }
 
-            stringBuilder.append("            @Valid @RequestBody ").append(dtoName).append(" dto) {\n");
+            stringBuilder.append("             @RequestBody ").append(dtoName).append(" dto) {\n");
             stringBuilder.append("        return ResponseEntity.ok(")
                     .append(serviceName)
                     .append(".update")
@@ -417,7 +422,7 @@ public class ControllerGenerator {
                 .append(label)
                 .append(" identifier\", required = true)\n");
         stringBuilder.append("            @PathVariable ").append(primaryKeyType).append(" id,\n");
-        stringBuilder.append("            @Valid @RequestBody ").append(dtoName).append(" dto) {\n");
+        stringBuilder.append("             @RequestBody ").append(dtoName).append(" dto) {\n");
         stringBuilder.append("        return ResponseEntity.ok(")
                 .append(serviceName)
                 .append(".update")

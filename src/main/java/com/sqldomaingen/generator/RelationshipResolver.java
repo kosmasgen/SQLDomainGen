@@ -217,7 +217,7 @@ public class RelationshipResolver {
             return null;
         }
 
-        Relationship.RelationshipType relationshipType = determineType(column, sourceTable, targetTable);
+        Relationship.RelationshipType relationshipType = determineType(column);
         if (relationshipType == null) {
             log.warn("Unable to determine relationship type for column '{}' in table '{}'",
                     column.getName(), sourceTable.getName());
@@ -546,14 +546,10 @@ public class RelationshipResolver {
      * Determines the relationship type for a standard FK column.
      *
      * @param column      the FK column
-     * @param sourceTable the source table
-     * @param targetTable the target table
      * @return the resolved relationship type
      */
     private Relationship.RelationshipType determineType(
-            Column column,
-            Table sourceTable,
-            Table targetTable
+            Column column
     ) {
         if (column.isManyToMany()) {
             log.info("Column '{}' has explicit MANYTOMANY pseudo-constraint. Assigning MANYTOMANY.",
