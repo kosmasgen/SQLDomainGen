@@ -36,7 +36,7 @@ mvn clean compile
 
 Run the CLI:
 
-java -jar target/SQLDomainGen-1.0-SNAPSHOT.jar generate-entity \
+ generate-entity \
   -i "path/to/input.sql" \
   -o "path/to/output" \
   -p "com.example.project" \
