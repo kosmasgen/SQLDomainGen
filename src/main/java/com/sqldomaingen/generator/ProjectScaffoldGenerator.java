@@ -338,6 +338,7 @@ public class ProjectScaffoldGenerator {
      *
      * @param root project root directory
      * @param applicationName Spring application name
+     * @param defaultSchemaName default database schema name
      * @param overwrite whether existing files should be overwritten
      */
     private void createApplicationProperties(Path root,
@@ -376,6 +377,12 @@ spring.jpa.hibernate.ddl-auto=validate
 spring.jpa.open-in-view=false
 spring.jpa.properties.hibernate.default_schema=%s
 spring.jpa.properties.org.hibernate.envers.default_schema=audit
+
+############################
+# MVC error handling
+############################
+spring.mvc.throw-exception-if-no-handler-found=true
+spring.web.resources.add-mappings=false
 
 server.port=8081
 
