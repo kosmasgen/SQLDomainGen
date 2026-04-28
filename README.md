@@ -25,12 +25,18 @@ SpringForge generates a structured Spring Boot backend directly from your SQL sc
 
 It reduces boilerplate and accelerates backend development.
 
+## Build
+
+```bash
+mvn clean compile
+
+```
+
 ## Quick Start
 
 Run the CLI:
 
-```bash
-generate-entity \
+java -jar target/SQLDomainGen-1.0-SNAPSHOT.jar generate-entity \
   -i "path/to/input.sql" \
   -o "path/to/output" \
   -p "com.example.project" \
