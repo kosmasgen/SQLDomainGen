@@ -705,6 +705,7 @@ public class ServiceGenerator {
 
     /**
      * Creates a NOT_FOUND exception for the entity.
+     *
      * @param stringBuilder target builder
      * @param entityName entity name
      * @param lowerDisplayLabel display label
@@ -733,7 +734,7 @@ public class ServiceGenerator {
                 : "id";
 
         stringBuilder.append("    /**\n");
-        stringBuilder.append("     Creates a NOT FOUND exception for the ")
+        stringBuilder.append("     * Creates a NOT FOUND exception for the ")
                 .append(lowerDisplayLabel)
                 .append(" entity.\n");
 
@@ -745,19 +746,19 @@ public class ServiceGenerator {
                 }
 
                 String parameterName = NamingConverter.toCamelCase(columnName);
-                stringBuilder.append("     @param ")
+                stringBuilder.append("     * @param ")
                         .append(parameterName)
                         .append(" the ")
                         .append(columnName)
                         .append(" value\n");
             }
         } else {
-            stringBuilder.append("     @param id the ")
+            stringBuilder.append("     * @param id the ")
                     .append(lowerDisplayLabel)
                     .append(" id\n");
         }
 
-        stringBuilder.append("     @return runtime exception\n");
+        stringBuilder.append("     * @return runtime exception\n");
         stringBuilder.append("     */\n");
         stringBuilder.append("    private RuntimeException ")
                 .append(createNotFoundExceptionMethodName)
@@ -1574,7 +1575,6 @@ public class ServiceGenerator {
             nullCheckExpression = "dto.getId() != null && " + nullCheckExpression;
         }
 
-
         String repositoryMethodName = buildExistsByMethodName(table, uniqueConstraint.getColumns());
 
         String repositoryArguments = uniqueColumns.stream()
@@ -1593,14 +1593,35 @@ public class ServiceGenerator {
             return;
         }
 
-        stringBuilder.append("        if (").append(nullCheckExpression).append(" && ")
-                .append(repositoryVariableName).append(".").append(repositoryMethodName)
-                .append("(").append(repositoryArguments).append(")) {\n");
+        stringBuilder.append("        boolean hasRequiredFields =\n");
+        stringBuilder.append("                ")
+                .append(nullCheckExpression.replace(" && ", " &&\n                "))
+                .append(";\n\n");
+
+        stringBuilder.append("        if (!hasRequiredFields) {\n");
+        stringBuilder.append("            return;\n");
+        stringBuilder.append("        }\n\n");
+
+        stringBuilder.append("        boolean exists = ")
+                .append(repositoryVariableName)
+                .append("\n");
+        stringBuilder.append("                .")
+                .append(repositoryMethodName)
+                .append("(\n");
+        stringBuilder.append("                        ")
+                .append(repositoryArguments.replace(", ", ",\n                        "))
+                .append("\n");
+        stringBuilder.append("                );\n\n");
+
+        stringBuilder.append("        if (exists) {\n");
         stringBuilder.append("            throw GeneratedRuntimeException.builder()\n");
         stringBuilder.append("                    .code(ErrorCodes.BAD_REQUEST)\n");
         stringBuilder.append("                    .entity(\"").append(entityName).append("\")\n");
         stringBuilder.append("                    .message(\"").append(entityName)
-                .append(" already exists with \" + ").append(messageExpression).append(")\n");
+                .append(" already exists with \"\n");
+        stringBuilder.append("                            + ")
+                .append(messageExpression.replace(" + ", "\n                            + "))
+                .append(")\n");
         stringBuilder.append("                    .build();\n");
         stringBuilder.append("        }\n");
     }
