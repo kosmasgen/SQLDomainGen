@@ -38,7 +38,8 @@ Run with Spring Shell:
 
 ```bash
 mvn spring-boot:run
-# then run inside the shell:
+
+```bash
 generate-entity -i "path/to/input.sql" -o "path/to/output" -p "com.example.project" -w true -b true -a "your@email.com"
 ```
 ---
