@@ -37,6 +37,7 @@ mvn clean compile
 Run the CLI:
 
  generate-entity 
+ 
   -i "path/to/input.sql" 
   -o "path/to/output" 
   -p "com.example.project" 
