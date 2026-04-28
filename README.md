@@ -37,13 +37,12 @@ mvn clean compile
 Run the CLI:
 
  generate-entity 
- 
-  -i "path/to/input.sql" 
-  -o "path/to/output" 
-  -p "com.example.project" 
-  -w true 
-  -b true 
-  -a "your@email.com"
+   -i "path/to/input.sql" 
+   -o "path/to/output" 
+   -p "com.example.project" 
+   -w true 
+   -b true 
+   -a "your@email.com"
 ```
 ---
 
