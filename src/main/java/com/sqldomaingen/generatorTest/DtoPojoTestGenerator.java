@@ -51,11 +51,15 @@ public class DtoPojoTestGenerator {
         collector.addImport("import org.junit.jupiter.api.Test;");
         collector.addStaticImport("import static org.assertj.core.api.Assertions.assertThat;");
 
-        // 🔴 IMPORTANT: always include base util imports (no guessing)
+        //  IMPORTANT: always include base util imports (no guessing)
         collector.addImport("import java.util.*;");
         collector.addImport("import java.math.*;");
         collector.addImport("import java.time.*;");
         collector.addImport("import java.util.UUID;");
+
+        collector.addImport("import jakarta.validation.Validation;");
+        collector.addImport("import jakarta.validation.ConstraintViolation;");
+        collector.addImport("import java.util.Set;");
 
         for (Field field : dtoFields) {
             String type = field.getType();
@@ -576,6 +580,9 @@ public class DtoPojoTestGenerator {
         appendNoArgsConstructorTest(content, dtoName, dtoFields);
         appendAllArgsConstructorTest(content, dtoName, dtoFields);
         appendSettersAndGettersTest(content, dtoName, dtoFields);
+
+
+
         content.append("}\n");
 
         return content.toString();

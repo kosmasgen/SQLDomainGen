@@ -1022,24 +1022,16 @@ public class ServiceImplTestGenerator {
             String outputDir,
             String basePackage
     ) {
-        appendEntityFixtureMethod(content, entityMetadata, entityName, "createSample" + entityName + "Entity", 1);
-        appendEntityFixtureMethod(content, entityMetadata, entityName, "createAnother" + entityName + "Entity", 2);
+        appendEntityFixtureMethod(content, table, entityMetadata, entityName, "createSample" + entityName + "Entity", 1);
+        appendEntityFixtureMethod(content, table, entityMetadata, entityName, "createAnother" + entityName + "Entity", 2);
         appendDtoFixtureMethod(content, table, dtoFields, dtoName, "createSample" + entityName + "Dto", 1, false, outputDir, basePackage);
         appendDtoFixtureMethod(content, table, dtoFields, dtoName, "createAnother" + entityName + "Dto", 2, false, outputDir, basePackage);
         appendDtoFixtureMethod(content, table, dtoFields, dtoName, "createPatch" + entityName + "Dto", 3, true, outputDir, basePackage);
     }
 
-    /**
-     * Appends an entity fixture factory method.
-     *
-     * @param content generated test content
-     * @param entityMetadata generated entity metadata
-     * @param entityName entity simple name
-     * @param methodName generated method name
-     * @param variant sample variant index
-     */
     private void appendEntityFixtureMethod(
             StringBuilder content,
+            Table table,
             Entity entityMetadata,
             String entityName,
             String methodName,
@@ -1052,6 +1044,35 @@ public class ServiceImplTestGenerator {
         content.append("     */\n");
         content.append("    private ").append(entityName).append(" ").append(methodName).append("() {\n");
         content.append("        ").append(entityName).append(" entity = new ").append(entityName).append("();\n");
+
+        if (hasCompositePrimaryKey(table)) {
+            String keyClassName = entityName + "Key";
+
+            content.append("        ").append(keyClassName).append(" id = new ")
+                    .append(keyClassName).append("();\n");
+
+            List<Column> primaryKeyColumns = getPrimaryKeyColumns(table);
+
+            for (int index = 0; index < primaryKeyColumns.size(); index++) {
+                Column primaryKeyColumn = primaryKeyColumns.get(index);
+                String normalizedColumnName = GeneratorSupport.unquoteIdentifier(primaryKeyColumn.getName());
+                String setterName = "set" + NamingConverter.toPascalCase(normalizedColumnName);
+                String sampleValue = sampleLiteralForColumn(primaryKeyColumn, variant + index);
+
+                if ("null".equals(sampleValue)) {
+                    continue;
+                }
+
+                content.append("        id.")
+                        .append(setterName)
+                        .append("(")
+                        .append(sampleValue)
+                        .append(");\n");
+            }
+
+            content.append("        entity.setId(id);\n\n");
+        }
+
         appendEntityFixtureSetterLines(content, getSafeEntityFields(entityMetadata), variant);
         content.append("        return entity;\n");
         content.append("    }\n\n");
@@ -1095,10 +1116,13 @@ public class ServiceImplTestGenerator {
             content.append("        ").append(keyClassName).append(" id = new ")
                     .append(keyClassName).append("();\n");
 
-            for (Column primaryKeyColumn : getPrimaryKeyColumns(table)) {
+            List<Column> primaryKeyColumns = getPrimaryKeyColumns(table);
+
+            for (int index = 0; index < primaryKeyColumns.size(); index++) {
+                Column primaryKeyColumn = primaryKeyColumns.get(index);
                 String normalizedColumnName = GeneratorSupport.unquoteIdentifier(primaryKeyColumn.getName());
                 String setterName = "set" + NamingConverter.toPascalCase(normalizedColumnName);
-                String sampleValue = sampleLiteralForColumn(primaryKeyColumn, variant);
+                String sampleValue = sampleLiteralForColumn(primaryKeyColumn, variant + index);
 
                 if ("null".equals(sampleValue)) {
                     continue;
@@ -1430,10 +1454,9 @@ public class ServiceImplTestGenerator {
      * Builds Java code that declares and initializes the primary key variables used by service tests.
      *
      * <p>
-     * For single primary keys, this method declares only {@code id}.
-     * For composite primary keys, this method declares each flattened primary key component
-     * used to call the service method and also builds the composite {@code id} object used
-     * by repository stubbing and verification.
+     * For single primary keys, this method declares {@code id}.
+     * For composite primary keys, this method declares only the flattened primary key component
+     * variables used to call the generated service method.
      * </p>
      *
      * @param table current table
@@ -1448,11 +1471,13 @@ public class ServiceImplTestGenerator {
         }
 
         StringBuilder builder = new StringBuilder();
+        List<Column> primaryKeyColumns = getPrimaryKeyColumns(table);
 
-        for (Column column : getPrimaryKeyColumns(table)) {
+        for (int index = 0; index < primaryKeyColumns.size(); index++) {
+            Column column = primaryKeyColumns.get(index);
             String javaType = detectJavaTypeForColumn(column);
             String variableName = resolvePrimaryKeyComponentVariableName(column);
-            String javaLiteral = sampleLiteralForColumn(column, 1);
+            String javaLiteral = sampleLiteralForColumn(column, index + 1);
 
             builder.append(indent)
                     .append(javaType)
@@ -1461,26 +1486,6 @@ public class ServiceImplTestGenerator {
                     .append(" = ")
                     .append(javaLiteral)
                     .append(";\n");
-        }
-
-        builder.append("\n");
-        builder.append(indent)
-                .append(primaryKeyType)
-                .append(" id = new ")
-                .append(primaryKeyType)
-                .append("();\n");
-
-        for (Column column : getPrimaryKeyColumns(table)) {
-            String normalizedColumnName = GeneratorSupport.unquoteIdentifier(column.getName());
-            String setterName = "set" + NamingConverter.toPascalCase(normalizedColumnName);
-            String variableName = resolvePrimaryKeyComponentVariableName(column);
-
-            builder.append(indent)
-                    .append("id.")
-                    .append(setterName)
-                    .append("(")
-                    .append(variableName)
-                    .append(");\n");
         }
 
         builder.append("\n");
@@ -1533,7 +1538,9 @@ public class ServiceImplTestGenerator {
         return switch (variant) {
             case 1 -> "UUID.fromString(\"123e4567-e89b-12d3-a456-426614174000\")";
             case 2 -> "UUID.fromString(\"223e4567-e89b-12d3-a456-426614174000\")";
-            default -> "UUID.fromString(\"323e4567-e89b-12d3-a456-426614174000\")";
+            case 3 -> "UUID.fromString(\"323e4567-e89b-12d3-a456-426614174000\")";
+            case 4 -> "UUID.fromString(\"423e4567-e89b-12d3-a456-426614174000\")";
+            default -> "UUID.fromString(\"523e4567-e89b-12d3-a456-426614174000\")";
         };
     }
 

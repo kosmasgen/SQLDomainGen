@@ -127,12 +127,6 @@ public class EntityPojoTestGenerator {
         content.append("class ").append(entity.getName()).append("EntityTest {\n\n");
     }
 
-    /**
-     * Appends the no-args constructor test.
-     *
-     * @param content target source builder
-     * @param entity generated entity metadata
-     */
     private void appendNoArgsConstructorTest(StringBuilder content, Entity entity) {
         String entityName = entity.getName();
         String entityVar = "entity";
@@ -144,7 +138,15 @@ public class EntityPojoTestGenerator {
         content.append("    void test").append(entityName).append("NoArgsConstructor() {\n");
         content.append("        ").append(entityName).append(" ").append(entityVar)
                 .append(" = new ").append(entityName).append("();\n\n");
-        content.append("        assertThat(").append(entityVar).append(").isNotNull();\n");
+
+        for (Field field : getEntityFields(entity)) {
+            content.append("        assertThat(")
+                    .append(entityVar)
+                    .append(".")
+                    .append(resolveGetterName(field))
+                    .append("()).isNull();\n");
+        }
+
         content.append("    }\n\n");
     }
 
