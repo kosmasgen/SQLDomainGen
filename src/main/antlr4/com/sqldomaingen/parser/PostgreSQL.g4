@@ -569,10 +569,19 @@ indexOptionsClause
 
 // Ορισμός για υποστηριζόμενες εκφράσεις.
 expression
-    : '(' expression ')' typeCast?
-    | anyExpression
+    : expression '||' expression
+    | expression '+' expression
+    | expression '-' expression
+    | expression '*' expression
+    | expression '/' expression
+    | expression comparisonOperator expression
+    | expression IS NULL
+    | expression IS NOT NULL
+    | expression BETWEEN expression AND expression
+    | '(' expression ')' typeCast?
     | functionCall typeCast?
     | columnName typeCast?
+    | anyExpression
     | value
     ;
 

@@ -1321,5 +1321,67 @@ class RelationshipResolverTest {
                 "Expected inverse ONETOONE on Users mappedBy='user'");
     }
 
+    @Test
+    void testResolveRelationships_InvoiceOrderUniqueFk_CreatesOneToOneRelationship() {
+        Table salesOrder = new Table();
+        salesOrder.setName("pep_schema.sales_order");
+
+        Column salesOrderId = new Column();
+        salesOrderId.setName("id");
+        salesOrderId.setSqlType("uuid");
+        salesOrderId.setJavaType("java.util.UUID");
+        salesOrderId.setPrimaryKey(true);
+        salesOrderId.setNullable(false);
+
+        salesOrder.setColumns(new ArrayList<>(List.of(salesOrderId)));
+
+        Table invoice = new Table();
+        invoice.setName("pep_schema.invoice");
+
+        Column invoiceId = new Column();
+        invoiceId.setName("id");
+        invoiceId.setSqlType("uuid");
+        invoiceId.setJavaType("java.util.UUID");
+        invoiceId.setPrimaryKey(true);
+        invoiceId.setNullable(false);
+
+        Column orderFk = new Column();
+        orderFk.setName("order_id");
+        orderFk.setSqlType("uuid");
+        orderFk.setJavaType("java.util.UUID");
+        orderFk.setForeignKey(true);
+        orderFk.setUnique(true);
+        orderFk.setNullable(false);
+        orderFk.setReferencedTable("pep_schema.sales_order");
+        orderFk.setReferencedColumn("id");
+
+        invoice.setColumns(new ArrayList<>(List.of(invoiceId, orderFk)));
+
+        resolver = new RelationshipResolver(Map.of(
+                salesOrder.getName(), salesOrder,
+                invoice.getName(), invoice
+        ));
+
+        List<Relationship> localRelationships = resolver.resolveRelationships(invoice);
+
+        assertNotNull(localRelationships);
+        assertEquals(1, localRelationships.size(),
+                "Expected exactly 1 owning ONETOONE relationship for invoice.order_id.");
+
+        Relationship relationship = localRelationships.getFirst();
+
+        assertEquals("pep_schema.invoice", relationship.getSourceTable());
+        assertEquals("order_id", relationship.getSourceColumn());
+        assertEquals("pep_schema.sales_order", relationship.getTargetTable());
+        assertEquals("id", relationship.getTargetColumn());
+        assertEquals(Relationship.RelationshipType.ONETOONE, relationship.getRelationshipType());
+
+        assertTrue(invoice.getRelationships().stream().anyMatch(currentRelationship ->
+                        "order_id".equals(currentRelationship.getSourceColumn())
+                                && currentRelationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE
+                ),
+                "Expected invoice table to contain ONETOONE relationship metadata for order_id.");
+    }
+
 
 }

@@ -74,7 +74,7 @@ class EntityDtoConsistencyValidationTest {
                 continue;
             }
 
-            validateEntityDtoPair(entityDefinition, dtoDefinition, violations);
+            validateEntityDtoPair(entityDefinition, dtoDefinition, entityBySimpleName, violations);
         }
 
         if (!violations.isEmpty()) {
@@ -193,6 +193,7 @@ class EntityDtoConsistencyValidationTest {
     private void validateEntityDtoPair(
             JavaTypeDefinition entityDefinition,
             JavaTypeDefinition dtoDefinition,
+            Map<String, JavaTypeDefinition> entityBySimpleName,
             List<String> violations
     ) {
         Map<String, JavaFieldDefinition> dtoFieldsByName = indexFieldsByName(dtoDefinition.fields());
@@ -230,13 +231,60 @@ class EntityDtoConsistencyValidationTest {
         Map<String, JavaFieldDefinition> entityFieldsByName = indexFieldsByName(entityDefinition.fields());
 
         for (JavaFieldDefinition dtoField : dtoDefinition.fields()) {
-            if (!entityFieldsByName.containsKey(dtoField.name())) {
-                violations.add(
-                        "[" + dtoDefinition.displayName() + "] Unexpected DTO field without matching entity field: '"
-                                + dtoField.name() + "'"
-                );
+            if (entityFieldsByName.containsKey(dtoField.name())) {
+                continue;
             }
+
+            if (isNestedDtoFieldMappedByEmbeddedId(dtoField, entityDefinition, entityBySimpleName)) {
+                continue;
+            }
+
+            violations.add(
+                    "[" + dtoDefinition.displayName() + "] Unexpected DTO field without matching entity field: '"
+                            + dtoField.name() + "'"
+            );
         }
+    }
+
+    /**
+     * Checks whether a nested DTO field is mapped through an EmbeddedId key
+     * by verifying actual key fields.
+     *
+     * @param dtoField DTO field definition
+     * @param entityDefinition entity definition
+     * @param entityBySimpleName all entity definitions (including embeddables)
+     * @return true when mapping exists in key class
+     */
+    private boolean isNestedDtoFieldMappedByEmbeddedId(
+            JavaFieldDefinition dtoField,
+            JavaTypeDefinition entityDefinition,
+            Map<String, JavaTypeDefinition> entityBySimpleName
+    ) {
+        if (dtoField == null || dtoField.name() == null || dtoField.name().isBlank()) {
+            return false;
+        }
+
+        // find id field
+        JavaFieldDefinition idField = entityDefinition.fields().stream()
+                .filter(field -> field.hasAnnotation("EmbeddedId"))
+                .findFirst()
+                .orElse(null);
+
+        if (idField == null) {
+            return false;
+        }
+
+        String keyTypeName = normalizeType(idField.type());
+
+        JavaTypeDefinition keyDefinition = entityBySimpleName.get(keyTypeName);
+        if (keyDefinition == null) {
+            return false;
+        }
+
+        String expectedKeyField = dtoField.name().trim() + "Id";
+
+        return keyDefinition.fields().stream()
+                .anyMatch(field -> field.name().equals(expectedKeyField));
     }
 
     /**

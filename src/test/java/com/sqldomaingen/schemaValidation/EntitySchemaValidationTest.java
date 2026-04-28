@@ -13,6 +13,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 import java.util.stream.Collectors;
 
+
 import static org.junit.jupiter.api.Assertions.fail;
 
 /**
@@ -193,7 +194,7 @@ class EntitySchemaValidationTest {
         validateJavaTypes(entityDefinition, tableDefinition, violations);
         validateColumnConstraints(entityDefinition, tableDefinition, violations);
         validateRelations(entityDefinition, tableDefinition, schemaTables, entityBySimpleName, violations);
-        validateForeignKeyCoverage(entityDefinition, tableDefinition, schemaTables, violations);
+        validateForeignKeyCoverage(entityDefinition, tableDefinition, schemaTables, entityBySimpleName, violations);
         validateMissingTableColumns(entityDefinition, tableDefinition, entityBySimpleName, violations);
     }
 
@@ -690,19 +691,19 @@ class EntitySchemaValidationTest {
     }
 
     /**
-     * Validates that every local foreign key column has relation coverage,
-     * while ignoring references to external tables that are not present
-     * in the parsed schema.
+     * Validates that every local foreign key is represented by a relation field.
      *
      * @param entityDefinition parsed entity definition
      * @param tableDefinition parsed SQL table definition
-     * @param schemaTables parsed SQL tables
+     * @param schemaTables parsed schema tables
+     * @param entityBySimpleName parsed entities by simple name
      * @param violations collected violations
      */
     private void validateForeignKeyCoverage(
             JavaEntityDefinition entityDefinition,
             TableDefinition tableDefinition,
             Map<String, TableDefinition> schemaTables,
+            Map<String, JavaEntityDefinition> entityBySimpleName,
             List<String> violations
     ) {
         Set<String> relationJoinColumns = entityDefinition.fields().stream()
@@ -887,10 +888,53 @@ class EntitySchemaValidationTest {
             ColumnDefinition columnDefinition = parseColumnDefinition(trimmed);
             if (columnDefinition != null) {
                 columns.put(normalizeName(columnDefinition.name()), columnDefinition);
+
+                ForeignKeyDefinition inlineForeignKeyDefinition =
+                        parseInlineForeignKeyConstraint(tableName, columnDefinition.name(), trimmed);
+
+                if (inlineForeignKeyDefinition != null) {
+                    foreignKeys.add(inlineForeignKeyDefinition);
+                }
             }
         }
 
         return new TableDefinition(tableName, columns, foreignKeys);
+    }
+
+    /**
+     * Parses an inline column-level foreign key declaration.
+     *
+     * <p>Example:
+     * {@code customer_id uuid NOT NULL REFERENCES pep_schema.customer(id)}
+     *
+     * @param sourceTableName source table name
+     * @param sourceColumnName source column name
+     * @param sqlSegment full column SQL segment
+     * @return parsed foreign key definition or null
+     */
+    private ForeignKeyDefinition parseInlineForeignKeyConstraint(
+            String sourceTableName,
+            String sourceColumnName,
+            String sqlSegment
+    ) {
+        Pattern pattern = Pattern.compile(
+                "(?is)\\bREFERENCES\\s+([\\w.\"]+)\\s*\\(([^)]+)\\)"
+        );
+
+        Matcher matcher = pattern.matcher(sqlSegment);
+        if (!matcher.find()) {
+            return null;
+        }
+
+        String targetTableName = sanitizeIdentifier(matcher.group(1));
+        String targetColumnName = sanitizeIdentifier(matcher.group(2));
+
+        return new ForeignKeyDefinition(
+                sanitizeIdentifier(sourceTableName),
+                sanitizeIdentifier(sourceColumnName),
+                targetTableName,
+                targetColumnName
+        );
     }
 
 

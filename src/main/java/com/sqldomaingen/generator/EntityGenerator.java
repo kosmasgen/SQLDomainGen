@@ -217,7 +217,7 @@ public class EntityGenerator {
 
         generatePackageAndImports(entityBuilder, packageName, table);
         generateClassAnnotations(entityBuilder, table, useBuilder);
-        generateFields(entityBuilder, table, useBuilder);
+        generateFields(entityBuilder, table);
 
         entityBuilder.append("}\n");
 
@@ -365,7 +365,7 @@ public class EntityGenerator {
                 builder.append(", uniqueConstraints = ");
 
                 if (composite.size() == 1) {
-                    appendUniqueConstraint(builder, composite.get(0));
+                    appendUniqueConstraint(builder, composite.getFirst());
                 } else {
                     builder.append("{");
 
@@ -418,6 +418,7 @@ public class EntityGenerator {
      *     <li>basic columns</li>
      *     <li>primary keys</li>
      *     <li>standard FK relationships</li>
+     *     <li>composite primary-key FK relationships</li>
      *     <li>inverse many-to-many collections</li>
      *     <li>synthetic many-to-many fields from pure join tables</li>
      *     <li>inverse one-to-one relationships</li>
@@ -425,9 +426,8 @@ public class EntityGenerator {
      *
      * @param builder the builder receiving field content
      * @param table the source table metadata
-     * @param useBuilder true when Lombok builder is enabled for the entity
      */
-    public void generateFields(StringBuilder builder, Table table, boolean useBuilder) {
+    public void generateFields(StringBuilder builder, Table table) {
         Set<String> generatedFieldNames = new HashSet<>();
 
         boolean compositePrimaryKey = hasCompositePrimaryKey(table);
@@ -448,140 +448,179 @@ public class EntityGenerator {
             log.debug("Processing column: {}", column.getName());
 
             if (compositePrimaryKey && isCompositeKeyColumn(column, primaryKeyColumns)) {
-                if (!column.isForeignKey()) {
-                    continue;
-                }
+                if (column.isForeignKey()) {
+                    ForeignKeyGenerationStrategy strategy = resolveForeignKeyGenerationStrategy(table, column);
 
-                ForeignKeyGenerationStrategy strategy = resolveForeignKeyGenerationStrategy(table, column);
-
-                if (compositeJoinTable
-                        && strategy == ForeignKeyGenerationStrategy.COMPOSITE_MAPS_ID_RELATION) {
-                    addCompositeKeyRelationshipField(builder, column, table, generatedFieldNames);
+                    if (strategy == ForeignKeyGenerationStrategy.COMPOSITE_MAPS_ID_RELATION
+                            || strategy == ForeignKeyGenerationStrategy.RELATION) {
+                        addCompositeKeyRelationshipField(builder, column, table, generatedFieldNames);
+                    }
                 }
 
                 continue;
             }
 
             if (column.isPrimaryKey()) {
-                addPrimaryKeyAnnotations(builder, column, useBuilder);
+                addPrimaryKeyAnnotations(builder, column);
                 continue;
             }
 
             if (!column.isForeignKey()) {
-                addColumnField(builder, column, useBuilder);
+                addColumnField(builder, column);
                 continue;
             }
 
             ForeignKeyGenerationStrategy strategy = resolveForeignKeyGenerationStrategy(table, column);
 
             switch (strategy) {
-                case RELATION -> addRelationshipField(builder, column, table, generatedFieldNames, useBuilder);
+                case RELATION -> addRelationshipField(builder, column, table, generatedFieldNames);
 
-                case SCALAR -> addFlatForeignKeyScalarField(builder, column, useBuilder);
+                case SCALAR -> addFlatForeignKeyScalarField(builder, column);
 
-                case UNRESOLVED_SCALAR -> addUnresolvedForeignKeyScalarField(builder, column, useBuilder);
+                case UNRESOLVED_SCALAR -> addUnresolvedForeignKeyScalarField(builder, column);
 
                 case COMPOSITE_MAPS_ID_RELATION -> {
-                    log.warn("Composite @MapsId strategy reached non-composite branch for column '{}.{}'. " +
-                                    "Falling back to standard relationship generation.",
+                    log.warn("Composite @MapsId strategy reached non-composite branch for column '{}.{}'. Falling back to standard relationship generation.",
                             table.getName(),
                             column.getName());
-                    addRelationshipField(builder, column, table, generatedFieldNames, useBuilder);
+                    addRelationshipField(builder, column, table, generatedFieldNames);
                 }
             }
         }
 
         if (!compositeJoinTable) {
+            appendInverseManyToManyFields(builder, table, generatedFieldNames);
+            appendOwningManyToManyFields(builder, table, generatedFieldNames);
+            appendSyntheticManyToManyFields(builder, table, generatedFieldNames);
+            appendInverseOneToOneFields(builder, table, generatedFieldNames);
+        }
+    }
 
-            for (Relationship relationship : table.getRelationships()) {
-                boolean isInverseManyToManySide =
-                        relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY
-                                && relationship.getMappedBy() != null;
+    /**
+     * Appends inverse many-to-many fields for the current table.
+     *
+     * @param builder the builder receiving field content
+     * @param table the source table metadata
+     * @param generatedFieldNames already generated field names
+     */
+    private void appendInverseManyToManyFields(
+            StringBuilder builder,
+            Table table,
+            Set<String> generatedFieldNames
+    ) {
+        for (Relationship relationship : table.getRelationships()) {
+            boolean inverseManyToManySide =
+                    relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY
+                            && relationship.getMappedBy() != null;
 
-                if (!isInverseManyToManySide) {
-                    continue;
-                }
+            if (!inverseManyToManySide) {
+                continue;
+            }
 
-                if (!shouldGenerateInverseRelationship(relationship)) {
-                    log.debug("Skipping inverse relationship field for sourceTable='{}', target='{}', mappedBy='{}' " +
-                                    "because the owning side will not be generated as a relation field.",
-                            relationship.getSourceTable(),
-                            relationship.getTargetTable(),
-                            relationship.getMappedBy());
-                    continue;
-                }
-
-                log.debug("Adding inverse relationship field. sourceTable='{}', target='{}', type={}, mappedBy='{}'",
+            if (!shouldGenerateInverseRelationship(relationship)) {
+                log.debug("Skipping inverse relationship field for sourceTable='{}', target='{}', mappedBy='{}' because the owning side will not be generated as a relation field.",
                         relationship.getSourceTable(),
                         relationship.getTargetTable(),
-                        relationship.getRelationshipType(),
                         relationship.getMappedBy());
-
-                addInverseRelationshipField(builder, relationship, generatedFieldNames, useBuilder);
+                continue;
             }
 
-            for (Relationship relationship : table.getRelationships()) {
-                boolean isManyToManyOwnerSide =
-                        relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY
-                                && relationship.getMappedBy() == null
-                                && relationship.getJoinTableName() != null;
+            addInverseRelationshipField(builder, relationship, generatedFieldNames);
+        }
+    }
 
-                if (!isManyToManyOwnerSide) {
-                    continue;
-                }
+    /**
+     * Appends owning many-to-many fields for the current table.
+     *
+     * @param builder the builder receiving field content
+     * @param table the source table metadata
+     * @param generatedFieldNames already generated field names
+     */
+    private void appendOwningManyToManyFields(
+            StringBuilder builder,
+            Table table,
+            Set<String> generatedFieldNames
+    ) {
+        for (Relationship relationship : table.getRelationships()) {
+            boolean owningManyToManySide =
+                    relationship.getRelationshipType() == Relationship.RelationshipType.MANYTOMANY
+                            && relationship.getMappedBy() == null
+                            && relationship.getJoinTableName() != null;
 
-                log.debug("Adding ManyToMany owning-side field. sourceTable='{}', target='{}', joinTable='{}'",
+            if (!owningManyToManySide) {
+                continue;
+            }
+
+            String expectedFieldName = NamingConverter.toCamelCasePlural(stripSchema(relationship.getTargetTable()));
+            if (generatedFieldNames.contains(expectedFieldName)) {
+                log.warn("Skipping ManyToMany owning-side field '{}': already generated", expectedFieldName);
+                continue;
+            }
+
+            addManyToManyParentSide(builder, relationship, generatedFieldNames);
+        }
+    }
+
+    /**
+     * Appends synthetic many-to-many fields for the current table.
+     *
+     * @param builder the builder receiving field content
+     * @param table the source table metadata
+     * @param generatedFieldNames already generated field names
+     */
+    private void appendSyntheticManyToManyFields(
+            StringBuilder builder,
+            Table table,
+            Set<String> generatedFieldNames
+    ) {
+        for (ManyToManyRelation manyToManyRelation : table.getManyToManyRelations()) {
+            addSyntheticManyToManyField(builder, manyToManyRelation, generatedFieldNames);
+        }
+    }
+
+    /**
+     * Appends inverse one-to-one fields for the current table.
+     *
+     * @param builder the builder receiving field content
+     * @param table the source table metadata
+     * @param generatedFieldNames already generated field names
+     */
+    private void appendInverseOneToOneFields(
+            StringBuilder builder,
+            Table table,
+            Set<String> generatedFieldNames
+    ) {
+        for (Relationship relationship : table.getRelationships()) {
+            boolean inverseOneToOne =
+                    relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE
+                            && relationship.getMappedBy() != null
+                            && relationship.getSourceTable().equals(table.getName());
+
+            if (!inverseOneToOne) {
+                continue;
+            }
+
+            if (!shouldGenerateInverseRelationship(relationship)) {
+                log.debug("Skipping inverse @OneToOne for sourceTable='{}', target='{}', mappedBy='{}' because the owning side will not be generated as a relation field.",
                         relationship.getSourceTable(),
                         relationship.getTargetTable(),
-                        relationship.getJoinTableName());
-
-                String expectedFieldName = NamingConverter.toCamelCasePlural(stripSchema(relationship.getTargetTable()));
-                if (generatedFieldNames.contains(expectedFieldName)) {
-                    log.warn("Skipping ManyToMany owning-side field '{}': already generated", expectedFieldName);
-                    continue;
-                }
-
-                addManyToManyParentSide(builder, relationship, generatedFieldNames, useBuilder);
+                        relationship.getMappedBy());
+                continue;
             }
 
-            for (ManyToManyRelation manyToManyRelation : table.getManyToManyRelations()) {
-                addSyntheticManyToManyField(builder, manyToManyRelation, generatedFieldNames, useBuilder);
+            String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
+            String fieldName = java.beans.Introspector.decapitalize(targetEntity);
+            String mappedBy = relationship.getMappedBy();
+
+            if (generatedFieldNames.contains(fieldName)) {
+                log.warn("Skipping inverse OneToOne field '{}': already generated", fieldName);
+                continue;
             }
 
-            for (Relationship relationship : table.getRelationships()) {
-                boolean isInverseOneToOne =
-                        relationship.getRelationshipType() == Relationship.RelationshipType.ONETOONE
-                                && relationship.getMappedBy() != null
-                                && relationship.getSourceTable().equals(table.getName());
+            generatedFieldNames.add(fieldName);
 
-                if (!isInverseOneToOne) {
-                    continue;
-                }
-
-                if (!shouldGenerateInverseRelationship(relationship)) {
-                    log.debug("Skipping inverse @OneToOne for sourceTable='{}', target='{}', mappedBy='{}' " +
-                                    "because the owning side will not be generated as a relation field.",
-                            relationship.getSourceTable(),
-                            relationship.getTargetTable(),
-                            relationship.getMappedBy());
-                    continue;
-                }
-
-                String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
-                String fieldName = java.beans.Introspector.decapitalize(targetEntity);
-                String mappedBy = relationship.getMappedBy();
-
-                if (generatedFieldNames.contains(fieldName)) {
-                    log.warn("Skipping inverse OneToOne field '{}': already generated", fieldName);
-                    continue;
-                }
-                generatedFieldNames.add(fieldName);
-
-                log.debug("Adding inverse @OneToOne for '{}', mappedBy='{}'", targetEntity, mappedBy);
-
-                builder.append("    @OneToOne(mappedBy = \"").append(mappedBy).append("\", fetch = FetchType.LAZY)\n");
-                builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
-            }
+            builder.append("    @OneToOne(mappedBy = \"").append(mappedBy).append("\", fetch = FetchType.LAZY)\n");
+            builder.append("    private ").append(targetEntity).append(" ").append(fieldName).append(";\n\n");
         }
     }
 
@@ -647,9 +686,8 @@ public class EntityGenerator {
      *
      * @param builder the builder receiving the generated content
      * @param column the foreign key column
-     * @param useBuilder true when Lombok builder is enabled
      */
-    private void addFlatForeignKeyScalarField(StringBuilder builder, Column column, boolean useBuilder) {
+    private void addFlatForeignKeyScalarField(StringBuilder builder, Column column) {
         String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
         String javaType = resolveJavaType(column);
         String cleanedType = toSimpleJavaType(javaType);
@@ -669,8 +707,6 @@ public class EntityGenerator {
         }
 
         builder.append(")\n");
-
-        addBuilderDefaultAnnotation(builder, useBuilder, false);
 
         builder.append("    private ")
                 .append(cleanedType)
@@ -769,12 +805,10 @@ public class EntityGenerator {
      * @param builder the builder receiving generated content
      * @param manyToManyRelation the synthetic many-to-many metadata
      * @param generatedFieldNames already generated field names for duplicate protection
-     * @param useBuilder true when Lombok builder is enabled for the entity
      */
     public void addSyntheticManyToManyField(StringBuilder builder,
                                             ManyToManyRelation manyToManyRelation,
-                                            Set<String> generatedFieldNames,
-                                            boolean useBuilder) {
+                                            Set<String> generatedFieldNames) {
         if (manyToManyRelation == null) {
             return;
         }
@@ -808,8 +842,6 @@ public class EntityGenerator {
                     .append(manyToManyRelation.getMappedBy())
                     .append("\", fetch = FetchType.LAZY)\n");
         }
-
-        addBuilderDefaultAnnotation(builder, useBuilder, true);
 
         builder.append("    private List<")
                 .append(targetEntity)
@@ -1237,9 +1269,8 @@ public class EntityGenerator {
      *
      * @param builder the builder receiving generated content
      * @param column the primary key column metadata
-     * @param useBuilder true when Lombok builder is enabled for the entity
      */
-    private void addPrimaryKeyAnnotations(StringBuilder builder, Column column, boolean useBuilder) {
+    private void addPrimaryKeyAnnotations(StringBuilder builder, Column column) {
         builder.append("    @Id\n");
 
         if (!column.isForeignKey()) {
@@ -1250,7 +1281,7 @@ public class EntityGenerator {
             }
         }
 
-        addColumnField(builder, column, useBuilder);
+        addColumnField(builder, column);
     }
 
     private boolean shouldUseUuidGeneration(Column column) {
@@ -1283,13 +1314,11 @@ public class EntityGenerator {
      * @param column the foreign key column
      * @param table the source table
      * @param generatedFieldNames already generated field names for duplicate protection
-     * @param useBuilder true when Lombok builder is enabled
      */
     public void addRelationshipField(StringBuilder builder,
                                      Column column,
                                      Table table,
-                                     Set<String> generatedFieldNames,
-                                     boolean useBuilder) {
+                                     Set<String> generatedFieldNames) {
         log.debug("Resolving owning-side relationship field for column '{}' in table '{}'",
                 column.getName(),
                 table.getName());
@@ -1300,7 +1329,7 @@ public class EntityGenerator {
             log.warn("No owning-side relationship found for FK column '{}.{}'. Falling back to unresolved scalar field.",
                     table.getName(),
                     column.getName());
-            addUnresolvedForeignKeyScalarField(builder, column, useBuilder);
+            addUnresolvedForeignKeyScalarField(builder, column);
             return;
         }
 
@@ -1395,7 +1424,7 @@ public class EntityGenerator {
                         relationship.getRelationshipType(),
                         table.getName(),
                         column.getName());
-                addUnresolvedForeignKeyScalarField(builder, column, useBuilder);
+                addUnresolvedForeignKeyScalarField(builder, column);
             }
         }
     }
@@ -1451,12 +1480,10 @@ public class EntityGenerator {
      * @param builder the builder receiving generated content
      * @param relationship the many-to-many relationship metadata
      * @param generatedFieldNames already generated field names for duplicate protection
-     * @param useBuilder true when Lombok builder is enabled for the entity
      */
     public void addManyToManyParentSide(StringBuilder builder,
                                         Relationship relationship,
-                                        Set<String> generatedFieldNames,
-                                        boolean useBuilder) {
+                                        Set<String> generatedFieldNames) {
         String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
         String fieldName = NamingConverter.toCamelCasePlural(stripSchema(relationship.getTargetTable()));
 
@@ -1475,7 +1502,7 @@ public class EntityGenerator {
                 .append("        inverseJoinColumns = @JoinColumn(name = \"").append(relationship.getInverseJoinColumn()).append("\", nullable = false)\n")
                 .append("    )\n");
 
-        addBuilderDefaultAnnotation(builder, useBuilder, true);
+
 
         builder.append("    private List<").append(targetEntity).append("> ")
                 .append(fieldName).append(" = new ArrayList<>();\n\n");
@@ -1487,12 +1514,10 @@ public class EntityGenerator {
      * @param builder the builder receiving generated content
      * @param relationship the inverse relationship metadata
      * @param generatedFieldNames already generated field names for duplicate protection
-     * @param useBuilder true when Lombok builder is enabled for the entity
      */
     public void addInverseRelationshipField(StringBuilder builder,
                                             Relationship relationship,
-                                            Set<String> generatedFieldNames,
-                                            boolean useBuilder) {
+                                            Set<String> generatedFieldNames) {
         String targetEntity = NamingConverter.toPascalCase(stripSchema(relationship.getTargetTable()));
         String rawTargetTableName = stripSchema(relationship.getTargetTable());
 
@@ -1526,7 +1551,7 @@ public class EntityGenerator {
         builder.append("    @ManyToMany(mappedBy = \"").append(relationship.getMappedBy())
                 .append("\", fetch = FetchType.LAZY)\n");
 
-        addBuilderDefaultAnnotation(builder, useBuilder, true);
+
 
         builder.append("    private List<").append(targetEntity).append("> ")
                 .append(fieldName).append(" = new ArrayList<>();\n\n");
@@ -1539,9 +1564,8 @@ public class EntityGenerator {
      *
      * @param builder the builder receiving generated content
      * @param column the column metadata
-     * @param useBuilder whether Lombok builder is enabled
      */
-    private void addColumnField(StringBuilder builder, Column column, boolean useBuilder) {
+    private void addColumnField(StringBuilder builder, Column column) {
         boolean isForeignKey = column.isForeignKey();
         String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
         String javaType = resolveJavaType(column);
@@ -1603,7 +1627,6 @@ public class EntityGenerator {
 
         String cleanedType = toSimpleJavaType(javaType);
 
-        addBuilderDefaultAnnotation(builder, useBuilder, false);
 
         builder.append("    private ")
                 .append(cleanedType)
@@ -2129,11 +2152,9 @@ public class EntityGenerator {
      *
      * @param builder the builder receiving the generated content
      * @param column the unresolved foreign key column
-     * @param useBuilder true when Lombok builder is enabled
      */
     private void addUnresolvedForeignKeyScalarField(StringBuilder builder,
-                                                    Column column,
-                                                    boolean useBuilder) {
+                                                    Column column) {
         String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
 
         builder.append("    // TODO: Foreign key '")
@@ -2141,26 +2162,11 @@ public class EntityGenerator {
                 .append("' was not resolved to a generated entity relationship.\n")
                 .append("    // Keep it as a scalar field until the target entity becomes available.\n");
 
-        addFlatForeignKeyScalarField(builder, column, useBuilder);
+        addFlatForeignKeyScalarField(builder, column);
     }
 
 
-    /**
-     * Disables Lombok builder defaults for generated entities.
-     *
-     * <p>JPA entities should not use {@code @Builder.Default} because it introduces
-     * hidden initialization behavior in the persistence model. This method is kept
-     * only to preserve the current generation flow and intentionally does nothing.</p>
-     *
-     * @param builder the target builder
-     * @param useBuilder true when Lombok builder is enabled for the entity
-     * @param hasInitializer true when the field will be generated with an inline initializer
-     */
-    private void addBuilderDefaultAnnotation(StringBuilder builder,
-                                             boolean useBuilder,
-                                             boolean hasInitializer) {
-        // Intentionally empty.
-    }
+
 
 
     private boolean shouldUseCreationTimestamp(Column column) {
@@ -2262,7 +2268,7 @@ public class EntityGenerator {
             return ForeignKeyGenerationStrategy.UNRESOLVED_SCALAR;
         }
 
-        if (shouldKeepForeignKeyAsScalar(table, column, relationship.get())) {
+        if (shouldKeepForeignKeyAsScalar(table, relationship.get())) {
             return ForeignKeyGenerationStrategy.SCALAR;
         }
 
@@ -2302,11 +2308,10 @@ public class EntityGenerator {
      * becoming a JPA relation.
      *
      * @param table the source table
-     * @param column the foreign key column
      * @param relationship the resolved relationship metadata
      * @return true when the FK should remain scalar
      */
-    private boolean shouldKeepForeignKeyAsScalar(Table table, Column column, Relationship relationship) {
+    private boolean shouldKeepForeignKeyAsScalar(Table table, Relationship relationship) {
         if (isI18nParentOrLanguageRelation(table, relationship)) {
             return false;
         }

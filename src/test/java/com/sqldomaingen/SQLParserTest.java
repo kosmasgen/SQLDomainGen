@@ -963,4 +963,45 @@ class SQLParserTest {
         });
     }
 
+    @Test
+    void testParseCreateSalesOrderTable_PostgreSQL_WithOrderStatusCheckConstraint() {
+        String sql = """
+            CREATE TABLE pep_schema.sales_order (
+                id uuid DEFAULT gen_random_uuid() NOT NULL,
+                customer_id uuid NOT NULL,
+                employee_id uuid NULL,
+                order_number varchar(50) NOT NULL,
+                order_status varchar(30) DEFAULT 'DRAFT' NOT NULL,
+                order_date timestamp DEFAULT now() NOT NULL,
+                total_amount numeric(19, 2) DEFAULT 0 NOT NULL,
+                CONSTRAINT pk_sales_order PRIMARY KEY (id),
+                CONSTRAINT uk_sales_order_number UNIQUE (order_number),
+                CONSTRAINT fk_sales_order_customer FOREIGN KEY (customer_id) REFERENCES pep_schema.customer(id),
+                CONSTRAINT fk_sales_order_employee FOREIGN KEY (employee_id) REFERENCES pep_schema.employee(id),
+                CONSTRAINT chk_sales_order_status CHECK (order_status IN ('DRAFT','CONFIRMED','CANCELLED','COMPLETED'))
+            );
+            """;
+
+        sqlParser.setSqlContent(sql);
+        log.info("Testing PostgreSQL CREATE TABLE for 'pep_schema.sales_order' with order_status CHECK:\n{}", sql);
+
+        assertDoesNotThrow(() -> {
+            ParseTree parseTree = sqlParser.parseTreeFromSQL();
+            assertNotNull(parseTree, "ParseTree should not be null for CREATE TABLE sales_order.");
+
+            String tree = parseTree.toStringTree().toUpperCase();
+
+            assertTrue(tree.contains("SALES_ORDER"), "Expected table name 'sales_order' in parse tree.");
+            assertTrue(tree.contains("ORDER_STATUS"), "Expected 'order_status' column in parse tree.");
+            assertTrue(tree.contains("CHECK"), "Expected CHECK constraint in parse tree.");
+            assertTrue(tree.contains("CHK_SALES_ORDER_STATUS"), "Expected CHECK constraint name.");
+            assertTrue(tree.contains("DRAFT"), "Expected DRAFT value in CHECK constraint.");
+            assertTrue(tree.contains("CONFIRMED"), "Expected CONFIRMED value in CHECK constraint.");
+            assertTrue(tree.contains("CANCELLED"), "Expected CANCELLED value in CHECK constraint.");
+            assertTrue(tree.contains("COMPLETED"), "Expected COMPLETED value in CHECK constraint.");
+
+            assertFalse(tree.contains("OR DER_STATUS"), "Parser must not split order_status into 'OR der_status'.");
+        });
+    }
+
 }

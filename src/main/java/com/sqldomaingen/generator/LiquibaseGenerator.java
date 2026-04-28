@@ -169,13 +169,10 @@ public class LiquibaseGenerator {
 
         return builder.toString();
     }
+
+
     /**
      * Appends table-level CHECK constraints for the main table.
-     *
-     * <p>The parser stores table-level check constraints as raw SQL fragments
-     * inside {@link Table#getConstraints()}. This method renders them as
-     * PostgreSQL ALTER TABLE statements so named and unnamed checks can both
-     * be preserved.
      *
      * @param builder XML builder
      * @param table parsed table
@@ -193,12 +190,16 @@ public class LiquibaseGenerator {
             }
 
             String normalizedConstraint = constraint
-                    .replaceAll("\\s+", "")
-                    .toUpperCase(java.util.Locale.ROOT);
+                    .replaceAll("\\s+", " ")
+                    .trim();
 
-            if (!normalizedConstraint.contains("CHECK")) {
+            if (!normalizedConstraint.toUpperCase(java.util.Locale.ROOT).contains("CHECK")) {
                 continue;
             }
+
+            String cleanedConstraint = normalizedConstraint
+                    .replaceFirst("(?i)\\bCHECK\\s+CHECK\\b", "CHECK")
+                    .trim();
 
             builder.append("""
         <sql><![CDATA[
@@ -207,7 +208,7 @@ public class LiquibaseGenerator {
         ]]></sql>
 """.formatted(
                     qualifiedTableName,
-                    constraint.trim()
+                    cleanedConstraint
             ));
         }
     }

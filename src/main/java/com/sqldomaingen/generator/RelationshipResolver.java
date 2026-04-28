@@ -201,7 +201,7 @@ public class RelationshipResolver {
 
         Table targetTable = findTargetTable(column.getReferencedTable());
 
-        // 🔥 FIX: Do NOT drop FK if target table is missing
+        //  FIX: Do NOT drop FK if target table is missing
         if (targetTable == null) {
             log.warn("Target table '{}' not found for column '{}'. Keeping as scalar FK field.",
                     column.getReferencedTable(), column.getName());
@@ -213,7 +213,7 @@ public class RelationshipResolver {
             log.warn("Target column '{}' not found in table '{}'",
                     column.getReferencedColumn(), targetTable.getName());
 
-            // 🔥 same logic εδώ
+            //  same logic εδώ
             return null;
         }
 

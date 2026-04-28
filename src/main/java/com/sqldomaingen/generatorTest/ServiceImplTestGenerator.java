@@ -152,6 +152,7 @@ public class ServiceImplTestGenerator {
             appendCreateUniqueConstraintTests(
                     content,
                     table,
+                    dtoFields,
                     entityName,
                     dtoName,
                     repositoryVar,
@@ -180,7 +181,7 @@ public class ServiceImplTestGenerator {
             );
             appendDeleteSuccessTest(content, table, entityName, repositoryVar, serviceVar, primaryKeyType);
             appendDeleteNotFoundTest(content, table, entityName, repositoryVar, serviceVar, primaryKeyType);
-            appendFixtureMethods(content, table, entityMetadata, dtoFields, entityName, dtoName);
+            appendFixtureMethods(content, table, entityMetadata, dtoFields, entityName, dtoName, outputDir, basePackage);
             content.append("}\n");
 
             GeneratorSupport.writeFile(serviceTestDir.resolve(testName + ".java"), content.toString(), overwrite);
@@ -906,10 +907,19 @@ public class ServiceImplTestGenerator {
 
     /**
      * Appends create unique constraint tests.
+     *
+     * @param content generated test content
+     * @param table current table
+     * @param dtoFields actual generated DTO fields
+     * @param entityName entity simple name
+     * @param dtoName dto simple name
+     * @param repositoryVar repository variable name
+     * @param serviceVar service variable name
      */
     private void appendCreateUniqueConstraintTests(
             StringBuilder content,
             Table table,
+            List<Field> dtoFields,
             String entityName,
             String dtoName,
             String repositoryVar,
@@ -918,10 +928,9 @@ public class ServiceImplTestGenerator {
         table.getColumns().stream()
                 .filter(Column::isUnique)
                 .forEach(column -> {
-
-                    String fieldName = NamingConverter.toPascalCase(
-                            GeneratorSupport.unquoteIdentifier(column.getName())
-                    );
+                    String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
+                    String fieldName = NamingConverter.toPascalCase(columnName);
+                    String dtoGetterExpression = buildDtoGetterExpressionForUniqueColumn(column, dtoFields);
 
                     String methodSuffix = "shouldThrowBadRequestWhenCreate" + entityName + "WithExisting" + fieldName;
 
@@ -932,7 +941,7 @@ public class ServiceImplTestGenerator {
 
                     content.append("        given(").append(repositoryVar)
                             .append(".existsBy").append(fieldName)
-                            .append("(requestDto.get").append(fieldName).append("()))")
+                            .append("(").append(dtoGetterExpression).append("))")
                             .append(".willReturn(true);\n\n");
 
                     content.append("        GeneratedRuntimeException exception = ")
@@ -950,6 +959,48 @@ public class ServiceImplTestGenerator {
     }
 
     /**
+     * Builds the DTO getter expression used by generated unique-constraint tests.
+     */
+    private String buildDtoGetterExpressionForUniqueColumn(
+            Column column,
+            List<Field> dtoFields
+    ) {
+
+        String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
+
+        String camelCase = NamingConverter.toCamelCase(columnName);
+        String pascalCase = NamingConverter.toPascalCase(columnName);
+
+        // 1️  direct match → chamberLanguageId
+        boolean directFieldExists = dtoFields.stream()
+                .anyMatch(field -> field.getName().equals(camelCase));
+
+        if (directFieldExists) {
+            return "requestDto.get" + pascalCase + "()";
+        }
+
+        // 2️ relation match → chamberLanguage → getChamberLanguage().getId()
+        if (columnName.endsWith("_id")) {
+
+            String relationField = NamingConverter.toCamelCase(
+                    columnName.substring(0, columnName.length() - 3)
+            );
+
+            boolean relationExists = dtoFields.stream()
+                    .anyMatch(field -> field.getName().equals(relationField));
+
+            if (relationExists) {
+                return "requestDto.get"
+                        + NamingConverter.toPascalCase(relationField)
+                        + "().getId()";
+            }
+        }
+
+        // fallback
+        return "requestDto.get" + pascalCase + "()";
+    }
+
+    /**
      * Appends fixture factory methods for the generated service test.
      *
      * @param content generated test content
@@ -958,6 +1009,8 @@ public class ServiceImplTestGenerator {
      * @param dtoFields actual generated DTO fields
      * @param entityName entity simple name
      * @param dtoName dto simple name
+     * @param outputDir project root output directory
+     * @param basePackage base Java package
      */
     private void appendFixtureMethods(
             StringBuilder content,
@@ -965,13 +1018,15 @@ public class ServiceImplTestGenerator {
             Entity entityMetadata,
             List<Field> dtoFields,
             String entityName,
-            String dtoName
+            String dtoName,
+            String outputDir,
+            String basePackage
     ) {
         appendEntityFixtureMethod(content, entityMetadata, entityName, "createSample" + entityName + "Entity", 1);
         appendEntityFixtureMethod(content, entityMetadata, entityName, "createAnother" + entityName + "Entity", 2);
-        appendDtoFixtureMethod(content, table, dtoFields, dtoName, "createSample" + entityName + "Dto", 1, false);
-        appendDtoFixtureMethod(content, table, dtoFields, dtoName, "createAnother" + entityName + "Dto", 2, false);
-        appendDtoFixtureMethod(content, table, dtoFields, dtoName, "createPatch" + entityName + "Dto", 3, true);
+        appendDtoFixtureMethod(content, table, dtoFields, dtoName, "createSample" + entityName + "Dto", 1, false, outputDir, basePackage);
+        appendDtoFixtureMethod(content, table, dtoFields, dtoName, "createAnother" + entityName + "Dto", 2, false, outputDir, basePackage);
+        appendDtoFixtureMethod(content, table, dtoFields, dtoName, "createPatch" + entityName + "Dto", 3, true, outputDir, basePackage);
     }
 
     /**
@@ -1012,6 +1067,8 @@ public class ServiceImplTestGenerator {
      * @param methodName generated method name
      * @param variant sample variant index
      * @param skipPrimaryKeys whether primary key fields should be skipped
+     * @param outputDir project root output directory
+     * @param basePackage base Java package
      */
     private void appendDtoFixtureMethod(
             StringBuilder content,
@@ -1020,7 +1077,9 @@ public class ServiceImplTestGenerator {
             String dtoName,
             String methodName,
             int variant,
-            boolean skipPrimaryKeys
+            boolean skipPrimaryKeys,
+            String outputDir,
+            String basePackage
     ) {
         content.append("    /**\n");
         content.append("     * Creates a populated ").append(dtoName).append(" fixture for service tests.\n");
@@ -1055,7 +1114,7 @@ public class ServiceImplTestGenerator {
             content.append("        dto.setId(id);\n\n");
         }
 
-        appendDtoFixtureSetterLines(content, table, dtoFields, variant, skipPrimaryKeys);
+        appendDtoFixtureSetterLines(content, table, dtoFields, variant, skipPrimaryKeys, outputDir, basePackage);
         content.append("        return dto;\n");
         content.append("    }\n\n");
     }
@@ -1102,18 +1161,37 @@ public class ServiceImplTestGenerator {
      * @param dtoFields actual generated DTO fields
      * @param variant sample variant index
      * @param skipPrimaryKeys whether primary key fields should be skipped
+     * @param outputDir project root output directory
+     * @param basePackage base Java package
      */
     private void appendDtoFixtureSetterLines(
             StringBuilder content,
             Table table,
             List<Field> dtoFields,
             int variant,
-            boolean skipPrimaryKeys
+            boolean skipPrimaryKeys,
+            String outputDir,
+            String basePackage
     ) {
         String targetVariable = "dto";
 
         for (Field field : dtoFields) {
             if (shouldSkipField(table, field, skipPrimaryKeys)) {
+                continue;
+            }
+
+            String normalizedJavaType = normalizeJavaType(field.getType());
+
+            if (normalizedJavaType.endsWith("Dto")) {
+                appendNestedDtoFixtureSetterLine(
+                        content,
+                        targetVariable,
+                        field,
+                        normalizedJavaType,
+                        variant,
+                        outputDir,
+                        basePackage
+                );
                 continue;
             }
 
@@ -1137,6 +1215,55 @@ public class ServiceImplTestGenerator {
     }
 
     /**
+     * Appends setter lines for a nested DTO field.
+     *
+     * @param content generated test content
+     * @param targetVariable target DTO variable name
+     * @param field nested DTO field
+     * @param nestedDtoType nested DTO type
+     * @param variant sample variant index
+     * @param outputDir project root output directory
+     * @param basePackage base Java package
+     */
+    private void appendNestedDtoFixtureSetterLine(
+            StringBuilder content,
+            String targetVariable,
+            Field field,
+            String nestedDtoType,
+            int variant,
+            String outputDir,
+            String basePackage
+    ) {
+        String setterName = resolveSetterName(field);
+
+        content.append("        ")
+                .append(nestedDtoType)
+                .append(" ")
+                .append(field.getName())
+                .append(" = new ")
+                .append(nestedDtoType)
+                .append("();\n");
+
+        Field nestedIdField = findNestedDtoIdField(outputDir, basePackage, nestedDtoType);
+
+        if (nestedIdField != null) {
+            content.append("        ")
+                    .append(field.getName())
+                    .append(".setId(")
+                    .append(sampleLiteralForNestedDtoIdField(nestedIdField, variant))
+                    .append(");\n");
+        }
+
+        content.append("        ")
+                .append(targetVariable)
+                .append(".")
+                .append(setterName)
+                .append("(")
+                .append(field.getName())
+                .append(");\n");
+    }
+
+    /**
      * Resolves the setter name for a generated field.
      *
      * @param field generated field metadata
@@ -1157,6 +1284,49 @@ public class ServiceImplTestGenerator {
     }
 
     /**
+     * Finds the ID field of a generated nested DTO.
+     *
+     * @param outputDir project root output directory
+     * @param basePackage base Java package
+     * @param nestedDtoType nested DTO simple type
+     * @return ID field metadata or null when missing
+     */
+    private Field findNestedDtoIdField(
+            String outputDir,
+            String basePackage,
+            String nestedDtoType
+    ) {
+        return loadGeneratedDtoFields(outputDir, basePackage, nestedDtoType).stream()
+                .filter(field -> "id".equals(field.getName()))
+                .findFirst()
+                .orElse(null);
+    }
+
+
+    /**
+     * Builds a Java literal for a nested DTO ID field.
+     *
+     * @param field nested DTO ID field
+     * @param variant sample variant index
+     * @return Java literal source code
+     */
+    private String sampleLiteralForNestedDtoIdField(Field field, int variant) {
+        String normalizedJavaType = normalizeJavaType(field.getType());
+
+        return switch (normalizedJavaType) {
+            case "UUID" -> "java.util.UUID.fromString(\"123e4567-e89b-12d3-a456-426614174000\")";
+            case "BigDecimal" -> "new java.math.BigDecimal(\"" + variant + "\")";
+            case "BigInteger" -> "new java.math.BigInteger(\"" + variant + "\")";
+            case "Integer", "int" -> String.valueOf(variant);
+            case "Short", "short" -> "(short) " + variant;
+            case "Byte", "byte" -> "(byte) " + variant;
+            case "String" -> "\"id-value-" + variant + "\"";
+            case "Long", "long" -> variant + "L";
+            default -> "null";
+        };
+    }
+
+    /**
      * Builds a sample Java literal for a generated entity field.
      *
      * @param field generated field metadata
@@ -1174,7 +1344,7 @@ public class ServiceImplTestGenerator {
             case "Integer", "int" -> String.valueOf(variant);
             case "Short", "short" -> "(short) " + variant;
             case "Byte", "byte" -> "(byte) " + variant;
-            case "Boolean", "boolean" -> variant % 2 == 0 ? "false" : "true";
+            case "Boolean", "boolean" -> String.valueOf(variant % 2 != 0);
             case "LocalDate" -> "LocalDate.of(2025, 1, " + Math.min(variant, 28) + ")";
             case "LocalTime" -> "LocalTime.of(" + (9 + variant) + ", 0, 0)";
             case "LocalDateTime" -> "LocalDateTime.of(2025, 1, " + Math.min(variant, 28) + ", 10, 0, 0)";
@@ -1218,7 +1388,7 @@ public class ServiceImplTestGenerator {
             case "Integer", "int" -> String.valueOf(variant);
             case "Short", "short" -> "(short) " + variant;
             case "Byte", "byte" -> "(byte) " + variant;
-            case "Boolean", "boolean" -> variant % 2 == 0 ? "false" : "true";
+            case "Boolean", "boolean" -> String.valueOf(variant % 2 != 0);
             case "LocalDate" -> "LocalDate.of(2025, 1, " + Math.min(variant, 28) + ")";
             case "LocalTime" -> "LocalTime.of(" + (9 + variant) + ", 0, 0)";
             case "LocalDateTime" -> "LocalDateTime.of(2025, 1, " + Math.min(variant, 28) + ", 10, 0, 0)";
@@ -1335,7 +1505,7 @@ public class ServiceImplTestGenerator {
             case "Integer", "int" -> String.valueOf(variant);
             case "Short", "short" -> "(short) " + variant;
             case "Byte", "byte" -> "(byte) " + variant;
-            case "Boolean", "boolean" -> variant % 2 == 0 ? "false" : "true";
+            case "Boolean", "boolean" -> String.valueOf(variant % 2 != 0);
             case "LocalDate" -> "LocalDate.of(2025, 1, " + Math.min(variant, 28) + ")";
             case "LocalTime" -> "LocalTime.of(" + (9 + variant) + ", 0, 0)";
             case "LocalDateTime" -> "LocalDateTime.of(2025, 1, " + Math.min(variant, 28) + ", 10, 0, 0)";
@@ -1735,6 +1905,11 @@ public class ServiceImplTestGenerator {
 
             String javaType = normalizeJavaType(field.getType());
 
+            if (javaType.endsWith("Dto")) {
+                needsUuid = true;
+                continue;
+            }
+
             switch (GeneratorSupport.trimToEmpty(javaType)) {
                 case "UUID" -> needsUuid = true;
                 case "BigDecimal" -> needsBigDecimal = true;
@@ -1782,7 +1957,6 @@ public class ServiceImplTestGenerator {
 
         return imports;
     }
-
     /**
      * Builds the ordered service method argument list for the current table primary key.
      *

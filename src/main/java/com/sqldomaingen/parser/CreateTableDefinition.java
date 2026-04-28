@@ -72,15 +72,13 @@ public class CreateTableDefinition {
         return table;
     }
 
+
     /**
      * Extracts table-level CHECK constraints and stores them as raw table constraints.
      *
-     * <p>The generated constraint text is preserved in a Liquibase-friendly raw form,
-     * for example:
-     * <ul>
-     *     <li>{@code CONSTRAINT chk_company_or_person CHECK ((company_id IS NOT NULL) OR (person_id IS NOT NULL))}</li>
-     *     <li>{@code CHECK (year >= 1900)}</li>
-     * </ul>
+     * <p>The original SQL text is read from the ANTLR input stream instead of using
+     * {@code getText()}, because {@code getText()} removes whitespace and can corrupt
+     * expressions such as {@code order_status IN (...)}.</p>
      *
      * @param ctx the CREATE TABLE parse context
      */
@@ -97,14 +95,20 @@ public class CreateTableDefinition {
                 continue;
             }
 
-            String constraintText = tableConstraintContext.getText();
+            String constraintText = tableConstraintContext.getStart().getInputStream()
+                    .getText(new org.antlr.v4.runtime.misc.Interval(
+                            tableConstraintContext.getStart().getStartIndex(),
+                            tableConstraintContext.getStop().getStopIndex()
+                    ));
+
             if (constraintText == null || constraintText.isBlank()) {
                 continue;
             }
 
             String normalizedConstraintText = constraintText
                     .replace("\"", "")
-                    .replaceAll("\\s+", "")
+                    .replaceAll("\\s+", " ")
+                    .trim()
                     .toUpperCase(java.util.Locale.ROOT);
 
             if (!normalizedConstraintText.contains("CHECK")) {
@@ -125,11 +129,7 @@ public class CreateTableDefinition {
     }
 
     /**
-     * Extracts a normalized table-level CHECK constraint definition.
-     *
-     * <p>This method supports compact parser text returned by {@code ctx.getText()},
-     * where whitespace is usually removed, and restores the SQL spacing required
-     * for PostgreSQL CHECK expressions.
+     * Extracts a table-level CHECK constraint definition from the original SQL text.
      *
      * @param constraintText raw table constraint text
      * @return normalized CHECK constraint definition or {@code null} when not parseable
@@ -139,73 +139,32 @@ public class CreateTableDefinition {
             return null;
         }
 
-        String compactConstraintText = constraintText
+        String normalizedConstraintText = constraintText
                 .replace("\"", "")
-                .replaceAll("\\s+", "")
+                .replaceAll("\\s+", " ")
                 .trim();
 
-        String upperConstraintText = compactConstraintText.toUpperCase(java.util.Locale.ROOT);
-        int checkIndex = upperConstraintText.indexOf("CHECK(");
+        String upperConstraintText = normalizedConstraintText.toUpperCase(java.util.Locale.ROOT);
+        int checkIndex = upperConstraintText.indexOf("CHECK");
 
         if (checkIndex < 0) {
             return null;
         }
 
-        String constraintName = extractNamedConstraintName(compactConstraintText);
-        String rawCheckExpression = compactConstraintText.substring(checkIndex + "CHECK".length()).trim();
+        String constraintName = extractNamedConstraintName(normalizedConstraintText);
+        String checkExpression = normalizedConstraintText.substring(checkIndex + "CHECK".length()).trim();
 
-        if (rawCheckExpression.isBlank()) {
+        if (checkExpression.isBlank()) {
             return null;
         }
 
-        String normalizedCheckExpression = normalizeCheckExpression(rawCheckExpression);
-
         if (constraintName != null && !constraintName.isBlank()) {
-            return "CONSTRAINT " + constraintName + " CHECK " + normalizedCheckExpression;
+            return "CONSTRAINT " + constraintName + " CHECK " + checkExpression;
         }
 
-        return "CHECK " + normalizedCheckExpression;
+        return "CHECK " + checkExpression;
     }
 
-    /**
-     * Restores SQL spacing inside a compact CHECK expression extracted from parser text.
-     *
-     * <p>This method focuses on PostgreSQL boolean predicates and common operators
-     * that become invalid when parser text removes whitespace, for example:
-     * <ul>
-     *     <li>{@code company_idISNOTNULL -> company_id IS NOT NULL}</li>
-     *     <li>{@code person_idISNULL -> person_id IS NULL}</li>
-     *     <li>{@code aANDb -> a AND b}</li>
-     *     <li>{@code x>=1 -> x >= 1}</li>
-     * </ul>
-     *
-     * @param expression compact CHECK expression
-     * @return normalized SQL CHECK expression
-     */
-    private String normalizeCheckExpression(String expression) {
-        if (expression == null || expression.isBlank()) {
-            return expression;
-        }
-
-        String normalizedExpression = expression;
-
-        normalizedExpression = normalizedExpression.replaceAll("(?i)ISNOTNULL", " IS NOT NULL");
-        normalizedExpression = normalizedExpression.replaceAll("(?i)ISNULL", " IS NULL");
-        normalizedExpression = normalizedExpression.replaceAll("(?i)NOTNULL", " NOT NULL");
-        normalizedExpression = normalizedExpression.replaceAll("(?i)NOTIN", " NOT IN");
-        normalizedExpression = normalizedExpression.replaceAll("(?i)BETWEEN", " BETWEEN ");
-        normalizedExpression = normalizedExpression.replaceAll("(?i)AND", " AND ");
-        normalizedExpression = normalizedExpression.replaceAll("(?i)OR", " OR ");
-        normalizedExpression = normalizedExpression.replaceAll("(?i)IN\\(", " IN (");
-        normalizedExpression = normalizedExpression.replaceAll("(?i)NOTIN\\(", " NOT IN (");
-
-        normalizedExpression = normalizedExpression.replaceAll("\\s*(>=|<=|<>|!=|=|>|<)\\s*", " $1 ");
-        normalizedExpression = normalizedExpression.replaceAll("\\(\\s+", "(");
-        normalizedExpression = normalizedExpression.replaceAll("\\s+\\)", ")");
-        normalizedExpression = normalizedExpression.replaceAll("\\s+", " ").trim();
-
-        return normalizedExpression;
-    }
 
     /**
      * Extracts the physical table name from a CREATE TABLE statement.
@@ -457,17 +416,6 @@ public class CreateTableDefinition {
     /**
      * Extracts an explicitly declared table-level constraint name.
      *
-     * <p>This method supports compact parser text returned by {@code ctx.getText()},
-     * where whitespace is typically removed.
-     *
-     * <p>Examples:
-     * <ul>
-     *     <li>{@code CONSTRAINTpk_audit_trailPRIMARYKEY(id)} -> {@code pk_audit_trail}</li>
-     *     <li>{@code CONSTRAINTfk_audit_trail_companyFOREIGNKEY(company_id)REFERENCESpep_schema.company(id)} -> {@code fk_audit_trail_company}</li>
-     *     <li>{@code CONSTRAINTexport_comp_prod_country_year_checkCHECK((exp_year>=1800))} -> {@code export_comp_prod_country_year_check}</li>
-     *     <li>{@code PRIMARYKEY(id)} -> {@code null}</li>
-     * </ul>
-     *
      * @param constraintText raw table constraint text
      * @return the extracted constraint name or {@code null} when no explicit name exists
      */
@@ -476,36 +424,24 @@ public class CreateTableDefinition {
             return null;
         }
 
-        String compactConstraintText = constraintText
+        String normalizedConstraintText = constraintText
                 .replace("\"", "")
-                .replaceAll("\\s+", "")
+                .replaceAll("\\s+", " ")
                 .trim();
 
-        String upperConstraintText = compactConstraintText.toUpperCase(java.util.Locale.ROOT);
+        java.util.regex.Matcher matcher = java.util.regex.Pattern
+                .compile("(?i)^\\s*CONSTRAINT\\s+([a-zA-Z_][a-zA-Z0-9_]*)\\s+")
+                .matcher(normalizedConstraintText);
 
-        int constraintIndex = upperConstraintText.indexOf("CONSTRAINT");
-        if (constraintIndex < 0) {
+        if (!matcher.find()) {
             return null;
         }
 
-        int nameStartIndex = constraintIndex + "CONSTRAINT".length();
-        int endIndex = Integer.MAX_VALUE;
+        String constraintName = matcher.group(1);
 
-        String[] keywords = {"PRIMARYKEY(", "FOREIGNKEY(", "UNIQUE(", "CHECK("};
-
-        for (String keyword : keywords) {
-            int keywordIndex = upperConstraintText.indexOf(keyword, nameStartIndex);
-            if (keywordIndex >= 0) {
-                endIndex = Math.min(endIndex, keywordIndex);
-            }
-        }
-
-        if (endIndex == Integer.MAX_VALUE || endIndex <= nameStartIndex) {
-            return null;
-        }
-
-        String extractedName = compactConstraintText.substring(nameStartIndex, endIndex).trim();
-        return extractedName.isBlank() ? null : extractedName;
+        return constraintName == null || constraintName.isBlank()
+                ? null
+                : constraintName.trim();
     }
 
 

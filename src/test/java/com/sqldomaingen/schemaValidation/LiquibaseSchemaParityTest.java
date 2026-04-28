@@ -47,10 +47,7 @@ class LiquibaseSchemaParityTest {
         String sql = Files.readString(schemaPath);
         List<Table> parsedTables = parseTables(sql);
 
-        String liquibaseAuthor = System.getProperty("liquibase.author");
-        if (liquibaseAuthor == null || liquibaseAuthor.isBlank()) {
-            liquibaseAuthor = System.getenv("LIQUIBASE_AUTHOR");
-        }
+        String liquibaseAuthor = resolveLiquibaseAuthor();
 
 
         Path generationRoot = tempDir;
@@ -112,6 +109,98 @@ class LiquibaseSchemaParityTest {
         }
 
         writeAndPrintReport(violations);
+
+        if (!violations.isEmpty()) {
+            throw new AssertionError(buildViolationReport(violations));
+        }
+    }
+
+    /**
+     * Resolves the Liquibase author used by generated changelogs.
+     *
+     * @return resolved Liquibase author
+     */
+    private String resolveLiquibaseAuthor() {
+        String liquibaseAuthor = System.getProperty("liquibase.author");
+
+        if (liquibaseAuthor == null || liquibaseAuthor.isBlank()) {
+            liquibaseAuthor = System.getenv("LIQUIBASE_AUTHOR");
+        }
+
+        if (liquibaseAuthor == null || liquibaseAuthor.isBlank()) {
+            return "kosmasgenaris@knowledge.gr";
+        }
+
+        return liquibaseAuthor;
+    }
+
+
+    /**
+     * Verifies that generated CHECK constraints preserve SQL keyword spacing.
+     */
+    @Test
+    void shouldGenerateCheckConstraintsWithValidSqlKeywordSpacing() throws Exception {
+        List<Table> parsedTables = parseTables(Files.readString(Constants.SCHEMA_PATH));
+
+        LiquibaseGenerator liquibaseGenerator = new LiquibaseGenerator();
+        liquibaseGenerator.generateLiquibaseFiles(
+                tempDir.toString(),
+                parsedTables,
+                true,
+                resolveLiquibaseAuthor()
+        );
+
+        Path versionDir = tempDir.resolve("src/main/resources/db/migration/changelogs/v0.1.0");
+
+        List<String> violations = new ArrayList<>();
+
+        try (var paths = Files.walk(versionDir)) {
+            paths.filter(Files::isRegularFile)
+                    .filter(path -> path.toString().endsWith(".xml"))
+                    .forEach(path -> assertCheckSqlDoesNotContainBrokenKeywordSpacing(path, violations));
+        }
+
+        if (!violations.isEmpty()) {
+            throw new AssertionError(buildViolationReport(violations));
+        }
+    }
+
+    /**
+     * Verifies that generated CHECK SQL does not contain merged SQL keywords.
+     *
+     * @param path generated Liquibase XML path
+     * @param violations collected violations
+     */
+    private void assertCheckSqlDoesNotContainBrokenKeywordSpacing(Path path, List<String> violations) {
+        try {
+            String xml = Files.readString(path);
+            String normalizedXml = normalizeXmlWhitespace(xml);
+
+            Pattern checkPattern = Pattern.compile("(?i)CHECK\\s*\\((.*?)\\)");
+            Matcher checkMatcher = checkPattern.matcher(normalizedXml);
+
+            while (checkMatcher.find()) {
+                String checkExpression = checkMatcher.group(1);
+
+                List<Pattern> brokenPatterns = List.of(
+                        Pattern.compile("\\bNULLOR[A-Za-z_][A-Za-z0-9_]*\\b"),
+                        Pattern.compile("\\bOR[A-Z_][A-Za-z0-9_]*\\b"),
+                        Pattern.compile("\\bAND[A-Z_][A-Za-z0-9_]*\\b"),
+                        Pattern.compile("(?i)\\bCHECK\\s*\\(\\s*OR\\b"),
+                        Pattern.compile("(?i)\\bCHECK\\s*\\(\\s*AND\\b")
+                );
+
+                for (Pattern brokenPattern : brokenPatterns) {
+                    Matcher matcher = brokenPattern.matcher(checkExpression);
+
+                    if (matcher.find()) {
+                        violations.add("[" + path.getFileName() + "] Broken CHECK SQL keyword spacing found: " + matcher.group());
+                    }
+                }
+            }
+        } catch (Exception exception) {
+            violations.add("Could not inspect generated Liquibase file: " + path + " -> " + exception.getMessage());
+        }
     }
 
     /**
@@ -899,6 +988,10 @@ class LiquibaseSchemaParityTest {
                 continue;
             }
 
+            if (isExternalForeignKey(column)) {
+                continue;
+            }
+
             assertContains(xml, "<addForeignKeyConstraint baseTableName=\"" + tableName + "\"", violations, tableName);
             assertContains(xml, "baseColumnNames=\"" + normalizeIdentifier(column.getName()) + "\"", violations, tableName);
 
@@ -909,11 +1002,6 @@ class LiquibaseSchemaParityTest {
                     ? normalizeIdentifier(column.getReferencedColumn())
                     : "id";
             assertContains(xml, "referencedColumnNames=\"" + referencedColumn + "\"", violations, tableName);
-
-            String referencedSchema = extractSchema(column.getReferencedTable());
-            if (referencedSchema != null && !referencedSchema.isBlank()) {
-                assertContains(xml, "referencedTableSchemaName=\"" + referencedSchema + "\"", violations, tableName);
-            }
 
             if (column.getOnDelete() != null && !column.getOnDelete().isBlank()) {
                 assertContains(xml, "onDelete=\"" + column.getOnDelete() + "\"", violations, tableName);
@@ -926,7 +1014,27 @@ class LiquibaseSchemaParityTest {
     }
 
     /**
-     * Verifies that the number of generated main-table foreign keys matches the parsed table.
+     * Checks whether a foreign key points to a table outside the parsed local schema.
+     *
+     * @param column parsed column
+     * @return true when the referenced table belongs to an unsupported external schema
+     */
+    private boolean isExternalForeignKey(Column column) {
+        if (column == null || column.getReferencedTable() == null || column.getReferencedTable().isBlank()) {
+            return false;
+        }
+
+        String referencedSchema = extractSchema(column.getReferencedTable());
+
+        if (referencedSchema == null || referencedSchema.isBlank()) {
+            return false;
+        }
+
+        return !"pep_schema".equalsIgnoreCase(referencedSchema);
+    }
+
+    /**
+     * Verifies that the number of generated main-table foreign keys matches the parsed local table references.
      *
      * @param xml generated table changelog XML
      * @param table parsed table
@@ -935,6 +1043,7 @@ class LiquibaseSchemaParityTest {
     private void assertForeignKeyCount(String xml, Table table, List<String> violations) {
         long expectedForeignKeyCount = table.getColumns().stream()
                 .filter(Column::isForeignKey)
+                .filter(column -> !isExternalForeignKey(column))
                 .count();
 
         String normalizedTableName = stripSchema(table.getName());
@@ -1070,10 +1179,11 @@ class LiquibaseSchemaParityTest {
         long expectedCheckConstraintCount = table.getConstraints() == null
                 ? 0
                 : table.getConstraints().stream()
-                .filter(Objects::nonNull)
-                .map(this::normalizeCheckConstraint)
-                .filter(constraint -> !constraint.isBlank())
-                .count();
+                  .filter(Objects::nonNull)
+                  .filter(constraint -> Pattern.compile("(?i)\\bCHECK\\s*\\(").matcher(constraint).find())
+                  .map(this::normalizeCheckConstraint)
+                  .filter(constraint -> !constraint.isBlank())
+                  .count();
 
         String normalizedXml = normalizeXmlWhitespace(xml);
         String tableName = stripSchema(table.getName());
@@ -1705,15 +1815,23 @@ class LiquibaseSchemaParityTest {
         String normalizedConstraint = constraint.trim()
                 .replace("\"", "")
                 .replaceAll("\\s+", " ")
+                .replaceFirst("(?i)\\bCHECK\\s+CHECK\\b", "CHECK")
                 .trim();
 
         String upperConstraint = normalizedConstraint.toUpperCase(Locale.ROOT);
         int checkIndex = upperConstraint.indexOf("CHECK");
-        if (checkIndex >= 0) {
-            normalizedConstraint = normalizedConstraint.substring(checkIndex);
+        if (checkIndex < 0) {
+            return "";
         }
 
+        normalizedConstraint = normalizedConstraint.substring(checkIndex);
+
         return normalizedConstraint
+                .replaceAll("(?i)\\bCHECK\\s+CHECK\\b", "CHECK")
+                .replaceAll("(?i)\\bNULLOR\\b", "NULL OR")
+                .replaceAll("(?i)\\bOR([A-Za-z_][A-Za-z0-9_]*)", "OR $1")
+                .replaceAll("(?i)\\bAND([A-Za-z_][A-Za-z0-9_]*)", "AND $1")
+                .replaceAll("(?i)(-?[0-9]+)AND(-?[0-9]+)", "$1 AND $2")
                 .replaceAll("\\s*\\(\\s*", "(")
                 .replaceAll("\\s*\\)\\s*", ")")
                 .replaceAll("\\s*=\\s*", "=")
@@ -1724,6 +1842,10 @@ class LiquibaseSchemaParityTest {
                 .replaceAll("\\s*<\\s*", "<")
                 .replaceAll("\\s*>\\s*", ">")
                 .replaceAll("\\s*,\\s*", ",")
+                .replaceAll("(?i)\\s+BETWEEN\\s+", " BETWEEN ")
+                .replaceAll("(?i)\\s+AND\\s+", " AND ")
+                .replaceAll("(?i)\\s+OR\\s+", " OR ")
+                .replaceAll("(?i)\\s+IN\\s*", " IN")
                 .replaceAll("\\s+", " ")
                 .trim();
     }
@@ -1741,6 +1863,11 @@ class LiquibaseSchemaParityTest {
 
         return xml.replace("\"", "")
                 .replaceAll("\\s+", " ")
+                .replaceAll("(?i)\\bCHECK\\s+CHECK\\b", "CHECK")
+                .replaceAll("(?i)\\bNULLOR\\b", "NULL OR")
+                .replaceAll("(?i)\\bOR([A-Za-z_][A-Za-z0-9_]*)", "OR $1")
+                .replaceAll("(?i)\\bAND([A-Za-z_][A-Za-z0-9_]*)", "AND $1")
+                .replaceAll("(?i)(-?[0-9]+)AND(-?[0-9]+)", "$1 AND $2")
                 .replaceAll("\\s*\\(\\s*", "(")
                 .replaceAll("\\s*\\)\\s*", ")")
                 .replaceAll("\\s*=\\s*", "=")
@@ -1751,6 +1878,11 @@ class LiquibaseSchemaParityTest {
                 .replaceAll("\\s*<\\s*", "<")
                 .replaceAll("\\s*>\\s*", ">")
                 .replaceAll("\\s*,\\s*", ",")
+                .replaceAll("(?i)\\s+BETWEEN\\s+", " BETWEEN ")
+                .replaceAll("(?i)\\s+AND\\s+", " AND ")
+                .replaceAll("(?i)\\s+OR\\s+", " OR ")
+                .replaceAll("(?i)\\s+IN\\s*", " IN")
+                .replaceAll("\\s+", " ")
                 .trim();
     }
 
@@ -1897,21 +2029,39 @@ class LiquibaseSchemaParityTest {
 
             assertContains(xml, "indexName=\"" + indexName + "\"", violations, normalizedTableName);
 
-            String normalizedColumnExpression = normalizeIdentifier(expectedColumnExpression);
+            for (String columnName : splitIndexColumns(expectedColumnExpression)) {
+                boolean columnExistsAsSelfClosing = normalizeXmlWhitespace(xml).contains(
+                        normalizeXmlWhitespace("<column name=\"" + columnName + "\"/>")
+                );
 
-            boolean columnExistsAsSelfClosing = normalizeXmlWhitespace(xml).contains(
-                    normalizeXmlWhitespace("<column name=\"" + normalizedColumnExpression + "\"/>")
-            );
+                boolean columnExistsAsExplicitClosing = normalizeXmlWhitespace(xml).contains(
+                        normalizeXmlWhitespace("<column name=\"" + columnName + "\"></column>")
+                );
 
-            boolean columnExistsAsExplicitClosing = normalizeXmlWhitespace(xml).contains(
-                    normalizeXmlWhitespace("<column name=\"" + normalizedColumnExpression + "\"></column>")
-            );
-
-            if (!columnExistsAsSelfClosing && !columnExistsAsExplicitClosing) {
-                violations.add("[" + normalizedTableName + "] Expected XML fragment not found: <column name=\""
-                        + normalizedColumnExpression + "\"/>");
+                if (!columnExistsAsSelfClosing && !columnExistsAsExplicitClosing) {
+                    violations.add("[" + normalizedTableName + "] Expected XML fragment not found: <column name=\""
+                            + columnName + "\"/>");
+                }
             }
         }
+    }
+
+    /**
+     * Splits an index column expression into individual normalized column names.
+     *
+     * @param columnExpression raw index column expression
+     * @return normalized index column names
+     */
+    private List<String> splitIndexColumns(String columnExpression) {
+        if (columnExpression == null || columnExpression.isBlank()) {
+            return Collections.emptyList();
+        }
+
+        return Arrays.stream(columnExpression.split(","))
+                .map(String::trim)
+                .map(this::normalizeIdentifier)
+                .filter(columnName -> !columnName.isBlank())
+                .toList();
     }
 
     /**

@@ -34,6 +34,10 @@ public class TypeMapper {
         sqlToJavaTypeMap.put("INT8", "Long");
         sqlToJavaTypeMap.put("INT2", "Short");
 
+        sqlToJavaTypeMap.put("SERIAL4", "Integer");
+        sqlToJavaTypeMap.put("SERIAL8", "Long");
+        sqlToJavaTypeMap.put("SERIAL2", "Short");
+
         sqlToJavaTypeMap.put("SERIAL", "Integer");
         sqlToJavaTypeMap.put("BIGSERIAL", "Long");
         sqlToJavaTypeMap.put("SMALLSERIAL", "Short");

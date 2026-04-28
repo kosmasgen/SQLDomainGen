@@ -592,6 +592,35 @@ class TableParsingTest {
         );
     }
 
+
+    @Test
+    void testParseSalesOrderTable_WithOrderStatusCheckConstraint() {
+        String sql = """
+            CREATE TABLE pep_schema.sales_order (
+                id uuid DEFAULT gen_random_uuid() NOT NULL,
+                customer_id uuid NOT NULL,
+                employee_id uuid NULL,
+                order_number varchar(50) NOT NULL,
+                order_status varchar(30) DEFAULT 'DRAFT' NOT NULL,
+                order_date timestamp DEFAULT now() NOT NULL,
+                total_amount numeric(19, 2) DEFAULT 0 NOT NULL,
+                CONSTRAINT pk_sales_order PRIMARY KEY (id),
+                CONSTRAINT uk_sales_order_number UNIQUE (order_number),
+                CONSTRAINT fk_sales_order_customer FOREIGN KEY (customer_id) REFERENCES pep_schema.customer(id),
+                CONSTRAINT fk_sales_order_employee FOREIGN KEY (employee_id) REFERENCES pep_schema.employee(id),
+                CONSTRAINT chk_sales_order_status CHECK (order_status IN ('DRAFT','CONFIRMED','CANCELLED','COMPLETED'))
+            );
+            """;
+
+        parseCreateTableAndValidate(
+                sql,
+                "pep_schema.sales_order",
+                5,
+                "order_status varchar(30) DEFAULT 'DRAFT' NOT NULL",
+                "CONSTRAINT chk_sales_order_status CHECK (order_status IN ('DRAFT','CONFIRMED','CANCELLED','COMPLETED'))"
+        );
+    }
+
     /**
      * Collects parser/lexer syntax errors instead of printing them.
      */
@@ -640,5 +669,32 @@ class TableParsingTest {
             this.rawText = rawText;
             this.tableConstraintCount = tableConstraintCount;
         }
+    }
+
+
+    @Test
+    void testParseStressCheckConstraintsTable() {
+        String sql = """
+            CREATE TABLE pep_schema.stress_check_constraints (
+                id uuid DEFAULT gen_random_uuid() NOT NULL,
+                year_value int4 NOT NULL,
+                status varchar(20) NOT NULL,
+                percentage numeric(5, 2) NULL,
+                CONSTRAINT stress_check_constraints_pkey PRIMARY KEY (id),
+                CONSTRAINT chk_stress_year CHECK (((year_value >= 1900) AND (year_value <= 2100))),
+                CONSTRAINT chk_stress_status CHECK (status IN ('NEW', 'ACTIVE', 'CLOSED')),
+                CONSTRAINT chk_stress_percentage CHECK (((percentage IS NULL) OR ((percentage >= 0) AND (percentage <= 100))))
+            );
+            """;
+
+        parseCreateTableAndValidate(
+                sql,
+                "pep_schema.stress_check_constraints",
+                4,
+                "CONSTRAINT stress_check_constraints_pkey PRIMARY KEY (id)",
+                "CONSTRAINT chk_stress_year CHECK (((year_value >= 1900) AND (year_value <= 2100)))",
+                "CONSTRAINT chk_stress_status CHECK (status IN ('NEW', 'ACTIVE', 'CLOSED'))",
+                "CONSTRAINT chk_stress_percentage CHECK (((percentage IS NULL) OR ((percentage >= 0) AND (percentage <= 100))))"
+        );
     }
 }

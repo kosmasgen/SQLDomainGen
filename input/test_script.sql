@@ -1,3 +1,81 @@
+-- =========================================================
+-- EXTRA RELATION COVERAGE TABLES
+-- One-to-One + Pure Many-to-Many
+-- =========================================================
+
+CREATE TABLE pep_schema.company_legal_profile (
+                                                  id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                                  company_id uuid NOT NULL,
+                                                  registration_number varchar(100) NOT NULL,
+                                                  legal_representative varchar(255) NULL,
+                                                  registered_capital numeric(19, 2) NULL,
+                                                  date_created timestamp DEFAULT now() NOT NULL,
+                                                  last_updated timestamp DEFAULT now() NOT NULL,
+                                                  CONSTRAINT company_legal_profile_pkey PRIMARY KEY (id),
+                                                  CONSTRAINT uk_company_legal_profile_company UNIQUE (company_id),
+                                                  CONSTRAINT fk_company_legal_profile_company
+                                                      FOREIGN KEY (company_id)
+                                                          REFERENCES pep_schema.company(id)
+                                                          ON DELETE CASCADE
+);
+
+CREATE TABLE pep_schema.company_tax_profile (
+                                                id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                                company_id uuid NOT NULL,
+                                                tax_office varchar(255) NULL,
+                                                vat_category varchar(50) NULL,
+                                                tax_resident bool DEFAULT true NOT NULL,
+                                                date_created timestamp DEFAULT now() NOT NULL,
+                                                last_updated timestamp DEFAULT now() NOT NULL,
+                                                CONSTRAINT company_tax_profile_pkey PRIMARY KEY (id),
+                                                CONSTRAINT uk_company_tax_profile_company UNIQUE (company_id),
+                                                CONSTRAINT fk_company_tax_profile_company
+                                                    FOREIGN KEY (company_id)
+                                                        REFERENCES pep_schema.company(id)
+                                                        ON DELETE CASCADE
+);
+
+CREATE TABLE pep_schema.company_document (
+                                             id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                             company_id uuid NOT NULL,
+                                             document_type_id uuid NOT NULL,
+                                             file_name varchar(255) NOT NULL,
+                                             mime_type varchar(100) NOT NULL,
+                                             file_size int8 NOT NULL,
+                                             date_created timestamp DEFAULT now() NOT NULL,
+                                             CONSTRAINT company_document_pkey PRIMARY KEY (id),
+                                             CONSTRAINT fk_company_document_company
+                                                 FOREIGN KEY (company_id)
+                                                     REFERENCES pep_schema.company(id)
+                                                     ON DELETE CASCADE,
+                                             CONSTRAINT fk_company_document_type
+                                                 FOREIGN KEY (document_type_id)
+                                                     REFERENCES pep_schema.document_type(id)
+);
+
+CREATE TABLE pep_schema.company_document_tag (
+                                                 id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                                 code varchar(50) NOT NULL,
+                                                 description varchar(255) NULL,
+                                                 active bool DEFAULT true NOT NULL,
+                                                 CONSTRAINT company_document_tag_pkey PRIMARY KEY (id),
+                                                 CONSTRAINT uk_company_document_tag_code UNIQUE (code)
+);
+
+CREATE TABLE pep_schema.company_document_tag_assignment (
+                                                            company_document_id uuid NOT NULL,
+                                                            tag_id uuid NOT NULL,
+                                                            CONSTRAINT company_document_tag_assignment_pkey PRIMARY KEY (company_document_id, tag_id),
+                                                            CONSTRAINT fk_company_document_tag_assignment_document
+                                                                FOREIGN KEY (company_document_id)
+                                                                    REFERENCES pep_schema.company_document(id)
+                                                                    ON DELETE CASCADE,
+                                                            CONSTRAINT fk_company_document_tag_assignment_tag
+                                                                FOREIGN KEY (tag_id)
+                                                                    REFERENCES pep_schema.company_document_tag(id)
+                                                                    ON DELETE CASCADE
+);
+
 -- pep_schema.bg_poi definition
 
 -- Drop table
@@ -1640,4 +1718,316 @@ CREATE TABLE pep_schema.working_hours (
                                           CONSTRAINT working_hours_pkey PRIMARY KEY (id),
                                           CONSTRAINT fk_working_hours_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
                                           CONSTRAINT fk_working_hours_profile FOREIGN KEY (profile_id) REFERENCES pep_schema.company_profile(id)
+);
+
+
+-- =========================================================
+-- NORMALIZED DOMAIN TABLES (REPLACES STRESS TABLES)
+-- =========================================================
+
+CREATE TABLE pep_schema.document_type (
+                                          id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                          code varchar(20) NOT NULL,
+                                          description varchar(255) NULL,
+                                          active bool DEFAULT true NOT NULL,
+                                          date_created timestamp DEFAULT now() NOT NULL,
+                                          CONSTRAINT document_type_pkey PRIMARY KEY (id),
+                                          CONSTRAINT uk_document_type_code UNIQUE (code)
+);
+
+CREATE TABLE pep_schema.document_type_i18n (
+                                               document_type_id uuid NOT NULL,
+                                               language_id uuid NOT NULL,
+                                               description varchar(500) NOT NULL,
+                                               short_description varchar(50) NULL,
+                                               CONSTRAINT document_type_i18n_pkey PRIMARY KEY (document_type_id, language_id),
+                                               CONSTRAINT fk_document_type_i18n_type FOREIGN KEY (document_type_id) REFERENCES pep_schema.document_type(id) ON DELETE CASCADE,
+                                               CONSTRAINT fk_document_type_i18n_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
+);
+
+CREATE TABLE pep_schema.business_category (
+                                              id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                              parent_id uuid NULL,
+                                              code varchar(50) NOT NULL,
+                                              title varchar(255) NOT NULL,
+                                              sort_order int4 DEFAULT 0 NOT NULL,
+                                              CONSTRAINT business_category_pkey PRIMARY KEY (id),
+                                              CONSTRAINT uk_business_category_code UNIQUE (code),
+                                              CONSTRAINT fk_business_category_parent FOREIGN KEY (parent_id) REFERENCES pep_schema.business_category(id)
+);
+
+CREATE TABLE pep_schema.company_business_category (
+                                                      company_id uuid NOT NULL,
+                                                      category_id uuid NOT NULL,
+                                                      assigned_at timestamp DEFAULT now() NOT NULL,
+                                                      assigned_by varchar(100) NULL,
+                                                      CONSTRAINT company_business_category_pkey PRIMARY KEY (company_id, category_id),
+                                                      CONSTRAINT fk_company_business_category_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id) ON DELETE CASCADE,
+                                                      CONSTRAINT fk_company_business_category_category FOREIGN KEY (category_id) REFERENCES pep_schema.business_category(id)
+);
+
+CREATE TABLE pep_schema.company_relation (
+                                             id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                             source_company_id uuid NOT NULL,
+                                             target_company_id uuid NOT NULL,
+                                             relation_type varchar(50) NOT NULL,
+                                             active bool DEFAULT true NOT NULL,
+                                             CONSTRAINT company_relation_pkey PRIMARY KEY (id),
+                                             CONSTRAINT uk_company_relation UNIQUE (source_company_id, target_company_id, relation_type),
+                                             CONSTRAINT fk_company_relation_source FOREIGN KEY (source_company_id) REFERENCES pep_schema.company(id),
+                                             CONSTRAINT fk_company_relation_target FOREIGN KEY (target_company_id) REFERENCES pep_schema.company(id),
+                                             CONSTRAINT chk_company_relation_type CHECK (relation_type IN ('OWNER', 'PARTNER', 'SUPPLIER', 'CLIENT'))
+);
+
+CREATE TABLE pep_schema.integration_event_log (
+                                                  id bigserial NOT NULL,
+                                                  company_id uuid NULL,
+                                                  payload jsonb NOT NULL,
+                                                  payload_type varchar(50) NOT NULL,
+                                                  processed bool DEFAULT false NOT NULL,
+                                                  created_at timestamp DEFAULT now() NOT NULL,
+                                                  CONSTRAINT integration_event_log_pkey PRIMARY KEY (id),
+                                                  CONSTRAINT fk_integration_event_log_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
+);
+
+CREATE TABLE pep_schema.financial_metric (
+                                             id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                             metric_code numeric(19) NOT NULL,
+                                             amount numeric(19,2) NULL,
+                                             ratio numeric(10,4) NULL,
+                                             flexible_value numeric NULL,
+                                             flag_number numeric(1) NULL,
+                                             CONSTRAINT financial_metric_pkey PRIMARY KEY (id),
+                                             CONSTRAINT uk_financial_metric_code UNIQUE (metric_code)
+);
+
+CREATE TABLE pep_schema.annual_report (
+                                          id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                          year_value int4 NOT NULL,
+                                          status varchar(20) NOT NULL,
+                                          percentage numeric(5,2) NULL,
+                                          CONSTRAINT annual_report_pkey PRIMARY KEY (id),
+                                          CONSTRAINT chk_annual_year CHECK (year_value BETWEEN 1900 AND 2100),
+                                          CONSTRAINT chk_annual_status CHECK (status IN ('NEW','ACTIVE','CLOSED')),
+                                          CONSTRAINT chk_annual_percentage CHECK (percentage IS NULL OR (percentage BETWEEN 0 AND 100))
+);
+
+CREATE TABLE pep_schema.company_profile_asset (
+                                                  id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                                  company_id uuid NOT NULL,
+                                                  profile_id uuid NULL,
+                                                  file_name varchar(255) NOT NULL,
+                                                  mime_type varchar(100) NOT NULL,
+                                                  file_size int8 NOT NULL,
+                                                  metadata jsonb NULL,
+                                                  CONSTRAINT company_profile_asset_pkey PRIMARY KEY (id),
+                                                  CONSTRAINT fk_company_profile_asset_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                                  CONSTRAINT fk_company_profile_asset_profile FOREIGN KEY (profile_id) REFERENCES pep_schema.company_profile(id),
+                                                  CONSTRAINT uk_company_profile_asset UNIQUE (company_id, file_name)
+);
+
+CREATE TABLE pep_schema.product_bundle (
+                                           id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                           product_id uuid NOT NULL,
+                                           parent_product_id uuid NULL,
+                                           quantity numeric(19,2) DEFAULT 1 NOT NULL,
+                                           CONSTRAINT product_bundle_pkey PRIMARY KEY (id),
+                                           CONSTRAINT fk_product_bundle_product FOREIGN KEY (product_id) REFERENCES pep_schema.product(id),
+                                           CONSTRAINT fk_product_bundle_parent FOREIGN KEY (parent_product_id) REFERENCES pep_schema.product(id)
+);
+
+CREATE TABLE pep_schema.company_article_content (
+                                                    id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                                    company_id uuid NULL,
+                                                    title varchar(1000) NULL,
+                                                    body text NULL,
+                                                    search_text text NULL,
+                                                    CONSTRAINT company_article_content_pkey PRIMARY KEY (id),
+                                                    CONSTRAINT fk_company_article_content_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
+);
+
+CREATE TABLE pep_schema.priority_level (
+                                           id int8 GENERATED ALWAYS AS IDENTITY NOT NULL,
+                                           code varchar(30) NOT NULL,
+                                           description varchar(255) NULL,
+                                           CONSTRAINT priority_level_pkey PRIMARY KEY (id),
+                                           CONSTRAINT uk_priority_level_code UNIQUE (code)
+);
+
+CREATE TABLE pep_schema.import_batch (
+                                         id serial4 NOT NULL,
+                                         name varchar(100) NOT NULL,
+                                         created_at timestamp DEFAULT now() NOT NULL,
+                                         CONSTRAINT import_batch_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE pep_schema.background_job (
+                                           id bigserial NOT NULL,
+                                           name varchar(100) NOT NULL,
+                                           created_at timestamp DEFAULT now() NOT NULL,
+                                           CONSTRAINT background_job_pkey PRIMARY KEY (id)
+);
+
+CREATE TABLE pep_schema.notification_template (
+                                                  id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                                  code varchar(50) NOT NULL,
+                                                  subject varchar(255) NOT NULL,
+                                                  body text NOT NULL,
+                                                  active bool DEFAULT true NOT NULL,
+                                                  date_created timestamp DEFAULT now() NOT NULL,
+                                                  CONSTRAINT notification_template_pkey PRIMARY KEY (id),
+                                                  CONSTRAINT uk_notification_template_code UNIQUE (code)
+);
+
+CREATE TABLE pep_schema.notification_template_i18n (
+                                                       notification_template_id uuid NOT NULL,
+                                                       language_id uuid NOT NULL,
+                                                       subject varchar(255) NOT NULL,
+                                                       body text NOT NULL,
+                                                       CONSTRAINT notification_template_i18n_pkey PRIMARY KEY (notification_template_id, language_id),
+                                                       CONSTRAINT fk_notification_template_i18n_template FOREIGN KEY (notification_template_id) REFERENCES pep_schema.notification_template(id) ON DELETE CASCADE,
+                                                       CONSTRAINT fk_notification_template_i18n_language FOREIGN KEY (language_id) REFERENCES pep_schema.languages(id)
+);
+
+CREATE TABLE pep_schema.company_note (
+                                         id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                         company_id uuid NOT NULL,
+                                         title varchar(255) NULL,
+                                         note_text text NOT NULL,
+                                         pinned bool DEFAULT false NOT NULL,
+                                         date_created timestamp DEFAULT now() NOT NULL,
+                                         CONSTRAINT company_note_pkey PRIMARY KEY (id),
+                                         CONSTRAINT fk_company_note_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
+);
+
+CREATE TABLE pep_schema.company_tag (
+                                        id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                        code varchar(50) NOT NULL,
+                                        description varchar(255) NULL,
+                                        active bool DEFAULT true NOT NULL,
+                                        CONSTRAINT company_tag_pkey PRIMARY KEY (id),
+                                        CONSTRAINT uk_company_tag_code UNIQUE (code)
+);
+
+CREATE TABLE pep_schema.company_tag_assignment (
+                                                   company_id uuid NOT NULL,
+                                                   tag_id uuid NOT NULL,
+                                                   assigned_at timestamp DEFAULT now() NOT NULL,
+                                                   CONSTRAINT company_tag_assignment_pkey PRIMARY KEY (company_id, tag_id),
+                                                   CONSTRAINT fk_company_tag_assignment_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id) ON DELETE CASCADE,
+                                                   CONSTRAINT fk_company_tag_assignment_tag FOREIGN KEY (tag_id) REFERENCES pep_schema.company_tag(id)
+);
+
+CREATE TABLE pep_schema.api_request_log (
+                                            id bigserial NOT NULL,
+                                            company_id uuid NULL,
+                                            request_uri text NOT NULL,
+                                            http_method varchar(10) NOT NULL,
+                                            response_status int4 NULL,
+                                            created_at timestamp DEFAULT now() NOT NULL,
+                                            uri_path text GENERATED ALWAYS AS (regexp_replace(request_uri, '^https?://[^/]+'::text, ''::text)) STORED,
+                                            CONSTRAINT api_request_log_pkey PRIMARY KEY (id)
+);
+
+CREATE INDEX idx_api_request_log_uri_path ON pep_schema.api_request_log USING btree (uri_path);
+CREATE INDEX idx_api_request_log_status ON pep_schema.api_request_log USING btree (response_status);
+
+CREATE TABLE pep_schema.import_error_log (
+                                             id bigserial NOT NULL,
+                                             batch_id int4 NULL,
+                                             table_name varchar(100) NOT NULL,
+                                             row_number int4 NULL,
+                                             error_message text NOT NULL,
+                                             created_at timestamp DEFAULT now() NOT NULL,
+                                             CONSTRAINT import_error_log_pkey PRIMARY KEY (id),
+                                             CONSTRAINT fk_import_error_log_batch FOREIGN KEY (batch_id) REFERENCES pep_schema.import_batch(id)
+);
+
+CREATE TABLE pep_schema.company_rating (
+                                           id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                           company_id uuid NOT NULL,
+                                           rating_value numeric(3, 2) NOT NULL,
+                                           rating_source varchar(100) NULL,
+                                           date_created timestamp DEFAULT now() NOT NULL,
+                                           CONSTRAINT company_rating_pkey PRIMARY KEY (id),
+                                           CONSTRAINT fk_company_rating_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                           CONSTRAINT chk_company_rating_value CHECK (rating_value BETWEEN 0 AND 5)
+);
+
+CREATE TABLE pep_schema.service_plan (
+                                         id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                         code varchar(50) NOT NULL,
+                                         description varchar(255) NULL,
+                                         monthly_fee numeric(19, 2) NOT NULL,
+                                         active bool DEFAULT true NOT NULL,
+                                         CONSTRAINT service_plan_pkey PRIMARY KEY (id),
+                                         CONSTRAINT uk_service_plan_code UNIQUE (code),
+                                         CONSTRAINT chk_service_plan_monthly_fee CHECK (monthly_fee >= 0)
+);
+
+CREATE TABLE pep_schema.company_subscription (
+                                                 id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                                 company_id uuid NOT NULL,
+                                                 service_plan_id uuid NOT NULL,
+                                                 start_date timestamp NOT NULL,
+                                                 end_date timestamp NULL,
+                                                 active bool DEFAULT true NOT NULL,
+                                                 CONSTRAINT company_subscription_pkey PRIMARY KEY (id),
+                                                 CONSTRAINT fk_company_subscription_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                                 CONSTRAINT fk_company_subscription_plan FOREIGN KEY (service_plan_id) REFERENCES pep_schema.service_plan(id)
+);
+
+CREATE TABLE pep_schema.workflow_status (
+                                            id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                            code varchar(50) NOT NULL,
+                                            description varchar(255) NOT NULL,
+                                            sort_order int4 DEFAULT 0 NOT NULL,
+                                            final_status bool DEFAULT false NOT NULL,
+                                            CONSTRAINT workflow_status_pkey PRIMARY KEY (id),
+                                            CONSTRAINT uk_workflow_status_code UNIQUE (code)
+);
+
+CREATE TABLE pep_schema.company_workflow_history (
+                                                     id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                                     company_id uuid NOT NULL,
+                                                     workflow_status_id uuid NOT NULL,
+                                                     changed_at timestamp DEFAULT now() NOT NULL,
+                                                     changed_by varchar(100) NULL,
+                                                     comments text NULL,
+                                                     CONSTRAINT company_workflow_history_pkey PRIMARY KEY (id),
+                                                     CONSTRAINT fk_company_workflow_history_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                                     CONSTRAINT fk_company_workflow_history_status FOREIGN KEY (workflow_status_id) REFERENCES pep_schema.workflow_status(id)
+);
+
+CREATE TABLE pep_schema.export_file (
+                                        id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                        company_id uuid NULL,
+                                        file_name varchar(255) NOT NULL,
+                                        file_type varchar(50) NOT NULL,
+                                        file_size int8 NULL,
+                                        created_at timestamp DEFAULT now() NOT NULL,
+                                        CONSTRAINT export_file_pkey PRIMARY KEY (id),
+                                        CONSTRAINT fk_export_file_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
+);
+
+CREATE TABLE pep_schema.company_verification (
+                                                 id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                                 company_id uuid NOT NULL,
+                                                 verification_status varchar(30) NOT NULL,
+                                                 verified_at timestamp NULL,
+                                                 verified_by varchar(100) NULL,
+                                                 CONSTRAINT company_verification_pkey PRIMARY KEY (id),
+                                                 CONSTRAINT fk_company_verification_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id),
+                                                 CONSTRAINT chk_company_verification_status CHECK (verification_status IN ('PENDING','APPROVED','REJECTED'))
+);
+
+CREATE TABLE pep_schema.company_external_reference (
+                                                       id uuid DEFAULT gen_random_uuid() NOT NULL,
+                                                       company_id uuid NOT NULL,
+                                                       system_code varchar(50) NOT NULL,
+                                                       external_reference varchar(255) NOT NULL,
+                                                       date_created timestamp DEFAULT now() NOT NULL,
+                                                       CONSTRAINT company_external_reference_pkey PRIMARY KEY (id),
+                                                       CONSTRAINT uk_company_external_reference UNIQUE (company_id, system_code, external_reference),
+                                                       CONSTRAINT fk_company_external_reference_company FOREIGN KEY (company_id) REFERENCES pep_schema.company(id)
 );

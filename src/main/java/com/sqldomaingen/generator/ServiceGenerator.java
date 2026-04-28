@@ -1636,8 +1636,9 @@ public class ServiceGenerator {
 
         boolean isRelationship = table.getRelationships() != null &&
                 table.getRelationships().stream().anyMatch(rel ->
-                        columnName.equalsIgnoreCase(rel.getSourceColumn())
-                                && rel.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                        columnName.equalsIgnoreCase(GeneratorSupport.unquoteIdentifier(rel.getSourceColumn()))
+                                && (rel.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                                || rel.getRelationshipType() == Relationship.RelationshipType.ONETOONE)
                 );
 
         if (isRelationship) {
@@ -1684,8 +1685,9 @@ public class ServiceGenerator {
 
         boolean isRelationship = table.getRelationships() != null &&
                 table.getRelationships().stream().anyMatch(rel ->
-                        columnName.equalsIgnoreCase(rel.getSourceColumn())
-                                && rel.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                        columnName.equalsIgnoreCase(GeneratorSupport.unquoteIdentifier(rel.getSourceColumn()))
+                                && (rel.getRelationshipType() == Relationship.RelationshipType.MANYTOONE
+                                || rel.getRelationshipType() == Relationship.RelationshipType.ONETOONE)
                 );
 
         if (isRelationship) {
