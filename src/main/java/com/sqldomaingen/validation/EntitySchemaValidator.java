@@ -137,6 +137,14 @@ public class EntitySchemaValidator {
         );
     }
 
+    /**
+     * Validates one parsed entity definition against the SQL schema.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param schemaTables parsed schema tables
+     * @param entityBySimpleName parsed entities by simple name
+     * @param violations collected violations
+     */
     private void validateEntityDefinition(
             JavaEntityDefinition entityDefinition,
             Map<String, TableDefinition> schemaTables,
@@ -165,6 +173,7 @@ public class EntitySchemaValidator {
         }
 
         validateIdentifier(entityDefinition, violations);
+        validateDuplicateFieldNames(entityDefinition, violations);
         validateSimpleColumns(entityDefinition, tableDefinition, entityBySimpleName, violations);
         validateJavaTypes(entityDefinition, tableDefinition, violations);
         validateColumnConstraints(entityDefinition, tableDefinition, violations);
@@ -237,7 +246,7 @@ public class EntitySchemaValidator {
                 .toList();
 
         if (matches.size() == 1) {
-            return matches.get(0);
+            return matches.getFirst();
         }
 
         return null;
@@ -547,52 +556,6 @@ public class EntitySchemaValidator {
         }
     }
 
-    private void validateForeignKeyCoverage(
-            JavaEntityDefinition entityDefinition,
-            TableDefinition tableDefinition,
-            Map<String, TableDefinition> schemaTables,
-            List<String> violations
-    ) {
-        Set<String> relationJoinColumns = entityDefinition.fields().stream()
-                .filter(field -> field.hasAnnotation("ManyToOne") || field.hasAnnotation("OneToOne"))
-                .flatMap(field -> resolveJoinColumnNames(field).stream())
-                .map(this::normalizeName)
-                .collect(Collectors.toCollection(LinkedHashSet::new));
-
-        for (ForeignKeyDefinition foreignKeyDefinition : tableDefinition.foreignKeys()) {
-            String normalizedSourceColumn = normalizeName(foreignKeyDefinition.sourceColumn());
-
-            if (relationJoinColumns.contains(normalizedSourceColumn)) {
-                continue;
-            }
-
-            TableDefinition targetTableDefinition = resolveTableDefinitionByPhysicalOrUnqualifiedName(
-                    schemaTables,
-                    foreignKeyDefinition.targetTable()
-            );
-
-            if (targetTableDefinition == null) {
-                continue;
-            }
-
-            boolean hasMatchingScalarField = entityDefinition.fields().stream()
-                    .filter(field -> !field.hasAnnotation("Transient"))
-                    .filter(field -> !field.hasAnnotation("ManyToOne"))
-                    .filter(field -> !field.hasAnnotation("OneToOne"))
-                    .filter(field -> !field.hasAnnotation("OneToMany"))
-                    .filter(field -> !field.hasAnnotation("ManyToMany"))
-                    .anyMatch(field -> normalizeName(resolveColumnName(field)).equals(normalizedSourceColumn));
-
-            if (hasMatchingScalarField) {
-                violations.add("[" + entityDefinition.displayName() + "] Local foreign key column '"
-                        + foreignKeyDefinition.sourceColumn() + "' in table '" + tableDefinition.fullName()
-                        + "' is mapped as scalar field instead of relation");
-            } else {
-                violations.add("[" + entityDefinition.displayName() + "] Missing relation field for local foreign key column '"
-                        + foreignKeyDefinition.sourceColumn() + "' in table '" + tableDefinition.fullName() + "'");
-            }
-        }
-    }
 
     private void validateMissingTableColumns(
             JavaEntityDefinition entityDefinition,
@@ -680,6 +643,13 @@ public class EntitySchemaValidator {
         return tables;
     }
 
+    /**
+     * Parses one CREATE TABLE block.
+     *
+     * @param tableName physical table name
+     * @param tableBody table body
+     * @return parsed table definition
+     */
     private TableDefinition parseTableBlock(String tableName, String tableBody) {
         Map<String, ColumnDefinition> columns = new LinkedHashMap<>();
         List<ForeignKeyDefinition> foreignKeys = new ArrayList<>();
@@ -706,12 +676,138 @@ public class EntitySchemaValidator {
             ColumnDefinition columnDefinition = parseColumnDefinition(trimmed);
             if (columnDefinition != null) {
                 columns.put(normalizeName(columnDefinition.name()), columnDefinition);
+
+                ForeignKeyDefinition inlineForeignKeyDefinition =
+                        parseInlineForeignKeyConstraint(tableName, columnDefinition.name(), trimmed);
+
+                if (inlineForeignKeyDefinition != null) {
+                    foreignKeys.add(inlineForeignKeyDefinition);
+                }
             }
         }
 
         return new TableDefinition(tableName, columns, foreignKeys);
     }
 
+    /**
+     * Parses an inline column-level foreign key declaration.
+     *
+     * @param sourceTableName source table name
+     * @param sourceColumnName source column name
+     * @param sqlSegment full column SQL segment
+     * @return parsed foreign key definition or null
+     */
+    private ForeignKeyDefinition parseInlineForeignKeyConstraint(
+            String sourceTableName,
+            String sourceColumnName,
+            String sqlSegment
+    ) {
+        Pattern pattern = Pattern.compile(
+                "(?is)\\bREFERENCES\\s+([\\w.\"]+)\\s*\\(([^)]+)\\)"
+        );
+
+        Matcher matcher = pattern.matcher(sqlSegment);
+        if (!matcher.find()) {
+            return null;
+        }
+
+        String targetTableName = sanitizeIdentifier(matcher.group(1));
+        String targetColumnName = sanitizeIdentifier(matcher.group(2));
+
+        return new ForeignKeyDefinition(
+                sanitizeIdentifier(sourceTableName),
+                sanitizeIdentifier(sourceColumnName),
+                targetTableName,
+                targetColumnName
+        );
+    }
+
+    /**
+     * Validates that every local foreign key is represented by a relation field.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param tableDefinition parsed SQL table definition
+     * @param schemaTables parsed schema tables
+     * @param violations collected violations
+     */
+    private void validateForeignKeyCoverage(
+            JavaEntityDefinition entityDefinition,
+            TableDefinition tableDefinition,
+            Map<String, TableDefinition> schemaTables,
+            List<String> violations
+    ) {
+        Set<String> relationJoinColumns = entityDefinition.fields().stream()
+                .filter(field -> field.hasAnnotation("ManyToOne") || field.hasAnnotation("OneToOne"))
+                .flatMap(field -> resolveJoinColumnNames(field).stream())
+                .map(this::normalizeName)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
+
+        for (ForeignKeyDefinition foreignKeyDefinition : tableDefinition.foreignKeys()) {
+            String normalizedSourceColumn = normalizeName(foreignKeyDefinition.sourceColumn());
+
+            if (relationJoinColumns.contains(normalizedSourceColumn)) {
+                continue;
+            }
+
+            TableDefinition targetTableDefinition = resolveTableDefinitionByPhysicalOrUnqualifiedName(
+                    schemaTables,
+                    foreignKeyDefinition.targetTable()
+            );
+
+            if (targetTableDefinition == null) {
+                continue;
+            }
+
+            boolean hasMatchingScalarField = entityDefinition.fields().stream()
+                    .filter(field -> !field.hasAnnotation("Transient"))
+                    .filter(field -> !field.hasAnnotation("ManyToOne"))
+                    .filter(field -> !field.hasAnnotation("OneToOne"))
+                    .filter(field -> !field.hasAnnotation("OneToMany"))
+                    .filter(field -> !field.hasAnnotation("ManyToMany"))
+                    .anyMatch(field -> normalizeName(resolveColumnName(field)).equals(normalizedSourceColumn));
+
+            if (hasMatchingScalarField) {
+                violations.add("[" + entityDefinition.displayName() + "] Local foreign key column '"
+                        + foreignKeyDefinition.sourceColumn() + "' in table '" + tableDefinition.fullName()
+                        + "' is mapped as scalar field instead of relation");
+            } else {
+                violations.add("[" + entityDefinition.displayName() + "] Missing relation field for local foreign key column '"
+                        + foreignKeyDefinition.sourceColumn() + "' in table '" + tableDefinition.fullName() + "'");
+            }
+        }
+    }
+
+    /**
+     * Validates that an entity does not declare duplicate Java field names.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param violations collected violations
+     */
+    private void validateDuplicateFieldNames(
+            JavaEntityDefinition entityDefinition,
+            List<String> violations
+    ) {
+        Map<String, Long> fieldNameCounts = entityDefinition.fields().stream()
+                .collect(Collectors.groupingBy(
+                        JavaFieldDefinition::name,
+                        LinkedHashMap::new,
+                        Collectors.counting()
+                ));
+
+        fieldNameCounts.entrySet().stream()
+                .filter(entry -> entry.getValue() > 1)
+                .forEach(entry -> violations.add(
+                        "[" + entityDefinition.displayName() + "] Duplicate Java field name detected: '"
+                                + entry.getKey() + "'"
+                ));
+    }
+
+    /**
+     * Parses a SQL column definition.
+     *
+     * @param sqlSegment raw SQL segment
+     * @return parsed column definition or null
+     */
     private ColumnDefinition parseColumnDefinition(String sqlSegment) {
         Matcher matcher = Pattern.compile("^\\s*(\"[^\"]+\"|[a-zA-Z_][\\w$]*)\\s+(.+)$", Pattern.DOTALL)
                 .matcher(sqlSegment);
@@ -855,9 +951,9 @@ public class EntitySchemaValidator {
 
         return new ForeignKeyDefinition(
                 sanitizeIdentifier(sourceTableName),
-                sanitizeIdentifier(sourceColumns.get(0)),
+                sanitizeIdentifier(sourceColumns.getFirst()),
                 sanitizeIdentifier(targetTableGroup),
-                sanitizeIdentifier(targetColumns.get(0))
+                sanitizeIdentifier(targetColumns.getFirst())
         );
     }
 
@@ -1012,7 +1108,7 @@ public class EntitySchemaValidator {
     /**
      * Parses raw annotation lines into structured {@link AnnotationDefinition} objects.
      *
-     * @param annotationLines list of annotation lines (e.g. "@Column(name = \"id\")")
+     * @param annotationLines list of annotation lines (e.g. ""@Column(name = \"id\")")
      * @return list of parsed annotation definitions with extracted name and attributes
      */
     private List<AnnotationDefinition> parseAnnotations(List<String> annotationLines) {
@@ -1040,7 +1136,7 @@ public class EntitySchemaValidator {
     /**
      * Parses raw annotation argument string into a map of attribute name-value pairs.
      *
-     * @param rawArguments raw annotation arguments (e.g. "name = \"id\", nullable = false")
+     * @param rawArguments raw annotation arguments (e.g. ""name = \"id\", nullable = false")
      * @return ordered map of attribute names to their resolved values
      */
     private Map<String, String> parseAnnotationAttributes(String rawArguments) {
@@ -1469,7 +1565,7 @@ public class EntitySchemaValidator {
                 .toList();
 
         if (matches.size() == 1) {
-            return matches.get(0);
+            return matches.getFirst();
         }
 
         return null;
@@ -1830,38 +1926,47 @@ public class EntitySchemaValidator {
 
         checklist.add("1. Checks that the schema SQL file exists");
         checklist.add("2. Checks that the generated Java root exists");
-        checklist.add("3. Scans generated entity source files under the entity package");
-        checklist.add("4. Parses @Entity, @Embeddable, @Table, fields, and annotations from source files");
-        checklist.add("5. Prints generated entities that still contain TODO comments");
-        checklist.add("6. Checks that each entity has @Table(name=...)");
-        checklist.add("7. Checks that each entity has @Id or @EmbeddedId");
-        checklist.add("8. Checks simple field-to-column mappings against SQL table columns");
-        checklist.add("9. Checks embedded id fields against SQL columns");
-        checklist.add("10. Checks Java field types against SQL column types using TypeMapper");
-        checklist.add("11. Checks Java field constraints against SQL column nullability, uniqueness, and length/precision metadata");
-        checklist.add("12. Checks @ManyToOne fields for @JoinColumn/@JoinColumns presence");
-        checklist.add("13. Checks @ManyToOne join columns exist in the owning SQL table");
-        checklist.add("14. Checks @ManyToOne join columns are backed by a foreign key");
-        checklist.add("15. Checks @OneToOne owning-side fields for @JoinColumn/@JoinColumns presence");
-        checklist.add("16. Checks @OneToOne join columns exist in the owning SQL table");
-        checklist.add("17. Checks @OneToOne join columns are backed by a foreign key");
-        checklist.add("18. Checks @OneToMany fields define mappedBy");
-        checklist.add("19. Checks @OneToMany mappedBy points to a real field on the target entity");
-        checklist.add("20. Checks @OneToMany mappedBy points to a @ManyToOne or @OneToOne owning field");
-        checklist.add("21. Checks owning @ManyToMany fields define @JoinTable(name=...)");
-        checklist.add("22. Checks @ManyToMany join table exists in the parsed SQL schema");
-        checklist.add("23. Checks @ManyToMany joinColumns and inverseJoinColumns exist in the join table");
-        checklist.add("24. Checks @ManyToMany join table columns are backed by foreign keys");
-        checklist.add("25. Checks relation target entity type matches the local foreign-key target table when resolvable");
-        checklist.add("26. Checks referencedColumnName matches the foreign-key target column when declared");
-        checklist.add("27. Ignores foreign keys pointing to external tables not present in the parsed schema");
-        checklist.add("28. Checks local foreign keys are not left as scalar fields instead of relations");
-        checklist.add("29. Checks local foreign keys are not missing relation fields entirely");
-        checklist.add("30. Checks @NotNull usage against SQL column nullability");
-        checklist.add("31. Checks @Size(max=...) against SQL varchar/char length");
-        checklist.add("32. Checks @Digits(integer=..., fraction=...) against SQL numeric precision/scale");
-        checklist.add("33. Checks presence of SQL default/check metadata for future constraint validation");
-        checklist.add("34. Checks for unmapped non-audit SQL columns");
+        checklist.add("3. Checks that generated entity files can be parsed without errors");
+        checklist.add("4. Checks that at least one generated entity source file exists");
+        checklist.add("5. Scans generated entity source files under the entity package");
+        checklist.add("6. Parses @Entity, @Embeddable, @Table, fields, and annotations from source files");
+        checklist.add("7. Prints generated entities that still contain TODO comments");
+        checklist.add("8. Checks that each entity table exists in the SQL schema");
+        checklist.add("9. Checks that each entity has @Table(name=...)");
+        checklist.add("10. Checks that each entity has @Id or @EmbeddedId");
+        checklist.add("11. Checks for duplicate Java field names in generated entities");
+        checklist.add("12. Checks simple field-to-column mappings against SQL table columns");
+        checklist.add("13. Checks embedded id fields against SQL columns");
+        checklist.add("14. Checks for missing DB columns for mapped fields");
+        checklist.add("15. Checks for unmapped non-audit SQL columns");
+        checklist.add("16. Checks Java field types against SQL column types using TypeMapper");
+        checklist.add("17. Checks SQL NOT NULL against Java (@NotNull / nullable=false / primitives)");
+        checklist.add("18. Checks SQL UNIQUE against @Column(unique=true)");
+        checklist.add("19. Checks SQL length against @Column(length)");
+        checklist.add("20. Checks SQL precision against @Column(precision)");
+        checklist.add("21. Checks SQL scale against @Column(scale)");
+        checklist.add("22. Checks @Size(max=...) against SQL varchar/char length");
+        checklist.add("23. Checks @Digits(integer=..., fraction=...) against SQL numeric precision/scale");
+        checklist.add("24. Checks presence of SQL default metadata on boolean-like columns");
+        checklist.add("25. Checks presence of SQL check constraints on string-like columns");
+        checklist.add("26. Checks @ManyToOne fields for @JoinColumn/@JoinColumns presence");
+        checklist.add("27. Checks @ManyToOne join columns exist in the owning SQL table");
+        checklist.add("28. Checks @ManyToOne join columns are backed by a foreign key");
+        checklist.add("29. Checks @OneToOne owning-side fields for @JoinColumn/@JoinColumns presence");
+        checklist.add("30. Checks @OneToOne join columns exist in the owning SQL table");
+        checklist.add("31. Checks @OneToOne join columns are backed by a foreign key");
+        checklist.add("32. Checks @OneToMany fields define mappedBy");
+        checklist.add("33. Checks @OneToMany mappedBy points to a real field on the target entity");
+        checklist.add("34. Checks @OneToMany mappedBy points to a @ManyToOne or @OneToOne owning field");
+        checklist.add("35. Checks owning @ManyToMany fields define @JoinTable(name=...)");
+        checklist.add("36. Checks @ManyToMany join table exists in the parsed SQL schema");
+        checklist.add("37. Checks @ManyToMany joinColumns and inverseJoinColumns exist in the join table");
+        checklist.add("38. Checks @ManyToMany join table columns are backed by foreign keys");
+        checklist.add("39. Checks relation target entity type matches foreign-key target table");
+        checklist.add("40. Checks referencedColumnName matches foreign-key target column");
+        checklist.add("41. Checks local foreign keys are not mapped as scalar fields");
+        checklist.add("42. Checks local foreign keys are not missing relation fields");
+        checklist.add("43. Ignores foreign keys pointing to external tables not present in the parsed schema");
 
         return checklist;
     }

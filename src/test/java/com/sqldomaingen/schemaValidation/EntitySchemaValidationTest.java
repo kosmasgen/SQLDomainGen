@@ -195,7 +195,7 @@ class EntitySchemaValidationTest {
         validateJavaTypes(entityDefinition, tableDefinition, violations);
         validateColumnConstraints(entityDefinition, tableDefinition, violations);
         validateRelations(entityDefinition, tableDefinition, schemaTables, entityBySimpleName, violations);
-        validateForeignKeyCoverage(entityDefinition, tableDefinition, schemaTables, entityBySimpleName, violations);
+        validateForeignKeyCoverage(entityDefinition, tableDefinition, schemaTables, violations);
         validateMissingTableColumns(entityDefinition, tableDefinition, entityBySimpleName, violations);
     }
 
@@ -697,14 +697,12 @@ class EntitySchemaValidationTest {
      * @param entityDefinition parsed entity definition
      * @param tableDefinition parsed SQL table definition
      * @param schemaTables parsed schema tables
-     * @param entityBySimpleName parsed entities by simple name
      * @param violations collected violations
      */
     private void validateForeignKeyCoverage(
             JavaEntityDefinition entityDefinition,
             TableDefinition tableDefinition,
             Map<String, TableDefinition> schemaTables,
-            Map<String, JavaEntityDefinition> entityBySimpleName,
             List<String> violations
     ) {
         Set<String> relationJoinColumns = entityDefinition.fields().stream()
