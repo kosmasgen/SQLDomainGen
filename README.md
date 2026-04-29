@@ -30,7 +30,7 @@ It reduces boilerplate and accelerates backend development.
 ```bash
 mvn clean install
 
-```
+If using IntelliJ, reload the Maven project after cloning.
 
 ## Quick Start
 
