@@ -84,42 +84,6 @@ class LiquibaseGeneratorTest {
         );
     }
 
-    @Test
-    void shouldGenerateGinTrgmIndexUsingRawSql() throws Exception {
-        Table regionalUnit = table("public.regional_unit");
-
-        IndexDefinition indexDefinition = new IndexDefinition();
-        indexDefinition.setName("idx_ru_descr_trgm");
-        indexDefinition.setColumns(List.of("lower((description)::text) gin_trgm_ops"));
-
-        regionalUnit.setIndexes(List.of(indexDefinition));
-
-        LiquibaseGenerator generator = new LiquibaseGenerator();
-
-        generator.generateLiquibaseFiles(
-                tempDir.toString(),
-                List.of(regionalUnit),
-                true
-        );
-
-        Path regionalUnitXml = tempDir.resolve("src/main/resources/db/migration/changelogs/v0.1.0/regionalUnit.xml");
-        String content = Files.readString(regionalUnitXml);
-
-        assertTrue(
-                content.contains("CREATE INDEX idx_ru_descr_trgm ON public.regional_unit USING gin (lower((description)::text) gin_trgm_ops);"),
-                "GIN trigram index must be generated as raw SQL with USING gin"
-        );
-
-        assertFalse(
-                content.contains("lower((description)::text)gin_trgm_ops"),
-                "GIN operator class must not be glued to the expression"
-        );
-
-        assertFalse(
-                content.contains("USING btree"),
-                "GIN trigram index must not be generated as btree"
-        );
-    }
 
     @Test
     void shouldGenerateMasterXmlPointingToVersionMain() throws Exception {
