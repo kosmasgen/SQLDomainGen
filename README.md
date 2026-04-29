@@ -313,6 +313,10 @@ src/test/java/com/example/project/
  ├── entity/
  ├── dto/
 
+validation/
+ ├── validation-report.xml
+ ├── validation-report.pdf
+
 pom.xml
 .gitignore
 ```
