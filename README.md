@@ -31,7 +31,7 @@ It reduces boilerplate and accelerates backend development.
 mvn clean install
 
 If using IntelliJ, reload the Maven project after cloning.
-
+---
 ## Quick Start
 
 Run with Spring Shell:
