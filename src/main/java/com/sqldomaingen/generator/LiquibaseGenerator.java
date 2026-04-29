@@ -1018,29 +1018,31 @@ public class LiquibaseGenerator {
     }
 
     /**
-     * Resolves the Liquibase author from the provided value or falls back to the current system user.
+     * Resolves the Liquibase author.
+     * Priority:
+     * 1. CLI parameter (-a)
+     * 2. Fallback to system user (no domain injection)
      *
      * @param author explicit Liquibase author value
-     * @return Liquibase author email-like value
+     * @return Liquibase author
      */
     private String resolveLiquibaseAuthor(String author) {
         if (author != null && !author.isBlank()) {
-            return author.trim().toLowerCase();
+            return author.trim();
         }
 
         String systemUserName = System.getProperty("user.name");
 
         if (systemUserName == null || systemUserName.isBlank()) {
-            return "system@knowledge.gr";
+            return "system";
         }
 
-        return systemUserName.trim().toLowerCase() + "@knowledge.gr";
+        return systemUserName.trim();
     }
 
 
     /**
      * Builds the Liquibase default value attribute based on the parsed SQL default value.
-     * Fix: handles broken literals like '::charactervarying' and converts them to empty string.
      *
      * @param column parsed column
      * @return Liquibase default attribute or empty string when no default exists
@@ -1058,6 +1060,20 @@ public class LiquibaseGenerator {
         if (normalized.equals("'::charactervarying'::character varying")
                 || normalized.equals("'::charactervarying'::charactervarying")) {
             return " defaultValue=\"\"";
+        }
+
+        if (normalized.matches("^'.*'::jsonb$")
+                || normalized.matches("^'.*'::json$")) {
+            return " defaultValueComputed=\"" + escapeXml(trimmedDefaultValue) + "\"";
+        }
+
+        if (normalized.matches("^\\[.*]::jsonb$")
+                || normalized.matches("^\\{.*}::jsonb$")
+                || normalized.matches("^\\[.*]::json$")
+                || normalized.matches("^\\{.*}::json$")) {
+            String castType = normalized.endsWith("::jsonb") ? "jsonb" : "json";
+            String literalValue = trimmedDefaultValue.substring(0, trimmedDefaultValue.lastIndexOf("::"));
+            return " defaultValueComputed=\"'" + escapeXml(literalValue) + "'::" + castType + "\"";
         }
 
         if (normalized.equals("true") || normalized.equals("false")) {
@@ -1359,9 +1375,8 @@ public class LiquibaseGenerator {
      * createIndex element includes the corresponding schemaName attribute.
      * Otherwise, Liquibase uses the default schema.
      *
-     * <p>When an index contains one or more originally quoted PostgreSQL identifiers,
-     * raw SQL is generated instead of a Liquibase createIndex element. This preserves
-     * the exact quoted identifiers declared in the source SQL.
+     * <p>Indexes that depend on PostgreSQL extensions or custom database functions
+     * are skipped to keep generated migrations executable without extra bootstrap SQL.
      *
      * @param builder XML builder
      * @param tableName physical table name without schema
@@ -1380,9 +1395,18 @@ public class LiquibaseGenerator {
                 continue;
             }
 
+            if (requiresUnsupportedIndexDependency(index.getColumns())) {
+                log.warn(
+                        "Skipping index '{}' on table '{}' because it depends on PostgreSQL extensions or custom functions.",
+                        index.getName(),
+                        tableName
+                );
+                continue;
+            }
+
             boolean requiresRawSql = index.getColumns().stream()
                     .filter(Objects::nonNull)
-                    .anyMatch(this::isQuotedIdentifier);
+                    .anyMatch(this::requiresRawSqlIndex);
 
             if (requiresRawSql) {
                 String columnList = index.getColumns().stream()
@@ -1397,12 +1421,13 @@ public class LiquibaseGenerator {
 
                 builder.append("""
         <sql><![CDATA[
-            CREATE %sINDEX %s ON %s USING btree (%s);
+            CREATE %sINDEX %s ON %s USING %s (%s);
         ]]></sql>
 """.formatted(
                         index.isUnique() ? "UNIQUE " : "",
                         index.getName(),
                         qualifiedTableName,
+                        resolveIndexMethod(index.getColumns()),
                         columnList
                 ));
                 continue;
@@ -1429,7 +1454,7 @@ public class LiquibaseGenerator {
             builder.append(">\n");
 
             for (String columnName : index.getColumns()) {
-                String normalizedColumnName = normalizeIdentifier(columnName);
+                String normalizedColumnName = normalizeIndexColumnName(columnName);
 
                 if (normalizedColumnName.isBlank()) {
                     continue;
@@ -1442,6 +1467,90 @@ public class LiquibaseGenerator {
 
             builder.append("        </createIndex>\n");
         }
+    }
+
+    /**
+     * Checks whether index columns depend on unsupported PostgreSQL extensions or
+     * custom database functions.
+     *
+     * @param columnNames raw index column names or expressions
+     * @return true when the index should be skipped
+     */
+    private boolean requiresUnsupportedIndexDependency(List<String> columnNames) {
+        if (columnNames == null || columnNames.isEmpty()) {
+            return false;
+        }
+
+        return columnNames.stream()
+                .filter(Objects::nonNull)
+                .map(columnName -> columnName.toLowerCase(java.util.Locale.ROOT))
+                .anyMatch(columnName -> columnName.contains("gin_trgm_ops")
+                        || columnName.contains("gist_trgm_ops")
+                        || columnName.contains("f_unaccent_ci"));
+    }
+
+    /**
+     * Resolves the PostgreSQL index method from index column expressions.
+     *
+     * @param columnNames raw index column names or expressions
+     * @return PostgreSQL index method
+     */
+    private String resolveIndexMethod(List<String> columnNames) {
+        if (columnNames == null || columnNames.isEmpty()) {
+            return "btree";
+        }
+
+        boolean usesTrigramOperatorClass = columnNames.stream()
+                .filter(Objects::nonNull)
+                .map(columnName -> columnName.toLowerCase(java.util.Locale.ROOT))
+                .anyMatch(columnName -> columnName.contains("gin_trgm_ops")
+                        || columnName.contains("gist_trgm_ops"));
+
+        if (usesTrigramOperatorClass) {
+            return "gin";
+        }
+
+        return "btree";
+    }
+
+    /**
+     * Determines whether an index column requires raw SQL generation.
+     *
+     * @param columnName raw index column name or expression
+     * @return true when the index cannot be represented safely with Liquibase createIndex
+     */
+    private boolean requiresRawSqlIndex(String columnName) {
+        if (columnName == null || columnName.isBlank()) {
+            return false;
+        }
+
+        String normalizedColumnName = columnName.toLowerCase(java.util.Locale.ROOT);
+
+        return isQuotedIdentifier(columnName)
+                || normalizedColumnName.contains("gin_trgm_ops")
+                || normalizedColumnName.contains("gist_trgm_ops")
+                || normalizedColumnName.contains("(")
+                || normalizedColumnName.contains(")");
+    }
+
+
+    /**
+     * Normalizes an index column name by removing optional ASC or DESC direction.
+     *
+     * @param columnName raw index column name
+     * @return normalized index column name without direction
+     */
+    private String normalizeIndexColumnName(String columnName) {
+        if (columnName == null || columnName.isBlank()) {
+            return "";
+        }
+
+        String normalizedColumnName = columnName.trim()
+                .replaceFirst("(?i)\\s*DESC$", "")
+                .replaceFirst("(?i)\\s*ASC$", "")
+                .trim();
+
+        return normalizeIdentifier(normalizedColumnName);
     }
 
     /**
@@ -1480,7 +1589,8 @@ public class LiquibaseGenerator {
             return "\"" + normalizedIdentifier + "\"";
         }
 
-        return normalizedIdentifier;
+        return normalizedIdentifier
+                .replaceAll("(?i)\\)\\s*(gin_trgm_ops|gist_trgm_ops)$", ") $1");
     }
 
     /**

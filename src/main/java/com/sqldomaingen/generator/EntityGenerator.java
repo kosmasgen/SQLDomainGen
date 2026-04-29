@@ -442,6 +442,7 @@ public class EntityGenerator {
 
             builder.append("    @EmbeddedId\n");
             builder.append("    private ").append(embeddedIdTypeName).append(" id;\n\n");
+            generatedFieldNames.add("id");
         }
 
         for (Column column : table.getColumns()) {
@@ -462,11 +463,14 @@ public class EntityGenerator {
 
             if (column.isPrimaryKey()) {
                 addPrimaryKeyAnnotations(builder, column);
+                generatedFieldNames.add(column.getFieldName());
                 continue;
             }
 
             if (!column.isForeignKey()) {
+                resolveScalarFieldNameCollision(column, generatedFieldNames);
                 addColumnField(builder, column);
+                generatedFieldNames.add(column.getFieldName());
                 continue;
             }
 
@@ -475,9 +479,15 @@ public class EntityGenerator {
             switch (strategy) {
                 case RELATION -> addRelationshipField(builder, column, table, generatedFieldNames);
 
-                case SCALAR -> addFlatForeignKeyScalarField(builder, column);
+                case SCALAR -> {
+                    addFlatForeignKeyScalarField(builder, column);
+                    generatedFieldNames.add(column.getFieldName());
+                }
 
-                case UNRESOLVED_SCALAR -> addUnresolvedForeignKeyScalarField(builder, column);
+                case UNRESOLVED_SCALAR -> {
+                    addUnresolvedForeignKeyScalarField(builder, column);
+                    generatedFieldNames.add(column.getFieldName());
+                }
 
                 case COMPOSITE_MAPS_ID_RELATION -> {
                     log.warn("Composite @MapsId strategy reached non-composite branch for column '{}.{}'. Falling back to standard relationship generation.",
@@ -494,6 +504,32 @@ public class EntityGenerator {
             appendSyntheticManyToManyFields(builder, table, generatedFieldNames);
             appendInverseOneToOneFields(builder, table, generatedFieldNames);
         }
+    }
+
+    /**
+     * Resolves scalar field name collisions before generating a column field.
+     *
+     * @param column source column
+     * @param generatedFieldNames field names already generated in the entity
+     */
+    private void resolveScalarFieldNameCollision(Column column, Set<String> generatedFieldNames) {
+        if (column == null || column.getFieldName() == null) {
+            return;
+        }
+
+        if (!generatedFieldNames.contains(column.getFieldName())) {
+            return;
+        }
+
+        String originalFieldName = column.getFieldName();
+        String resolvedFieldName = originalFieldName + "Text";
+
+        column.setFieldName(resolvedFieldName);
+
+        log.warn("Resolved scalar field name collision for column '{}': '{}' -> '{}'",
+                column.getName(),
+                originalFieldName,
+                resolvedFieldName);
     }
 
     /**

@@ -1,5 +1,6 @@
 package com.sqldomaingen;
 
+import com.sqldomaingen.model.IndexDefinition;
 import com.sqldomaingen.generator.LiquibaseGenerator;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
@@ -84,6 +85,43 @@ class LiquibaseGeneratorTest {
     }
 
     @Test
+    void shouldGenerateGinTrgmIndexUsingRawSql() throws Exception {
+        Table regionalUnit = table("public.regional_unit");
+
+        IndexDefinition indexDefinition = new IndexDefinition();
+        indexDefinition.setName("idx_ru_descr_trgm");
+        indexDefinition.setColumns(List.of("lower((description)::text) gin_trgm_ops"));
+
+        regionalUnit.setIndexes(List.of(indexDefinition));
+
+        LiquibaseGenerator generator = new LiquibaseGenerator();
+
+        generator.generateLiquibaseFiles(
+                tempDir.toString(),
+                List.of(regionalUnit),
+                true
+        );
+
+        Path regionalUnitXml = tempDir.resolve("src/main/resources/db/migration/changelogs/v0.1.0/regionalUnit.xml");
+        String content = Files.readString(regionalUnitXml);
+
+        assertTrue(
+                content.contains("CREATE INDEX idx_ru_descr_trgm ON public.regional_unit USING gin (lower((description)::text) gin_trgm_ops);"),
+                "GIN trigram index must be generated as raw SQL with USING gin"
+        );
+
+        assertFalse(
+                content.contains("lower((description)::text)gin_trgm_ops"),
+                "GIN operator class must not be glued to the expression"
+        );
+
+        assertFalse(
+                content.contains("USING btree"),
+                "GIN trigram index must not be generated as btree"
+        );
+    }
+
+    @Test
     void shouldGenerateMasterXmlPointingToVersionMain() throws Exception {
         LiquibaseGenerator generator = new LiquibaseGenerator();
 
@@ -94,6 +132,80 @@ class LiquibaseGeneratorTest {
 
         assertTrue(
                 content.contains("<include file=\"changelogs/v0.1.0/main.xml\" relativeToChangelogFile=\"true\" />")
+        );
+    }
+
+    @Test
+    void shouldGenerateJsonbDefaultCorrectly() throws Exception {
+        Column photos = new Column();
+        photos.setName("photos");
+        photos.setSqlType("JSONB");
+        photos.setDefaultValue("'[]'::jsonb");
+
+        Table table = table("public.conservation_intervention", photos);
+
+        LiquibaseGenerator generator = new LiquibaseGenerator();
+
+        generator.generateLiquibaseFiles(
+                tempDir.toString(),
+                List.of(table),
+                true
+        );
+
+        Path xml = tempDir.resolve("src/main/resources/db/migration/changelogs/v0.1.0/conservationIntervention.xml");
+        String content = Files.readString(xml);
+
+        assertTrue(
+                content.contains("defaultValueComputed=\"'[]'::jsonb\""),
+                "JSONB default must keep quotes and cast"
+        );
+
+        assertFalse(
+                content.contains("'[]::jsonb'"),
+                "Broken JSONB default must not be generated"
+        );
+    }
+
+    @Test
+    void shouldRepairJsonbDefaultWhenParserDropsLiteralQuotes() throws Exception {
+        Column photos = new Column();
+        photos.setName("photos");
+        photos.setSqlType("JSONB");
+        photos.setDefaultValue("[]::jsonb");
+
+        Table table = table("public.conservation_intervention", photos);
+
+        LiquibaseGenerator generator = new LiquibaseGenerator();
+
+        generator.generateLiquibaseFiles(
+                tempDir.toString(),
+                List.of(table),
+                true
+        );
+
+        Path xml = tempDir.resolve("src/main/resources/db/migration/changelogs/v0.1.0/conservationIntervention.xml");
+        String content = Files.readString(xml);
+
+        // DEBUG LOGS
+        System.out.println("=== DEFAULT VALUE FROM COLUMN ===");
+        System.out.println(photos.getDefaultValue());
+
+        System.out.println("=== GENERATED XML ===");
+        System.out.println(content);
+
+        assertTrue(
+                content.contains("defaultValueComputed=\"'[]'::jsonb\""),
+                "JSONB default must restore missing quotes before cast"
+        );
+
+        assertFalse(
+                content.contains("defaultValueComputed=\"[]::jsonb\""),
+                "Broken unquoted JSONB default must not be generated"
+        );
+
+        assertFalse(
+                content.contains("defaultValue=\"[]::jsonb\""),
+                "JSONB cast must not be generated as plain defaultValue"
         );
     }
 

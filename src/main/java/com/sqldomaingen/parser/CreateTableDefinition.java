@@ -11,6 +11,7 @@ import lombok.Setter;
 import lombok.extern.log4j.Log4j2;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Getter
 @Setter
@@ -180,7 +181,7 @@ public class CreateTableDefinition {
             throw new IllegalArgumentException("Table name not found in CREATE TABLE statement.");
         }
 
-        this.tableName = ctx.tableName().get(0).getText().replace("\"", "").trim();
+        this.tableName = ctx.tableName().getFirst().getText().replace("\"", "").trim();
         log.info("Extracted physical table name: {}", this.tableName);
 
         return this.tableName;
@@ -254,7 +255,7 @@ public class CreateTableDefinition {
             return;
         }
 
-        List<String> primaryKeyColumns = ctx.columnNameList().get(0).columnName().stream()
+        List<String> primaryKeyColumns = ctx.columnNameList().getFirst().columnName().stream()
                 .map(columnNameContext -> columnNameContext.getText().replace("\"", "").trim())
                 .filter(columnName -> !columnName.isBlank())
                 .toList();
@@ -536,7 +537,7 @@ public class CreateTableDefinition {
                 continue;
             }
 
-            List<String> uniqueColumns = columnNameLists.get(0).columnName().stream()
+            List<String> uniqueColumns = columnNameLists.getFirst().columnName().stream()
                     .map(columnNameContext -> columnNameContext.getText().replace("\"", "").trim())
                     .filter(columnName -> !columnName.isBlank())
                     .toList();
@@ -544,7 +545,7 @@ public class CreateTableDefinition {
             String constraintName = extractConstraintName(constraintText);
 
             if (uniqueColumns.size() == 1) {
-                String uniqueColumnName = uniqueColumns.get(0);
+                String uniqueColumnName = uniqueColumns.getFirst();
 
                 columnDefinitions.stream()
                         .filter(columnDefinition -> columnDefinition.getColumnName().equalsIgnoreCase(uniqueColumnName))
@@ -633,27 +634,29 @@ public class CreateTableDefinition {
     }
 
 
+    /**
+     * Converts the parsed CREATE TABLE definition into the internal table model.
+     *
+     * @return populated table model
+     */
     public Table toTable() {
         log.info("toTable() - START | tableName={}", this.tableName);
 
         Table table = new Table();
         table.setName(this.tableName);
 
-        List<Column> columns = this.columnDefinitions.stream()
-                .map(ColumnDefinition::toColumn)
-                .toList();
+        List<Column> columns = buildResolvedColumns();
         table.setColumns(columns);
 
         table.addConstraints(this.constraints);
         table.setUniqueConstraints(new ArrayList<>(this.compositeUniqueConstraints));
 
-
-        List<ColumnDefinition> pkColumns = getCompositePrimaryKeyColumns();
-        if (pkColumns.size() > 1) {
+        List<ColumnDefinition> primaryKeyColumns = getCompositePrimaryKeyColumns();
+        if (primaryKeyColumns.size() > 1) {
             CompositeKeyDefinition compositeKey = new CompositeKeyDefinition();
             compositeKey.setName(table.getName() + "Key");
             compositeKey.setColumns(
-                    pkColumns.stream()
+                    primaryKeyColumns.stream()
                             .map(ColumnDefinition::toColumn)
                             .toList()
             );
@@ -667,6 +670,61 @@ public class CreateTableDefinition {
                 table.getUniqueConstraints().size());
 
         return table;
+    }
+
+    /**
+     * Builds table columns and resolves duplicate Java field names before the table model is used by generators.
+     *
+     * @return resolved columns
+     */
+    private List<Column> buildResolvedColumns() {
+        List<Column> columns = this.columnDefinitions.stream()
+                .map(ColumnDefinition::toColumn)
+                .toList();
+
+        resolveDuplicateFieldNames(columns);
+
+        return columns;
+    }
+
+    /**
+     * Resolves duplicate Java field names by keeping foreign key relation names unchanged
+     * and renaming scalar duplicates.
+     *
+     * @param columns table columns
+     */
+    private void resolveDuplicateFieldNames(List<Column> columns) {
+        Map<String, List<Column>> columnsByFieldName = columns.stream()
+                .collect(Collectors.groupingBy(
+                        Column::getFieldName,
+                        LinkedHashMap::new,
+                        Collectors.toList()
+                ));
+
+        columnsByFieldName.values().stream()
+                .filter(duplicates -> duplicates.size() > 1)
+                .forEach(this::resolveDuplicateFieldNameGroup);
+    }
+
+    /**
+     * Resolves one duplicate field-name group.
+     *
+     * @param duplicateColumns columns sharing the same Java field name
+     */
+    private void resolveDuplicateFieldNameGroup(List<Column> duplicateColumns) {
+        for (Column column : duplicateColumns) {
+            if (column.isForeignKey()) {
+                continue;
+            }
+
+            String resolvedFieldName = column.getFieldName() + "Text";
+            log.warn("Resolved duplicate field name '{}' for column '{}' as '{}'",
+                    column.getFieldName(),
+                    column.getName(),
+                    resolvedFieldName);
+
+            column.setFieldName(resolvedFieldName);
+        }
     }
 
     /**

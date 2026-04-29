@@ -1024,13 +1024,42 @@ class LiquibaseSchemaParityTest {
             return false;
         }
 
-        String referencedSchema = extractSchema(column.getReferencedTable());
+        String referencedTable = column.getReferencedTable();
 
-        if (referencedSchema == null || referencedSchema.isBlank()) {
+        return parseTablesQuietly().stream()
+                .noneMatch(table -> samePhysicalTable(table.getName(), referencedTable));
+    }
+
+    /**
+     * Parses schema tables without throwing checked exceptions.
+     *
+     * @return parsed schema tables
+     */
+    private List<Table> parseTablesQuietly() {
+        try {
+            return parseTables(Files.readString(Constants.SCHEMA_PATH));
+        } catch (Exception exception) {
+            return Collections.emptyList();
+        }
+    }
+
+    /**
+     * Checks whether two physical table names refer to the same table.
+     *
+     * @param left first table name
+     * @param right second table name
+     * @return true when both names match by full name or schema-free name
+     */
+    private boolean samePhysicalTable(String left, String right) {
+        if (left == null || right == null) {
             return false;
         }
 
-        return !"pep_schema".equalsIgnoreCase(referencedSchema);
+        String normalizedLeft = left.trim().replace("\"", "");
+        String normalizedRight = right.trim().replace("\"", "");
+
+        return normalizedLeft.equalsIgnoreCase(normalizedRight)
+                || stripSchema(normalizedLeft).equalsIgnoreCase(stripSchema(normalizedRight));
     }
 
     /**

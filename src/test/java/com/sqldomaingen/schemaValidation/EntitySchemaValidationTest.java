@@ -190,6 +190,7 @@ class EntitySchemaValidationTest {
         }
 
         validateIdentifier(entityDefinition, violations);
+        validateDuplicateFieldNames(entityDefinition, violations);
         validateSimpleColumns(entityDefinition, tableDefinition, entityBySimpleName, violations);
         validateJavaTypes(entityDefinition, tableDefinition, violations);
         validateColumnConstraints(entityDefinition, tableDefinition, violations);
@@ -271,7 +272,7 @@ class EntitySchemaValidationTest {
                 .toList();
 
         if (matches.size() == 1) {
-            return matches.get(0);
+            return matches.getFirst();
         }
 
         return null;
@@ -751,6 +752,31 @@ class EntitySchemaValidationTest {
                 );
             }
         }
+    }
+
+    /**
+     * Validates that an entity does not declare duplicate Java field names.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param violations collected violations
+     */
+    private void validateDuplicateFieldNames(
+            JavaEntityDefinition entityDefinition,
+            List<String> violations
+    ) {
+        Map<String, Long> fieldNameCounts = entityDefinition.fields().stream()
+                .collect(Collectors.groupingBy(
+                        JavaFieldDefinition::name,
+                        LinkedHashMap::new,
+                        Collectors.counting()
+                ));
+
+        fieldNameCounts.entrySet().stream()
+                .filter(entry -> entry.getValue() > 1)
+                .forEach(entry -> violations.add(
+                        "[" + entityDefinition.displayName() + "] Duplicate Java field name detected: '"
+                                + entry.getKey() + "'"
+                ));
     }
 
     /**
@@ -2102,38 +2128,60 @@ class EntitySchemaValidationTest {
         List<String> checks = List.of(
                 "Checks that the schema SQL file exists",
                 "Checks that the generated Java root exists",
+                "Checks that generated entity files can be parsed without errors",
+                "Checks that at least one generated entity source file exists",
                 "Scans generated entity source files under the entity package",
                 "Parses @Entity, @Embeddable, @Table, fields, and annotations from source files",
                 "Prints generated entities that still contain TODO comments",
+
+                "Checks that each entity table exists in the SQL schema",
                 "Checks that each entity has @Table(name=...)",
                 "Checks that each entity has @Id or @EmbeddedId",
+
+                "Checks for duplicate Java field names in generated entities",
+
                 "Checks simple field-to-column mappings against SQL table columns",
                 "Checks embedded id fields against SQL columns",
+                "Checks for missing DB columns for mapped fields",
+                "Checks for unmapped non-audit SQL columns",
+
                 "Checks Java field types against SQL column types using TypeMapper",
-                "Checks Java field constraints against SQL column nullability, uniqueness, and length/precision metadata",
+
+                "Checks SQL NOT NULL against Java (@NotNull / nullable=false / primitives)",
+                "Checks SQL UNIQUE against @Column(unique=true)",
+                "Checks SQL length against @Column(length)",
+                "Checks SQL precision against @Column(precision)",
+                "Checks SQL scale against @Column(scale)",
+                "Checks @Size(max=...) against SQL varchar/char length",
+                "Checks @Digits(integer=..., fraction=...) against SQL numeric precision/scale",
+
+                "Checks presence of SQL default metadata on boolean-like columns",
+                "Checks presence of SQL check constraints on string-like columns",
+
                 "Checks @ManyToOne fields for @JoinColumn/@JoinColumns presence",
                 "Checks @ManyToOne join columns exist in the owning SQL table",
                 "Checks @ManyToOne join columns are backed by a foreign key",
+
                 "Checks @OneToOne owning-side fields for @JoinColumn/@JoinColumns presence",
                 "Checks @OneToOne join columns exist in the owning SQL table",
                 "Checks @OneToOne join columns are backed by a foreign key",
+
                 "Checks @OneToMany fields define mappedBy",
                 "Checks @OneToMany mappedBy points to a real field on the target entity",
                 "Checks @OneToMany mappedBy points to a @ManyToOne or @OneToOne owning field",
+
                 "Checks owning @ManyToMany fields define @JoinTable(name=...)",
                 "Checks @ManyToMany join table exists in the parsed SQL schema",
                 "Checks @ManyToMany joinColumns and inverseJoinColumns exist in the join table",
                 "Checks @ManyToMany join table columns are backed by foreign keys",
-                "Checks relation target entity type matches the local foreign-key target table when resolvable",
-                "Checks referencedColumnName matches the foreign-key target column when declared",
-                "Ignores foreign keys pointing to external tables not present in the parsed schema",
-                "Checks local foreign keys are not left as scalar fields instead of relations",
-                "Checks local foreign keys are not missing relation fields entirely",
-                "Checks @NotNull usage against SQL column nullability",
-                "Checks @Size(max=...) against SQL varchar/char length",
-                "Checks @Digits(integer=..., fraction=...) against SQL numeric precision/scale",
-                "Checks presence of SQL default/check metadata for future constraint validation",
-                "Checks for unmapped non-audit SQL columns"
+
+                "Checks relation target entity type matches foreign-key target table",
+                "Checks referencedColumnName matches foreign-key target column",
+
+                "Checks local foreign keys are not mapped as scalar fields",
+                "Checks local foreign keys are not missing relation fields",
+
+                "Ignores foreign keys pointing to external tables not present in the parsed schema"
         );
 
         System.out.println();
