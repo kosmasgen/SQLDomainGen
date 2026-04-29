@@ -25,20 +25,24 @@ SpringForge generates a structured Spring Boot backend directly from your SQL sc
 
 It reduces boilerplate and accelerates backend development.
 
-## Quick Start
-
-Run the CLI:
+## Build
 
 ```bash
-generate-entity \
-  -i "path/to/input.sql" \
-  -o "path/to/output" \
-  -p "com.example.project" \
-  -w true \
-  -b true \
-  -a "your@email.com"
+mvn clean install
+
+```
+
+## Quick Start
+
+Run with Spring Shell:
+
+```bash
+mvn spring-boot:run
+# after the application starts, run:
+generate-entity -i "path/to/input.sql" -o "path/to/output" -p "com.example.project" -w true -b true -a "your@email.com"
 ```
 ---
+
 
 ## Example
 Minimal example (full schema available in /examples):
