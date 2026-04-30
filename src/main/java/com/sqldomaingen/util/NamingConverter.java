@@ -1,10 +1,7 @@
 package com.sqldomaingen.util;
 
 /**
- * Utility class for converting naming conventions used across generated code.
- *
- * <p>This class provides helper methods for converting between snake_case,
- * camelCase, PascalCase, kebab-case, and human-readable log labels.
+ * Utility class for naming convention conversions.
  */
 public final class NamingConverter {
 
@@ -175,8 +172,9 @@ public final class NamingConverter {
      *
      * <p>Supported rules:
      * <ul>
+     *     <li>already plural words ending in s remain unchanged</li>
      *     <li>consonant + y -> ies</li>
-     *     <li>s, x, z, ch, sh -> es</li>
+     *     <li>x, z, ch, sh -> es</li>
      *     <li>default -> s</li>
      * </ul>
      *
@@ -190,12 +188,15 @@ public final class NamingConverter {
 
         String lowerCaseWord = word.toLowerCase();
 
+        if (lowerCaseWord.endsWith("s")) {
+            return word;
+        }
+
         if (lowerCaseWord.endsWith("y") && word.length() > 1 && isConsonant(word.charAt(word.length() - 2))) {
             return word.substring(0, word.length() - 1) + "ies";
         }
 
-        if (lowerCaseWord.endsWith("s")
-                || lowerCaseWord.endsWith("x")
+        if (lowerCaseWord.endsWith("x")
                 || lowerCaseWord.endsWith("z")
                 || lowerCaseWord.endsWith("ch")
                 || lowerCaseWord.endsWith("sh")) {
@@ -221,57 +222,6 @@ public final class NamingConverter {
                 && lowerCaseValue != 'u';
     }
 
-    /**
-     * Converts a camelCase or PascalCase string to plural kebab-case.
-     *
-     * <p>Examples:
-     * <ul>
-     *     <li>{@code Company -> companies}</li>
-     *     <li>{@code BgPoi -> bg-pois}</li>
-     *     <li>{@code CompanyStatus -> company-statuses}</li>
-     * </ul>
-     *
-     * @param input the input value
-     * @return the plural kebab-case value, or the original value when null or blank
-     */
-    public static String toKebabCasePlural(String input) {
-        String singular = toKebabCase(input);
-        if (singular == null || singular.isBlank()) {
-            return singular;
-        }
-
-        return pluralizeLastSeparatedSegment(singular, "-");
-    }
-
-    /**
-     * Pluralizes only the last segment of a separated value.
-     *
-     * <p>Examples:
-     * <ul>
-     *     <li>{@code company -> companies}</li>
-     *     <li>{@code company-status -> company-statuses}</li>
-     *     <li>{@code bg-poi -> bg-pois}</li>
-     * </ul>
-     *
-     * @param value the separated value
-     * @param separator the segment separator
-     * @return the value with its last segment pluralized
-     */
-    private static String pluralizeLastSeparatedSegment(String value, String separator) {
-        if (value == null || value.isBlank()) {
-            return value;
-        }
-
-        int lastSeparatorIndex = value.lastIndexOf(separator);
-        if (lastSeparatorIndex < 0) {
-            return pluralizeWord(value);
-        }
-
-        String prefix = value.substring(0, lastSeparatorIndex + separator.length());
-        String lastSegment = value.substring(lastSeparatorIndex + separator.length());
-
-        return prefix + pluralizeWord(lastSegment);
-    }
 
     /**
      * Converts a camelCase or PascalCase string to kebab-case.
@@ -294,8 +244,6 @@ public final class NamingConverter {
     /**
      * Converts a Java-style type or entity name into a human-readable lowercase label.
      *
-     * <p>This method is intended for cleaner log and message output.
-     *
      * <p>Examples:
      * <ul>
      *     <li>{@code AuditTrail -> audit trail}</li>
@@ -304,21 +252,24 @@ public final class NamingConverter {
      * </ul>
      *
      * @param value the source value
-     * @return a lowercase human-readable label, or an empty string when the input is null or blank
+     * @return a lowercase human-readable label, or empty string when null/blank
      */
     public static String toLogLabel(String value) {
         if (value == null || value.isBlank()) {
             return "";
         }
 
-        String normalizedValue = value.trim()
+        String normalized = value.trim()
+                // camelCase → space
                 .replaceAll("([a-z0-9])([A-Z])", "$1 $2")
+                // ABCWord → ABC Word
                 .replaceAll("([A-Z]+)([A-Z][a-z])", "$1 $2")
+                // snake_case / kebab-case → space
                 .replaceAll("[_\\-]+", " ")
-                .replaceAll("\\s+", " ")
-                .trim();
+                // normalize spaces
+                .replaceAll("\\s+", " ");
 
-        return normalizedValue.toLowerCase();
+        return normalized.toLowerCase().trim();
     }
 
 
