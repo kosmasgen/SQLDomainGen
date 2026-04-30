@@ -16,6 +16,8 @@ public class IndexDefinition {
 
     private String name;
     private String tableName;
+    private String whereClause;
+    private String usingMethod;
     private List<String> columns = new ArrayList<>();
     private boolean unique;
 }

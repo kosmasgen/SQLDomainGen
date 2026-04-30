@@ -173,6 +173,55 @@ class LiquibaseGeneratorTest {
         );
     }
 
+    @Test
+    void shouldGenerateRawSqlForPartialExpressionIndex() throws Exception {
+        Column id = new Column();
+        id.setName("id");
+        id.setSqlType("int8");
+        id.setPrimaryKey(true);
+        id.setNullable(false);
+
+        Column email = new Column();
+        email.setName("email");
+        email.setSqlType("varchar(255)");
+
+        Column deletedAt = new Column();
+        deletedAt.setName("deleted_at");
+        deletedAt.setSqlType("timestamp");
+
+        IndexDefinition indexDefinition = new IndexDefinition();
+        indexDefinition.setName("uq_test_email_active");
+        indexDefinition.setTableName("public.index_expression_test");
+        indexDefinition.setUsingMethod("btree");
+        indexDefinition.setUnique(true);
+        indexDefinition.setWhereClause("deleted_at IS NULL");
+        indexDefinition.setColumns(List.of("lower((email)::text)"));
+
+        Table table = table("public.index_expression_test", id, email, deletedAt);
+        table.setIndexes(List.of(indexDefinition));
+
+        LiquibaseGenerator generator = new LiquibaseGenerator();
+
+        generator.generateLiquibaseFiles(
+                tempDir.toString(),
+                List.of(table),
+                true
+        );
+
+        Path xml = tempDir.resolve("src/main/resources/db/migration/changelogs/v0.1.0/indexExpressionTest.xml");
+        String content = Files.readString(xml);
+
+        assertTrue(
+                content.contains("CREATE UNIQUE INDEX uq_test_email_active ON public.index_expression_test USING btree (lower((email)::text)) WHERE deleted_at IS NULL;"),
+                "Partial expression index must be generated as raw SQL with WHERE clause"
+        );
+
+        assertFalse(
+                content.contains("<createIndex"),
+                "Partial expression index must not be generated as Liquibase createIndex"
+        );
+    }
+
     private Table table(String tableName, Column... columns) {
         Table table = new Table();
         table.setName(tableName);

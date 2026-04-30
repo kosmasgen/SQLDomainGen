@@ -3,6 +3,7 @@ package com.sqldomaingen.generator;
 import com.sqldomaingen.liquibase.LiquibaseDependencyGraphBuilder;
 import com.sqldomaingen.liquibase.TableDependencySorter;
 import com.sqldomaingen.model.Column;
+import com.sqldomaingen.model.IndexDefinition;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.Constants;
 import com.sqldomaingen.util.GeneratorSupport;
@@ -1371,13 +1372,6 @@ public class LiquibaseGenerator {
      * Appends index definitions for the main table, including schemaName when the
      * table is schema-qualified.
      *
-     * <p>If the source table belongs to a specific schema, the generated
-     * createIndex element includes the corresponding schemaName attribute.
-     * Otherwise, Liquibase uses the default schema.
-     *
-     * <p>Indexes that depend on PostgreSQL extensions or custom database functions
-     * are skipped to keep generated migrations executable without extra bootstrap SQL.
-     *
      * @param builder XML builder
      * @param tableName physical table name without schema
      * @param table parsed table
@@ -1404,69 +1398,107 @@ public class LiquibaseGenerator {
                 continue;
             }
 
-            boolean requiresRawSql = index.getColumns().stream()
-                    .filter(Objects::nonNull)
-                    .anyMatch(this::requiresRawSqlIndex);
+            boolean requiresRawSql = requiresRawSqlIndexDefinition(index);
 
             if (requiresRawSql) {
-                String columnList = index.getColumns().stream()
-                        .filter(Objects::nonNull)
-                        .map(this::toIndexSqlColumnExpression)
-                        .filter(columnExpression -> !columnExpression.isBlank())
-                        .collect(java.util.stream.Collectors.joining(", "));
-
-                if (columnList.isBlank()) {
-                    continue;
-                }
-
-                builder.append("""
-        <sql><![CDATA[
-            CREATE %sINDEX %s ON %s USING %s (%s);
-        ]]></sql>
-""".formatted(
-                        index.isUnique() ? "UNIQUE " : "",
-                        index.getName(),
-                        qualifiedTableName,
-                        resolveIndexMethod(index.getColumns()),
-                        columnList
-                ));
+                appendRawSqlIndex(builder, index, qualifiedTableName);
                 continue;
             }
 
-            builder.append("        <createIndex tableName=\"")
-                    .append(escapeXml(tableName))
-                    .append("\"");
-
-            if (schemaName != null && !schemaName.isBlank()) {
-                builder.append(" schemaName=\"")
-                        .append(escapeXml(schemaName))
-                        .append("\"");
-            }
-
-            builder.append(" indexName=\"")
-                    .append(escapeXml(index.getName()))
-                    .append("\"");
-
-            if (index.isUnique()) {
-                builder.append(" unique=\"true\"");
-            }
-
-            builder.append(">\n");
-
-            for (String columnName : index.getColumns()) {
-                String normalizedColumnName = normalizeIndexColumnName(columnName);
-
-                if (normalizedColumnName.isBlank()) {
-                    continue;
-                }
-
-                builder.append("            <column name=\"")
-                        .append(escapeXml(normalizedColumnName))
-                        .append("\"/>\n");
-            }
-
-            builder.append("        </createIndex>\n");
+            appendLiquibaseCreateIndex(builder, index, tableName, schemaName);
         }
+    }
+
+    private boolean requiresRawSqlIndexDefinition(IndexDefinition index) {
+        if (index.getWhereClause() != null && !index.getWhereClause().isBlank()) {
+            return true;
+        }
+
+        return index.getColumns().stream()
+                .filter(Objects::nonNull)
+                .anyMatch(this::requiresRawSqlIndex);
+    }
+
+    private void appendRawSqlIndex(StringBuilder builder, IndexDefinition index, String qualifiedTableName) {
+        String columnList = index.getColumns().stream()
+                .filter(Objects::nonNull)
+                .map(this::toIndexSqlColumnExpression)
+                .filter(columnExpression -> !columnExpression.isBlank())
+                .collect(java.util.stream.Collectors.joining(", "));
+
+        if (columnList.isBlank()) {
+            return;
+        }
+
+        builder.append("""
+        <sql><![CDATA[
+            CREATE %sINDEX %s ON %s USING %s (%s)%s;
+        ]]></sql>
+""".formatted(
+                index.isUnique() ? "UNIQUE " : "",
+                index.getName(),
+                qualifiedTableName,
+                resolveIndexMethod(index),
+                columnList,
+                buildIndexWhereClause(index)
+        ));
+    }
+
+    private void appendLiquibaseCreateIndex(
+            StringBuilder builder,
+            IndexDefinition index,
+            String tableName,
+            String schemaName
+    ) {
+        builder.append("        <createIndex tableName=\"")
+                .append(escapeXml(tableName))
+                .append("\"");
+
+        if (schemaName != null && !schemaName.isBlank()) {
+            builder.append(" schemaName=\"")
+                    .append(escapeXml(schemaName))
+                    .append("\"");
+        }
+
+        builder.append(" indexName=\"")
+                .append(escapeXml(index.getName()))
+                .append("\"");
+
+        if (index.isUnique()) {
+            builder.append(" unique=\"true\"");
+        }
+
+        builder.append(">\n");
+
+        for (String columnName : index.getColumns()) {
+            String normalizedColumnName = normalizeIndexColumnName(columnName);
+
+            if (normalizedColumnName.isBlank()) {
+                continue;
+            }
+
+            builder.append("            <column name=\"")
+                    .append(escapeXml(normalizedColumnName))
+                    .append("\"/>\n");
+        }
+
+        builder.append("        </createIndex>\n");
+    }
+
+    private String resolveIndexMethod(IndexDefinition index) {
+        if (index.getUsingMethod() != null && !index.getUsingMethod().isBlank()) {
+            return index.getUsingMethod().trim();
+        }
+
+        return resolveIndexMethod(index.getColumns());
+    }
+
+    private String buildIndexWhereClause(IndexDefinition index) {
+        if (index.getWhereClause() == null || index.getWhereClause().isBlank()) {
+            return "";
+        }
+
+        return " WHERE " + index.getWhereClause().trim();
     }
 
     /**
@@ -1524,13 +1556,14 @@ public class LiquibaseGenerator {
             return false;
         }
 
-        String normalizedColumnName = columnName.toLowerCase(java.util.Locale.ROOT);
+        String normalizedColumnName = columnName.toLowerCase(java.util.Locale.ROOT).trim();
 
         return isQuotedIdentifier(columnName)
                 || normalizedColumnName.contains("gin_trgm_ops")
                 || normalizedColumnName.contains("gist_trgm_ops")
                 || normalizedColumnName.contains("(")
-                || normalizedColumnName.contains(")");
+                || normalizedColumnName.contains(")")
+                || normalizedColumnName.matches(".*\\s+(asc|desc)$");
     }
 
 

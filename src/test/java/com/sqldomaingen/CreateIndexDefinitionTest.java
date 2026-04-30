@@ -188,6 +188,8 @@ class CreateIndexDefinitionTest {
             assertEquals("aegean_cuisine_url", indexDefinition.getColumns().getFirst(), "Unexpected indexed column.");
 
             assertFalse(indexDefinition.isUnique(), "Index should not be unique.");
+            assertEquals("btree", indexDefinition.getUsingMethod(), "Unexpected index method.");
+            assertEquals("(aegean_cuisine_url IS NOT NULL)", indexDefinition.getWhereClause(), "Unexpected WHERE clause.");
         });
     }
 
@@ -325,7 +327,41 @@ class CreateIndexDefinitionTest {
         assertEquals(List.of("status", "pulled_at"), index1.getColumns());
         assertEquals(List.of("legacy_table_name", "status"), index2.getColumns());
 
-        log.info("✅ Table '{}' has correct indexes: {}", table.getName(), table.getIndexes());
+        log.info(" Table '{}' has correct indexes: {}", table.getName(), table.getIndexes());
+
+    }
+
+    @Test
+    void testProcessCreateIndex_WithUniquePartialExpressionIndex() {
+        String sql = """
+        CREATE UNIQUE INDEX uq_test_email_active
+        ON public.index_expression_test USING btree (lower((email)::text))
+        WHERE deleted_at IS NULL;
+        """;
+
+        SQLParser sqlParser = new SQLParser(sql);
+        PostgreSQLParser parser = sqlParser.createParser();
+        PostgreSQLParser.SqlScriptContext context = parser.sqlScript();
+
+        assertNotNull(context, "SqlScriptContext should not be null.");
+        assertEquals(1, context.createIndexStatement().size(), "Expected exactly one CREATE INDEX statement.");
+
+        PostgreSQLParser.CreateIndexStatementContext indexContext = context.createIndexStatement().getFirst();
+        assertNotNull(indexContext, "CreateIndexStatementContext should not be null.");
+
+        CreateIndexDefinition createIndexDefinition = new CreateIndexDefinition();
+
+        IndexDefinition indexDefinition = assertDoesNotThrow(
+                () -> createIndexDefinition.processCreateIndex(indexContext)
+        );
+
+        assertNotNull(indexDefinition, "IndexDefinition should not be null.");
+        assertEquals("uq_test_email_active", indexDefinition.getName(), "Unexpected index name.");
+        assertEquals("public.index_expression_test", indexDefinition.getTableName(), "Unexpected table name.");
+        assertEquals("btree", indexDefinition.getUsingMethod(), "Unexpected index method.");
+        assertTrue(indexDefinition.isUnique(), "Index should be unique.");
+        assertEquals(List.of("lower((email)::text)"), indexDefinition.getColumns(), "Unexpected index columns.");
+        assertEquals("deleted_at IS NULL", indexDefinition.getWhereClause(), "Unexpected WHERE clause.");
     }
 
 }

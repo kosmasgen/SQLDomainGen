@@ -721,4 +721,45 @@ class TableParsingTest {
                 "CONSTRAINT conservation_intervention_pkey PRIMARY KEY (id)"
         );
     }
+
+    @Test
+    void testParseIndexStatements_WithExpressionsAndPartialWhere() {
+        String sql = """
+        CREATE INDEX idx_test_lower_name
+        ON public.index_expression_test USING btree (lower((name_english)::text));
+
+        CREATE INDEX idx_test_created_desc
+        ON public.index_expression_test USING btree (created_at DESC);
+
+        CREATE INDEX idx_test_status_created
+        ON public.index_expression_test USING btree (status, created_at DESC);
+
+        CREATE INDEX idx_test_partial_active
+        ON public.index_expression_test USING btree (created_at DESC)
+        WHERE deleted_at IS NULL;
+
+        CREATE UNIQUE INDEX uq_test_email_active
+        ON public.index_expression_test USING btree (lower((email)::text))
+        WHERE deleted_at IS NULL;
+        """;
+
+        ParseCapture capture = parseStrict(sql);
+
+        String normalizedTreeText = normalize(capture.fullTreeText);
+
+        // expression index
+        assertTrue(normalizedTreeText.contains(normalize("lower((name_english)::text)")));
+
+        // DESC index
+        assertTrue(normalizedTreeText.contains(normalize("created_at DESC")));
+
+        // multi column index
+        assertTrue(normalizedTreeText.contains(normalize("status, created_at DESC")));
+
+        // partial index WHERE
+        assertTrue(normalizedTreeText.contains(normalize("WHERE deleted_at IS NULL")));
+
+        // unique index
+        assertTrue(normalizedTreeText.contains(normalize("CREATE UNIQUE INDEX uq_test_email_active")));
+    }
 }

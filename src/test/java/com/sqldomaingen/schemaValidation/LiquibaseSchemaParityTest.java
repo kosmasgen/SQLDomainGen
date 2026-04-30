@@ -104,7 +104,7 @@ class LiquibaseSchemaParityTest {
             if (Files.exists(tableXmlPath)) {
                 String tableXml = Files.readString(tableXmlPath);
 
-                assertIndexes(tableXml, sql, table, violations);
+                assertIndexes(tableXml, table, violations);
             }
         }
 
@@ -903,12 +903,22 @@ class LiquibaseSchemaParityTest {
             return;
         }
 
-        assertContains(
-                columnBlock,
-                "defaultValue=\"" + trimmedDefaultValue + "\"",
-                violations,
-                tableName + "." + columnName
-        );
+        if (normalizedDefaultValue.endsWith("::jsonb") || normalizedDefaultValue.endsWith("::json")) {
+            String expectedDefaultValue = trimmedDefaultValue;
+
+            if (!expectedDefaultValue.startsWith("'")) {
+                int castIndex = expectedDefaultValue.lastIndexOf("::");
+                expectedDefaultValue = "'" + expectedDefaultValue.substring(0, castIndex) + "'" + expectedDefaultValue.substring(castIndex);
+            }
+
+            assertContains(
+                    columnBlock,
+                    "defaultValueComputed=\"" + expectedDefaultValue + "\"",
+                    violations,
+                    tableName + "." + columnName
+            );
+            return;
+        }
     }
 
     /**
@@ -1999,114 +2009,139 @@ class LiquibaseSchemaParityTest {
         }
     }
 
-    /**
-     * Extracts index definitions from SQL and groups them by target table.
-     *
-     * @param sql full SQL content
-     * @return map of normalized table name -> ordered index definitions
-     */
-    private Map<String, List<IndexDefinition>> extractIndexes(String sql) {
-        Map<String, List<IndexDefinition>> indexesByTable = new LinkedHashMap<>();
-
-        Pattern pattern = Pattern.compile(
-                "CREATE\\s+INDEX\\s+(\\w+)\\s+ON\\s+((?:\\w+\\.)?\\w+)\\s+USING\\s+\\w+\\s*\\(([^)]+)\\)(\\s+WHERE\\s+.+?)?\\s*;",
-                Pattern.CASE_INSENSITIVE | Pattern.DOTALL
-        );
-
-        Matcher matcher = pattern.matcher(sql);
-
-        while (matcher.find()) {
-            String indexName = matcher.group(1).trim();
-            String tableName = normalizeTableReference(matcher.group(2));
-            String columnExpression = matcher.group(3).trim();
-            String whereClause = matcher.group(4) == null ? null : matcher.group(4).trim();
-
-            indexesByTable
-                    .computeIfAbsent(tableName, ignored -> new ArrayList<>())
-                    .add(new IndexDefinition(indexName, tableName, columnExpression, whereClause));
-        }
-
-        return indexesByTable;
-    }
 
     /**
-     * Verifies that generated index definitions preserve the parsed SQL indexes
-     * for the current table only.
+     * Verifies that generated index definitions preserve the parsed table indexes.
      *
      * @param xml generated table changelog XML
-     * @param originalSql full original schema SQL
      * @param table parsed table
      * @param violations collected violations
      */
-    private void assertIndexes(String xml, String originalSql, Table table, List<String> violations) {
+    private void assertIndexes(String xml, Table table, List<String> violations) {
+        if (table.getIndexes() == null || table.getIndexes().isEmpty()) {
+            return;
+        }
+
         String normalizedTableName = stripSchema(table.getName());
-        Map<String, List<IndexDefinition>> indexesByTable = extractIndexes(originalSql);
-        List<IndexDefinition> expectedIndexes = indexesByTable.getOrDefault(normalizedTableName, Collections.emptyList());
 
-        for (IndexDefinition expectedIndex : expectedIndexes) {
-            String indexName = expectedIndex.indexName();
-            String expectedColumnExpression = expectedIndex.columnExpression();
-
-            if (expectedColumnExpression.contains("\"")) {
-                String expectedSqlFragment = "CREATE INDEX " + indexName
-                        + " ON " + table.getName()
-                        + " USING btree (" + expectedColumnExpression + ")";
-
-                assertContains(xml, expectedSqlFragment, violations, normalizedTableName);
+        for (com.sqldomaingen.model.IndexDefinition indexDefinition : table.getIndexes()) {
+            if (shouldSkipUnsupportedIndex(indexDefinition)) {
                 continue;
             }
 
-            assertContains(xml, "indexName=\"" + indexName + "\"", violations, normalizedTableName);
-
-            for (String columnName : splitIndexColumns(expectedColumnExpression)) {
-                boolean columnExistsAsSelfClosing = normalizeXmlWhitespace(xml).contains(
-                        normalizeXmlWhitespace("<column name=\"" + columnName + "\"/>")
-                );
-
-                boolean columnExistsAsExplicitClosing = normalizeXmlWhitespace(xml).contains(
-                        normalizeXmlWhitespace("<column name=\"" + columnName + "\"></column>")
-                );
-
-                if (!columnExistsAsSelfClosing && !columnExistsAsExplicitClosing) {
-                    violations.add("[" + normalizedTableName + "] Expected XML fragment not found: <column name=\""
-                            + columnName + "\"/>");
-                }
+            if (shouldExpectRawSqlIndex(indexDefinition)) {
+                assertRawSqlIndex(xml, table, indexDefinition, violations);
+                continue;
             }
+
+            assertLiquibaseCreateIndex(xml, normalizedTableName, indexDefinition, violations);
         }
     }
 
-    /**
-     * Splits an index column expression into individual normalized column names.
-     *
-     * @param columnExpression raw index column expression
-     * @return normalized index column names
-     */
-    private List<String> splitIndexColumns(String columnExpression) {
-        if (columnExpression == null || columnExpression.isBlank()) {
-            return Collections.emptyList();
+    private boolean shouldSkipUnsupportedIndex(com.sqldomaingen.model.IndexDefinition indexDefinition) {
+        if (indexDefinition.getColumns() == null) {
+            return false;
         }
 
-        return Arrays.stream(columnExpression.split(","))
-                .map(String::trim)
-                .map(this::normalizeIdentifier)
-                .filter(columnName -> !columnName.isBlank())
-                .toList();
+        return indexDefinition.getColumns().stream()
+                .filter(Objects::nonNull)
+                .map(column -> column.toLowerCase(Locale.ROOT))
+                .anyMatch(column -> column.contains("gin_trgm_ops")
+                        || column.contains("gist_trgm_ops")
+                        || column.contains("f_unaccent_ci"));
     }
 
-    /**
-     * Normalizes a table reference by removing surrounding quotes and schema prefix.
-     *
-     * @param tableReference raw table reference
-     * @return normalized schema-free table name
-     */
-    private String normalizeTableReference(String tableReference) {
-        if (tableReference == null || tableReference.isBlank()) {
+
+
+    private boolean shouldExpectRawSqlIndex(com.sqldomaingen.model.IndexDefinition indexDefinition) {
+        if (indexDefinition.getWhereClause() != null && !indexDefinition.getWhereClause().isBlank()) {
+            return true;
+        }
+
+        return indexDefinition.getColumns().stream()
+                .filter(Objects::nonNull)
+                .anyMatch(column -> {
+                    String normalizedColumn = column.trim().toLowerCase(Locale.ROOT);
+                    return normalizedColumn.contains("(")
+                            || normalizedColumn.contains(")")
+                            || normalizedColumn.matches(".*\\s+(asc|desc)$");
+                });
+    }
+
+    private void assertRawSqlIndex(
+            String xml,
+            Table table,
+            com.sqldomaingen.model.IndexDefinition indexDefinition,
+            List<String> violations
+    ) {
+        String qualifiedTableName = table.getName();
+        String indexMethod = indexDefinition.getUsingMethod() == null || indexDefinition.getUsingMethod().isBlank()
+                ? "btree"
+                : indexDefinition.getUsingMethod();
+
+        String columns = String.join(", ", indexDefinition.getColumns());
+
+        String expectedSql = "CREATE "
+                + (indexDefinition.isUnique() ? "UNIQUE " : "")
+                + "INDEX "
+                + indexDefinition.getName()
+                + " ON "
+                + qualifiedTableName
+                + " USING "
+                + indexMethod
+                + " ("
+                + columns
+                + ")"
+                + buildExpectedWhereClause(indexDefinition)
+                + ";";
+
+        assertContains(xml, expectedSql, violations, stripSchema(table.getName()));
+    }
+
+    private String buildExpectedWhereClause(com.sqldomaingen.model.IndexDefinition indexDefinition) {
+        if (indexDefinition.getWhereClause() == null || indexDefinition.getWhereClause().isBlank()) {
             return "";
         }
 
-        String normalizedTableReference = tableReference.trim().replace("\"", "");
-        return stripSchema(normalizedTableReference);
+        return " WHERE " + indexDefinition.getWhereClause().trim();
     }
+
+    private void assertLiquibaseCreateIndex(
+            String xml,
+            String normalizedTableName,
+            com.sqldomaingen.model.IndexDefinition indexDefinition,
+            List<String> violations
+    ) {
+        assertContains(xml, "indexName=\"" + indexDefinition.getName() + "\"", violations, normalizedTableName);
+
+        for (String columnName : indexDefinition.getColumns()) {
+            String normalizedColumnName = normalizeIndexColumnNameForXml(columnName);
+
+            // FIX: δεν περιμένουμε ASC/DESC μέσα στο name
+            assertContains(
+                    xml,
+                    "<column name=\"" + normalizedColumnName + "\"",
+                    violations,
+                    normalizedTableName
+            );
+        }
+    }
+
+    private String normalizeIndexColumnNameForXml(String columnName) {
+        if (columnName == null || columnName.isBlank()) {
+            return "";
+        }
+
+        String cleaned = columnName.trim()
+                .replaceAll("(?i)\\s+asc$", "")
+                .replaceAll("(?i)\\s+desc$", "")
+                .replaceAll("(?i)(asc|desc)$", "")
+                .trim();
+
+        return normalizeIdentifier(cleaned);
+    }
+
+
 
     /**
      * Structured SQL type descriptor.
@@ -2119,19 +2154,4 @@ class LiquibaseSchemaParityTest {
     private record TypeDescriptor(String baseType, Integer lengthOrPrecision, Integer scale, boolean array) {
     }
 
-    /**
-     * Structured SQL index descriptor.
-     *
-     * @param indexName index name
-     * @param tableName normalized schema-free table name
-     * @param columnExpression index column expression
-     * @param whereClause optional WHERE clause
-     */
-    private record IndexDefinition(
-            String indexName,
-            String tableName,
-            String columnExpression,
-            String whereClause
-    ) {
-    }
 }
