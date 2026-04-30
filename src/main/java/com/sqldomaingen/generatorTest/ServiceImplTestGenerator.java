@@ -1913,7 +1913,6 @@ public class ServiceImplTestGenerator {
             String javaType = normalizeJavaType(field.getType());
 
             if (javaType.endsWith("Dto")) {
-                needsUuid = true;
                 continue;
             }
 
@@ -1934,9 +1933,6 @@ public class ServiceImplTestGenerator {
 
         List<String> imports = new ArrayList<>();
 
-        if (needsUuid) {
-            imports.add("import java.util.UUID;");
-        }
         if (needsBigDecimal) {
             imports.add("import java.math.BigDecimal;");
         }
@@ -1964,6 +1960,7 @@ public class ServiceImplTestGenerator {
 
         return imports;
     }
+
     /**
      * Builds the ordered service method argument list for the current table primary key.
      *

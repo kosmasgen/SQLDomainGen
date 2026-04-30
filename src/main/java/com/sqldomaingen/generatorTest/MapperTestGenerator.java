@@ -211,42 +211,13 @@ public class MapperTestGenerator {
 
         imports.add("import " + entityPackage + "." + entityName + ";");
         imports.add("import " + dtoPackage + "." + dtoName + ";");
+        imports.add("import java.util.List;");
         imports.add("import org.junit.jupiter.api.BeforeEach;");
         imports.add("import org.junit.jupiter.api.Test;");
         imports.add("import org.modelmapper.ModelMapper;");
-        imports.add("import java.util.List;");
 
-        Set<String> visitedEntityTypes = new LinkedHashSet<>();
-        Set<String> visitedDtoTypes = new LinkedHashSet<>();
-
-        collectImportsRecursivelyFromEntity(
-                imports,
-                entities,
-                entityMetadata,
-                entityPackage,
-                dtoPackage,
-                visitedEntityTypes
-        );
-
-        for (Field field : dtoFields) {
-            if (field == null) {
-                continue;
-            }
-
-            String normalizedType = normalizeType(field.getType());
-            collectRequiredImports(imports, normalizedType, entityPackage, dtoPackage);
-
-            if (isProjectType(normalizedType)) {
-                collectImportsRecursivelyFromDtoType(
-                        imports,
-                        entities,
-                        extractPrimarySimpleType(normalizedType),
-                        entityPackage,
-                        dtoPackage,
-                        visitedDtoTypes
-                );
-            }
-        }
+        collectDirectFixtureImports(imports, entities, getEntityFields(entityMetadata), entityPackage, dtoPackage, false);
+        collectDirectFixtureImports(imports, entities, dtoFields, entityPackage, dtoPackage, true);
 
         for (String importLine : imports) {
             content.append(importLine).append("\n");
@@ -257,146 +228,57 @@ public class MapperTestGenerator {
     }
 
     /**
-     * Collects required imports recursively from an entity metadata graph.
+     * Collects imports required only by direct fixture fields generated in this mapper test.
      *
      * @param imports target import set
      * @param entities all generated entity metadata
-     * @param entityMetadata current entity metadata
+     * @param fields direct fields used by the generated fixture
      * @param entityPackage target entity package
      * @param dtoPackage target dto package
-     * @param visitedTypes visited type names to avoid cycles
+     * @param dtoMode true when collecting DTO fixture imports, false for entity fixture imports
      */
-    private void collectImportsRecursivelyFromEntity(
+    private void collectDirectFixtureImports(
             Set<String> imports,
             List<Entity> entities,
-            Entity entityMetadata,
+            List<Field> fields,
             String entityPackage,
             String dtoPackage,
-            Set<String> visitedTypes
+            boolean dtoMode
     ) {
-        if (entityMetadata == null || GeneratorSupport.trimToEmpty(entityMetadata.getName()).isBlank()) {
-            return;
-        }
-
-        String entityName = entityMetadata.getName();
-
-        if (!visitedTypes.add(entityName)) {
-            return;
-        }
-
-        imports.add("import " + entityPackage + "." + entityName + ";");
-
-        for (Field field : getEntityFields(entityMetadata)) {
+        for (Field field : fields) {
             if (field == null) {
                 continue;
             }
 
-            String normalizedType = normalizeType(field.getType());
-            collectRequiredImports(imports, normalizedType, entityPackage, dtoPackage);
+            String fieldType = normalizeType(field.getType());
+            collectRequiredImports(imports, fieldType, entityPackage, dtoPackage);
 
-            if (!isProjectType(normalizedType)) {
+            if (!isProjectType(fieldType)) {
                 continue;
             }
 
-            String nestedType = extractPrimarySimpleType(normalizedType);
+            String nestedType = extractPrimarySimpleType(fieldType);
+            String importLine = ProjectTypeImportSupport.resolveImportLine(nestedType, entityPackage, dtoPackage);
 
-            if (nestedType.isBlank() || nestedType.equals(entityName) || nestedType.endsWith("Dto")) {
+            if (!importLine.isBlank()) {
+                imports.add(importLine);
+            }
+
+            Entity nestedMetadata = findNestedProjectMetadata(entities, nestedType, dtoMode);
+
+            if (nestedMetadata == null) {
                 continue;
             }
 
-            Entity nestedEntityMetadata = findEntityMetadata(entities, nestedType);
-
-            if (nestedEntityMetadata != null) {
-                collectImportsRecursivelyFromEntity(
-                        imports,
-                        entities,
-                        nestedEntityMetadata,
-                        entityPackage,
-                        dtoPackage,
-                        visitedTypes
-                );
-            }
-        }
-    }
-
-    /**
-     * Collects required imports recursively from a DTO type by resolving the
-     * backing entity metadata and applying the centralized project import rules.
-     *
-     * @param imports target import set
-     * @param entities all generated entity metadata
-     * @param dtoTypeName dto simple type name
-     * @param entityPackage target entity package
-     * @param dtoPackage target dto package
-     * @param visitedTypes visited type names to avoid cycles
-     */
-    private void collectImportsRecursivelyFromDtoType(
-            Set<String> imports,
-            List<Entity> entities,
-            String dtoTypeName,
-            String entityPackage,
-            String dtoPackage,
-            Set<String> visitedTypes
-    ) {
-        String normalizedDtoTypeName = GeneratorSupport.trimToEmpty(dtoTypeName);
-
-        if (normalizedDtoTypeName.isBlank()) {
-            return;
-        }
-
-        if (!visitedTypes.add(normalizedDtoTypeName)) {
-            return;
-        }
-
-        String importLine = ProjectTypeImportSupport.resolveImportLine(
-                normalizedDtoTypeName,
-                entityPackage,
-                dtoPackage
-        );
-
-        if (!importLine.isBlank()) {
-            imports.add(importLine);
-        }
-
-        if (!normalizedDtoTypeName.endsWith("Dto")) {
-            return;
-        }
-
-        String entityName = normalizedDtoTypeName.substring(0, normalizedDtoTypeName.length() - 3);
-        Entity entityMetadata = findEntityMetadata(entities, entityName);
-
-        if (entityMetadata == null) {
-            return;
-        }
-
-        for (Field field : getEntityFields(entityMetadata)) {
-            if (field == null) {
-                continue;
-            }
-
-            String normalizedType = normalizeType(field.getType());
-            collectRequiredImports(imports, normalizedType, entityPackage, dtoPackage);
-
-            for (String referencedType : extractReferencedProjectTypes(normalizedType)) {
-                String nestedImportLine = ProjectTypeImportSupport.resolveImportLine(
-                        referencedType,
-                        entityPackage,
-                        dtoPackage
-                );
-
-                if (!nestedImportLine.isBlank()) {
-                    imports.add(nestedImportLine);
+            for (Field nestedField : getEntityFields(nestedMetadata)) {
+                if (nestedField == null) {
+                    continue;
                 }
 
-                if (ProjectTypeImportSupport.isDtoType(referencedType)) {
-                    collectImportsRecursivelyFromDtoType(
-                            imports,
-                            entities,
-                            referencedType,
-                            entityPackage,
-                            dtoPackage,
-                            visitedTypes
-                    );
+                String nestedFieldType = normalizeType(nestedField.getType());
+
+                if (!isProjectType(nestedFieldType)) {
+                    collectRequiredImports(imports, nestedFieldType, entityPackage, dtoPackage);
                 }
             }
         }
