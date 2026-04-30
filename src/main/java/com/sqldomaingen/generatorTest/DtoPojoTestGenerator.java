@@ -47,28 +47,19 @@ public class DtoPojoTestGenerator {
             collector.addImport("import " + dtoPackage + "." + dtoName + ";");
         }
 
-        // test imports
         collector.addImport("import org.junit.jupiter.api.Test;");
         collector.addStaticImport("import static org.assertj.core.api.Assertions.assertThat;");
 
-        //  IMPORTANT: always include base util imports (no guessing)
-        collector.addImport("import java.util.*;");
-        collector.addImport("import java.math.*;");
-        collector.addImport("import java.time.*;");
-        collector.addImport("import java.util.UUID;");
-
-        collector.addImport("import jakarta.validation.Validation;");
-        collector.addImport("import jakarta.validation.ConstraintViolation;");
-        collector.addImport("import java.util.Set;");
-
         for (Field field : dtoFields) {
+            if (field == null || field.getType() == null) {
+                continue;
+            }
+
             String type = field.getType();
+            String normalizedType = normalizeType(type);
 
             collector.addImportForComplexType(type);
-
-            if (type != null && (type.endsWith("Key") || type.endsWith("Id") || type.endsWith("PK"))) {
-                collector.addImport("import " + entityPackage + "." + type + ";");
-            }
+            collectFieldTypeImports(collector, normalizedType, entityPackage);
         }
 
         for (String importLine : collector.getImports()) {
@@ -77,6 +68,56 @@ public class DtoPojoTestGenerator {
 
         content.append("\n");
     }
+
+
+    /**
+     * Collects imports required by a generated DTO test field type.
+     *
+     * @param collector target import collector
+     * @param normalizedType normalized field type
+     * @param entityPackage target entity package
+     */
+    private void collectFieldTypeImports(
+            JavaImportCollector collector,
+            String normalizedType,
+            String entityPackage
+    ) {
+        if (normalizedType.contains("UUID")) {
+            collector.addImport("import java.util.UUID;");
+        }
+        if (normalizedType.contains("BigDecimal")) {
+            collector.addImport("import java.math.BigDecimal;");
+        }
+        if (normalizedType.contains("BigInteger")) {
+            collector.addImport("import java.math.BigInteger;");
+        }
+        if (normalizedType.contains("LocalDateTime")) {
+            collector.addImport("import java.time.LocalDateTime;");
+        } else if (normalizedType.contains("LocalDate")) {
+            collector.addImport("import java.time.LocalDate;");
+        }
+        if (normalizedType.contains("LocalTime")) {
+            collector.addImport("import java.time.LocalTime;");
+        }
+
+        if (isListType(normalizedType)) {
+            collector.addImport("import java.util.ArrayList;");
+            collector.addImport("import java.util.List;");
+        }
+        if (isSetType(normalizedType)) {
+            collector.addImport("import java.util.HashSet;");
+            collector.addImport("import java.util.Set;");
+        }
+        if (isMapType(normalizedType)) {
+            collector.addImport("import java.util.HashMap;");
+            collector.addImport("import java.util.Map;");
+        }
+
+        if (isEntityKeyType(normalizedType)) {
+            collector.addImport("import " + entityPackage + "." + normalizedType + ";");
+        }
+    }
+
 
     /**
      * Appends the generated DTO test class declaration.
