@@ -92,7 +92,9 @@ public class ControllerTestGenerator {
                     shouldImportEq,
                     basePackage,
                     table,
-                    dtoFieldTypes
+                    dtoFieldTypes,
+                    dtoFields,
+                    requiredDtoFieldNames
             );
 
             content.append("@AutoConfigureMockMvc(addFilters = false)\n");
@@ -219,87 +221,110 @@ public class ControllerTestGenerator {
             boolean shouldImportEq,
             String basePackage,
             Table table,
-            Map<String, String> dtoFieldTypes
+            Map<String, String> dtoFieldTypes,
+            List<Field> dtoFields,
+            List<String> requiredDtoFieldNames
     ) {
         String exceptionPackage = PackageResolver.resolvePackageName(basePackage, "exception");
 
-        content.append("package ").append(testPackage).append(";\n\n");
+        Set<String> imports = new java.util.TreeSet<>();
+        Set<String> staticImports = new java.util.TreeSet<>();
 
         if (!testPackage.equals(controllerPackage)) {
-            content.append("import ").append(controllerPackage).append(".").append(controllerName).append(";\n");
+            imports.add("import " + controllerPackage + "." + controllerName + ";");
         }
 
-        content.append("import ").append(dtoPackage).append(".").append(dtoName).append(";\n");
-        content.append("import ").append(servicePackage).append(".").append(serviceName).append(";\n");
-        content.append("import ").append(exceptionPackage).append(".ErrorCodes;\n");
-        content.append("import ").append(exceptionPackage).append(".GeneratedRuntimeException;\n");
+        imports.add("import " + dtoPackage + "." + dtoName + ";");
+        imports.add("import " + servicePackage + "." + serviceName + ";");
+        imports.add("import " + exceptionPackage + ".ErrorCodes;");
+        imports.add("import " + exceptionPackage + ".GeneratedRuntimeException;");
 
-        for (String nestedDtoType : resolveNestedDtoImports(dtoFieldTypes, dtoName)) {
-            content.append("import ").append(dtoPackage).append(".").append(nestedDtoType).append(";\n");
+        for (String nestedDtoType : resolveNestedDtoImports(dtoFields, requiredDtoFieldNames, dtoName)) {
+            imports.add("import " + dtoPackage + "." + nestedDtoType + ";");
         }
 
-        content.append("\n");
+        imports.add("import com.fasterxml.jackson.databind.ObjectMapper;");
+        imports.add("import org.junit.jupiter.api.Test;");
+        imports.add("import org.springframework.beans.factory.annotation.Autowired;");
+        imports.add("import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;");
+        imports.add("import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;");
+        imports.add("import org.springframework.http.MediaType;");
+        imports.add("import org.springframework.test.context.bean.override.mockito.MockitoBean;");
+        imports.add("import org.springframework.test.web.servlet.MockMvc;");
+        imports.add("import java.util.List;");
 
-        content.append("import com.fasterxml.jackson.databind.ObjectMapper;\n");
-        content.append("import org.junit.jupiter.api.Test;\n");
-        content.append("import org.springframework.beans.factory.annotation.Autowired;\n");
-        content.append("import org.springframework.boot.test.autoconfigure.web.servlet.WebMvcTest;\n");
-        content.append("import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;\n");
-        content.append("import org.springframework.http.MediaType;\n");
-        content.append("import org.springframework.test.context.bean.override.mockito.MockitoBean;\n");
-        content.append("import org.springframework.test.web.servlet.MockMvc;\n\n");
+        imports.addAll(resolveMandatoryJavaTypeImports(table, dtoFields, requiredDtoFieldNames));
 
-        content.append("import java.util.List;\n");
-        appendMandatoryJavaTypeImports(content, table, dtoFieldTypes);
-
-        Set<String> extraImports = GeneratorImportSupport.resolveImports(
+        imports.addAll(GeneratorImportSupport.resolveImports(
                 table,
                 (column, type) -> usesTypeInGeneratedTest(column, dtoFieldTypes, type)
-        );
+        ));
 
-        for (String importLine : extraImports) {
-            if (!"import java.util.List;".equals(importLine)) {
-                content.append(importLine).append("\n");
-            }
+        staticImports.add("import static org.mockito.ArgumentMatchers.any;");
+
+        if (shouldImportEq) {
+            staticImports.add("import static org.mockito.ArgumentMatchers.eq;");
+        }
+
+        staticImports.add("import static org.mockito.BDDMockito.given;");
+        staticImports.add("import static org.mockito.BDDMockito.willDoNothing;");
+        staticImports.add("import static org.mockito.BDDMockito.willThrow;");
+        staticImports.add("import static org.mockito.Mockito.verify;");
+        staticImports.add("import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;");
+        staticImports.add("import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;");
+        staticImports.add("import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;");
+        staticImports.add("import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;");
+        staticImports.add("import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;");
+        staticImports.add("import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;");
+
+        content.append("package ").append(testPackage).append(";\n\n");
+
+        for (String importLine : imports) {
+            content.append(importLine).append("\n");
         }
 
         content.append("\n");
 
-        content.append("import static org.mockito.ArgumentMatchers.any;\n");
-
-        if (shouldImportEq) {
-            content.append("import static org.mockito.ArgumentMatchers.eq;\n");
+        for (String staticImportLine : staticImports) {
+            content.append(staticImportLine).append("\n");
         }
 
-        content.append("import static org.mockito.BDDMockito.given;\n");
-        content.append("import static org.mockito.BDDMockito.willDoNothing;\n");
-        content.append("import static org.mockito.BDDMockito.willThrow;\n");
-        content.append("import static org.mockito.Mockito.verify;\n");
-        content.append("import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.delete;\n");
-        content.append("import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;\n");
-        content.append("import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.patch;\n");
-        content.append("import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;\n");
-        content.append("import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;\n");
-        content.append("import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;\n\n");
+        content.append("\n");
     }
 
 
     /**
-     * Resolves additional nested DTO imports required by generated controller tests.
+     * Resolves nested DTO imports required by generated controller tests.
      *
-     * @param dtoFieldTypes actual DTO field types
+     * @param dtoFields actual DTO fields
+     * @param requiredDtoFieldNames required DTO field names
      * @param rootDtoName current root DTO simple name
      * @return nested DTO simple names that must be imported
      */
-    private Set<String> resolveNestedDtoImports(Map<String, String> dtoFieldTypes, String rootDtoName) {
+    private Set<String> resolveNestedDtoImports(
+            List<Field> dtoFields,
+            List<String> requiredDtoFieldNames,
+            String rootDtoName
+    ) {
         Set<String> imports = new java.util.TreeSet<>();
 
-        if (dtoFieldTypes == null || dtoFieldTypes.isEmpty()) {
+        if (dtoFields == null || dtoFields.isEmpty()
+                || requiredDtoFieldNames == null || requiredDtoFieldNames.isEmpty()) {
             return imports;
         }
 
-        for (String rawType : dtoFieldTypes.values()) {
-            String simpleType = resolveSimpleDtoType(rawType);
+        Set<String> requiredFieldNameSet = new java.util.LinkedHashSet<>(requiredDtoFieldNames);
+
+        for (Field field : dtoFields) {
+            if (field == null || field.getName() == null || field.getType() == null) {
+                continue;
+            }
+
+            if (!requiredFieldNameSet.contains(field.getName())) {
+                continue;
+            }
+
+            String simpleType = resolveSimpleDtoType(field.getType());
 
             if (simpleType == null || simpleType.isBlank()) {
                 continue;
@@ -1525,7 +1550,7 @@ public class ControllerTestGenerator {
             case "BigInteger" -> "new BigInteger(\"" + variant + "\")";
             case "Short", "short" -> "(short) " + variant;
             case "Byte", "byte" -> "(byte) " + variant;
-            case "Boolean", "boolean" -> variant % 2 == 0 ? "false" : "true";
+            case "Boolean", "boolean" -> (variant % 2 != 0) ? "true" : "false";
             case "String" -> "\"A\"";
             case "Long", "long" -> variant + "L";
             case "Integer", "int" -> String.valueOf(variant);
@@ -1639,24 +1664,23 @@ public class ControllerTestGenerator {
         return detectJavaTypeForPrimaryKeyColumn(primaryKeyColumns.getFirst());
     }
 
-
     /**
-     * Appends mandatory Java type imports required by generated controller tests.
+     * Resolves mandatory Java type imports required by generated controller tests.
      *
      * <p>
-     * This method covers Java types that may appear directly in generated test code
-     * through sample values, primary key declarations, or DTO fixture values, even
-     * when they are not discovered by the generic import resolver.
+     * This method covers Java types that appear directly in generated test code
+     * through primary key declarations or DTO fixture values.
      * </p>
      *
-     * @param content generated file content
      * @param table current table
-     * @param dtoFieldTypes actual DTO field types
+     * @param dtoFields actual DTO fields
+     * @param requiredDtoFieldNames required DTO field names
+     * @return required import lines
      */
-    private void appendMandatoryJavaTypeImports(
-            StringBuilder content,
+    private Set<String> resolveMandatoryJavaTypeImports(
             Table table,
-            Map<String, String> dtoFieldTypes
+            List<Field> dtoFields,
+            List<String> requiredDtoFieldNames
     ) {
         Set<String> requiredImports = new java.util.TreeSet<>();
 
@@ -1667,21 +1691,35 @@ public class ControllerTestGenerator {
             }
         }
 
-        if (dtoFieldTypes != null && !dtoFieldTypes.isEmpty()) {
-            for (String dtoFieldType : dtoFieldTypes.values()) {
-                String simpleType = resolveSimpleDtoType(dtoFieldType);
-                addMandatoryImportForType(requiredImports, simpleType);
+        if (dtoFields == null || dtoFields.isEmpty()
+                || requiredDtoFieldNames == null || requiredDtoFieldNames.isEmpty()) {
+            return requiredImports;
+        }
+
+        Set<String> requiredFieldNameSet = new java.util.LinkedHashSet<>(requiredDtoFieldNames);
+
+        for (Field field : dtoFields) {
+            if (field == null || field.getName() == null || field.getType() == null) {
+                continue;
             }
+
+            if (!requiredFieldNameSet.contains(field.getName())) {
+                continue;
+            }
+
+            if ("id".equals(field.getName())
+                    || "dateCreated".equals(field.getName())
+                    || "lastUpdated".equals(field.getName())) {
+                continue;
+            }
+
+            String simpleType = resolveSimpleDtoType(field.getType());
+            addMandatoryImportForType(requiredImports, simpleType);
         }
 
-        for (String importLine : requiredImports) {
-            content.append(importLine).append("\n");
-        }
-
-        if (!requiredImports.isEmpty()) {
-            content.append("\n");
-        }
+        return requiredImports;
     }
+
 
     /**
      * Adds the fully qualified import statement required for the given simple Java type.
