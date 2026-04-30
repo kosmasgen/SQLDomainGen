@@ -917,7 +917,6 @@ class LiquibaseSchemaParityTest {
                     violations,
                     tableName + "." + columnName
             );
-            return;
         }
     }
 
@@ -1746,46 +1745,30 @@ class LiquibaseSchemaParityTest {
                 .replaceAll("\\s*\\[\\s*]", "[]")
                 .toUpperCase(Locale.ROOT);
 
-        if ("BIGSERIAL".equals(normalizedType)) {
-            return "BIGINT";
+        // Exact matches
+        switch (normalizedType) {
+            case "BIGSERIAL":
+            case "INT8":
+                return "BIGINT";
+            case "SERIAL":
+            case "INT4":
+                return "INTEGER";
+            case "SMALLSERIAL":
+            case "INT2":
+                return "SMALLINT";
+            case "FLOAT8":
+                return "DOUBLE";
+            case "FLOAT4":
+                return "REAL";
+            case "BOOL":
+                return "BOOLEAN";
+            case "BPCHAR":
+                return "CHAR";
+            default:
+                break;
         }
 
-        if ("SERIAL".equals(normalizedType)) {
-            return "INTEGER";
-        }
-
-        if ("SMALLSERIAL".equals(normalizedType)) {
-            return "SMALLINT";
-        }
-
-        if ("INT8".equals(normalizedType)) {
-            return "BIGINT";
-        }
-
-        if ("INT4".equals(normalizedType)) {
-            return "INTEGER";
-        }
-
-        if ("INT2".equals(normalizedType)) {
-            return "SMALLINT";
-        }
-
-        if ("FLOAT8".equals(normalizedType)) {
-            return "DOUBLE";
-        }
-
-        if ("FLOAT4".equals(normalizedType)) {
-            return "REAL";
-        }
-
-        if ("BOOL".equals(normalizedType)) {
-            return "BOOLEAN";
-        }
-
-        if ("BPCHAR".equals(normalizedType)) {
-            return "CHAR";
-        }
-
+        // Pattern-based mappings
         if (normalizedType.startsWith("BPCHAR(")) {
             return normalizedType.replaceFirst("BPCHAR", "CHAR");
         }

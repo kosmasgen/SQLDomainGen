@@ -623,7 +623,7 @@ public class ControllerGenerator {
             );
         }
 
-        Column primaryKeyColumn = primaryKeyColumns.get(0);
+        Column primaryKeyColumn = primaryKeyColumns.getFirst();
 
         String rawType = primaryKeyColumn.getJavaType();
         if (rawType == null || rawType.isBlank()) {

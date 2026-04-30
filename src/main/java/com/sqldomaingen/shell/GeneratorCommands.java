@@ -124,7 +124,6 @@ public class GeneratorCommands {
                     packageName,
                     author,
                     parsedTables,
-                    javaGenerationTables,
                     models
             );
 

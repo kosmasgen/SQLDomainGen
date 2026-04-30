@@ -1095,7 +1095,7 @@ class EntitySchemaValidationTest {
      */
     private ForeignKeyDefinition parseForeignKeyConstraint(String sourceTableName, String sqlSegment) {
         Pattern pattern = Pattern.compile(
-                "(?is)(?:CONSTRAINT\\s+[^\\s]+\\s+)?FOREIGN\\s+KEY\\s*\\(([^)]+)\\)\\s+REFERENCES\\s+([\\w.\"]+)\\s*\\(([^)]+)\\)"
+                "(?is)(?:CONSTRAINT\\s+^\\s+\\s+)?FOREIGN\\s+KEY\\s*\\(([^)]+)\\)\\s+REFERENCES\\s+([\\w.\"]+)\\s*\\(([^)]+)\\)"
         );
 
         Matcher matcher = pattern.matcher(sqlSegment);
@@ -1116,9 +1116,9 @@ class EntitySchemaValidationTest {
 
         return new ForeignKeyDefinition(
                 sanitizeIdentifier(sourceTableName),
-                sanitizeIdentifier(sourceColumns.get(0)),
+                sanitizeIdentifier(sourceColumns.getFirst()),
                 sanitizeIdentifier(targetTableGroup),
-                sanitizeIdentifier(targetColumns.get(0))
+                sanitizeIdentifier(targetColumns.getFirst())
         );
     }
 
@@ -1264,17 +1264,8 @@ class EntitySchemaValidationTest {
                 }
 
                 pendingAnnotations = new ArrayList<>();
-                continue;
             }
 
-            if (line.contains("(")
-                    || line.startsWith("public ")
-                    || line.startsWith("protected ")
-                    || line.startsWith("private ")) {
-                pendingAnnotations = new ArrayList<>();
-                currentAnnotation = null;
-                annotationParenthesesDepth = 0;
-            }
         }
 
         return fieldDefinitions;
@@ -1629,7 +1620,7 @@ class EntitySchemaValidationTest {
             return List.of(singleJoinColumnName);
         }
 
-        Matcher sectionMatcher = Pattern.compile(attributeName + "\\s*=\\s*\\{(.*?)\\}", Pattern.DOTALL).matcher(rawJoinTableArguments);
+        Matcher sectionMatcher = Pattern.compile(attributeName + "\\s*=\\s*\\{(.*?)}", Pattern.DOTALL).matcher(rawJoinTableArguments);
         if (!sectionMatcher.find()) {
             return List.of();
         }
@@ -1937,7 +1928,7 @@ class EntitySchemaValidationTest {
                 .toList();
 
         if (matches.size() == 1) {
-            return matches.get(0);
+            return matches.getFirst();
         }
 
         return null;

@@ -177,9 +177,181 @@ public class EntitySchemaValidator {
         validateSimpleColumns(entityDefinition, tableDefinition, entityBySimpleName, violations);
         validateJavaTypes(entityDefinition, tableDefinition, violations);
         validateColumnConstraints(entityDefinition, tableDefinition, violations);
+        validateMapsIdConsistency(entityDefinition, entityBySimpleName, violations);
         validateRelations(entityDefinition, tableDefinition, schemaTables, entityBySimpleName, violations);
+        validateForeignKeyTypeCompatibility(entityDefinition, tableDefinition, schemaTables, violations);
         validateForeignKeyCoverage(entityDefinition, tableDefinition, schemaTables, violations);
         validateMissingTableColumns(entityDefinition, tableDefinition, entityBySimpleName, violations);
+    }
+
+    /**
+     * Validates that every @MapsId value matches a real field inside the embedded id class.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param entityBySimpleName parsed entities by simple name
+     * @param violations collected violations
+     */
+    private void validateMapsIdConsistency(
+            JavaEntityDefinition entityDefinition,
+            Map<String, JavaEntityDefinition> entityBySimpleName,
+            List<String> violations
+    ) {
+        JavaFieldDefinition embeddedIdField = findEmbeddedIdField(entityDefinition);
+
+        for (JavaFieldDefinition field : entityDefinition.fields()) {
+            if (!field.hasAnnotation("MapsId")) {
+                continue;
+            }
+
+            String mapsIdValue = field.annotationAttribute("MapsId", "value");
+
+            if (mapsIdValue == null || mapsIdValue.isBlank()) {
+                violations.add("[" + entityDefinition.displayName() + "] Field '" + field.name()
+                        + "' declares @MapsId without a value");
+                continue;
+            }
+
+            if (embeddedIdField == null) {
+                violations.add("[" + entityDefinition.displayName() + "] Field '" + field.name()
+                        + "' declares @MapsId(\"" + mapsIdValue + "\") but entity has no @EmbeddedId field");
+                continue;
+            }
+
+            JavaEntityDefinition embeddedIdDefinition = resolveEmbeddedIdDefinition(embeddedIdField, entityBySimpleName);
+
+            if (embeddedIdDefinition == null) {
+                violations.add("[" + entityDefinition.displayName() + "] Field '" + field.name()
+                        + "' declares @MapsId(\"" + mapsIdValue + "\") but embedded id class '"
+                        + embeddedIdField.type() + "' was not found");
+                continue;
+            }
+
+            JavaFieldDefinition mappedIdField = findFieldByName(embeddedIdDefinition, mapsIdValue);
+
+            if (mappedIdField == null) {
+                violations.add("[" + entityDefinition.displayName() + "] Field '" + field.name()
+                        + "' declares @MapsId(\"" + mapsIdValue + "\") but embedded id class '"
+                        + embeddedIdDefinition.displayName() + "' has no field named '" + mapsIdValue + "'");
+                continue;
+            }
+
+            validateMapsIdJoinColumnCoverage(entityDefinition, field, mappedIdField, violations);
+        }
+    }
+
+    /**
+     * Validates that the @MapsId field column is covered by the relation join column.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param relationField relation field using @MapsId
+     * @param mappedIdField field inside the embedded id class
+     * @param violations collected violations
+     */
+    private void validateMapsIdJoinColumnCoverage(
+            JavaEntityDefinition entityDefinition,
+            JavaFieldDefinition relationField,
+            JavaFieldDefinition mappedIdField,
+            List<String> violations
+    ) {
+        List<String> joinColumnNames = resolveJoinColumnNames(relationField);
+        String mappedIdColumnName = resolveColumnName(mappedIdField);
+
+        boolean coveredByJoinColumn = joinColumnNames.stream()
+                .map(this::normalizeName)
+                .anyMatch(joinColumnName -> joinColumnName.equals(normalizeName(mappedIdColumnName)));
+
+        if (!coveredByJoinColumn) {
+            violations.add("[" + entityDefinition.displayName() + "] Field '" + relationField.name()
+                    + "' declares @MapsId(\"" + mappedIdField.name() + "\") but join columns "
+                    + joinColumnNames + " do not cover embedded id column '" + mappedIdColumnName + "'");
+        }
+    }
+
+    /**
+     * Validates that every local foreign-key column has the same Java type as the referenced target column.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param tableDefinition parsed SQL table definition
+     * @param schemaTables parsed schema tables
+     * @param violations collected violations
+     */
+    private void validateForeignKeyTypeCompatibility(
+            JavaEntityDefinition entityDefinition,
+            TableDefinition tableDefinition,
+            Map<String, TableDefinition> schemaTables,
+            List<String> violations
+    ) {
+        for (ForeignKeyDefinition foreignKeyDefinition : tableDefinition.foreignKeys()) {
+            ColumnDefinition sourceColumnDefinition =
+                    tableDefinition.columns().get(normalizeName(foreignKeyDefinition.sourceColumn()));
+
+            if (sourceColumnDefinition == null) {
+                continue;
+            }
+
+            TableDefinition targetTableDefinition = resolveTableDefinitionByPhysicalOrUnqualifiedName(
+                    schemaTables,
+                    foreignKeyDefinition.targetTable()
+            );
+
+            if (targetTableDefinition == null) {
+                continue;
+            }
+
+            ColumnDefinition targetColumnDefinition =
+                    targetTableDefinition.columns().get(normalizeName(foreignKeyDefinition.targetColumn()));
+
+            if (targetColumnDefinition == null) {
+                violations.add("[" + entityDefinition.displayName() + "] Foreign key column '"
+                        + foreignKeyDefinition.sourceColumn() + "' targets missing column '"
+                        + foreignKeyDefinition.targetColumn() + "' in table '"
+                        + targetTableDefinition.fullName() + "'");
+                continue;
+            }
+
+            String sourceJavaType = simpleType(TypeMapper.mapToJavaType(toModelColumn(sourceColumnDefinition)));
+            String targetJavaType = simpleType(TypeMapper.mapToJavaType(toModelColumn(targetColumnDefinition)));
+
+            if (!Objects.equals(sourceJavaType, targetJavaType)) {
+                violations.add("[" + entityDefinition.displayName() + "] Foreign key type mismatch for column '"
+                        + foreignKeyDefinition.sourceColumn() + "' in table '" + tableDefinition.fullName()
+                        + "'. Source Java type: " + sourceJavaType
+                        + ", target Java type: " + targetJavaType
+                        + ", target: " + targetTableDefinition.fullName()
+                        + "." + foreignKeyDefinition.targetColumn());
+            }
+        }
+    }
+
+    /**
+     * Finds the entity field annotated with @EmbeddedId.
+     *
+     * @param entityDefinition parsed entity definition
+     * @return embedded id field or null
+     */
+    private JavaFieldDefinition findEmbeddedIdField(JavaEntityDefinition entityDefinition) {
+        return entityDefinition.fields().stream()
+                .filter(field -> field.hasAnnotation("EmbeddedId"))
+                .findFirst()
+                .orElse(null);
+    }
+
+    /**
+     * Finds a field by Java field name.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param fieldName Java field name
+     * @return matching field or null
+     */
+    private JavaFieldDefinition findFieldByName(JavaEntityDefinition entityDefinition, String fieldName) {
+        if (fieldName == null || fieldName.isBlank()) {
+            return null;
+        }
+
+        return entityDefinition.fields().stream()
+                .filter(field -> field.name().equals(fieldName))
+                .findFirst()
+                .orElse(null);
     }
 
     private void validateJavaTypes(
@@ -1679,6 +1851,13 @@ public class EntitySchemaValidator {
         return trimmedTypeName;
     }
 
+    /**
+     * Validates SQL column constraints against generated Java field annotations.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param tableDefinition parsed SQL table definition
+     * @param violations collected violations
+     */
     private void validateColumnConstraints(
             JavaEntityDefinition entityDefinition,
             TableDefinition tableDefinition,
@@ -1687,15 +1866,7 @@ public class EntitySchemaValidator {
         for (ColumnDefinition columnDefinition : tableDefinition.columns().values()) {
             JavaFieldDefinition javaFieldDefinition = findJavaFieldForColumn(entityDefinition, columnDefinition);
 
-            if (javaFieldDefinition == null) {
-                continue;
-            }
-
-            if (javaFieldDefinition.hasAnnotation("ManyToOne")
-                    || javaFieldDefinition.hasAnnotation("OneToOne")
-                    || javaFieldDefinition.hasAnnotation("OneToMany")
-                    || javaFieldDefinition.hasAnnotation("ManyToMany")
-                    || javaFieldDefinition.hasAnnotation("Transient")) {
+            if (javaFieldDefinition == null || shouldSkipConstraintValidation(javaFieldDefinition)) {
                 continue;
             }
 
@@ -1704,11 +1875,271 @@ public class EntitySchemaValidator {
 
             if (isStringLikeColumn(columnDefinition)) {
                 validateLengthConstraint(entityDefinition, columnDefinition, javaFieldDefinition, violations);
+                validateSizeConstraint(entityDefinition, columnDefinition, javaFieldDefinition, violations);
+                validateStringCheckConstraint(entityDefinition, columnDefinition, javaFieldDefinition, violations);
             }
 
             if (columnDefinition.precision() != null || columnDefinition.scale() != null) {
                 validateNumericConstraint(entityDefinition, columnDefinition, javaFieldDefinition, violations);
+                validateDigitsConstraint(entityDefinition, columnDefinition, javaFieldDefinition, violations);
             }
+
+            validateDefaultMetadata(entityDefinition, columnDefinition, javaFieldDefinition, violations);
+        }
+    }
+
+    /**
+     * Checks whether constraint validation should skip this field.
+     *
+     * @param javaFieldDefinition parsed Java field
+     * @return true when the field is not a direct scalar column
+     */
+    private boolean shouldSkipConstraintValidation(JavaFieldDefinition javaFieldDefinition) {
+        return javaFieldDefinition.hasAnnotation("ManyToOne")
+                || javaFieldDefinition.hasAnnotation("OneToOne")
+                || javaFieldDefinition.hasAnnotation("OneToMany")
+                || javaFieldDefinition.hasAnnotation("ManyToMany")
+                || javaFieldDefinition.hasAnnotation("Transient");
+    }
+
+    /**
+     * Validates @Size(max=...) against SQL varchar/char length.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param columnDefinition parsed SQL column definition
+     * @param javaFieldDefinition parsed Java field
+     * @param violations collected violations
+     */
+    private void validateSizeConstraint(
+            JavaEntityDefinition entityDefinition,
+            ColumnDefinition columnDefinition,
+            JavaFieldDefinition javaFieldDefinition,
+            List<String> violations
+    ) {
+        if (columnDefinition.length() == null) {
+            return;
+        }
+
+        Integer sizeMax = tryParseInteger(javaFieldDefinition.annotationAttribute("Size", "max"));
+
+        if (sizeMax != null && !columnDefinition.length().equals(sizeMax)) {
+            violations.add("[%s] Column '%s' @Size(max) mismatch (SQL=%d, Java=%d)"
+                    .formatted(
+                            entityDefinition.displayName(),
+                            columnDefinition.name(),
+                            columnDefinition.length(),
+                            sizeMax
+                    ));
+        }
+    }
+
+    /**
+     * Validates @Digits(integer=..., fraction=...) against SQL numeric precision/scale.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param columnDefinition parsed SQL column definition
+     * @param javaFieldDefinition parsed Java field
+     * @param violations collected violations
+     */
+    private void validateDigitsConstraint(
+            JavaEntityDefinition entityDefinition,
+            ColumnDefinition columnDefinition,
+            JavaFieldDefinition javaFieldDefinition,
+            List<String> violations
+    ) {
+        Integer digitsInteger = tryParseInteger(javaFieldDefinition.annotationAttribute("Digits", "integer"));
+        Integer digitsFraction = tryParseInteger(javaFieldDefinition.annotationAttribute("Digits", "fraction"));
+
+        if (columnDefinition.precision() != null && columnDefinition.scale() != null && digitsInteger != null) {
+            int expectedIntegerDigits = columnDefinition.precision() - columnDefinition.scale();
+
+            if (expectedIntegerDigits != digitsInteger) {
+                violations.add("[%s] Column '%s' @Digits(integer) mismatch (SQL=%d, Java=%d)"
+                        .formatted(
+                                entityDefinition.displayName(),
+                                columnDefinition.name(),
+                                expectedIntegerDigits,
+                                digitsInteger
+                        ));
+            }
+        }
+
+        if (columnDefinition.scale() != null && digitsFraction != null
+                && !columnDefinition.scale().equals(digitsFraction)) {
+            violations.add("[%s] Column '%s' @Digits(fraction) mismatch (SQL=%d, Java=%d)"
+                    .formatted(
+                            entityDefinition.displayName(),
+                            columnDefinition.name(),
+                            columnDefinition.scale(),
+                            digitsFraction
+                    ));
+        }
+    }
+
+    /**
+     * Validates that important SQL default metadata is not silently lost for generated scalar fields.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param columnDefinition parsed SQL column definition
+     * @param javaFieldDefinition parsed Java field
+     * @param violations collected violations
+     */
+    private void validateDefaultMetadata(
+            JavaEntityDefinition entityDefinition,
+            ColumnDefinition columnDefinition,
+            JavaFieldDefinition javaFieldDefinition,
+            List<String> violations
+    ) {
+        if (columnDefinition.defaultValue() == null || columnDefinition.defaultValue().isBlank()) {
+            return;
+        }
+
+        if (isIdentityDefault(columnDefinition.defaultValue())) {
+            validateIdentityDefault(entityDefinition, columnDefinition, javaFieldDefinition, violations);
+            return;
+        }
+
+        if (isBooleanLikeColumn(columnDefinition)
+                || isTemporalDefault(columnDefinition.defaultValue())
+                || isSimpleDatabaseDefault(columnDefinition.defaultValue())) {
+            return;
+        }
+
+        String columnDefinitionAttr = javaFieldDefinition.annotationAttribute("Column", "columnDefinition");
+
+        boolean hasColumnDefinition = columnDefinitionAttr != null && !columnDefinitionAttr.isBlank();
+
+        boolean isCreationOrUpdateTimestamp = javaFieldDefinition.hasAnnotation("CreationTimestamp")
+                || javaFieldDefinition.hasAnnotation("UpdateTimestamp");
+
+        if (!hasColumnDefinition && !isCreationOrUpdateTimestamp) {
+            violations.add("[%s] Column '%s' has SQL default '%s' but Java field does not preserve default metadata"
+                    .formatted(
+                            entityDefinition.displayName(),
+                            columnDefinition.name(),
+                            columnDefinition.defaultValue()
+                    ));
+        }
+    }
+
+    /**
+     * Checks whether a SQL default is a simple literal safely handled by the database.
+     *
+     * @param defaultValue parsed SQL default value
+     * @return true when the default is a simple literal
+     */
+    private boolean isSimpleDatabaseDefault(String defaultValue) {
+        if (defaultValue == null || defaultValue.isBlank()) {
+            return false;
+        }
+
+        String normalizedDefaultValue = defaultValue.trim().toLowerCase(Locale.ROOT);
+
+        return normalizedDefaultValue.matches("^'.*'(::(character varying|charactervarying|varchar|text))?$")
+                || normalizedDefaultValue.matches("-?\\d+(\\.\\d+)?");
+    }
+
+    /**
+     * Checks whether the SQL default represents an identity column.
+     *
+     * @param defaultValue parsed SQL default value
+     * @return true when the default is an identity definition
+     */
+    private boolean isIdentityDefault(String defaultValue) {
+        if (defaultValue == null) {
+            return false;
+        }
+
+        return defaultValue.trim().toUpperCase(Locale.ROOT).startsWith("AS IDENTITY");
+    }
+
+    /**
+     * Validates that SQL identity columns are mapped as generated identifiers.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param columnDefinition parsed SQL column definition
+     * @param javaFieldDefinition parsed Java field
+     * @param violations collected violations
+     */
+    private void validateIdentityDefault(
+            JavaEntityDefinition entityDefinition,
+            ColumnDefinition columnDefinition,
+            JavaFieldDefinition javaFieldDefinition,
+            List<String> violations
+    ) {
+        boolean hasId = javaFieldDefinition.hasAnnotation("Id");
+        boolean hasGeneratedValue = javaFieldDefinition.hasAnnotation("GeneratedValue");
+
+        if (!hasId || !hasGeneratedValue) {
+            violations.add("[%s] Identity column '%s' must be mapped with @Id and @GeneratedValue"
+                    .formatted(entityDefinition.displayName(), columnDefinition.name()));
+        }
+    }
+
+    /**
+     * Checks whether a parsed SQL column is boolean-like.
+     *
+     * @param columnDefinition parsed SQL column definition
+     * @return true when the SQL type is boolean-like
+     */
+    private boolean isBooleanLikeColumn(ColumnDefinition columnDefinition) {
+        if (columnDefinition.sqlType() == null) {
+            return false;
+        }
+
+        String sqlType = columnDefinition.sqlType().toLowerCase(Locale.ROOT);
+        return sqlType.equals("boolean") || sqlType.equals("bool");
+    }
+
+    /**
+     * Checks whether a SQL default is temporal and should be preserved.
+     *
+     * @param defaultValue parsed SQL default value
+     * @return true when the default is temporal
+     */
+    private boolean isTemporalDefault(String defaultValue) {
+        if (defaultValue == null) {
+            return false;
+        }
+
+        String normalizedDefaultValue = defaultValue.trim().toLowerCase(Locale.ROOT);
+
+        return normalizedDefaultValue.equals("now()")
+                || normalizedDefaultValue.equals("current_timestamp")
+                || normalizedDefaultValue.equals("current_date")
+                || normalizedDefaultValue.equals("current_time")
+                || normalizedDefaultValue.equals("localtimestamp")
+                || normalizedDefaultValue.equals("localtime");
+    }
+
+    /**
+     * Validates that SQL CHECK metadata on string-like columns is not silently lost.
+     *
+     * @param entityDefinition parsed entity definition
+     * @param columnDefinition parsed SQL column definition
+     * @param javaFieldDefinition parsed Java field
+     * @param violations collected violations
+     */
+    private void validateStringCheckConstraint(
+            JavaEntityDefinition entityDefinition,
+            ColumnDefinition columnDefinition,
+            JavaFieldDefinition javaFieldDefinition,
+            List<String> violations
+    ) {
+        if (columnDefinition.checkConstraint() == null || columnDefinition.checkConstraint().isBlank()) {
+            return;
+        }
+
+        boolean hasPattern = javaFieldDefinition.hasAnnotation("Pattern");
+        boolean hasColumnDefinition = javaFieldDefinition.annotationAttribute("Column", "columnDefinition") != null;
+
+        if (!hasPattern && !hasColumnDefinition) {
+            violations.add("[%s] Column '%s' has SQL CHECK constraint '%s' but Java field does not preserve check metadata"
+                    .formatted(
+                            entityDefinition.displayName(),
+                            columnDefinition.name(),
+                            columnDefinition.checkConstraint()
+                    ));
         }
     }
 
@@ -1967,6 +2398,9 @@ public class EntitySchemaValidator {
         checklist.add("41. Checks local foreign keys are not mapped as scalar fields");
         checklist.add("42. Checks local foreign keys are not missing relation fields");
         checklist.add("43. Ignores foreign keys pointing to external tables not present in the parsed schema");
+        checklist.add("44. Checks @MapsId values against embedded id fields");
+        checklist.add("45. Checks @MapsId join columns against embedded id column mappings");
+        checklist.add("46. Checks local foreign-key Java type against referenced target column Java type");
 
         return checklist;
     }

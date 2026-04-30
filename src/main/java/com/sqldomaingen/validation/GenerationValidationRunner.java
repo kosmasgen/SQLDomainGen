@@ -24,7 +24,7 @@ public class GenerationValidationRunner {
      * @param basePackage base Java package
      * @param author Liquibase/generation author
      * @param parsedTables all parsed tables
-     * @param javaGenerationTables filtered Java-generation tables
+
      * @param models generated entity models
      * @return unified validation report
      */
@@ -34,7 +34,6 @@ public class GenerationValidationRunner {
             String basePackage,
             String author,
             List<Table> parsedTables,
-            List<Table> javaGenerationTables,
             List<Entity> models
     ) {
         GenerationValidationReport report =
@@ -45,8 +44,6 @@ public class GenerationValidationRunner {
         appendInfrastructureSection(report, outputDir, basePackage);
 
         appendParsedTableNamesSection(report, parsedTables);
-
-        //appendJavaGenerationTablesSection(report, javaGenerationTables);
 
         appendGeneratedModelsSection(report, models);
 
@@ -373,32 +370,6 @@ public class GenerationValidationRunner {
         report.addSection("Schema Tables", details, violations);
     }
 
-    /**
-     * Appends Java generation tables section.
-     *
-     * @param report validation report
-     * @param javaGenerationTables tables used for Java generation
-     */
-    private void appendJavaGenerationTablesSection(
-            GenerationValidationReport report,
-            List<Table> javaGenerationTables
-    ) {
-        List<String> details = new ArrayList<>();
-
-        if (javaGenerationTables == null || javaGenerationTables.isEmpty()) {
-            details.add("No tables were used for Java generation.");
-            report.addSection("Java Generation Tables", details, List.of());
-            return;
-        }
-
-        details.add("Total tables: " + javaGenerationTables.size());
-
-        for (Table table : javaGenerationTables) {
-            details.add(table.getName());
-        }
-
-        report.addSection("Java Generation Tables", details, List.of());
-    }
 
     /**
      * Appends generated models section.

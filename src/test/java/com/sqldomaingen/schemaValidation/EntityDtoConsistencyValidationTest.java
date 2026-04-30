@@ -11,6 +11,7 @@ import java.util.Comparator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import static org.junit.jupiter.api.Assertions.fail;
 
@@ -486,17 +487,9 @@ class EntityDtoConsistencyValidationTest {
                 }
 
                 pendingAnnotations = new ArrayList<>();
-                continue;
+
             }
 
-            if (line.contains("(")
-                    || line.startsWith("public ")
-                    || line.startsWith("protected ")
-                    || line.startsWith("private ")) {
-                pendingAnnotations = new ArrayList<>();
-                currentAnnotation = null;
-                annotationParenthesesDepth = 0;
-            }
         }
 
         return fieldDefinitions;
@@ -514,7 +507,10 @@ class EntityDtoConsistencyValidationTest {
         for (String annotationLine : annotationLines) {
             String trimmed = annotationLine.trim();
 
-            var matcher = java.util.regex.Pattern.compile("^@([A-Za-z0-9_]+)(\\((.*)\\))?$").matcher(trimmed);
+            Matcher matcher = java.util.regex.Pattern
+                    .compile("^@([A-Za-z0-9_]+)(\\((.*)\\))?$")
+                    .matcher(trimmed);
+
             if (!matcher.find()) {
                 continue;
             }
@@ -552,7 +548,7 @@ class EntityDtoConsistencyValidationTest {
      * @return package name or null
      */
     private String extractPackageName(String content) {
-        var matcher = java.util.regex.Pattern.compile("\\bpackage\\s+([\\w.]+)\\s*;").matcher(content);
+        Matcher matcher = java.util.regex.Pattern.compile("\\bpackage\\s+([\\w.]+)\\s*;").matcher(content);
         return matcher.find() ? matcher.group(1) : null;
     }
 
@@ -563,7 +559,7 @@ class EntityDtoConsistencyValidationTest {
      * @return class name or null
      */
     private String extractClassName(String content) {
-        var matcher = java.util.regex.Pattern.compile("\\bclass\\s+([A-Za-z_][A-Za-z0-9_]*)\\b").matcher(content);
+        Matcher matcher = java.util.regex.Pattern.compile("\\bclass\\s+([A-Za-z_][A-Za-z0-9_]*)\\b").matcher(content);
         return matcher.find() ? matcher.group(1) : null;
     }
 

@@ -9,11 +9,7 @@ import org.junit.jupiter.api.Test;
 
 import java.nio.file.Files;
 import java.nio.file.Path;
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Locale;
-import java.util.Map;
+import java.util.*;
 
 /**
  * Validates the parsed schema model produced from an input SQL schema.
@@ -78,12 +74,157 @@ class SchemaModelValidationTest {
 
         assertEveryTableIsStructurallyValid(parsedTables, violations);
         assertEveryColumnIsStructurallyValid(parsedTables, violations);
+        assertNoDuplicateColumnNames(parsedTables, violations);
         assertForeignKeysPointToExistingTables(parsedTables, tableByName, violations);
+        assertForeignKeySourceColumnsExist(parsedTables, violations);
         assertIndexesAreStructurallyValid(parsedTables, violations);
+        assertIndexColumnsExistWhenTheyArePlainColumns(parsedTables, violations);
         assertDataStagingTableScenarioIfPresent(tableByName, schemaName, violations);
         assertCompanySearchMaterializedViewIndexesIfPresent(tableByName, schemaName, violations);
 
         printReport(violations);
+    }
+
+    /**
+     * Verifies that each parsed table does not contain duplicate column names.
+     *
+     * @param parsedTables parsed table models
+     * @param violations collected violations
+     */
+    private void assertNoDuplicateColumnNames(List<Table> parsedTables, List<String> violations) {
+        for (Table table : parsedTables) {
+            if (table == null || table.getColumns() == null) {
+                continue;
+            }
+
+            Map<String, Long> columnNameCounts = table.getColumns().stream()
+                    .filter(Objects::nonNull)
+                    .map(Column::getName)
+                    .filter(Objects::nonNull)
+                    .map(this::normalizePhysicalName)
+                    .collect(java.util.stream.Collectors.groupingBy(
+                            columnName -> columnName,
+                            LinkedHashMap::new,
+                            java.util.stream.Collectors.counting()
+                    ));
+
+            columnNameCounts.entrySet().stream()
+                    .filter(entry -> entry.getValue() > 1)
+                    .forEach(entry -> violations.add(
+                            "Duplicate column name found in table '" + safeTableName(table) + "': " + entry.getKey()
+                    ));
+        }
+    }
+
+    /**
+     * Verifies that every parsed foreign-key source column exists in its owning table.
+     *
+     * @param parsedTables parsed table models
+     * @param violations collected violations
+     */
+    private void assertForeignKeySourceColumnsExist(List<Table> parsedTables, List<String> violations) {
+        for (Table table : parsedTables) {
+            if (table == null || table.getColumns() == null) {
+                continue;
+            }
+
+            Set<String> tableColumnNames = table.getColumns().stream()
+                    .filter(Objects::nonNull)
+                    .map(Column::getName)
+                    .filter(Objects::nonNull)
+                    .map(this::normalizePhysicalName)
+                    .collect(java.util.stream.Collectors.toSet());
+
+            for (Column column : table.getColumns()) {
+                if (column == null || !column.isForeignKey()) {
+                    continue;
+                }
+
+                String normalizedColumnName = normalizePhysicalName(column.getName());
+
+                if (!tableColumnNames.contains(normalizedColumnName)) {
+                    violations.add("Foreign-key source column does not exist in table '"
+                            + safeTableName(table) + "': " + safeColumnName(column));
+                }
+            }
+        }
+    }
+
+    /**
+     * Verifies that plain index column a references exist in the owning table.
+     *
+     * @param parsedTables parsed table models
+     * @param violations collected violations
+     */
+    private void assertIndexColumnsExistWhenTheyArePlainColumns(List<Table> parsedTables, List<String> violations) {
+        for (Table table : parsedTables) {
+            if (table == null || table.getColumns() == null || table.getIndexes() == null) {
+                continue;
+            }
+
+            Set<String> tableColumnNames = table.getColumns().stream()
+                    .filter(Objects::nonNull)
+                    .map(Column::getName)
+                    .filter(Objects::nonNull)
+                    .map(this::normalizePhysicalName)
+                    .collect(java.util.stream.Collectors.toSet());
+
+            for (IndexDefinition indexDefinition : table.getIndexes()) {
+                if (indexDefinition == null || indexDefinition.getColumns() == null) {
+                    continue;
+                }
+
+                for (String indexColumn : indexDefinition.getColumns()) {
+                    if (!isPlainIndexColumn(indexColumn)) {
+                        continue;
+                    }
+
+                    String normalizedIndexColumn = normalizePhysicalName(removeIndexColumnDirection(indexColumn));
+
+                    if (!tableColumnNames.contains(normalizedIndexColumn)) {
+                        violations.add("Index '" + safeIndexName(indexDefinition)
+                                + "' references missing column '" + indexColumn
+                                + "' on table '" + safeTableName(table) + "'");
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Checks whether an index element is a plain column reference.
+     *
+     * @param indexColumn parsed index column or expression
+     * @return true when the index element is a plain column reference
+     */
+    private boolean isPlainIndexColumn(String indexColumn) {
+        if (indexColumn == null || indexColumn.isBlank()) {
+            return false;
+        }
+
+        String normalizedIndexColumn = indexColumn.trim();
+
+        return !normalizedIndexColumn.contains("(")
+                && !normalizedIndexColumn.contains(")")
+                && !normalizedIndexColumn.contains("::")
+                && !normalizedIndexColumn.contains(" ");
+    }
+
+    /**
+     * Removes optional ASC or DESC direction from an index column.
+     *
+     * @param indexColumn parsed index column
+     * @return index column without direction
+     */
+    private String removeIndexColumnDirection(String indexColumn) {
+        if (indexColumn == null || indexColumn.isBlank()) {
+            return "";
+        }
+
+        return indexColumn.trim()
+                .replaceFirst("(?i)\\s+ASC$", "")
+                .replaceFirst("(?i)\\s+DESC$", "")
+                .trim();
     }
 
     /**
@@ -376,7 +517,7 @@ class SchemaModelValidationTest {
             return;
         }
 
-        Column idColumn = findColumn(dataStagingTable, "id");
+        Column idColumn = findColumn(dataStagingTable);
         if (idColumn == null) {
             violations.add("data_staging.id should exist");
         } else if (!idColumn.isPrimaryKey()) {
@@ -411,13 +552,12 @@ class SchemaModelValidationTest {
     }
 
     /**
-     * Finds one parsed column by physical name.
+     * Finds ID column from parsed table.
      *
      * @param table parsed table
-     * @param columnName physical column name
-     * @return matched column or null
+     * @return id column or null
      */
-    private Column findColumn(Table table, String columnName) {
+    private Column findColumn(Table table) {
         if (table == null || table.getColumns() == null) {
             return null;
         }
@@ -427,7 +567,7 @@ class SchemaModelValidationTest {
                 continue;
             }
 
-            if (normalizePhysicalName(column.getName()).equals(normalizePhysicalName(columnName))) {
+            if (normalizePhysicalName(column.getName()).equals("id")) {
                 return column;
             }
         }

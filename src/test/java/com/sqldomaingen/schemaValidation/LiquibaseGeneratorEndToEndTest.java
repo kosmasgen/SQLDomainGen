@@ -24,6 +24,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
@@ -77,7 +78,7 @@ class LiquibaseGeneratorEndToEndTest {
         List<String> declaredTables = extractTableNames(sql);
         Map<String, Set<String>> dependencyGraph = extractDependencies(sql, declaredTables);
 
-        printIncludeOrder("ACTUAL include order from generated main.xml", actualIncludes);
+        printIncludeOrder(actualIncludes);
         System.out.println("Generated main.xml path: " + mainXml.toAbsolutePath());
 
         assertEveryDeclaredTableIsIncludedExactlyOnce(actualIncludes, declaredTables);
@@ -305,8 +306,8 @@ class LiquibaseGeneratorEndToEndTest {
                 Integer parentPosition = positions.get(parentInclude);
                 Integer childPosition = positions.get(childInclude);
 
-                assertTrue(parentPosition != null, "Missing parent include: " + parentInclude);
-                assertTrue(childPosition != null, "Missing child include: " + childInclude);
+                assertNotNull(parentPosition, "Missing parent include: " + parentInclude);
+                assertNotNull(childPosition, "Missing child include: " + childInclude);
                 assertTrue(
                         parentPosition < childPosition,
                         "Parent must appear before child: parent=" + parentInclude + ", child=" + childInclude
@@ -318,10 +319,10 @@ class LiquibaseGeneratorEndToEndTest {
 
 
 
-    private void printIncludeOrder(String title, List<String> includes) {
+    private void printIncludeOrder(List<String> includes) {
         System.out.println();
         System.out.println("==================================================");
-        System.out.println(title);
+        System.out.println("ACTUAL include order from generated main.xml");
         System.out.println("==================================================");
 
         for (int index = 0; index < includes.size(); index++) {
