@@ -633,10 +633,6 @@ public class LiquibaseGenerator {
         ));
     }
 
-
-
-
-
     /**
      * Appends the audit revision column.
      *
