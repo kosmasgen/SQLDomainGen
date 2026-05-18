@@ -43,6 +43,7 @@ public class ExceptionGenerator {
 
         writeErrorResponse(exceptionDirectory, exceptionPackage, overwrite);
         writeErrorCodes(exceptionDirectory, exceptionPackage, overwrite);
+        writeErrorMessages(exceptionDirectory, exceptionPackage, overwrite);
         writeGeneratedRuntimeException(exceptionDirectory, exceptionPackage, overwrite);
         writeGlobalExceptionHandler(exceptionDirectory, exceptionPackage, overwrite);
 
@@ -227,6 +228,52 @@ public class ExceptionGenerator {
                     }
                 }
                 """.formatted(exceptionPackage);
+    }
+
+
+    /**
+     * Generates the {@code ErrorMessages} class.
+     *
+     * @param exceptionDirectory target exception directory
+     * @param exceptionPackage target package name
+     * @param overwrite whether existing files should be overwritten
+     */
+    private void writeErrorMessages(Path exceptionDirectory, String exceptionPackage, boolean overwrite) {
+        Path file = exceptionDirectory.resolve("ErrorMessages.java");
+        String content = buildErrorMessagesContent(exceptionPackage);
+
+        GeneratorSupport.writeFile(file, content, overwrite);
+        log.debug(" ErrorMessages generated: {}", file.toAbsolutePath());
+    }
+
+    /**
+     * Builds the source code of the {@code ErrorMessages} class.
+     *
+     * @param exceptionPackage target package name
+     * @return generated Java source content
+     */
+    private String buildErrorMessagesContent(String exceptionPackage) {
+        return """
+            package %s;
+
+            /**
+             * Centralized message keys for exception handling.
+             */
+            public final class ErrorMessages {
+
+                public static final String ERROR_UNEXPECTED = "error.unexpected";
+                public static final String ERROR_ENDPOINT_NOT_FOUND = "error.endpointNotFound";
+                public static final String ERROR_INVALID_REQUEST_BODY = "error.invalidRequestBody";
+                public static final String ERROR_VALIDATION_FAILED = "error.validationFailed";
+                public static final String ERROR_INVALID = "error.invalid";
+
+                /**
+                 * Prevents instantiation.
+                 */
+                private ErrorMessages() {
+                }
+            }
+            """.formatted(exceptionPackage);
     }
 
     /**
