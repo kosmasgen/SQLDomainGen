@@ -48,13 +48,12 @@ class GeneratedSourcesJavacCompilationTest {
         Path mainOutputDirectory = Files.createTempDirectory("javac-main");
         Path testOutputDirectory = Files.createTempDirectory("javac-test");
 
-        String mainClasspath = buildClasspath(projectRoot, false);
-        String testClasspath = buildClasspath(projectRoot, true);
+        String classpath = buildClasspath(projectRoot);
 
         CompilationResult mainResult = compileSourceSet(
                 mainFiles,
                 mainOutputDirectory,
-                mainClasspath,
+                classpath,
                 "MAIN"
         );
 
@@ -65,7 +64,10 @@ class GeneratedSourcesJavacCompilationTest {
             violations.add(mainResult.output());
         }
 
-        String testCompilationClasspath = mainOutputDirectory.toAbsolutePath() + ";" + testClasspath;
+        String testCompilationClasspath =
+                mainOutputDirectory.toAbsolutePath()
+                        + java.io.File.pathSeparator
+                        + classpath;
 
         CompilationResult testResult = compileSourceSet(
                 testFiles,
@@ -203,11 +205,10 @@ class GeneratedSourcesJavacCompilationTest {
      * Builds the generated project classpath using Maven wrapper.
      *
      * @param projectRoot generated project root
-     * @param includeTestScope whether test scope dependencies should be included
      * @return resolved classpath
      * @throws Exception if Maven wrapper execution fails
      */
-    private String buildClasspath(Path projectRoot, boolean includeTestScope) throws Exception {
+    private String buildClasspath(Path projectRoot) throws Exception {
         Path wrapperCommand = projectRoot.resolve("mvnw.cmd");
         Path outputFile = Files.createTempFile("mvn-classpath", ".txt");
 
@@ -220,9 +221,7 @@ class GeneratedSourcesJavacCompilationTest {
         command.add("dependency:build-classpath");
         command.add("-Dmdep.outputFile=" + outputFile.toAbsolutePath());
 
-        if (includeTestScope) {
-            command.add("-Dmdep.includeScope=test");
-        }
+        command.add("-Dmdep.includeScope=test");
 
         Process process = new ProcessBuilder(command)
                 .directory(projectRoot.toFile())
