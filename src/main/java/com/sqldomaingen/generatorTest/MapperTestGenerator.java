@@ -780,6 +780,8 @@ public class MapperTestGenerator {
             boolean skipPrimaryKeys,
             Set<String> primaryKeyFieldNames
     ) {
+        boolean hasAssignedField = false;
+
         for (Field field : dtoFields) {
             if (skipPrimaryKeys && primaryKeyFieldNames.contains(field.getName())) {
                 continue;
@@ -800,6 +802,7 @@ public class MapperTestGenerator {
                         variant,
                         true
                 );
+                hasAssignedField = true;
                 continue;
             }
 
@@ -814,9 +817,63 @@ public class MapperTestGenerator {
                     .append("(")
                     .append(literal)
                     .append(");\n");
+
+            hasAssignedField = true;
+        }
+
+        if (variant == 3 && !hasAssignedField) {
+            appendFallbackPatchDtoSetterLine(content, entities, dtoFields, primaryKeyFieldNames);
         }
 
         content.append("\n");
+    }
+
+    /**
+     * Appends one fallback setter line when a generated patch DTO would otherwise be empty.
+     *
+     * @param content target source builder
+     * @param entities all generated entity metadata
+     * @param dtoFields actual generated DTO fields
+     * @param primaryKeyFieldNames primary key field names
+     */
+    private void appendFallbackPatchDtoSetterLine(
+            StringBuilder content,
+            List<Entity> entities,
+            List<Field> dtoFields,
+            Set<String> primaryKeyFieldNames
+    ) {
+        for (Field field : dtoFields) {
+            if (primaryKeyFieldNames.contains(field.getName())) {
+                continue;
+            }
+
+            String fieldType = normalizeType(field.getType());
+
+            if (isProjectType(fieldType)) {
+                appendNestedProjectTypeSetterLines(
+                        content,
+                        entities,
+                        "dto",
+                        field,
+                        3,
+                        true
+                );
+                return;
+            }
+
+            String literal = sampleLiteralForGeneratedDtoField(field, 3);
+
+            if ("null".equals(literal)) {
+                continue;
+            }
+
+            content.append("        dto.")
+                    .append(resolveSetterName(field))
+                    .append("(")
+                    .append(literal)
+                    .append(");\n");
+            return;
+        }
     }
 
 

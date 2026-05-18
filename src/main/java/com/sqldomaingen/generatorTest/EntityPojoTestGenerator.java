@@ -284,6 +284,15 @@ public class EntityPojoTestGenerator {
             String entityVar,
             Field field
     ) {
+        String fieldType = normalizeType(field.getType());
+
+        if ("Boolean".equals(fieldType) || "boolean".equals(fieldType)) {
+            content.append("        assertThat(")
+                    .append(buildGetterInvocation(entityVar, field))
+                    .append(").isTrue();\n");
+            return;
+        }
+
         content.append("        ")
                 .append("assertThat(")
                 .append(buildGetterInvocation(entityVar, field))
@@ -381,8 +390,7 @@ public class EntityPojoTestGenerator {
             case "Byte", "byte" -> "(byte) 1";
             case "Double", "double" -> "1.0d";
             case "Float", "float" -> "1.0f";
-            case "Boolean" -> "Boolean.TRUE";
-            case "boolean" -> "true";
+            case "Boolean", "boolean" -> "true";
             case "Character", "char" -> "'A'";
             case "BigDecimal" -> "new BigDecimal(\"1.00\")";
             case "BigInteger" -> "new BigInteger(\"1\")";

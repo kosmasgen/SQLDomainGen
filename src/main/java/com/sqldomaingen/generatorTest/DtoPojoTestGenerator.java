@@ -311,8 +311,18 @@ public class DtoPojoTestGenerator {
      * @param field generated field metadata
      */
     private void appendEqualityAssertion(StringBuilder content, String dtoVar, Field field) {
+        String fieldType = normalizeType(resolveGeneratedDtoFieldType(field));
+        String getterInvocation = buildGetterInvocation(dtoVar, field);
+
+        if ("Boolean".equals(fieldType) || "boolean".equals(fieldType)) {
+            content.append("        assertThat(")
+                    .append(getterInvocation)
+                    .append(").isTrue();\n");
+            return;
+        }
+
         content.append("        assertThat(")
-                .append(buildGetterInvocation(dtoVar, field))
+                .append(getterInvocation)
                 .append(").isEqualTo(")
                 .append(field.getName())
                 .append(");\n");
@@ -409,8 +419,7 @@ public class DtoPojoTestGenerator {
             case "Integer", "int" -> "1";
             case "Double", "double" -> "1.0d";
             case "Float", "float" -> "1.0f";
-            case "Boolean" -> "Boolean.TRUE";
-            case "boolean" -> "true";
+            case "Boolean", "boolean" -> "true";
             case "Character", "char" -> "'A'";
             case "BigDecimal" -> "new BigDecimal(\"1.00\")";
             case "BigInteger" -> "new BigInteger(\"1\")";
