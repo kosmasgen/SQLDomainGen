@@ -6,6 +6,7 @@ import lombok.extern.log4j.Log4j2;
 
 import java.nio.file.Path;
 import java.util.Objects;
+import java.util.stream.Collectors;
 
 /**
  * Generates the exception handling layer under the exception package.
@@ -110,6 +111,11 @@ public class ExceptionGenerator {
         log.info("ErrorResponse generated: {}", file.toAbsolutePath());
     }
 
+    /**
+     * Builds the {@code GeneratedRuntimeException} handler method.
+     *
+     * @return generated method source content
+     */
     private String buildGeneratedRuntimeExceptionHandlerMethod() {
         return """
             /**
@@ -124,13 +130,17 @@ public class ExceptionGenerator {
                     GeneratedRuntimeException exception,
                     HttpServletRequest request
             ) {
-                HttpStatus status = resolveHttpStatusFromErrorCode(exception.getCode());
-                String message = safeMessage(exception.getMessage(), resolveMessage("error.unexpected"));
+                String code = exception.getCode();
+                HttpStatus status = resolveStatus(code);
+                String message = safeMessage(
+                        exception.getMessage(),
+                        messageResolver.resolve(ErrorMessages.ERROR_UNEXPECTED)
+                );
 
-                return build(exception.getCode(), status, message, exception, request);
+                return build(code, status, message, exception, request);
             }
 
-        """;
+            """;
     }
 
     /**
@@ -347,26 +357,40 @@ public class ExceptionGenerator {
         String basePackage = exceptionPackage.substring(0, exceptionPackage.lastIndexOf(".exception"));
 
         return """
-        package %s;
+            package %s;
 
-        %s
-        %s
-        @Log4j2
-        @RestControllerAdvice
-        @RequiredArgsConstructor
-        @SuppressWarnings("unused")
-        public class GlobalExceptionHandler {
+            %s
+            %s
+            @Log4j2
+            @RestControllerAdvice
+            @RequiredArgsConstructor
+            @SuppressWarnings("unused")
+            public class GlobalExceptionHandler {
 
-            private final MessageResolver messageResolver;
+                private final MessageResolver messageResolver;
 
-        %s
-        }
-        """.formatted(
+            %s
+            }
+            """.formatted(
                 exceptionPackage,
                 buildGlobalExceptionHandlerImports().formatted(basePackage),
                 buildGlobalExceptionHandlerClassJavaDoc(),
-                buildGlobalExceptionHandlerBody()
+                indent(buildGlobalExceptionHandlerBody())
         );
+    }
+
+    /**
+     * Applies indentation padding to generated multiline content.
+     *
+     * @param content generated content
+     * @return indented content
+     */
+    private String indent(String content) {
+        String padding = " ".repeat(4);
+
+        return content.lines()
+                .map(line -> line.isBlank() ? line : padding + line)
+                .collect(Collectors.joining(System.lineSeparator()));
     }
 
     /**
@@ -376,26 +400,29 @@ public class ExceptionGenerator {
      */
     private String buildGlobalExceptionHandlerImports() {
         return """
-            import %s.util.MessageResolver;
-            import jakarta.servlet.http.HttpServletRequest;
-            import jakarta.validation.ConstraintViolationException;
-            import lombok.RequiredArgsConstructor;
-            import lombok.extern.log4j.Log4j2;
-            import org.springframework.http.HttpStatus;
-            import org.springframework.http.ResponseEntity;
-            import org.springframework.http.converter.HttpMessageNotReadableException;
-            import org.springframework.validation.FieldError;
-            import org.springframework.web.bind.MethodArgumentNotValidException;
-            import org.springframework.web.bind.annotation.ExceptionHandler;
-            import org.springframework.web.bind.annotation.RestControllerAdvice;
-            import org.springframework.web.server.ResponseStatusException;
+        import %s.util.MessageResolver;
+        import jakarta.servlet.http.HttpServletRequest;
+        import jakarta.validation.ConstraintViolation;
+        import jakarta.validation.ConstraintViolationException;
+        import lombok.RequiredArgsConstructor;
+        import lombok.extern.log4j.Log4j2;
+        import org.springframework.http.HttpStatus;
+        import org.springframework.http.ResponseEntity;
+        import org.springframework.http.converter.HttpMessageNotReadableException;
+        import org.springframework.validation.FieldError;
+        import org.springframework.web.bind.MethodArgumentNotValidException;
+        import org.springframework.web.bind.annotation.ExceptionHandler;
+        import org.springframework.web.bind.annotation.RestControllerAdvice;
+        import org.springframework.web.server.ResponseStatusException;
+        import org.springframework.web.servlet.NoHandlerFoundException;
 
-            import java.time.Instant;
-            import java.util.Comparator;
-            import java.util.List;
-            import java.util.Objects;
-            import java.util.stream.Collectors;
-            """;
+        import java.time.Instant;
+        import java.util.List;
+        import java.util.Set;
+        import java.util.stream.Collectors;
+
+        import static java.time.temporal.ChronoUnit.MILLIS;
+        """;
     }
 
     /**
@@ -425,13 +452,15 @@ public class ExceptionGenerator {
                 + buildGenericExceptionHandlerMethod()
                 + buildErrorResponseBuilderMethod()
                 + buildResolveCodeMethod()
-                + buildResolveHttpStatusFromErrorCodeMethod()
+                + buildResolveStatusMethod()
                 + buildValidationMessageMethod()
-                + buildConstraintViolationMessageMethod()
-                + buildResolveMessageMethod()
-                + buildSafeMessageMethod();
+                + buildFormatValidationMessageMethod()
+                + buildViolationMessageMethod()
+                + buildFormatViolationMethod()
+                + buildBadRequestMethod()
+                + buildSafeMessageMethod()
+                + buildValidationErrorMethod();
     }
-
     /**
      * Builds the {@code HttpMessageNotReadableException} handler method.
      *
@@ -453,16 +482,10 @@ public class ExceptionGenerator {
             ) {
                 log.warn("Unreadable request body at {} {}", request.getMethod(), request.getRequestURI());
 
-                return build(
-                        ErrorCodes.BAD_REQUEST,
-                        HttpStatus.BAD_REQUEST,
-                        resolveMessage("error.invalidRequestBody"),
-                        exception,
-                        request
-                );
+                return badRequest(messageResolver.resolve(ErrorMessages.ERROR_INVALID_REQUEST_BODY), exception, request);
             }
 
-        """;
+            """;
     }
 
     /**
@@ -472,22 +495,18 @@ public class ExceptionGenerator {
      */
     private String buildSafeMessageMethod() {
         return """
-                /**
-                 * Returns the primary message when it is not blank; otherwise returns the fallback message.
-                 *
-                 * @param primary preferred message
-                 * @param fallback fallback message
-                 * @return safe non-blank message
-                 */
-                private String safeMessage(String primary, String fallback) {
-                    String trimmedPrimary = primary == null ? "" : primary.trim();
-                    if (!trimmedPrimary.isEmpty()) {
-                        return trimmedPrimary;
-                    }
-
-                    String trimmedFallback = fallback == null ? "" : fallback.trim();
-                    return trimmedFallback.isEmpty() ? "Error" : trimmedFallback;
-                }
+            /**
+             * Returns the message when it is not blank; otherwise returns the fallback message.
+             *
+             * @param message preferred message
+             * @param fallback fallback message
+             * @return resolved message
+             */
+            private String safeMessage(String message, String fallback) {
+                return (message == null || message.isBlank())
+                        ? fallback
+                        : message;
+            }
 
             """;
     }
@@ -497,7 +516,7 @@ public class ExceptionGenerator {
      *
      * @return generated method source content
      */
-    private String buildConstraintViolationMessageMethod() {
+    private String buildViolationMessageMethod() {
         return """
             /**
              * Builds a readable validation message from constraint violations.
@@ -505,35 +524,100 @@ public class ExceptionGenerator {
              * @param exception constraint violation exception
              * @return resolved validation message
              */
-            private String buildConstraintViolationMessage(ConstraintViolationException exception) {
-                if (exception.getConstraintViolations() == null || exception.getConstraintViolations().isEmpty()) {
-                    return resolveMessage("error.validationFailed");
+            private String buildViolationMessage(ConstraintViolationException exception) {
+                Set<ConstraintViolation<?>> violations = exception.getConstraintViolations();
+
+                if (violations.isEmpty()) {
+                    return messageResolver.resolve(ErrorMessages.ERROR_VALIDATION_FAILED);
                 }
 
-                return exception.getConstraintViolations().stream()
-                        .map(violation -> violation.getPropertyPath() + ": "
-                                + safeMessage(violation.getMessage(), resolveMessage("error.invalid")))
+                return violations.stream()
+                        .map(this::formatViolation)
                         .distinct()
                         .collect(Collectors.joining(", "));
             }
 
-        """;
+            """;
     }
 
-    private String buildResolveMessageMethod() {
+    /**
+     * Builds the validation error response helper method.
+     *
+     * @return generated method source content
+     */
+    private String buildValidationErrorMethod() {
         return """
             /**
-             * Resolves an i18n message by key.
+             * Builds a standardized validation error response.
              *
-             * @param key message key
-             * @param arguments optional message arguments
-             * @return resolved message
+             * @param message response message
+             * @param exception original exception
+             * @param request current HTTP request
+             * @return standardized validation error response
              */
-            private String resolveMessage(String key, Object... arguments) {
-                return messageResolver.resolve(key, arguments);
+            private ResponseEntity<ErrorResponse> validationError(
+                    String message,
+                    Exception exception,
+                    HttpServletRequest request
+            ) {
+                return build(ErrorCodes.VALIDATION_ERROR, HttpStatus.UNPROCESSABLE_ENTITY, message, exception, request);
             }
 
-        """;
+            """;
+    }
+
+
+
+    /**
+     * Builds the constraint violation formatter helper method.
+     *
+     * @return generated method source content
+     */
+    private String buildFormatViolationMethod() {
+        return """
+            /**
+             * Formats a constraint violation into a readable validation message.
+             *
+             * @param violation constraint violation
+             * @return formatted validation message
+             */
+            private String formatViolation(ConstraintViolation<?> violation) {
+                return formatValidationMessage(
+                        violation.getPropertyPath().toString(),
+                        safeMessage(
+                                violation.getMessage(),
+                                messageResolver.resolve(ErrorMessages.ERROR_INVALID)
+                        )
+                );
+            }
+
+            """;
+    }
+
+    /**
+     * Builds the bad request response helper method.
+     *
+     * @return generated method source content
+     */
+    private String buildBadRequestMethod() {
+        return """
+            /**
+             * Builds a standardized bad request error response.
+             *
+             * @param message response message
+             * @param exception original exception
+             * @param request current HTTP request
+             * @return standardized bad request response
+             */
+            private ResponseEntity<ErrorResponse> badRequest(
+                    String message,
+                    Exception exception,
+                    HttpServletRequest request
+            ) {
+                return build(ErrorCodes.BAD_REQUEST, HttpStatus.BAD_REQUEST, message, exception, request);
+            }
+
+            """;
     }
 
     /**
@@ -551,29 +635,44 @@ public class ExceptionGenerator {
              */
             private String buildValidationMessage(MethodArgumentNotValidException exception) {
                 List<FieldError> fieldErrors = exception.getBindingResult().getFieldErrors();
+
                 if (fieldErrors.isEmpty()) {
-                    return resolveMessage("error.validationFailed");
+                    return messageResolver.resolve(ErrorMessages.ERROR_VALIDATION_FAILED);
                 }
 
-                FieldError firstFieldError = fieldErrors.stream()
-                        .filter(Objects::nonNull)
-                        .min(Comparator.comparing(FieldError::getField))
-                        .orElse(fieldErrors.getFirst());
+                FieldError fieldError = fieldErrors.getFirst();
 
-                String detailedMessage = fieldErrors.stream()
-                        .filter(Objects::nonNull)
-                        .map(fieldError -> fieldError.getField() + ": "
-                                + safeMessage(fieldError.getDefaultMessage(), resolveMessage("error.invalid")))
-                        .distinct()
-                        .collect(Collectors.joining(", "));
-
-                String primaryMessage = firstFieldError.getField() + ": "
-                        + safeMessage(firstFieldError.getDefaultMessage(), resolveMessage("error.invalid"));
-
-                return safeMessage(primaryMessage, detailedMessage);
+                return formatValidationMessage(
+                        fieldError.getField(),
+                        safeMessage(
+                                fieldError.getDefaultMessage(),
+                                messageResolver.resolve(ErrorMessages.ERROR_INVALID)
+                        )
+                );
             }
 
-        """;
+            """;
+    }
+
+    /**
+     * Builds the validation message formatter helper method.
+     *
+     * @return generated method source content
+     */
+    private String buildFormatValidationMessageMethod() {
+        return """
+            /**
+             * Formats a validation message using the field name and resolved message.
+             *
+             * @param field field name
+             * @param message validation message
+             * @return formatted validation message
+             */
+            private String formatValidationMessage(String field, String message) {
+                return field + ": " + message;
+            }
+
+            """;
     }
 
     /**
@@ -581,26 +680,26 @@ public class ExceptionGenerator {
      *
      * @return generated method source content
      */
-    private String buildResolveHttpStatusFromErrorCodeMethod() {
+    private String buildResolveStatusMethod() {
         return """
-                /**
-                 * Resolves the HTTP status from the provided application error code.
-                 *
-                 * @param errorCode application error code
-                 * @return resolved HTTP status
-                 */
-                private HttpStatus resolveHttpStatusFromErrorCode(String errorCode) {
-                    if (errorCode == null || errorCode.isBlank()) {
-                        return HttpStatus.INTERNAL_SERVER_ERROR;
-                    }
-
-                    return switch (errorCode) {
-                        case ErrorCodes.NOT_FOUND -> HttpStatus.NOT_FOUND;
-                        case ErrorCodes.BAD_REQUEST, ErrorCodes.REQUEST_ERROR -> HttpStatus.BAD_REQUEST;
-                        case ErrorCodes.VALIDATION_ERROR -> HttpStatus.UNPROCESSABLE_ENTITY;
-                        default -> HttpStatus.INTERNAL_SERVER_ERROR;
-                    };
+            /**
+             * Resolves the HTTP status from a provided application error code.
+             *
+             * @param errorCode application error code
+             * @return resolved HTTP status
+             */
+            private HttpStatus resolveStatus(String errorCode) {
+                if (errorCode == null || errorCode.isBlank()) {
+                    return HttpStatus.INTERNAL_SERVER_ERROR;
                 }
+
+                return switch (errorCode) {
+                    case ErrorCodes.NOT_FOUND -> HttpStatus.NOT_FOUND;
+                    case ErrorCodes.BAD_REQUEST, ErrorCodes.REQUEST_ERROR -> HttpStatus.BAD_REQUEST;
+                    case ErrorCodes.VALIDATION_ERROR -> HttpStatus.UNPROCESSABLE_ENTITY;
+                    default -> HttpStatus.INTERNAL_SERVER_ERROR;
+                };
+            }
 
             """;
     }
@@ -612,27 +711,27 @@ public class ExceptionGenerator {
      */
     private String buildResolveCodeMethod() {
         return """
-                /**
-                 * Resolves a stable application error code from an HTTP status.
-                 *
-                 * @param status HTTP status
-                 * @return stable application error code
-                 */
-                private String resolveCode(HttpStatus status) {
-                    if (status == null) {
-                        return ErrorCodes.REQUEST_ERROR;
-                    }
-
-                    return switch (status) {
-                        case NOT_FOUND -> ErrorCodes.NOT_FOUND;
-                        case BAD_REQUEST -> ErrorCodes.BAD_REQUEST;
-                        case UNPROCESSABLE_ENTITY -> ErrorCodes.VALIDATION_ERROR;
-                        case UNAUTHORIZED, FORBIDDEN, CONFLICT -> ErrorCodes.REQUEST_ERROR;
-                        default -> status.is4xxClientError()
-                                ? ErrorCodes.REQUEST_ERROR
-                                : ErrorCodes.INTERNAL_ERROR;
-                    };
+            /**
+             * Resolves a stable application error code from an HTTP status.
+             *
+             * @param status HTTP status
+             * @return stable application error code
+             */
+            private String resolveCode(HttpStatus status) {
+                if (status == null) {
+                    return ErrorCodes.REQUEST_ERROR;
                 }
+
+                return switch (status) {
+                    case NOT_FOUND -> ErrorCodes.NOT_FOUND;
+                    case BAD_REQUEST -> ErrorCodes.BAD_REQUEST;
+                    case UNPROCESSABLE_ENTITY -> ErrorCodes.VALIDATION_ERROR;
+                    case UNAUTHORIZED, FORBIDDEN, CONFLICT -> ErrorCodes.REQUEST_ERROR;
+                    default -> status.is4xxClientError()
+                            ? ErrorCodes.REQUEST_ERROR
+                            : ErrorCodes.INTERNAL_ERROR;
+                };
+            }
 
             """;
     }
@@ -644,35 +743,35 @@ public class ExceptionGenerator {
      */
     private String buildErrorResponseBuilderMethod() {
         return """
-                /**
-                 * Builds a standardized {@link ErrorResponse}.
-                 *
-                 * @param code stable application error code
-                 * @param status HTTP status
-                 * @param message response message
-                 * @param exception original exception
-                 * @param request current HTTP request
-                 * @return response entity with standardized error body
-                 */
-                private ResponseEntity<ErrorResponse> build(
-                        String code,
-                        HttpStatus status,
-                        String message,
-                        Exception exception,
-                        HttpServletRequest request
-                ) {
-                    ErrorResponse response = ErrorResponse.builder()
-                            .code(code)
-                            .timestamp(Instant.now())
-                            .status(status.value())
-                            .error(status.getReasonPhrase())
-                            .message(message)
-                            .path(request.getRequestURI())
-                            .exception(exception.getClass().getSimpleName())
-                            .build();
+            /**
+             * Builds a standardized {@link ErrorResponse}.
+             *
+             * @param code stable application error code
+             * @param status HTTP status
+             * @param message response message
+             * @param exception original exception
+             * @param request current HTTP request
+             * @return response entity with standardized error body
+             */
+            private ResponseEntity<ErrorResponse> build(
+                    String code,
+                    HttpStatus status,
+                    String message,
+                    Exception exception,
+                    HttpServletRequest request
+            ) {
+                ErrorResponse errorResponse = ErrorResponse.builder()
+                        .code(code)
+                        .timestamp(Instant.now().truncatedTo(MILLIS))
+                        .status(status.value())
+                        .error(status.getReasonPhrase())
+                        .message(message)
+                        .path(request.getRequestURI())
+                        .exception(exception.getClass().getSimpleName())
+                        .build();
 
-                    return ResponseEntity.status(status).body(response);
-                }
+                return ResponseEntity.status(status).body(errorResponse);
+            }
 
             """;
     }
@@ -701,15 +800,20 @@ public class ExceptionGenerator {
                 return build(
                         ErrorCodes.INTERNAL_ERROR,
                         HttpStatus.INTERNAL_SERVER_ERROR,
-                        resolveMessage("error.unexpected"),
+                        messageResolver.resolve(ErrorMessages.ERROR_UNEXPECTED),
                         exception,
                         request
                 );
             }
 
-        """;
+            """;
     }
 
+    /**
+     * Builds the {@code NoHandlerFoundException} handler method.
+     *
+     * @return generated method source content
+     */
     private String buildNoHandlerFoundExceptionHandlerMethod() {
         return """
             /**
@@ -719,21 +823,21 @@ public class ExceptionGenerator {
              * @param request current HTTP request
              * @return standardized not found error response
              */
-            @ExceptionHandler(org.springframework.web.servlet.NoHandlerFoundException.class)
+            @ExceptionHandler(NoHandlerFoundException.class)
             public ResponseEntity<ErrorResponse> handleNoHandlerFoundException(
-                    org.springframework.web.servlet.NoHandlerFoundException exception,
+                    NoHandlerFoundException exception,
                     HttpServletRequest request
             ) {
                 return build(
                         ErrorCodes.NOT_FOUND,
                         HttpStatus.NOT_FOUND,
-                        resolveMessage("error.endpointNotFound", request.getRequestURI()),
+                        messageResolver.resolve(ErrorMessages.ERROR_ENDPOINT_NOT_FOUND, request.getRequestURI()),
                         exception,
                         request
                 );
             }
 
-        """;
+            """;
     }
 
     /**
@@ -743,28 +847,22 @@ public class ExceptionGenerator {
      */
     private String buildConstraintViolationHandlerMethod() {
         return """
-                /**
-                 * Handles validation errors raised for request parameters and path variables.
-                 *
-                 * @param exception thrown constraint violation exception
-                 * @param request current HTTP request
-                 * @return standardized validation error response
-                 */
-                @ExceptionHandler(ConstraintViolationException.class)
-                public ResponseEntity<ErrorResponse> handleConstraintViolation(
-                        ConstraintViolationException exception,
-                        HttpServletRequest request
-                ) {
-                    String message = buildConstraintViolationMessage(exception);
+            /**
+             * Handles validation errors raised for request parameters and path variables.
+             *
+             * @param exception thrown constraint violation exception
+             * @param request current HTTP request
+             * @return standardized validation error response
+             */
+            @ExceptionHandler(ConstraintViolationException.class)
+            public ResponseEntity<ErrorResponse> handleConstraintViolation(
+                    ConstraintViolationException exception,
+                    HttpServletRequest request
+            ) {
+                String message = buildViolationMessage(exception);
 
-                    return build(
-                            ErrorCodes.VALIDATION_ERROR,
-                            HttpStatus.UNPROCESSABLE_ENTITY,
-                            message,
-                            exception,
-                            request
-                    );
-                }
+                return validationError(message, exception, request);
+            }
 
             """;
     }
@@ -776,28 +874,22 @@ public class ExceptionGenerator {
      */
     private String buildMethodArgumentNotValidHandlerMethod() {
         return """
-                /**
-                 * Handles request body validation errors.
-                 *
-                 * @param exception thrown validation exception
-                 * @param request current HTTP request
-                 * @return standardized validation error response
-                 */
-                @ExceptionHandler(MethodArgumentNotValidException.class)
-                public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
-                        MethodArgumentNotValidException exception,
-                        HttpServletRequest request
-                ) {
-                    String message = buildValidationMessage(exception);
+            /**
+             * Handles request body validation errors.
+             *
+             * @param exception thrown validation exception
+             * @param request current HTTP request
+             * @return standardized validation error response
+             */
+            @ExceptionHandler(MethodArgumentNotValidException.class)
+            public ResponseEntity<ErrorResponse> handleMethodArgumentNotValid(
+                    MethodArgumentNotValidException exception,
+                    HttpServletRequest request
+            ) {
+                String message = buildValidationMessage(exception);
 
-                    return build(
-                            ErrorCodes.VALIDATION_ERROR,
-                            HttpStatus.UNPROCESSABLE_ENTITY,
-                            message,
-                            exception,
-                            request
-                    );
-                }
+                return validationError(message, exception, request);
+            }
 
             """;
     }
@@ -809,29 +901,26 @@ public class ExceptionGenerator {
      */
     private String buildResponseStatusExceptionHandlerMethod() {
         return """
-                /**
-                 * Handles {@link ResponseStatusException}.
-                 *
-                 * @param exception thrown response status exception
-                 * @param request current HTTP request
-                 * @return standardized error response
-                 */
-                @ExceptionHandler(ResponseStatusException.class)
-                public ResponseEntity<ErrorResponse> handleResponseStatusException(
-                        ResponseStatusException exception,
-                        HttpServletRequest request
-                ) {
-                    HttpStatus status = HttpStatus.valueOf(exception.getStatusCode().value());
-                    String message = safeMessage(exception.getReason(), exception.getMessage());
+            /**
+             * Handles {@link ResponseStatusException}.
+             *
+             * @param exception thrown response status exception
+             * @param request current HTTP request
+             * @return standardized error response
+             */
+            @ExceptionHandler(ResponseStatusException.class)
+            public ResponseEntity<ErrorResponse> handleResponseStatusException(
+                    ResponseStatusException exception,
+                    HttpServletRequest request
+            ) {
+                HttpStatus status = HttpStatus.valueOf(exception.getStatusCode().value());
+                String message = safeMessage(
+                        exception.getReason(),
+                        exception.getMessage()
+                );
 
-                    return build(
-                            resolveCode(status),
-                            status,
-                            message,
-                            exception,
-                            request
-                    );
-                }
+                return build(resolveCode(status), status, message, exception, request);
+            }
 
             """;
     }
