@@ -271,6 +271,12 @@ public class ExceptionGenerator {
              */
             public final class ErrorMessages {
 
+                public static final String ENTITY_NOT_FOUND_BY_ID = "entity.notFoundById";
+                public static final String ENTITY_NOT_FOUND_BY_COMPOSITE_ID = "entity.notFoundByCompositeId";
+                public static final String ENTITY_ALREADY_EXISTS_BY_ID = "entity.alreadyExistsById";
+                public static final String ENTITY_ALREADY_EXISTS_BY_COMPOSITE_ID = "entity.alreadyExistsByCompositeId";
+                public static final String ENTITY_UNIQUE_CONSTRAINT_VIOLATION = "entity.uniqueConstraintViolation";
+
                 public static final String ERROR_UNEXPECTED = "error.unexpected";
                 public static final String ERROR_ENDPOINT_NOT_FOUND = "error.endpointNotFound";
                 public static final String ERROR_INVALID_REQUEST_BODY = "error.invalidRequestBody";

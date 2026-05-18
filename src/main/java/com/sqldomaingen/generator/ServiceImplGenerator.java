@@ -180,6 +180,7 @@ public class ServiceImplGenerator {
         imports.add("import " + repositoryPackage + "." + repositoryName + ";");
         imports.add("import " + servicePackage + "." + serviceName + ";");
         imports.add("import " + exceptionPackage + ".ErrorCodes;");
+        imports.add("import " + exceptionPackage + ".ErrorMessages;");
         imports.add("import " + exceptionPackage + ".GeneratedRuntimeException;");
         imports.add("import " + utilPackage + ".MessageResolver;");
 
@@ -500,11 +501,11 @@ public class ServiceImplGenerator {
         stringBuilder.append("                .code(ErrorCodes.NOT_FOUND)\n");
 
         if (compositePrimaryKey) {
-            stringBuilder.append("                .message(messageResolver.resolve(\"entity.notFoundByCompositeId\", \"")
+            stringBuilder.append("                .message(messageResolver.resolve(ErrorMessages.ENTITY_NOT_FOUND_BY_COMPOSITE_ID, \"")
                     .append(entityName)
                     .append("\", compositeId))\n");
         } else {
-            stringBuilder.append("                .message(messageResolver.resolve(\"entity.notFoundById\", \"")
+            stringBuilder.append("                .message(messageResolver.resolve(ErrorMessages.ENTITY_NOT_FOUND_BY_ID, \"")
                     .append(entityName)
                     .append("\", id))\n");
         }
@@ -1186,7 +1187,7 @@ public class ServiceImplGenerator {
 
         stringBuilder.append("        throw GeneratedRuntimeException.builder()\n");
         stringBuilder.append("                .code(ErrorCodes.BAD_REQUEST)\n");
-        stringBuilder.append("                .message(messageResolver.resolve(\"entity.uniqueConstraintViolation\", \"")
+        stringBuilder.append("                .message(messageResolver.resolve(ErrorMessages.ENTITY_UNIQUE_CONSTRAINT_VIOLATION, \"")
                 .append(entityName)
                 .append("\", fieldDescription))\n");
         stringBuilder.append("                .build();\n");
@@ -1640,8 +1641,7 @@ public class ServiceImplGenerator {
             );
             String relationGetterSuffix = NamingConverter.toPascalCase(relationName);
 
-            return "(dto.get" + relationGetterSuffix + "() != null ? dto.get"
-                    + relationGetterSuffix + "().getId() : null)";
+            return "dto.get" + relationGetterSuffix + "().getId()";
         }
 
         return "dto.get" + getterSuffix + "()";
@@ -1928,7 +1928,7 @@ public class ServiceImplGenerator {
 
         stringBuilder.append("        throw GeneratedRuntimeException.builder()\n");
         stringBuilder.append("                .code(ErrorCodes.BAD_REQUEST)\n");
-        stringBuilder.append("                .message(messageResolver.resolve(\"entity.alreadyExistsByCompositeId\", \"")
+        stringBuilder.append("                .message(messageResolver.resolve(ErrorMessages.ENTITY_ALREADY_EXISTS_BY_COMPOSITE_ID, \"")
                 .append(entityName)
                 .append("\", compositeId))\n");
         stringBuilder.append("                .build();\n");
