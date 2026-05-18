@@ -861,7 +861,7 @@ public class MapperTestGenerator {
                 return;
             }
 
-            String literal = sampleLiteralForGeneratedDtoField(field, 3);
+            String literal = sampleLiteralForGeneratedDtoField(field, 1);
 
             if ("null".equals(literal)) {
                 continue;
