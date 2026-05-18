@@ -327,18 +327,26 @@ SpringForge generates a complete Spring Boot project:
 
 ```text
 src/main/java/com/example/project/
- ├── config/
- ├── controller/
- ├── dto/
- ├── entity/
- ├── exception/
- ├── mapper/
- ├── repository/
- ├── service/
- ├── serviceImpl/
- ├── util/
- │   └── MessageResolver.java
- └── Application.java
+├── config/
+│   ├── CorsConfig.java
+│   ├── ModelMapperConfig.java
+│   └── SecurityConfig.java
+├── controller/
+├── dto/
+├── entity/
+├── exception/
+│   ├── ErrorCodes.java
+│   ├── ErrorMessages.java
+│   ├── ErrorResponse.java
+│   ├── GeneratedRuntimeException.java
+│   └── GlobalExceptionHandler.java
+├── mapper/
+├── repository/
+├── service/
+├── serviceImpl/
+├── util/
+│   └── MessageResolver.java
+└── Application.java
 
 src/main/resources/
  ├── application.properties
