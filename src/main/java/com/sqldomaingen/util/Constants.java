@@ -21,6 +21,13 @@ public class Constants {
     public static final String DTO_SUFFIX = "Dto";
     public static final String SERVICE_SUFFIX = "Service";
 
+    public static final String OBJECT_TYPE = "Object";
+    public static final String KEY_SUFFIX = "Key";
+    public static final String PK_SUFFIX = "PK";
+    public static final String ID_SUFFIX = "Id";
+
+    public static final String JAVA_LANG_PACKAGE = "java.lang.";
+    public static final String ARRAY_SUFFIX = "[]";
     public static final String API_ENTITY_PREFIX = "Api";
     public static final String BY_ID_SUFFIX = "ById";
 

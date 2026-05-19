@@ -1,6 +1,7 @@
 package com.sqldomaingen.generator;
 
 import com.sqldomaingen.model.Field;
+import com.sqldomaingen.util.Constants;
 import com.sqldomaingen.util.GeneratorSupport;
 import com.sqldomaingen.util.JavaTypeSupport;
 
@@ -32,14 +33,14 @@ public final class DtoFieldTypeResolver {
      */
     public static String resolveDtoFieldType(Field field) {
         if (field == null) {
-            return "Object";
+            return Constants.OBJECT_TYPE;
         }
 
         String rawType = GeneratorSupport.trimToEmpty(field.getType());
         String simplifiedType = simplifyType(rawType);
 
         if (simplifiedType.isBlank()) {
-            return "Object";
+            return Constants.OBJECT_TYPE;
         }
 
         if (isEntityKeyType(simplifiedType)) {
@@ -72,7 +73,7 @@ public final class DtoFieldTypeResolver {
         String normalizedType = GeneratorSupport.trimToEmpty(simplifiedType);
 
         if (normalizedType.isBlank()) {
-            return "Object";
+            return Constants.OBJECT_TYPE;
         }
 
         int genericStart = normalizedType.indexOf('<');
@@ -102,7 +103,7 @@ public final class DtoFieldTypeResolver {
         String normalizedType = simplifyType(typeName);
 
         if (normalizedType.isBlank()) {
-            return "Object";
+            return Constants.OBJECT_TYPE;
         }
 
         if (JavaTypeSupport.isScalarType(normalizedType)) {
@@ -113,7 +114,7 @@ public final class DtoFieldTypeResolver {
             return normalizedType;
         }
 
-        return normalizedType.endsWith("Dto") ? normalizedType : normalizedType + "Dto";
+        return normalizedType.endsWith(Constants.DTO_SUFFIX) ? normalizedType : normalizedType + Constants.DTO_SUFFIX;
     }
 
     /**
@@ -126,9 +127,9 @@ public final class DtoFieldTypeResolver {
     private static boolean isEntityKeyType(String simpleType) {
         String normalizedType = GeneratorSupport.trimToEmpty(simpleType);
 
-        return normalizedType.endsWith("Key")
-                || normalizedType.endsWith("PK")
-                || normalizedType.endsWith("Id");
+        return normalizedType.endsWith(Constants.KEY_SUFFIX)
+                || normalizedType.endsWith(Constants.PK_SUFFIX)
+                || normalizedType.endsWith(Constants.ID_SUFFIX);
     }
 
     /**
@@ -141,12 +142,12 @@ public final class DtoFieldTypeResolver {
         String normalizedType = GeneratorSupport.trimToEmpty(rawType);
 
         if (normalizedType.isEmpty()) {
-            return "Object";
+            return Constants.OBJECT_TYPE;
         }
 
-        if (normalizedType.endsWith("[]")) {
+        if (normalizedType.endsWith(Constants.ARRAY_SUFFIX)) {
             String elementType = normalizedType.substring(0, normalizedType.length() - 2);
-            return simplifyType(elementType) + "[]";
+            return simplifyType(elementType) + Constants.ARRAY_SUFFIX;
         }
 
         int genericStart = normalizedType.indexOf('<');
@@ -222,8 +223,8 @@ public final class DtoFieldTypeResolver {
      * @return simplified type name
      */
     private static String simplifyNonGenericType(String typeName) {
-        if (typeName.startsWith("java.lang.")) {
-            return typeName.substring("java.lang.".length());
+        if (typeName.startsWith(Constants.JAVA_LANG_PACKAGE)) {
+            return typeName.substring(Constants.JAVA_LANG_PACKAGE.length());
         }
 
         if (typeName.contains(".")) {
