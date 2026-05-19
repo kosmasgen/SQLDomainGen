@@ -22,6 +22,11 @@ public class Constants {
     public static final String DTO_SUFFIX = "Dto";
     public static final String SERVICE_SUFFIX = "Service";
 
+    public static final String MAPPER_PACKAGE = "mapper";
+    public static final String ENTITY_PACKAGE = "entity";
+
+    public static final String BASE_MAPPER_FILE_NAME = "BaseMapper.java";
+    public static final String MAPPER_SUFFIX = "Mapper";
     public static final String OBJECT_TYPE = "Object";
     public static final String KEY_SUFFIX = "Key";
     public static final String PK_SUFFIX = "PK";

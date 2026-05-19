@@ -1,6 +1,7 @@
 package com.sqldomaingen.generator;
 
 import com.sqldomaingen.model.Table;
+import com.sqldomaingen.util.Constants;
 import com.sqldomaingen.util.NamingConverter;
 import com.sqldomaingen.util.PackageResolver;
 import lombok.extern.log4j.Log4j2;
@@ -37,7 +38,7 @@ public class MapperGenerator {
         Objects.requireNonNull(basePackage, "basePackage must not be null");
 
         Path mapperDir = GeneratorSupport.ensureDirectory(
-                PackageResolver.resolvePath(outputDir, basePackage, "mapper")
+                PackageResolver.resolvePath(outputDir, basePackage, Constants.MAPPER_PACKAGE)
         );
         log.debug("Mappers output directory: {}", mapperDir.toAbsolutePath());
 
@@ -66,14 +67,14 @@ public class MapperGenerator {
      * @param basePackage base package
      */
     private void generateBaseMapper(Path mapperDir, String basePackage) {
-        Path file = mapperDir.resolve("BaseMapper.java");
+        Path file = mapperDir.resolve(Constants.BASE_MAPPER_FILE_NAME);
 
         if (Files.exists(file)) {
             log.debug("BaseMapper already exists. Skipping: {}", file.toAbsolutePath());
             return;
         }
 
-        String mapperPackage = PackageResolver.resolvePackageName(basePackage, "mapper");
+        String mapperPackage = PackageResolver.resolvePackageName(basePackage, Constants.MAPPER_PACKAGE);
 
         String content = """
 package %s;
@@ -269,12 +270,12 @@ public abstract class BaseMapper<E, D> {
 
         String normalizedTableName = GeneratorSupport.normalizeTableName(table.getName());
         String entityName = NamingConverter.toPascalCase(normalizedTableName);
-        String dtoName = entityName + "Dto";
-        String mapperName = entityName + "Mapper";
+        String dtoName = entityName + Constants.DTO_SUFFIX;
+        String mapperName = entityName + Constants.MAPPER_SUFFIX;
 
-        String mapperPackage = PackageResolver.resolvePackageName(basePackage, "mapper");
-        String entityPackage = PackageResolver.resolvePackageName(basePackage, "entity");
-        String dtoPackage = PackageResolver.resolvePackageName(basePackage, "dto");
+        String mapperPackage = PackageResolver.resolvePackageName(basePackage, Constants.MAPPER_PACKAGE);
+        String entityPackage = PackageResolver.resolvePackageName(basePackage, Constants.ENTITY_PACKAGE);
+        String dtoPackage = PackageResolver.resolvePackageName(basePackage,Constants.DTO_PACKAGE);
 
         String content = """
                 package %s;
