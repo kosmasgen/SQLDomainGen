@@ -34,18 +34,13 @@ public class ConfigGenerator {
      * @param overwrite overwrite existing file if true
      */
     public void generateModelMapperConfig(String outputDir, String basePackage, boolean overwrite) {
-        String out = outputDir.trim();
-        String pkg = basePackage.trim();
+        String[] normalized = validateAndNormalizePaths(outputDir, basePackage);
 
-        if (out.isEmpty()) {
-            throw new IllegalArgumentException("outputDir must not be blank");
-        }
-        if (pkg.isEmpty()) {
-            throw new IllegalArgumentException("basePackage must not be blank");
-        }
+        String out = normalized[0];
+        String pkg = normalized[1];
 
-        Path configDir = GeneratorSupport.ensureDirectory(PackageResolver.resolvePath(out, pkg, "config"));
-        String configPackage = PackageResolver.resolvePackageName(pkg, "config");
+        Path configDir = resolveConfigDirectory(out, pkg);
+        String configPackage = resolveConfigPackage(pkg);
 
         Path file = configDir.resolve("ModelMapperConfig.java");
 
@@ -92,20 +87,13 @@ public class ConfigGenerator {
      * @param overwrite overwrite existing file if true
      */
     public void generateCorsConfig(String outputDir, String basePackage, boolean overwrite) {
-        String out = outputDir.trim();
-        String pkg = basePackage.trim();
+        String[] normalized = validateAndNormalizePaths(outputDir, basePackage);
 
-        if (out.isEmpty()) {
-            throw new IllegalArgumentException("outputDir must not be blank");
-        }
-        if (pkg.isEmpty()) {
-            throw new IllegalArgumentException("basePackage must not be blank");
-        }
+        String out = normalized[0];
+        String pkg = normalized[1];
 
-        Path configDir = GeneratorSupport.ensureDirectory(
-                PackageResolver.resolvePath(out, pkg, "config")
-        );
-        String configPackage = PackageResolver.resolvePackageName(pkg, "config");
+        Path configDir = resolveConfigDirectory(out, pkg);
+        String configPackage = resolveConfigPackage(pkg);
 
         Path file = configDir.resolve("CorsConfig.java");
 
@@ -155,20 +143,13 @@ public class ConfigGenerator {
      * @param overwrite overwrite existing file if true
      */
     public void generateSecurityConfig(String outputDir, String basePackage, boolean overwrite) {
-        String out = outputDir.trim();
-        String pkg = basePackage.trim();
+        String[] normalized = validateAndNormalizePaths(outputDir, basePackage);
 
-        if (out.isEmpty()) {
-            throw new IllegalArgumentException("outputDir must not be blank");
-        }
-        if (pkg.isEmpty()) {
-            throw new IllegalArgumentException("basePackage must not be blank");
-        }
+        String out = normalized[0];
+        String pkg = normalized[1];
 
-        Path configDir = GeneratorSupport.ensureDirectory(
-                PackageResolver.resolvePath(out, pkg, "config")
-        );
-        String configPackage = PackageResolver.resolvePackageName(pkg, "config");
+        Path configDir = resolveConfigDirectory(out, pkg);
+        String configPackage = resolveConfigPackage(pkg);
 
         Path file = configDir.resolve("SecurityConfig.java");
 
@@ -217,5 +198,50 @@ public class ConfigGenerator {
 
         GeneratorSupport.writeFile(file, content, overwrite);
         log.info("SecurityConfig generated: {}", file.toAbsolutePath());
+    }
+
+    /**
+     * Validates and trims generator path arguments.
+     *
+     * @param outputDir output directory
+     * @param basePackage base package
+     * @return normalized arguments
+     */
+    private String[] validateAndNormalizePaths(String outputDir, String basePackage) {
+        String out = outputDir.trim();
+        String pkg = basePackage.trim();
+
+        if (out.isEmpty()) {
+            throw new IllegalArgumentException("outputDir must not be blank");
+        }
+
+        if (pkg.isEmpty()) {
+            throw new IllegalArgumentException("basePackage must not be blank");
+        }
+
+        return new String[]{out, pkg};
+    }
+
+    /**
+     * Resolves and creates the config package directory.
+     *
+     * @param outputDir output directory
+     * @param basePackage base package
+     * @return config directory path
+     */
+    private Path resolveConfigDirectory(String outputDir, String basePackage) {
+        return GeneratorSupport.ensureDirectory(
+                PackageResolver.resolvePath(outputDir, basePackage, "config")
+        );
+    }
+
+    /**
+     * Resolves the config package name.
+     *
+     * @param basePackage base package
+     * @return resolved config package name
+     */
+    private String resolveConfigPackage(String basePackage) {
+        return PackageResolver.resolvePackageName(basePackage, "config");
     }
 }
