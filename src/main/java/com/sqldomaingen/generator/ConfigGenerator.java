@@ -1,5 +1,6 @@
 package com.sqldomaingen.generator;
 
+import com.sqldomaingen.util.Constants;
 import com.sqldomaingen.util.PackageResolver;
 import lombok.extern.log4j.Log4j2;
 import com.sqldomaingen.util.GeneratorSupport;
@@ -95,7 +96,7 @@ public class ConfigGenerator {
         Path configDir = resolveConfigDirectory(out, pkg);
         String configPackage = resolveConfigPackage(pkg);
 
-        Path file = configDir.resolve("CorsConfig.java");
+        Path file = configDir.resolve(Constants.CORS_CONFIG_FILE_NAME);
 
         String content = """
             package %s;
@@ -151,7 +152,7 @@ public class ConfigGenerator {
         Path configDir = resolveConfigDirectory(out, pkg);
         String configPackage = resolveConfigPackage(pkg);
 
-        Path file = configDir.resolve("SecurityConfig.java");
+        Path file = configDir.resolve(Constants.SECURITY_CONFIG_FILE_NAME);
 
         String content = """
         package %s;
@@ -231,7 +232,7 @@ public class ConfigGenerator {
      */
     private Path resolveConfigDirectory(String outputDir, String basePackage) {
         return GeneratorSupport.ensureDirectory(
-                PackageResolver.resolvePath(outputDir, basePackage, "config")
+                PackageResolver.resolvePath(outputDir, basePackage, Constants.CONFIG_PACKAGE)
         );
     }
 
@@ -242,6 +243,6 @@ public class ConfigGenerator {
      * @return resolved config package name
      */
     private String resolveConfigPackage(String basePackage) {
-        return PackageResolver.resolvePackageName(basePackage, "config");
+        return PackageResolver.resolvePackageName(basePackage, Constants.CONFIG_PACKAGE);
     }
 }

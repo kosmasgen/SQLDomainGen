@@ -9,6 +9,26 @@ public class Constants {
     public static final Path SCHEMA_PATH = Path.of("input", "test_script.sql");
     public static final Path GENERATED_JAVA_ROOT = Path.of("output", "PepTest", "src", "main", "java");
 
+
+    public static final String CONTROLLER_PACKAGE = "controller";
+    public static final String DTO_PACKAGE = "dto";
+    public static final String SERVICE_PACKAGE = "service";
+    public static final String CONFIG_PACKAGE = "config";
+
+    public static final String API_BASE_PATH = "/api/";
+    public static final String CONTROLLER_FILE_SUFFIX = "Controller.java";
+    public static final String CONTROLLER_SUFFIX = "Controller";
+    public static final String DTO_SUFFIX = "Dto";
+    public static final String SERVICE_SUFFIX = "Service";
+
+    public static final String API_ENTITY_PREFIX = "Api";
+    public static final String BY_ID_SUFFIX = "ById";
+
+    public static final String DEFAULT_ID_PARAM = "id";
+    public static final String DEFAULT_PK_TYPE = "Long";
+
+    public static final String SECURITY_CONFIG_FILE_NAME = "SecurityConfig.java";
+    public static final String CORS_CONFIG_FILE_NAME = "CorsConfig.java";
     public static final String EMPTY_SQL_ERROR_MESSAGE = "SQL content is empty or not set.";
 
     public static final int MAX_LINE_LENGTH = 100;
@@ -16,8 +36,6 @@ public class Constants {
     public static final String JAVA_BIG_DECIMAL = "java.math.BigDecimal";
     public static final String JAVA_STRING = "String";
     public static final String JAVA_LOCAL_DATE_TIME = "java.time.LocalDateTime";
-
-    public static final String DTO_SUFFIX = "Dto";
     public static final String SPRING_BOOT_VERSION = "3.4.13";
     public static final String SPRINGDOC_VERSION = "2.8.17";
     public static final String MODELMAPPER_VERSION = "3.2.0";

@@ -3,6 +3,7 @@ package com.sqldomaingen.generator;
 import com.sqldomaingen.model.Column;
 import com.sqldomaingen.model.Table;
 import com.sqldomaingen.util.*;
+import com.sqldomaingen.util.Constants;
 import lombok.extern.log4j.Log4j2;
 
 import java.nio.file.Path;
@@ -32,18 +33,14 @@ public class ControllerGenerator {
         Objects.requireNonNull(outputDir, "outputDir must not be null");
         Objects.requireNonNull(basePackage, "basePackage must not be null");
 
-        Path controllerDir = GeneratorSupport.ensureDirectory(
-                PackageResolver.resolvePath(outputDir, basePackage, "controller")
-        );
-        String controllerPackage = PackageResolver.resolvePackageName(basePackage, "controller");
+        Path controllerDir = resolveControllerDirectory(outputDir, basePackage);
+        String controllerPackage = resolveControllerPackage(basePackage);
 
         for (Table table : tables) {
-            String entityName = NamingConverter.toPascalCase(
-                    GeneratorSupport.normalizeTableName(table.getName())
-            );
+            String entityName = resolveEntityName(table);
             String code = generateControllerCode(table, controllerPackage, basePackage);
 
-            Path filePath = controllerDir.resolve(entityName + "Controller.java");
+            Path filePath = controllerDir.resolve(entityName + Constants.CONTROLLER_FILE_SUFFIX);
             GeneratorSupport.writeFile(filePath, code, overwrite);
         }
 
@@ -63,15 +60,13 @@ public class ControllerGenerator {
         Objects.requireNonNull(controllerPackage, "controllerPackage must not be null");
         Objects.requireNonNull(basePackage, "basePackage must not be null");
 
-        String entityName = NamingConverter.toPascalCase(
-                GeneratorSupport.normalizeTableName(table.getName())
-        );
-        String dtoName = entityName + "Dto";
-        String serviceName = entityName + "Service";
-        String serviceVar = NamingConverter.decapitalizeFirstLetter(entityName) + "Service";
+        String entityName = resolveEntityName(table);
+        String dtoName = entityName + Constants.DTO_SUFFIX;
+        String serviceName = entityName + Constants.SERVICE_SUFFIX;
+        String serviceVar = NamingConverter.decapitalizeFirstLetter(entityName) + Constants.SERVICE_SUFFIX;
 
-        String dtoPackage = PackageResolver.resolvePackageName(basePackage, "dto");
-        String servicePackage = PackageResolver.resolvePackageName(basePackage, "service");
+        String dtoPackage = resolveDtoPackage(basePackage);
+        String servicePackage = resolveServicePackage(basePackage);
 
         String lowerDisplayLabel = NamingConverter.toLogLabel(entityName);
         if (lowerDisplayLabel.isBlank()) {
@@ -88,24 +83,9 @@ public class ControllerGenerator {
 
         String pkType = compositePk ? null : detectSinglePrimaryKeyType(table);
 
-        String normalizedEntityName = entityName;
+        String apiPath = resolveApiPath(entityName);
 
-        if (entityName.startsWith("Api") && entityName.length() > 3 && Character.isUpperCase(entityName.charAt(3))) {
-            normalizedEntityName = entityName.substring(3);
-        }
-
-        String apiPath = "/api/" + NamingConverter.toKebabCase(normalizedEntityName);
-
-        JavaImportCollector importCollector = new JavaImportCollector();
-
-        importCollector.addImport("import " + dtoPackage + "." + dtoName + ";");
-        importCollector.addImport("import " + servicePackage + "." + serviceName + ";");
-
-        GeneratorImportSupport.addControllerFrameworkImports(importCollector);
-
-        pkColumns.forEach(column ->
-                importCollector.addImportForType(detectJavaTypeForPkColumn(column))
-        );
+        JavaImportCollector importCollector = buildControllerImports(dtoPackage, dtoName, servicePackage, serviceName, pkColumns);
 
         StringBuilder sourceBuilder = new StringBuilder();
         sourceBuilder.append("package ").append(controllerPackage).append(";\n\n");
@@ -736,12 +716,12 @@ public class ControllerGenerator {
      */
     private String detectJavaTypeForPkColumn(Column column) {
         if (column == null) {
-            return "Long";
+            return Constants.DEFAULT_PK_TYPE;
         }
 
         String rawType = column.getJavaType();
         if (rawType == null || rawType.isBlank()) {
-            return "Long";
+            return Constants.DEFAULT_PK_TYPE;
         }
 
         return JavaTypeSupport.resolveSimpleType(rawType);
@@ -788,7 +768,7 @@ public class ControllerGenerator {
 
         String rawType = primaryKeyColumn.getJavaType();
         if (rawType == null || rawType.isBlank()) {
-            return "Long";
+            return Constants.DEFAULT_PK_TYPE;
         }
 
         return JavaTypeSupport.resolveSimpleType(rawType);
@@ -803,15 +783,117 @@ public class ControllerGenerator {
      */
     private String resolvePkParamName(Column column) {
         if (column == null || column.getName() == null || column.getName().isBlank()) {
-            return "id";
+            return Constants.DEFAULT_ID_PARAM;
         }
 
         String columnName = GeneratorSupport.unquoteIdentifier(column.getName());
         if (columnName == null || columnName.isBlank()) {
-            return "id";
+            return Constants.DEFAULT_ID_PARAM;
         }
 
         return NamingConverter.toCamelCase(columnName);
+    }
+
+    /**
+     * Resolves and creates the controller package directory.
+     *
+     * @param outputDir output directory
+     * @param basePackage base package
+     * @return controller directory path
+     */
+    private Path resolveControllerDirectory(String outputDir, String basePackage) {
+        return GeneratorSupport.ensureDirectory(
+                PackageResolver.resolvePath(outputDir, basePackage, Constants.CONTROLLER_PACKAGE)
+        );
+    }
+
+    /**
+     * Resolves the controller package name.
+     *
+     * @param basePackage base package
+     * @return resolved controller package name
+     */
+    private String resolveControllerPackage(String basePackage) {
+        return PackageResolver.resolvePackageName(basePackage, Constants.CONTROLLER_PACKAGE);
+    }
+
+    /**
+     * Resolves the normalized entity name for a table.
+     *
+     * @param table source table metadata
+     * @return normalized entity name
+     */
+    private String resolveEntityName(Table table) {
+        return NamingConverter.toPascalCase(
+                GeneratorSupport.normalizeTableName(table.getName())
+        );
+    }
+
+    /**
+     * Resolves the REST API path for an entity.
+     *
+     * @param entityName entity simple name
+     * @return resolved API path
+     */
+    private String resolveApiPath(String entityName) {
+        String normalizedEntityName = entityName;
+
+        if (entityName.startsWith(Constants.API_ENTITY_PREFIX) && entityName.length() > 3 && Character.isUpperCase(entityName.charAt(3))) {
+            normalizedEntityName = entityName.substring(3);
+        }
+
+        return Constants.API_BASE_PATH + NamingConverter.toKebabCase(normalizedEntityName);
+    }
+
+    /**
+     * Resolves the DTO package name.
+     *
+     * @param basePackage base package
+     * @return resolved DTO package name
+     */
+    private String resolveDtoPackage(String basePackage) {
+        return PackageResolver.resolvePackageName(basePackage, Constants.DTO_PACKAGE);
+    }
+
+    /**
+     * Resolves the service package name.
+     *
+     * @param basePackage base package
+     * @return resolved service package name
+     */
+    private String resolveServicePackage(String basePackage) {
+        return PackageResolver.resolvePackageName(basePackage, Constants.SERVICE_PACKAGE);
+    }
+
+    /**
+     * Builds imports required by a generated controller.
+     *
+     * @param dtoPackage DTO package name
+     * @param dtoName DTO simple class name
+     * @param servicePackage service package name
+     * @param serviceName service simple interface name
+     * @param primaryKeyColumns primary key columns
+     * @return populated import collector
+     */
+    private JavaImportCollector buildControllerImports(
+            String dtoPackage,
+            String dtoName,
+            String servicePackage,
+            String serviceName,
+            List<Column> primaryKeyColumns
+    ) {
+        JavaImportCollector importCollector = new JavaImportCollector();
+
+        importCollector.addImport("import " + dtoPackage + "." + dtoName + ";");
+        importCollector.addImport("import " + servicePackage + "." + serviceName + ";");
+
+        GeneratorImportSupport.addControllerFrameworkImports(importCollector);
+
+        primaryKeyColumns.forEach(column ->
+                importCollector.addImportForType(detectJavaTypeForPkColumn(column))
+        );
+
+        return importCollector;
     }
 
 }
