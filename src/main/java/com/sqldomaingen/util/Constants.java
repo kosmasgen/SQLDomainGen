@@ -17,6 +17,7 @@ public class Constants {
 
     public static final String API_BASE_PATH = "/api/";
     public static final String CONTROLLER_FILE_SUFFIX = "Controller.java";
+    public static final String DTO_FILE_SUFFIX = "Dto.java";
     public static final String CONTROLLER_SUFFIX = "Controller";
     public static final String DTO_SUFFIX = "Dto";
     public static final String SERVICE_SUFFIX = "Service";

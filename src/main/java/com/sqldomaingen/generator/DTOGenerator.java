@@ -29,9 +29,9 @@ public class DTOGenerator {
         Objects.requireNonNull(outputDir, "outputDir must not be null");
         Objects.requireNonNull(basePackage, "basePackage must not be null");
 
-        String dtoPackage = PackageResolver.resolvePackageName(basePackage, "dto");
+        String dtoPackage = PackageResolver.resolvePackageName(basePackage, Constants.DTO_PACKAGE);
         Path dtoDir = GeneratorSupport.ensureDirectory(
-                PackageResolver.resolvePath(outputDir, basePackage, "dto")
+                PackageResolver.resolvePath(outputDir, basePackage, Constants.DTO_PACKAGE)
         );
 
         log.debug("Starting DTO generation...");
@@ -40,7 +40,7 @@ public class DTOGenerator {
             log.debug("Generating DTO for entity: {}", entity.getName());
 
             String dtoContent = createDtoContent(entity, dtoPackage);
-            Path outputPath = dtoDir.resolve(entity.getName() + "Dto.java");
+            Path outputPath = dtoDir.resolve(entity.getName() + Constants.DTO_FILE_SUFFIX);
             GeneratorSupport.writeFile(outputPath, dtoContent);
         }
 
@@ -160,7 +160,7 @@ public class DTOGenerator {
     ) {
         for (String simpleType : extractProjectSimpleTypes(fieldType)) {
 
-            if (simpleType.endsWith("Dto")) {
+            if (simpleType.endsWith(Constants.DTO_SUFFIX)) {
                 continue;
             }
 
@@ -220,8 +220,8 @@ public class DTOGenerator {
     private boolean shouldImportEntityKeyType(String fieldType) {
         String normalizedType = GeneratorSupport.trimToEmpty(fieldType);
 
-        return normalizedType.endsWith("Key")
-                || normalizedType.endsWith("PK");
+        return normalizedType.endsWith(Constants.KEY_SUFFIX)
+                || normalizedType.endsWith(Constants.PK_SUFFIX);
     }
 
 
@@ -380,8 +380,8 @@ public class DTOGenerator {
         String fieldName = GeneratorSupport.trimToEmpty(field.getName());
         String fieldType = GeneratorSupport.trimToEmpty(field.getType());
 
-        return "id".equals(fieldName)
-                && (fieldType.endsWith("Key") || fieldType.endsWith("PK"));
+        return Constants.DEFAULT_ID_PARAM.equals(fieldName)
+                && (fieldType.endsWith(Constants.KEY_SUFFIX) || fieldType.endsWith(Constants.PK_SUFFIX));
     }
 
 
