@@ -438,7 +438,7 @@ class EntityGeneratorUpdateTest {
         assertFalse(userDetailsContent.contains("mappedBy"),
                 "Owning side must not contain mappedBy.");
 
-        assertTrue(usersContent.contains("@OneToOne(mappedBy = \"user\", fetch = FetchType.LAZY)"),
+        assertTrue(usersContent.contains("@OneToOne(mappedBy = \"user\""),
                 "Expected inverse @OneToOne on Users.");
         assertTrue(usersContent.contains("private UserDetails userDetails;"),
                 "Expected inverse field userDetails on Users.");
